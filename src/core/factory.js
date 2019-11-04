@@ -1,6 +1,7 @@
 // @flow
 
 import Component from './component';
+import { Mutatable } from './mutation';
 
 function literalsToProps(strings: Array<string>, ...values: Array<any>) {
   // const props = {};
@@ -73,7 +74,7 @@ export default function ComponentFactory(tag: string) {
 
     // Called With Props
     // div({ props })
-    if (args.length === 1 && typeof args[0] === 'object') {
+    if (args.length === 1 && typeof args[0] === 'object' && !(args[0] instanceof Mutatable)) {
       const props = args[0];
 
       return function ChildrenFactory(...children) {

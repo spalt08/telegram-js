@@ -1,21 +1,18 @@
 // @flow
 
-import { Component } from 'core';
 import { div, span } from 'core/html';
+import { useMutation } from 'core/mutation';
 
-class ButtonComponent extends Component {
-  constructor() {
-    super('button', { className: 'btn' });
-  }
-}
+const timer = useMutation<number>(0);
+
+setInterval(() => timer.value++, 100);
 
 export default (
   div`.LoginContainer`(
     div`.LoginForm`,
-    ButtonComponent,
-    span`.test`,
     div(
-      span,
+      span('Timer: '),
+      timer,
     ),
   )
 );
