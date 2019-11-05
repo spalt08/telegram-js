@@ -1,5 +1,5 @@
 // @flow
 
-export { TextInput, textInput } from './text_input/text_input';
-export { default as SelectAutoComplete } from './select/select_autocomplete';
-export { default as Button } from './button/button';
+export * from './text_input/text_input';
+export * from './select/select_autocomplete';
+export * from './button/button';

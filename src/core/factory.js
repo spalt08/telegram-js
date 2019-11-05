@@ -83,10 +83,10 @@ export function ComponentFactory(Constructor) {
     // new ripple()
     if (this instanceof ComponentTaggedFactory) {
       if (args.length === 1 && typeof args[0] === 'object' && !(args[0] instanceof Mutatable)) {
-        return new Constructor(args[0]);
+        return new Constructor(args[0]).ref;
       }
 
-      return new Constructor({}, args);
+      return new Constructor({}, args).ref;
     }
 
     // Called as Template Litteral
@@ -101,25 +101,25 @@ export function ComponentFactory(Constructor) {
         // ripple`.button`({ props })
         if (propsOrChildren.length === 1 && typeof propsOrChildren[0] === 'object' && !(propsOrChildren[0] instanceof Mutatable)) {
           // new ripple`.button`({ props })
-          if (this instanceof ComponentPropChildFactory) return new Constructor({ className, ...propsOrChildren[0] });
+          if (this instanceof ComponentPropChildFactory) return new Constructor({ className, ...propsOrChildren[0] }).ref;
 
           return function ComponentWithPropsChildFactory(...children: ElementOrComponent) {
-            if (this instanceof ComponentWithPropsChildFactory) return new Constructor({ className, ...propsOrChildren[0] }, children);
+            if (this instanceof ComponentWithPropsChildFactory) return new Constructor({ className, ...propsOrChildren[0] }, children).ref;
 
             // ripple`.button`({ props })(...children)
             if (children.length > 0) {
-              return () => new Constructor({ className, ...propsOrChildren[0] }, children);
+              return () => new Constructor({ className, ...propsOrChildren[0] }, children).ref;
             }
 
-            return new Constructor({ className, ...propsOrChildren[0] }, children);
+            return new Constructor({ className, ...propsOrChildren[0] }, children).ref;
           };
         }
 
         // new ripple`.button`(...children)
-        if (this instanceof ComponentPropChildFactory) return new Constructor({ className }, propsOrChildren);
+        if (this instanceof ComponentPropChildFactory) return new Constructor({ className }, propsOrChildren).ref;
 
         // ripple`.button`(...children)
-        return () => new Constructor({ className }, propsOrChildren);
+        return () => new Constructor({ className }, propsOrChildren).ref;
       };
     }
 
@@ -131,8 +131,8 @@ export function ComponentFactory(Constructor) {
       // ripple({ props })(...children)
       // ripple({ props })
       return function ComponentChildrenFactory(...children: Array<ElementOrComponent>) {
-        if (this instanceof ComponentChildrenFactory) return new Constructor(props, children);
-        return () => new Constructor(props, children);
+        if (this instanceof ComponentChildrenFactory) return new Constructor(props, children).ref;
+        return () => new Constructor(props, children).ref;
       };
     }
   };

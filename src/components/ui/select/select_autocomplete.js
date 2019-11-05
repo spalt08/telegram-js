@@ -1,6 +1,7 @@
 // @flow
 
 import Component from 'core/component';
+import { ComponentFactory } from 'core/factory';
 import { div } from 'core/html';
 import { mount, unmount, setValue } from 'core/dom';
 import { textInput } from '../text_input/text_input';
@@ -12,7 +13,7 @@ type Props = {
   onChange?: (value: string) => any;
 };
 
-class SelectAutoComplete extends Component<HTMLDivElement> {
+export class SelectAutoComplete extends Component<HTMLDivElement> {
   input: HTMLDivElement;
 
   optionsEl: HTMLDivElement;
@@ -31,7 +32,7 @@ class SelectAutoComplete extends Component<HTMLDivElement> {
     this.options = options;
 
     this.ref = new div`.select`(
-      textInput({
+      this.in = new textInput({
         label,
         onFocus: this.handleFocus,
         onBlur: this.handleBlur,
@@ -105,4 +106,4 @@ class SelectAutoComplete extends Component<HTMLDivElement> {
   }
 }
 
-export default (props: Props) => () => new SelectAutoComplete(props);
+export const selectAutoComplete = ComponentFactory(SelectAutoComplete);
