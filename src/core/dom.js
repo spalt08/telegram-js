@@ -61,6 +61,18 @@ export function setClassName(element: HTMLElement, className: string | Mutatable
   }
 }
 
+/** Setters */
+export function setValue(element: HTMLElement, value: string | Mutatable<string>) {
+  if (value instanceof Mutatable) {
+    // eslint-disable-next-line no-param-reassign
+    value.subscribe((v) => { element.value = v; element.dispatchEvent(new Event('input')); });
+  } else {
+    // eslint-disable-next-line no-param-reassign
+    element.value = value;
+    element.dispatchEvent(new Event('input'));
+  }
+}
+
 declare function el(tag: 'div', ...rest: any): HTMLDivElement;
 declare function el(tag: string, ...rest: any): HTMLElement;
 declare function el<T>(tag: string, ...rest: any): T;
@@ -80,7 +92,15 @@ export function el(tag: string, props: Object = {}, children: Array<ElementOrCom
     for (let i = 0; i < propNames.length; i++) {
       switch (propNames[i]) {
         case 'className':
-          setClassName(element, props[propNames[i]]);
+          setClassName(element, props.className);
+          break;
+
+        case 'key':
+          element.__key = props.key;
+          break;
+
+        case 'onClick':
+          element.onclick = props.onClick;
           break;
 
         default:

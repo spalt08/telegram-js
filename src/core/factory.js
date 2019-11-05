@@ -19,7 +19,7 @@ export default function ElementFactory<T>(tag: string): any {
     // Called as constructor
     // new div();
     if (this instanceof ElementFactoryTagged) {
-      return el<T>(tag);
+      return el<T>(tag, args[0]);
     }
 
     // Called as Template Litteral
@@ -27,12 +27,20 @@ export default function ElementFactory<T>(tag: string): any {
     if (args[0] && args[0].raw && Array.isArray(args[0])) {
       const className = literalsToClassname(args[0], ...args.slice(1));
 
-      return function ElementChildrenFactory(...propsOrChildren: Array<Object | ElementOrComponent>) {
-        if (propsOrChildren.length === 1 && typeof propsOrChildren[0] === 'object' && !(propsOrChildren[0] instanceof Mutatable)) {
-          return () => el<T>(tag, { className, ...propsOrChildren[0] });
-        }
+      return function ElementPropChildFactory(...propsOrChildren: Array<Object | ElementOrComponent>) {
+        if (this instanceof ElementPropChildFactory) return el<T>(tag, { className });
 
-        if (this instanceof ElementChildrenFactory) return el<T>(tag, { className });
+        if (propsOrChildren.length === 1 && typeof propsOrChildren[0] === 'object' && !(propsOrChildren[0] instanceof Mutatable)) {
+          return function ElementWithPropsChildFactory(...children: ElementOrComponent) {
+            if (this instanceof ElementWithPropsChildFactory) return el<T>(tag, { className, ...propsOrChildren[0] });
+
+            if (children.length > 0) {
+              return () => el<T>(tag, { className, ...propsOrChildren[0] }, children);
+            }
+
+            return el<T>(tag, { className, ...propsOrChildren[0] });
+          };
+        }
 
         return () => el<T>(tag, { className }, propsOrChildren);
       };

@@ -1,5 +1,7 @@
 .input {
   position: relative;
+  background: #FFFFFF;
+  border-radius: 10px;
 
   &__label {
     position: absolute;
@@ -12,7 +14,9 @@
     height: calc(100% - 4px);
     border-radius: 10px;
     color: #A2ACB4;
-    transition: .1s linear;
+    transition: .1s ease-out;
+    user-select: none;
+    z-index: 0;
   }
 
   &.filled &__label {
@@ -22,6 +26,7 @@
     padding: 0 3px;
     font-size: 12px;
     background: #FFFFFF;
+    z-index: 1;
   }
 
   &.filled input:focus + .input__label {
@@ -40,6 +45,9 @@
     border-radius: 10px;
     outline: none;
     transition: .2s linear;
+    position: relative;
+    z-index: 1;
+    background: transparent;
 
     &:focus {
       outline: none;

@@ -9,6 +9,7 @@ type Props = {
   onFocus?: () => any;
   onBlur?: () => any;
   label?: string,
+  ref?: (HTMLInputElement) => any,
 };
 
 class TextInput extends Component<HTMLDivElement> {
@@ -16,7 +17,7 @@ class TextInput extends Component<HTMLDivElement> {
 
   input: HTMLInputElement;
 
-  constructor({ label = '', onChange, onFocus, onBlur }: Props) {
+  constructor({ label = '', onChange, onFocus, onBlur, ref }: Props) {
     super();
 
     this.ref = div`.input`(
@@ -26,7 +27,6 @@ class TextInput extends Component<HTMLDivElement> {
 
     let filled = false;
 
-    this.label.onclick = () => { this.input.focus(); };
     this.input.onfocus = onFocus;
     this.input.onblur = onBlur;
     this.input.oninput = (event: InputEvent) => {
@@ -44,6 +44,8 @@ class TextInput extends Component<HTMLDivElement> {
 
       if (onChange) onChange(value);
     };
+
+    if (ref) ref(this.input);
   }
 }
 

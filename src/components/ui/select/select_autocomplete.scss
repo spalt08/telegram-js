@@ -4,7 +4,7 @@
   &::after {
     position: absolute;
     content: '';
-    right: 16px;
+    right: 18px;
     top: 16px;
     width: 12px;
     height: 12px;
@@ -13,6 +13,13 @@
     border-radius: 1px;
     transform: rotate(45deg);
     z-index: 1;
+    transition: .1s linear;
+    transform-origin: 65% 65%;
+  }
+
+  &.focused::after {
+    border-color: #4EA4F5;
+    transform: rotate(-135deg);
   }
 
   &__options {
@@ -22,7 +29,7 @@
     background: #FFF;
     border-radius: 10px;
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.15);
-    z-index: 1;
+    z-index: 2;
     max-height: 240px;
     overflow: scroll;
   }
