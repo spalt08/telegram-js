@@ -1,5 +1,7 @@
 // @flow
 
+import type { ElementOrComponent } from 'core/dom'
+import { mount } from 'core/dom';
 import { Component } from 'core';
 
 export const history = {
@@ -7,18 +9,18 @@ export const history = {
 };
 
 export class Router extends Component<HTMLDivElement> {
-  routes: { [string]: string }
+  routes: { [string]: () => ElementOrComponent }
 
-  mountedComponent: ?Component;
+  mountedComponent: ?ElementOrComponent;
 
-  constructor(routes: { [string]: string }) {
+  constructor(routes: { [string]: () => ElementOrComponent }) {
     super('div', { className: 'main' });
 
     this.routes = routes;
 
-    window.onpopstate = (event: PopStateEvent) => {
+    window.onpopstate = (event) => {
       this.fetchLocation();
-      event.preventDefault();
+      event.preventDefault(); 
     };
   }
 
@@ -27,10 +29,11 @@ export class Router extends Component<HTMLDivElement> {
   }
 
   fetchLocation() {
-    const ElementCreator = this.routes[window.location.pathname] || this.routes.default;
+    const element = this.routes[window.location.pathname] || this.routes.default;
 
-    if (Element) {
-      this.mountedComponent = new ElementCreator().mount(this.ref);
+    if (element) {
+      this.mountedComponent = new element();
+      mount(this.ref, this.mountedComponent);
     }
   }
 }

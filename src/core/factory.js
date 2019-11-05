@@ -1,34 +1,41 @@
 // @flow
 
+import type { ElementOrComponent } from './dom';
 import Component from './component';
 import { Mutatable } from './mutation';
+import { el } from './dom';
 
-function literalsToProps(strings: Array<string>, ...values: Array<string>): string {
-  const className = strings[0].slice(1).split('.');
-  return (values && values[0]) ? className.concat(values).join(' ') : className.join(' ');
+// TO DO: Typing for factory
+// type Factory<T> = T | () => T;
+// type FactoryTemplated<T> = (strings: Array<string>, ...expr: Array<any>) => FactoryWithChidren<T> | Factory<T>;
+// type FactoryWithChidren<T> = (...children: Array<FactoryTemplated<T>>) => Factory<T>;
+// declare function ElementFactoryTagged<T>(strings: Array<string>, ...expr: Array<any>): FactoryWithChidren<T> | Factory<T>;
+
+function literalsToClassname(strings: Array<string>, ...values: Array<string>): string {
+  return strings[0].slice(1).split('.').concat(values).join(' ');
 }
 
-export default function ComponentFactory(tag: string) {
-  return function ComponentFactoryWithTag(...args) {
+export default function ElementFactory<T>(tag: string): any {
+  return function ElementFactoryTagged<T>(...args: Array<any>) {
     // Called as constructor
     // new div();
-    if (this instanceof ComponentFactoryWithTag) {
-      return new Component(tag);
+    if (this instanceof ElementFactoryTagged) {
+      return el<T>(tag);
     }
 
     // Called as Template Litteral
-    // div`class="button"`
+    // div`.class`
     if (args[0] && args[0].raw && Array.isArray(args[0])) {
-      const className = literalsToProps(args[0], args.length > 1 ? args[1] : undefined);
+      const className = literalsToClassname(args[0], ...args.slice(1));
 
-      return function ChildrenFactory(...propsOrChildren) {
+      return function ElementChildrenFactory(...propsOrChildren: Array<Object | ElementOrComponent>) {
         if (propsOrChildren.length === 1 && typeof propsOrChildren[0] === 'object' && !(propsOrChildren[0] instanceof Mutatable)) {
-          return () => new Component(tag, { className, ...propsOrChildren[0] });
+          return () => el<T>(tag, { className, ...propsOrChildren[0] });
         }
 
-        if (this instanceof ChildrenFactory) return new Component(tag, { className });
+        if (this instanceof ElementChildrenFactory) return el<T>(tag, { className });
 
-        return () => new Component(tag, { className }, propsOrChildren);
+        return () => el<T>(tag, { className }, propsOrChildren);
       };
     }
 
@@ -37,12 +44,12 @@ export default function ComponentFactory(tag: string) {
     if (args.length === 1 && typeof args[0] === 'object' && !(args[0] instanceof Mutatable)) {
       const props = args[0];
 
-      return function ChildrenFactory(...children) {
-        if (this instanceof ChildrenFactory) return new Component(tag, props);
-        return () => new Component(tag, props, children);
+      return function ElementChildrenFactory(...children: Array<ElementOrComponent>) {
+        if (this instanceof ElementChildrenFactory) return el<T>(tag, props);
+        return () => el<T>(tag, props, children);
       };
     }
 
-    return () => new Component(tag, {}, args);
+    return () => el<T>(tag, {}, args);
   };
 }

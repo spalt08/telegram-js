@@ -2,6 +2,7 @@
 
 import * as routes from 'components/routes';
 import { Router } from './router';
+import { mount } from 'core/dom';
 import 'styles/global.scss';
 
 const router = new Router({
@@ -9,4 +10,4 @@ const router = new Router({
   default: routes.login,
 });
 
-router.mount(document.body);
+window.onload = () => document.body && mount(document.body, router);

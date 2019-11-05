@@ -1,7 +1,7 @@
 // @flow
 
 export default class Subscribable {
-  receivers: (any) => any;
+  receivers: Array<(any) => any>;
 
   constructor() {
     this.receivers = [];
