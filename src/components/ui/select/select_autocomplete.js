@@ -38,6 +38,7 @@ class SelectAutoComplete extends Component<HTMLDivElement> {
         onChange: this.handleTyping,
         ref: (el) => { this.input = el; },
       }),
+      div`.select__arrow`({ onClick: this.handleArrowClick }),
     )();
 
     this.optionsEl = div`.select__options`(
@@ -46,6 +47,14 @@ class SelectAutoComplete extends Component<HTMLDivElement> {
   }
 
   handleTyping = (query: string) => {
+    if (!this.query && query) {
+      this.ref.className = 'select focused filled';
+    }
+
+    if (this.query && !query) {
+      this.ref.className = 'select focused';
+    }
+
     this.query = query.toLowerCase();
     this.fetchOptions();
   }
@@ -53,7 +62,7 @@ class SelectAutoComplete extends Component<HTMLDivElement> {
   handleFocus = () => {
     if (this.hideTimeout) clearTimeout(this.hideTimeout);
 
-    this.ref.className = 'select focused';
+    this.ref.className = `select focused${this.query ? ' filled' : ''}`;
 
     mount(this.ref, this.optionsEl);
 
@@ -61,17 +70,27 @@ class SelectAutoComplete extends Component<HTMLDivElement> {
   }
 
   handleBlur = () => {
-    this.ref.className = 'select';
+    this.ref.className = `select${this.query ? ' filled' : ''}`;
 
     if (this.optionsEl) {
-      this.hideTimeout = setTimeout(() => unmount(this.optionsEl), 150);
+      this.hideTimeout = setTimeout(() => unmount(this.optionsEl), 100);
     }
   }
 
   handleSelect = (event: MouseEvent) => {
-    console.log('click', event.target.__key);
-    console.log(this.input);
     setValue(this.input, event.target.__key);
+    this.ref.className = `select${this.query ? ' filled' : ''}`;
+  }
+
+  handleArrowClick = () => {
+    if (this.query) {
+      setValue(this.input, '');
+      this.input.focus();
+    }
+
+    if (!this.optionsEl.parentNode) {
+      this.input.focus();
+    }
   }
 
   fetchOptions = () => {
