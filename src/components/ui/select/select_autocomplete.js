@@ -3,7 +3,7 @@
 import Component from 'core/component';
 import { div } from 'core/html';
 import { mount, unmount, setValue } from 'core/dom';
-import { TextInput } from 'components/ui';
+import TextInput from '../text_input/text_input';
 import './select_autocomplete.scss';
 
 type Props = {

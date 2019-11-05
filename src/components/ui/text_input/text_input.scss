@@ -9,19 +9,19 @@
     align-items: center;
     font-size: 16px;
     top: 2px;
-    left: 14px;
+    left: 16px;
     height: 90%;
     height: calc(100% - 4px);
     border-radius: 10px;
     color: #A2ACB4;
-    transition: .1s ease-out;
+    transition: .2s ease-out;
     user-select: none;
     z-index: 0;
   }
 
   &.filled &__label {
     top: -9px;
-    left: 11px;
+    left: 13px;
     height: 20px;
     padding: 0 3px;
     font-size: 12px;
@@ -42,9 +42,10 @@
     height: 48px;
     width: 100%;
     border: 1px solid #DEE0E3;
+    box-sizing: padding-box;
     border-radius: 10px;
     outline: none;
-    transition: .2s linear;
+    transition: .2s ease;
     position: relative;
     z-index: 1;
     background: transparent;

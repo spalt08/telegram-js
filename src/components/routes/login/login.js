@@ -1,7 +1,7 @@
 // @flow
 
 import { div, form, img, h1, p } from 'core/html';
-import { TextInput, SelectAutoComplete } from 'components/ui';
+import { TextInput, SelectAutoComplete, Button } from 'components/ui';
 import logo from './logo.svg';
 import './login.scss';
 
@@ -16,6 +16,7 @@ export default (
       div`.login__inputs`(
         SelectAutoComplete({ label: 'Country', options }),
         TextInput({ label: 'Phone Number' }),
+        Button({ label: 'Next' }),
       ),
     ),
   )
