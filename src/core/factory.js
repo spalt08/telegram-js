@@ -1,7 +1,6 @@
 // @flow
 
 import type { ElementOrComponent } from './dom';
-import Component from './component';
 import { Mutatable } from './mutation';
 import { el } from './dom';
 
@@ -16,7 +15,7 @@ function literalsToClassname(strings: Array<string>, ...values: Array<string>): 
 }
 
 export default function ElementFactory<T>(tag: string): any {
-  return function ElementFactoryTagged<T>(...args: Array<any>) {
+  return function ElementFactoryTagged(...args: Array<any>) {
     // Called as constructor
     // new div();
     if (this instanceof ElementFactoryTagged) {

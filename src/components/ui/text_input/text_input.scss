@@ -7,7 +7,7 @@
     align-items: center;
     font-size: 16px;
     top: 2px;
-    left: 18px;
+    left: 14px;
     height: 90%;
     height: calc(100% - 4px);
     border-radius: 10px;
@@ -17,9 +17,9 @@
 
   &.filled &__label {
     top: -9px;
-    left: 12px;
+    left: 11px;
     height: 20px;
-    padding: 0 6px;
+    padding: 0 3px;
     font-size: 12px;
     background: #FFFFFF;
   }
@@ -33,7 +33,7 @@
     -webkit-appearance: none;
     font-family: 'Roboto';
     font-size: 16px;
-    padding: 1rem 16px;
+    padding: 1rem 14px;
     height: 48px;
     width: 100%;
     border: 1px solid #DEE0E3;

@@ -1,6 +1,6 @@
 // @flow
 
-import type { ElementOrComponent } from 'core/dom'
+import type { ElementOrComponent } from 'core/dom';
 import { mount } from 'core/dom';
 import { Component } from 'core';
 
@@ -20,7 +20,7 @@ export class Router extends Component<HTMLDivElement> {
 
     window.onpopstate = (event) => {
       this.fetchLocation();
-      event.preventDefault(); 
+      event.preventDefault();
     };
   }
 

@@ -1,3 +1,4 @@
+/* eslint-disable no-redeclare, import/no-cycle */
 // @flow
 
 /**
@@ -5,8 +6,8 @@
  * All DOM manipulations should be done with this module.
  */
 
-import Component from "./component";
-import { Mutatable } from "./mutation";
+import Component from './component';
+import { Mutatable } from './mutation';
 
 export type ElementOrComponent = HTMLElement | Component<HTMLElement>;
 
@@ -17,18 +18,18 @@ export type ElementOrComponent = HTMLElement | Component<HTMLElement>;
  */
 export function mount(parent: Node | HTMLElement, child: any) {
   if (child instanceof Component) {
-    child.mountTo(parent)
+    child.mountTo(parent);
   } else if (typeof child === 'string' || typeof child === 'number') {
     if (child instanceof Mutatable) {
       const node = document.createTextNode('');
-      child.subscribe(text => node.textContent = text);
+      child.subscribe((text) => { node.textContent = text; });
     } else {
       parent.appendChild(document.createTextNode(child));
     }
   } else if (typeof child === 'function') {
-    mount(parent, new child())
+    mount(parent, new child());
   } else {
-    parent.appendChild(child)
+    parent.appendChild(child);
   }
 }
 
@@ -41,27 +42,22 @@ export function unmount(element: any) {
 }
 
 /** Setters */
-export function setProp(element: any, propName: string, value: string | Mutatable<string>) {
+export function setAttribute(element: HTMLElement, propName: string, value: string | Mutatable<string>) {
   if (value instanceof Mutatable) {
-    value.subscribe(v => { element[propName] = value });
+    value.subscribe((v) => element.setAttribute(propName, v));
   } else {
-    element[propName] = value;
+    element.setAttribute(propName, value);
   }
 }
 
-export function setClass(element: HTMLElement, className: string | Mutatable<string>) {
-  setProp(element, 'className', className);
-}
-
-export function setSrc(element: HTMLElement, src: string | Mutatable<string>) {
-  if (element instanceof HTMLImageElement) {
-    setProp(element, 'src', src);
-  }
-}
-
-export function setType(element: HTMLElement, type: string | Mutatable<string>) {
-  if (element instanceof HTMLInputElement) {
-    setProp(element, 'type', type);
+/** Setters */
+export function setClassName(element: HTMLElement, className: string | Mutatable<string>) {
+  if (className instanceof Mutatable) {
+    // eslint-disable-next-line no-param-reassign
+    className.subscribe((cn) => { element.className = cn; });
+  } else {
+    // eslint-disable-next-line no-param-reassign
+    element.className = className;
   }
 }
 
@@ -78,12 +74,20 @@ declare function el<T>(tag: string, ...rest: any): T;
 export function el(tag: string, props: Object = {}, children: Array<ElementOrComponent> = []): HTMLElement {
   const element = document.createElement(tag);
 
-  console.log(tag, props);
-  
   // Setting props
-  if (props.className) setClass(element, props.className);
-  if (props.src) setSrc(element, props.src);
-  if (props.type) setType(element, props.type);
+  if (typeof props === 'object') {
+    const propNames = Object.keys(props);
+    for (let i = 0; i < propNames.length; i++) {
+      switch (propNames[i]) {
+        case 'className':
+          setClassName(element, props[propNames[i]]);
+          break;
+
+        default:
+          setAttribute(element, propNames[i], props[propNames[i]]);
+      }
+    }
+  }
 
   // Mounting children
   if (children.length > 0) {

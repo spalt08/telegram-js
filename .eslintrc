@@ -24,7 +24,9 @@
       "no-bitwise": 0,
       "no-underscore-dangle": "off",
       "no-plusplus": "off",
-      "object-curly-newline": "off"
+      "object-curly-newline": "off",
+      "new-cap": "off",
+      "class-methods-use-this": "off"
   },
   "settings": {
     "import/resolver": {

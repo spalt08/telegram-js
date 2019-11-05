@@ -1,3 +1,4 @@
+/* eslint-disable import/no-cycle */
 // @flow
 
 import { Mutatable } from './mutation';
@@ -12,7 +13,7 @@ type Children = Mutatable<any> | () => Component<any> | string | number;
 export default class Component<T: HTMLElement> {
   ref: T | HTMLElement;
 
-  didMount() {};
+  didMount() {}
 
   constructor(tag?: string, props?: Object = {}, children?: Array<Children> = []) {
     if (tag) {

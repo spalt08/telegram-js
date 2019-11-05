@@ -2,44 +2,48 @@
 
 import Component from 'core/component';
 import { div, input } from 'core/html';
-import { useMutation } from 'core/mutation';
 import './text_input.scss';
 
 type Props = {
   onChange?: (value: string) => any;
-  placeholder?: string,
+  onFocus?: () => any;
+  onBlur?: () => any;
+  label?: string,
 };
 
 class TextInput extends Component<HTMLDivElement> {
   label: HTMLDivElement;
+
   input: HTMLInputElement;
 
-  constructor({ placeholder = '', onChange = () => {} }: Props) {
+  constructor({ label = '', onChange, onFocus, onBlur }: Props) {
     super();
 
     this.ref = div`.input`(
-      this.input = input({ type: "text" }),
-      this.label = div`.input__label`(placeholder)(),
+      this.input = new input({ type: 'text' }),
+      this.label = div`.input__label`(label)(),
     )();
 
     let filled = false;
 
-    this.label.onclick = () => this.input.focus();
-    this.ref.oninput = (event: InputEvent) => {
+    this.label.onclick = () => { this.input.focus(); };
+    this.input.onfocus = onFocus;
+    this.input.onblur = onBlur;
+    this.input.oninput = (event: InputEvent) => {
       const value = (event.target instanceof HTMLInputElement) ? event.target.value : '';
 
       if (value && !filled) {
         this.ref.className = 'input filled';
         filled = true;
-      } 
+      }
 
-      if(!value && filled) {
+      if (!value && filled) {
         this.ref.className = 'input';
         filled = false;
       }
 
-      onChange(value);
-    }
+      if (onChange) onChange(value);
+    };
   }
 }
 
