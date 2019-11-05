@@ -3,7 +3,7 @@
 import { Mutatable } from './mutation';
 
 // eslint-disable-next-line no-use-before-define
-type Children = Mutatable | Component | string | number;
+type Children = Mutatable<any> | Component<any> | string | number;
 
 /**
  * Base HTML Dom component wrapper
@@ -13,11 +13,12 @@ export default class Component<T> {
 
   children: Array<Children>;
 
-  constructor(tag: string, props: Object = {}, children: Array<Children> = []): Component {
+  constructor(tag?: string, props?: Object = {}, children?: Array<Children> = []) {
     if (tag) this.ref = document.createElement(tag);
 
     // Props
     if (props.className) this.ref.className = props.className;
+    if (props.src) this.ref.src = props.src;
 
     // Children
     this.children = [];

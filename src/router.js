@@ -12,7 +12,7 @@ export class Router extends Component<HTMLDivElement> {
   mountedComponent: ?Component;
 
   constructor(routes: { [string]: string }) {
-    super('div', { className: 'Main' });
+    super('div', { className: 'main' });
 
     this.routes = routes;
 
