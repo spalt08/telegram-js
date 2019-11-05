@@ -1,6 +1,7 @@
 // @flow
 
 import Component from 'core/component';
+import { ComponentFactory } from 'core/factory';
 import { div, input } from 'core/html';
 import './text_input.scss';
 
@@ -12,7 +13,7 @@ type Props = {
   ref?: (HTMLInputElement) => any,
 };
 
-class TextInput extends Component<HTMLDivElement> {
+export class TextInput extends Component<HTMLDivElement> {
   label: HTMLDivElement;
 
   input: HTMLInputElement;
@@ -20,10 +21,10 @@ class TextInput extends Component<HTMLDivElement> {
   constructor({ label = '', onChange, onFocus, onBlur, ref }: Props) {
     super();
 
-    this.ref = div`.input`(
+    this.ref = new div`.input`(
       this.input = new input({ type: 'text' }),
-      this.label = div`.input__label`(label)(),
-    )();
+      this.label = new div`.input__label`(label),
+    );
 
     let filled = false;
 
@@ -49,4 +50,4 @@ class TextInput extends Component<HTMLDivElement> {
   }
 }
 
-export default (props: Props) => () => new TextInput(props);
+export const textInput = ComponentFactory(TextInput);

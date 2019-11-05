@@ -100,7 +100,8 @@ export function el(tag: string, props: Object = {}, children: Array<ElementOrCom
           break;
 
         case 'onClick':
-          element.onclick = props.onClick;
+          console.log(element); 
+          element.addEventListener('click', props.onClick);
           break;
 
         default:

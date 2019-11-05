@@ -1,8 +1,13 @@
-.clickable {
+.ripple {
   position: relative;
   overflow: hidden;
 
-  .clickable__effect {
+  &__content {
+    position: relative;
+    z-index: 1;
+  }
+
+  &__effect {
     background-color: rgba(0, 0, 0, 0.08);
     width: 30px;
     height: 30px;
@@ -15,8 +20,7 @@
 }
 
 @keyframes click {
-	0%   { transform: translate(-50%, -50%); opacity: 0; }
-	10%  { transform: translate(-50%, -50%) scale(3); opacity: 1; }
-	80%  { transform: translate(-50%, -50%) scale(20); opacity: 1; }
+	0%   { transform: translate(-50%, -50%); }
+	80%  { transform: translate(-50%, -50%) scale(20); }
 	100% { transform: translate(-50%, -50%) scale(20); opacity: 0; }
 }

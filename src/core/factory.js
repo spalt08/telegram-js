@@ -14,10 +14,12 @@ function literalsToClassname(strings: Array<string>, ...values: Array<string>): 
   return strings[0].slice(1).split('.').concat(values).join(' ');
 }
 
-export default function ElementFactory<T>(tag: string): any {
+// div = ElementFactory<HTMLDivElement>('div')
+export function ElementFactory<T>(tag: string): any {
+  // div`.class`({ props })(...children)
   return function ElementFactoryTagged(...args: Array<any>) {
     // Called as constructor
-    // new div();
+    // new div()
     if (this instanceof ElementFactoryTagged) {
       return el<T>(tag, args[0]);
     }
@@ -27,21 +29,31 @@ export default function ElementFactory<T>(tag: string): any {
     if (args[0] && args[0].raw && Array.isArray(args[0])) {
       const className = literalsToClassname(args[0], ...args.slice(1));
 
+      // One of:
+      // - div`.class`({ props })
+      // - div`.class`(...children)
       return function ElementPropChildFactory(...propsOrChildren: Array<Object | ElementOrComponent>) {
-        if (this instanceof ElementPropChildFactory) return el<T>(tag, { className });
-
+        // div`.class`({ props })
         if (propsOrChildren.length === 1 && typeof propsOrChildren[0] === 'object' && !(propsOrChildren[0] instanceof Mutatable)) {
-          return function ElementWithPropsChildFactory(...children: ElementOrComponent) {
-            if (this instanceof ElementWithPropsChildFactory) return el<T>(tag, { className, ...propsOrChildren[0] });
+          // new div`.class`()
+          if (this instanceof ElementPropChildFactory) return el<T>(tag, { className, ...propsOrChildren[0] });
 
+          return function ElementWithPropsChildFactory(...children: ElementOrComponent) {
+            if (this instanceof ElementWithPropsChildFactory) return el<T>(tag, { className, ...propsOrChildren[0] }, children);
+
+            // div`class`({ props })(...children)
             if (children.length > 0) {
               return () => el<T>(tag, { className, ...propsOrChildren[0] }, children);
             }
 
-            return el<T>(tag, { className, ...propsOrChildren[0] });
+            return el<T>(tag, { className, ...propsOrChildren[0] }, children);
           };
         }
 
+        // new div`.class`()
+        if (this instanceof ElementPropChildFactory) return el<T>(tag, { className }, propsOrChildren);
+
+        // div`class`(...children)
         return () => el<T>(tag, { className }, propsOrChildren);
       };
     }
@@ -51,12 +63,77 @@ export default function ElementFactory<T>(tag: string): any {
     if (args.length === 1 && typeof args[0] === 'object' && !(args[0] instanceof Mutatable)) {
       const props = args[0];
 
+      // div({ props })(...children)
       return function ElementChildrenFactory(...children: Array<ElementOrComponent>) {
-        if (this instanceof ElementChildrenFactory) return el<T>(tag, props);
+        // new div({ props })(...children)
+        if (this instanceof ElementChildrenFactory) return el<T>(tag, props, children);
         return () => el<T>(tag, props, children);
       };
     }
 
+    // div(...children)
     return () => el<T>(tag, {}, args);
+  };
+}
+
+// ripple = ComponentFactory<Ripple>;
+export function ComponentFactory(Constructor) {
+  return function ComponentTaggedFactory(...args) {
+    // Called as constructor
+    // new ripple()
+    if (this instanceof ComponentTaggedFactory) {
+      if (args.length === 1 && typeof args[0] === 'object' && !(args[0] instanceof Mutatable)) {
+        return new Constructor(args[0]);
+      }
+
+      return new Constructor({}, args);
+    }
+
+    // Called as Template Litteral
+    // ripple`.button`
+    if (args[0] && args[0].raw && Array.isArray(args[0])) {
+      const className = literalsToClassname(args[0], ...args.slice(1));
+
+      // One of:
+      // - ripple`.button`({ props })
+      // - ripple`.button`(...children)
+      return function ComponentPropChildFactory(...propsOrChildren: Array<Object | ElementOrComponent>) {
+        // ripple`.button`({ props })
+        if (propsOrChildren.length === 1 && typeof propsOrChildren[0] === 'object' && !(propsOrChildren[0] instanceof Mutatable)) {
+          // new ripple`.button`({ props })
+          if (this instanceof ComponentPropChildFactory) return new Constructor({ className, ...propsOrChildren[0] });
+
+          return function ComponentWithPropsChildFactory(...children: ElementOrComponent) {
+            if (this instanceof ComponentWithPropsChildFactory) return new Constructor({ className, ...propsOrChildren[0] }, children);
+
+            // ripple`.button`({ props })(...children)
+            if (children.length > 0) {
+              return () => new Constructor({ className, ...propsOrChildren[0] }, children);
+            }
+
+            return new Constructor({ className, ...propsOrChildren[0] }, children);
+          };
+        }
+
+        // new ripple`.button`(...children)
+        if (this instanceof ComponentPropChildFactory) return new Constructor({ className }, propsOrChildren);
+
+        // ripple`.button`(...children)
+        return () => new Constructor({ className }, propsOrChildren);
+      };
+    }
+
+    // Called with props
+    // ripple({ disabled: true })
+    if (args.length === 1 && typeof args[0] === 'object' && !(args[0] instanceof Mutatable)) {
+      const props = args[0];
+
+      // ripple({ props })(...children)
+      // ripple({ props })
+      return function ComponentChildrenFactory(...children: Array<ElementOrComponent>) {
+        if (this instanceof ComponentChildrenFactory) return new Constructor(props, children);
+        return () => new Constructor(props, children);
+      };
+    }
   };
 }

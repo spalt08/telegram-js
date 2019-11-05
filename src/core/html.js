@@ -1,6 +1,6 @@
 // @flow
 
-import ElementFactory from './factory';
+import { ElementFactory } from './factory';
 
 export const div = ElementFactory<HTMLDivElement>('div');
 export const span = ElementFactory<HTMLSpanElement>('span');

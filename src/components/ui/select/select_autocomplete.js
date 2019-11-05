@@ -3,7 +3,7 @@
 import Component from 'core/component';
 import { div } from 'core/html';
 import { mount, unmount, setValue } from 'core/dom';
-import TextInput from '../text_input/text_input';
+import { textInput } from '../text_input/text_input';
 import './select_autocomplete.scss';
 
 type Props = {
@@ -30,8 +30,8 @@ class SelectAutoComplete extends Component<HTMLDivElement> {
 
     this.options = options;
 
-    this.ref = div`.select`(
-      TextInput({
+    this.ref = new div`.select`(
+      textInput({
         label,
         onFocus: this.handleFocus,
         onBlur: this.handleBlur,
@@ -39,11 +39,11 @@ class SelectAutoComplete extends Component<HTMLDivElement> {
         ref: (el) => { this.input = el; },
       }),
       div`.select__arrow`({ onClick: this.handleArrowClick }),
-    )();
+    );
 
-    this.optionsEl = div`.select__options`(
+    this.optionsEl = new div`.select__options`(
       ...this.options.map((text) => div`.select__option`({ key: text, onClick: this.handleSelect })(text)),
-    )();
+    );
   }
 
   handleTyping = (query: string) => {
@@ -78,7 +78,7 @@ class SelectAutoComplete extends Component<HTMLDivElement> {
   }
 
   handleSelect = (event: MouseEvent) => {
-    setValue(this.input, event.target.__key);
+    setValue(this.input, event.currentTarget.__key);
     this.ref.className = `select${this.query ? ' filled' : ''}`;
   }
 

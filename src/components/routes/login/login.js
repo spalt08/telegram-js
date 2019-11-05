@@ -1,7 +1,7 @@
 // @flow
 
 import { div, form, img, h1, p } from 'core/html';
-import { TextInput, SelectAutoComplete, Button } from 'components/ui';
+import { textInput, SelectAutoComplete, Button } from 'components/ui';
 import logo from './logo.svg';
 import './login.scss';
 
@@ -15,7 +15,7 @@ export default (
       p`.login__description`('Please confirm your country and enter your phone number.'),
       div`.login__inputs`(
         SelectAutoComplete({ label: 'Country', options }),
-        TextInput({ label: 'Phone Number' }),
+        textInput({ label: 'Phone Number' }),
         Button({ label: 'Next' }),
       ),
     ),
