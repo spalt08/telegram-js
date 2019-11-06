@@ -2,11 +2,13 @@
   "version": "0.1.0",
   "name": "telegram-js",
   "description": "Pure and native web client for Telegram",
-  "main": "index.js",
   "scripts": {
-    "lint": "eslint --ext js ./src",
-    "build": "webpack",
-    "start": "cross-env NODE_ENV=development node scripts/start"
+    "lint": "eslint --ext .js,.ts ./src",
+    "build": "webpack --progress",
+    "build:noprogress": "webpack",
+    "start": "cross-env NODE_ENV=development webpack-dev-server --progress",
+    "analyze:prod": "npm run build -- --analyze",
+    "analyze:dev": "npm start -- --analyze"
   },
   "private": true,
   "repository": {
@@ -14,42 +16,49 @@
     "url": "https://github.com/spalt08/telegram-js"
   },
   "lint-staged": {
-    "*.{js}": [
-      "eslint --ext js"
+    "*.{js,ts}": [
+      "eslint"
     ]
   },
-  "author": "Konstantin Darutkin <kdarutkin@gmail.com>",
+  "authors": [
+    "Konstantin Darutkin <kdarutkin@gmail.com>",
+    "Sergey Mostsevenko <finesserus@gmail.com>"
+  ],
   "homepage": "https://github.com/spalt08/telegram-js",
   "devDependencies": {
-    "@babel/cli": "^7.6.4",
-    "@babel/core": "^7.6.4",
-    "@babel/plugin-proposal-class-properties": "^7.5.5",
-    "@babel/plugin-proposal-export-default-from": "^7.5.2",
-    "@babel/plugin-proposal-export-namespace-from": "^7.5.2",
-    "@babel/plugin-transform-classes": "^7.5.5",
-    "@babel/plugin-transform-runtime": "^7.6.2",
-    "@babel/preset-env": "^7.6.2",
-    "@babel/preset-flow": "^7.0.0",
-    "@babel/runtime": "^7.6.3",
-    "babel-eslint": "^10.0.3",
-    "babel-loader": "^8.0.6",
+    "@typescript-eslint/eslint-plugin": "^2.6.1",
+    "@typescript-eslint/parser": "^2.6.1",
+    "autoprefixer": "^9.7.1",
+    "clean-webpack-plugin": "^3.0.0",
     "cross-env": "^6.0.3",
     "css-loader": "^3.2.0",
     "eslint": "^6.6.0",
-    "eslint-config-airbnb": "^18.0.1",
+    "eslint-config-airbnb-typescript": "^6.0.0",
     "eslint-import-resolver-webpack": "^0.11.1",
-    "eslint-plugin-flowtype": "^4.3.0",
     "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.16.0",
+    "eslint-plugin-react-hooks": "^2.2.0",
     "favicons-webpack-plugin": "^1.0.2",
     "file-loader": "^4.2.0",
-    "flow-bin": "^0.111.1",
+    "fork-ts-checker-webpack-plugin": "^3.0.1",
     "html-webpack-plugin": "^3.2.0",
+    "mini-css-extract-plugin": "^0.8.0",
     "node-sass": "^4.13.0",
+    "optimize-css-assets-webpack-plugin": "^5.0.3",
+    "postcss-loader": "^3.0.0",
     "sass-loader": "^8.0.0",
-    "style-loader": "^1.0.0",
+    "terser-webpack-plugin": "^2.2.1",
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.6.4",
     "webpack": "^4.41.2",
+    "webpack-bundle-analyzer": "^3.6.0",
     "webpack-cli": "^3.3.10",
     "webpack-dev-server": "^3.9.0"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "browserslist": [
+    "last 2 years",
+    "> 0.5%"
+  ]
 }

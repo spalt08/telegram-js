@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "noErrorTruncation": true,
+    "strict": true,
+    "strictFunctionTypes": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "importHelpers": true,
+    "target": "es5",
+    "baseUrl": "./src",
+    "module": "esnext",
+    "moduleResolution": "node"
+  },
+  "include": [
+    "src/**/*"
+  ]
+}
