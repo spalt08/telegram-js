@@ -62,6 +62,7 @@ export class SelectAutoComplete extends Component<HTMLDivElement> {
       textInput({
         label,
         name,
+        autocomplete: 'off',
         onFocus: this.handleFocus,
         onKeyDown: this.handleKeyDown,
         onChange: this.handleTyping,

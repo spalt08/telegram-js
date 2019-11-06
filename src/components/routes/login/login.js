@@ -18,11 +18,11 @@ const countryRenderer = ({ phone, label, emoji }) => (
 export default function login() {
   const country = new Mutatable<Object>({});
 
-  let ref;
+  let phoneInputRef;
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    ref.blur();
+    phoneInputRef.blur();
   };
 
   return (
@@ -40,7 +40,7 @@ export default function login() {
             optionLabeler: (data) => data.label,
             onChange: (c) => {
               country.update(c);
-              if (ref) ref.focus();
+              if (phoneInputRef) phoneInputRef.focus();
             },
           }),
           phoneInput({
@@ -48,7 +48,7 @@ export default function login() {
             name: 'phone',
             prefix: country.use('phone'),
             formats: country.use('phoneFormats'),
-            ref: (r) => { ref = r; },
+            ref: (r) => { phoneInputRef = r; },
           }),
           button({ label: 'Next' }),
         ),

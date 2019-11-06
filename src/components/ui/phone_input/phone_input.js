@@ -28,7 +28,7 @@ export class PhoneInput extends Component<HTMLDivElement> {
     this.ref = new div`.phoneinput`(
       div`.phoneinput__container`(
         div`.phoneinput__prefix`(prefix),
-        this.input = new input({ type: 'text', name }),
+        this.input = new input({ type: 'text', name, autocomplete: 'off' }),
         div`.phoneinput__label`(label),
       ),
     );

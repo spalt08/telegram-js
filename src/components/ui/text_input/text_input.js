@@ -12,6 +12,7 @@ type Props = {
   onKeyDown?: () => any;
   label?: string,
   name?: string,
+  autocomplete?: string,
   ref?: (HTMLInputElement) => any,
 };
 
@@ -20,11 +21,11 @@ export class TextInput extends Component<HTMLDivElement> {
 
   input: HTMLInputElement;
 
-  constructor({ label = '', onChange, onFocus, onBlur, ref, onKeyDown, name }: Props) {
+  constructor({ label = '', onChange, onFocus, onBlur, ref, autocomplete, onKeyDown, name }: Props) {
     super();
 
     this.ref = new div`.input`(
-      this.input = new input({ type: 'text', name }),
+      this.input = new input({ type: 'text', name, autocomplete }),
       this.label = new div`.input__label`(label),
     );
 
