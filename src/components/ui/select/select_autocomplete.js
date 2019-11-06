@@ -177,6 +177,7 @@ export class SelectAutoComplete extends Component<HTMLDivElement> {
   handleKeyDown = (event: KeyboardEvent) => {
     switch (event.keyCode) {
       case KEYBOARD.TAB:
+        // To Do: shift tab
         event.preventDefault();
         this.setSelected(this.highlighted);
         this.handleBlur();
