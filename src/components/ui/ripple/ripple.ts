@@ -1,10 +1,7 @@
-// @flow
-
 import Component from 'core/component';
 import { ComponentFactory } from 'core/factory';
 import { div } from 'core/html';
-import { mount, el } from 'core/dom';
-import type { ElementOrComponent } from 'core/dom';
+import { mount, el, Child } from 'core/dom';
 import './ripple.scss';
 
 type Props = {
@@ -13,9 +10,9 @@ type Props = {
 };
 
 export class Ripple extends Component<HTMLElement> {
-  boundingRect: DOMRect;
+  boundingRect: ClientRect;
 
-  constructor({ tag = 'div', className }: Props, children: Array<ElementOrComponent>) {
+  constructor({ tag = 'div', className = '' }: Props, children: Array<Child>) {
     super();
 
     this.ref = el(tag, { className: `ripple ${className}`, onClick: this.handleClick }, [

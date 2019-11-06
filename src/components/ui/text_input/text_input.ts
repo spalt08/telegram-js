@@ -1,5 +1,3 @@
-// @flow
-
 import Component from 'core/component';
 import { ComponentFactory } from 'core/factory';
 import { div, input } from 'core/html';
@@ -11,7 +9,9 @@ type Props = {
   onBlur?: () => any;
   onKeyDown?: () => any;
   label?: string,
-  ref?: (HTMLInputElement) => any,
+  name?: string,
+  autocomplete?: string,
+  ref?: (ref: HTMLInputElement) => any,
 };
 
 export class TextInput extends Component<HTMLDivElement> {
@@ -19,29 +19,40 @@ export class TextInput extends Component<HTMLDivElement> {
 
   input: HTMLInputElement;
 
-  constructor({ label = '', onChange, onFocus, onBlur, ref, onKeyDown }: Props) {
+  constructor({ label = '', onChange, onFocus, onBlur, ref, autocomplete, onKeyDown, name }: Props) {
     super();
 
     this.ref = new div`.input`(
-      this.input = new input({ type: 'text' }),
+      this.input = new input({ type: 'text', name, autocomplete }),
       this.label = new div`.input__label`(label),
     );
 
     let filled = false;
+    let focused = false;
 
-    this.input.onfocus = onFocus;
-    this.input.onblur = onBlur;
+    this.input.onfocus = () => {
+      if (onFocus) onFocus();
+      focused = true;
+      this.ref.className = `input focused${filled ? ' filled' : ''}`;
+    };
+
+    this.input.onblur = () => {
+      if (onBlur) onBlur();
+      focused = false;
+      this.ref.className = `input${filled ? ' filled' : ''}`;
+    };
+
     this.input.onkeydown = onKeyDown;
     this.input.oninput = (event: InputEvent) => {
       const value = (event.target instanceof HTMLInputElement) ? event.target.value : '';
 
       if (value && !filled) {
-        this.ref.className = 'input filled';
+        this.ref.className = `input${focused ? ' focused' : ''} filled`;
         filled = true;
       }
 
       if (!value && filled) {
-        this.ref.className = 'input';
+        this.ref.className = `input${focused ? ' focused' : ''}`;
         filled = false;
       }
 

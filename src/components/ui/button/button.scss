@@ -1,4 +1,9 @@
 .button {
+  appearance: none;
+  border: none;
+  font-family: 'Roboto';
+  font-size: 1rem;
+  margin: 0;
   height: 48px;
   width: 100%;
   background: #4EA4F5;
@@ -11,9 +16,11 @@
   align-items: center;
   justify-content: center;
   transition: .2s ease;
+  outline: none;
   cursor: pointer;
 
-  &:hover {
+  &:hover, &:focus {
     background: #4797E2;
+    outline: none;
   }
 }

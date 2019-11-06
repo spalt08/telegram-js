@@ -1,4 +1,4 @@
-/* eslint-disable no-redeclare, import/no-cycle, no-param-reassign */
+/* eslint-disable no-redeclare, no-param-reassign */
 
 /**
  * Methods for manipulating with DOM.
@@ -8,25 +8,37 @@
 import Component from './component';
 import { Mutatable } from './mutation';
 
-export type ElementOrComponent = HTMLElement | Component<HTMLElement>;
+interface Factory {
+  new(): HTMLElement,
+};
+
+export type Child = Mutatable<any> | HTMLElement | Component<any> | Factory | string | number;
 
 /**
  * Mounts HTMLElement or Component to parent HTMLElement
  * @param {Node} parent Element to mount in
- * @param {ElementOrComponent} child Element which mounted
+ * @param {Child} child Element which mounted
  */
-export function mount(parent: Node | HTMLElement, child: any) {
+export function mount(parent: Node | HTMLElement, child: Child) {
+  // Mounting component
   if (child instanceof Component) {
     child.mountTo(parent);
+
+  // Mounting mutatable value
+  } else if (child instanceof Mutatable) {
+    const node = document.createTextNode(child.value);
+    parent.appendChild(node);
+    child.subscribe((text) => { node.textContent = text; });
+  
+  // Mounting text node
   } else if (typeof child === 'string' || typeof child === 'number') {
-    if (child instanceof Mutatable) {
-      const node = document.createTextNode('');
-      child.subscribe((text) => { node.textContent = text; });
-    } else {
-      parent.appendChild(document.createTextNode(child));
-    }
+    parent.appendChild(document.createTextNode(child.toString()));
+
+  // Mounting factory
   } else if (typeof child === 'function') {
     mount(parent, new child());
+
+  // Mounting HTML Element
   } else {
     parent.appendChild(child);
   }
@@ -95,17 +107,14 @@ export function setValue(element: HTMLElement, value: string | Mutatable<string>
   }
 }
 
-declare function el(tag: 'div', ...rest: any): HTMLDivElement;
-declare function el(tag: string, ...rest: any): HTMLElement;
-declare function el<T>(tag: string, ...rest: any): T;
-
 /**
  * Creates DOM element and returns it
  * @param {string} tag Tag name for element
  * @param {Object} props Properties for creation
- * @param {Array<ElementOrComponent>} children Child nodes or components
+ * @param {Array<Child>} children Child nodes or components
  */
-export function el(tag: string, props: Object = {}, children: Array<ElementOrComponent> = []): HTMLElement {
+export function el<T>(tag: string, props?: Record<string, any>, children?: Array<Child>): T;
+export function el(tag: string, props: Record<string, any> = {}, children: Array<Child> = []): HTMLElement {
   const element = document.createElement(tag);
 
   // Setting props
@@ -123,6 +132,10 @@ export function el(tag: string, props: Object = {}, children: Array<ElementOrCom
 
         case 'onClick':
           element.addEventListener('click', props.onClick);
+          break;
+
+        case 'onSubmit':
+          element.addEventListener('submit', props.onSubmit);
           break;
 
         case 'onMouseEnter':
@@ -144,3 +157,5 @@ export function el(tag: string, props: Object = {}, children: Array<ElementOrCom
 
   return element;
 }
+
+// export declare function el<T>(tag: string, props?: { [index: string]: any }, children?: Array<Child>): T;

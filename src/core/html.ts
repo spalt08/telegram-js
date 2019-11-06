@@ -1,5 +1,3 @@
-// @flow
-
 import { ElementFactory } from './factory';
 
 export const div = ElementFactory<HTMLDivElement>('div');

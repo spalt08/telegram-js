@@ -1,15 +1,18 @@
-import { ElementOrComponent } from 'core/dom';
-import { mount } from 'core/dom';
+import { mount, Child } from 'core/dom';
 import { Component } from 'core';
+
+interface Factory {
+  new(): HTMLElement,
+};
 
 export const history = {
   push: (path: string) => window.history.pushState({ path }, 'Telegram Web', path),
 };
 
 export class Router extends Component<HTMLDivElement> {
-  mountedComponent: ElementOrComponent | undefined;
+  mountedComponent: Child | undefined;
 
-  constructor(public routes: Record<string, () => ElementOrComponent>) {
+  constructor(public routes: Record<string, Factory>) {
     super('div', { className: 'main' });
 
     this.routes = routes;
@@ -27,9 +30,9 @@ export class Router extends Component<HTMLDivElement> {
   fetchLocation() {
     const element = this.routes[window.location.pathname] || this.routes.default;
 
-    if (element) {
+    if (element && this.ref) {
       this.mountedComponent = new element();
-      mount(this.ref, this.mountedComponent);
+      if (this.mountedComponent) mount(this.ref, this.mountedComponent);
     }
   }
 }

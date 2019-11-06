@@ -1,23 +1,33 @@
-// @flow
-
-import type { ElementOrComponent } from './dom';
+import { Child } from './dom';
 import { Mutatable } from './mutation';
 import { el } from './dom';
 
-// TO DO: Typing for factory
-// type Factory<T> = T | () => T;
-// type FactoryTemplated<T> = (strings: Array<string>, ...expr: Array<any>) => FactoryWithChidren<T> | Factory<T>;
-// type FactoryWithChidren<T> = (...children: Array<FactoryTemplated<T>>) => Factory<T>;
-// declare function ElementFactoryTagged<T>(strings: Array<string>, ...expr: Array<any>): FactoryWithChidren<T> | Factory<T>;
-
+/**
+ * Transforms ES tagged litterals to className
+ */
 function literalsToClassname(strings: Array<string>, ...values: Array<string>): string {
   return strings[0].slice(1).split('.').concat(values).join(' ');
 }
 
-// div = ElementFactory<HTMLDivElement>('div')
-export function ElementFactory<T>(tag: string): any {
-  // div`.class`({ props })(...children)
-  return function ElementFactoryTagged(...args: Array<any>) {
+/**
+ * DOM element factory for tag
+ * 
+ * Usage example:
+ * - div = ElementFactory<HTMLDivElement>('div')
+ *
+ * @param tag Tag name
+ */
+export function ElementFactory<T>(tag: string) {
+  /**
+   * Wrapper for tagged literals, constructor, calling with props or calling with children
+   * 
+   * Usage examples:
+   * - new div()
+   * - div`.class`
+   * - div({ props })
+   * - div(...children)
+   */ 
+  return function ElementFactoryTagged(...args: Array<any>): any {
     // Called as constructor
     // new div()
     if (this instanceof ElementFactoryTagged) {
@@ -32,13 +42,13 @@ export function ElementFactory<T>(tag: string): any {
       // One of:
       // - div`.class`({ props })
       // - div`.class`(...children)
-      return function ElementPropChildFactory(...propsOrChildren: Array<Object | ElementOrComponent>) {
+      return function ElementPropChildFactory(...propsOrChildren: Array<Object | Child>) {
         // div`.class`({ props })
         if (propsOrChildren.length === 1 && typeof propsOrChildren[0] === 'object' && !(propsOrChildren[0] instanceof Mutatable)) {
           // new div`.class`()
           if (this instanceof ElementPropChildFactory) return el<T>(tag, { className, ...propsOrChildren[0] });
 
-          return function ElementWithPropsChildFactory(...children: ElementOrComponent) {
+          return function ElementWithPropsChildFactory(...children: Child) {
             if (this instanceof ElementWithPropsChildFactory) return el<T>(tag, { className, ...propsOrChildren[0] }, children);
 
             // div`class`({ props })(...children)
@@ -64,7 +74,7 @@ export function ElementFactory<T>(tag: string): any {
       const props = args[0];
 
       // div({ props })(...children)
-      return function ElementChildrenFactory(...children: Array<ElementOrComponent>) {
+      return function ElementChildrenFactory(...children: Array<Child>) {
         // new div({ props })(...children)
         if (this instanceof ElementChildrenFactory) return el<T>(tag, props, children);
         return () => el<T>(tag, props, children);
@@ -97,13 +107,13 @@ export function ComponentFactory(Constructor) {
       // One of:
       // - ripple`.button`({ props })
       // - ripple`.button`(...children)
-      return function ComponentPropChildFactory(...propsOrChildren: Array<Object | ElementOrComponent>) {
+      return function ComponentPropChildFactory(...propsOrChildren: Array<Object | Child>) {
         // ripple`.button`({ props })
         if (propsOrChildren.length === 1 && typeof propsOrChildren[0] === 'object' && !(propsOrChildren[0] instanceof Mutatable)) {
           // new ripple`.button`({ props })
           if (this instanceof ComponentPropChildFactory) return new Constructor({ className, ...propsOrChildren[0] }).ref;
 
-          return function ComponentWithPropsChildFactory(...children: ElementOrComponent) {
+          return function ComponentWithPropsChildFactory(...children: Child) {
             if (this instanceof ComponentWithPropsChildFactory) return new Constructor({ className, ...propsOrChildren[0] }, children).ref;
 
             // ripple`.button`({ props })(...children)
@@ -130,7 +140,7 @@ export function ComponentFactory(Constructor) {
 
       // ripple({ props })(...children)
       // ripple({ props })
-      return function ComponentChildrenFactory(...children: Array<ElementOrComponent>) {
+      return function ComponentChildrenFactory(...children: Array<Child>) {
         if (this instanceof ComponentChildrenFactory) return new Constructor(props, children).ref;
         return () => new Constructor(props, children).ref;
       };

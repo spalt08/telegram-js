@@ -1,10 +1,4 @@
-/* eslint-disable import/no-cycle */
-
-import { Mutatable } from './mutation';
-import { mount, unmount, el } from './dom';
-
-// eslint-disable-next-line no-use-before-define
-type Child = Mutatable<any> | (() => Component<any>) | string | number;
+import { mount, unmount, el, Child } from './dom';
 
 /**
  * Base HTML Dom component wrapper
@@ -12,11 +6,9 @@ type Child = Mutatable<any> | (() => Component<any>) | string | number;
 export default class Component<T extends HTMLElement> {
   ref: T | undefined;
 
-  didMount() {}
-
   constructor(tag?: string, props: Object = {}, children: Child[] = []) {
     if (tag) {
-      this.ref = el(tag, props, children);
+      this.ref = el<T>(tag, props, children);
     }
   }
 
@@ -26,6 +18,8 @@ export default class Component<T extends HTMLElement> {
       if (this.didMount) this.didMount();
     }
   }
+
+  didMount() {}
 
   unMount() {
     if (this.ref) {

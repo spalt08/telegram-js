@@ -1,27 +1,32 @@
 .input {
   position: relative;
   background: #FFFFFF;
-  border-radius: 10px;
+  border-radius: 11px;
+  border: 1px solid transparent;
+
+  &.focused {
+    border-color: #4EA4F5;
+  }
 
   &__label {
     position: absolute;
     display: flex;
     align-items: center;
-    font-size: 16px;
+    font-size: 1rem;
     top: 2px;
-    left: 16px;
+    left: 15px;
     height: 90%;
     height: calc(100% - 4px);
     border-radius: 10px;
     color: #A2ACB4;
-    transition: .1s ease-out;
+    transition: .2s ease-out;
     user-select: none;
     z-index: 0;
   }
 
   &.filled &__label {
-    top: -9px;
-    left: 13px;
+    top: -10px;
+    left: 12px;
     height: 20px;
     padding: 0 3px;
     font-size: 12px;
@@ -49,11 +54,11 @@
     position: relative;
     z-index: 1;
     background: transparent;
+    font-size: 1rem;
 
     &:focus {
       outline: none;
       border-color: #4EA4F5;
-      border-width: 2px;
     }
   }
 }
