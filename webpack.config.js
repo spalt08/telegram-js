@@ -11,10 +11,10 @@ const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 const sourceDirectory = 'src';
 const destinationDirectory = 'dist';
-const isProduction = process.env.NODE_ENV === 'production';
 
 module.exports = (env, argv) => {
-  const { analyze } = argv;
+  const { analyze, mode } = argv;
+  const isProduction = mode === 'production';
 
   return {
     entry: `./${sourceDirectory}/index`,
@@ -77,6 +77,7 @@ module.exports = (env, argv) => {
       minimizer: [
         new TerserPlugin({
           // sourceMap: true, // For source maps in production (may be required depending on the contest rules)
+          extractComments: false,
           terserOptions: {
             output: {
               comments: false,
