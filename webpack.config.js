@@ -1,3 +1,5 @@
+/* eslint-disable import/no-extraneous-dependencies */
+
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
@@ -125,12 +127,13 @@ module.exports = (env, argv) => {
         filename: '[name].[hash].css',
         chunkFilename: '[id].[hash].css',
       }),
-      /*new ForkTsCheckerWebpackPlugin({
+      new ForkTsCheckerWebpackPlugin({
+        eslint: true,
         compilerOptions: {
           sourceMap: !isProduction,
           async: !isProduction,
         },
-      }),*/
+      }),
       ...(analyze ? [
         new BundleAnalyzerPlugin({
           analyzerPort: 3001,

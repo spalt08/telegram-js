@@ -1,4 +1,4 @@
-import Component from 'core/component';
+import { Component } from 'core/dom';
 import { ComponentFactory } from 'core/factory';
 import { div, input } from 'core/html';
 import { Mutatable } from 'core/mutation';
@@ -23,7 +23,7 @@ export class PhoneInput extends Component<HTMLDivElement> {
   constructor({ label = '', prefix = '', formats = [], onChange, ref, name }: Props) {
     super();
 
-    this.ref = new div`.phoneinput`(
+    this.element = new div`.phoneinput`(
       div`.phoneinput__container`(
         div`.phoneinput__prefix`(prefix),
         this.input = new input({ type: 'text', name, autocomplete: 'off' }),
@@ -32,11 +32,11 @@ export class PhoneInput extends Component<HTMLDivElement> {
     );
 
     this.input.onfocus = () => {
-      this.ref.className = 'phoneinput focused';
+      this.element.className = 'phoneinput focused';
     };
 
     this.input.onblur = () => {
-      this.ref.className = 'phoneinput';
+      this.element.className = 'phoneinput';
     };
 
     if (formats instanceof Mutatable) {
@@ -60,7 +60,7 @@ export class PhoneInput extends Component<HTMLDivElement> {
     if (ref) ref(this.input);
   }
 
-  format = (str: string) => {
+  format = (str: string): string => {
     if (!str) return '';
     if (!this.formats) return str;
 
@@ -68,10 +68,10 @@ export class PhoneInput extends Component<HTMLDivElement> {
     let maxLength = 0;
 
     for (let i = 0; i < this.formats.length; i += 2) {
-      maxLength = this.formats[i];
+      maxLength = this.formats[i] as number;
 
       if (typeof this.formats[i] === 'number' && str.length <= this.formats[i]) {
-        const pattern: string = this.formats[i + 1];
+        const pattern = this.formats[i + 1] as string;
         const literals = [' ', '-'];
         let offset = 0;
         let len = 0;

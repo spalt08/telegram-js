@@ -1,4 +1,4 @@
-import Subscribable from './emitter';
+import Subscribable, { Receiver } from './emitter';
 
 export class Mutatable<T> extends Subscribable<T> {
   protected _value: T;
@@ -12,18 +12,21 @@ export class Mutatable<T> extends Subscribable<T> {
   update = (value: T) => {
     this._value = value;
     this.broadcast(value);
-  }
+  };
 
   use(propName: string): Mutatable<any> {
-    if (typeof this._value !== 'object') throw new Error('Cannot use propery of non-object for mutation');
+    if (typeof this._value === 'object') {
+      const mutation = new Mutatable<any>((this._value as Record<string, any>)[propName]);
+      this.subscribe((data: T) => mutation.update((data as Record<string, any>)[propName]));
 
-    const mutation = new Mutatable<any>(this._value[propName]);
-    this.subscribe((data: T) => mutation.update(data[propName]));
+      return mutation;
+    }
 
-    return mutation;
+    throw new Error('Cannot use propery of non-object for mutation');
   }
 
-  didSubscribe = (receiver: (any) => any) => {
+  subscribe(receiver: Receiver<T>) {
+    super.subscribe(receiver);
     receiver(this._value);
   }
 

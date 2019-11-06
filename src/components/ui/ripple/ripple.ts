@@ -1,7 +1,6 @@
-import Component from 'core/component';
 import { ComponentFactory } from 'core/factory';
 import { div } from 'core/html';
-import { mount, el } from 'core/dom';
+import { Component, mount, el } from 'core/dom';
 import { Child } from 'core/types';
 import './ripple.scss';
 
@@ -11,33 +10,27 @@ type Props = {
 };
 
 export class Ripple extends Component<HTMLElement> {
-  boundingRect: ClientRect;
-
-  constructor({ tag = 'div', className = '' }: Props, children: Array<Child>) {
+  constructor({ tag = 'div', className = '' }: Props, children: Child[]) {
     super();
 
-    this.ref = el(tag, { className: `ripple ${className}`, onClick: this.handleClick }, [
+    this.element = el(tag, { className: `ripple ${className}`, onClick: this.handleClick }, [
       div`.ripple__content`(
         ...children,
       ),
     ]);
-
-    // To Do: mount event
-    setTimeout(() => {
-      this.boundingRect = this.ref.getBoundingClientRect();
-    }, 200);
   }
 
   handleClick = (event: MouseEvent) => {
     const effect = new div`.ripple__effect`();
+    const rect = this.element.getBoundingClientRect();
 
-    effect.style.left = `${event.clientX - this.boundingRect.left}px`;
-    effect.style.top = `${event.clientY - this.boundingRect.top + this.boundingRect.height / 2}px`;
+    effect.style.left = `${event.clientX - rect.left}px`;
+    effect.style.top = `${event.clientY - rect.top + rect.height / 2}px`;
 
     effect.addEventListener('animationend', () => effect.remove());
 
-    mount(this.ref, effect);
-  }
+    mount(this.element, effect);
+  };
 }
 
 export const ripple = ComponentFactory(Ripple);

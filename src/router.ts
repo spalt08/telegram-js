@@ -1,10 +1,9 @@
 import { Child } from 'core/types';
-import { mount } from 'core/dom';
-import { Component } from 'core';
+import { Component, mount } from 'core/dom';
 
 interface Factory {
   new(): HTMLElement,
-};
+}
 
 export const history = {
   push: (path: string) => window.history.pushState({ path }, 'Telegram Web', path),
@@ -31,9 +30,9 @@ export class Router extends Component<HTMLDivElement> {
   fetchLocation() {
     const element = this.routes[window.location.pathname] || this.routes.default;
 
-    if (element && this.ref) {
+    if (element) {
       this.mountedComponent = new element();
-      if (this.mountedComponent) mount(this.ref, this.mountedComponent);
+      if (this.mountedComponent) mount(this.element, this.mountedComponent);
     }
   }
 }

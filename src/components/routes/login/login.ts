@@ -1,11 +1,11 @@
 import { div, form, img, h1, p } from 'core/html';
 import { Mutatable } from 'core/mutation';
 import { phoneInput, selectAutoComplete, button } from 'components/ui';
-import countries from 'const/country';
+import countries, { Country } from 'const/country';
 import logo from './logo.svg';
 import './login.scss';
 
-const countryRenderer = ({ phone, label, emoji }) => (
+const countryRenderer = ({ phone, label, emoji }: Country) => (
   div`.logincountry`(
     div`.logincountry__flag`(emoji),
     div`.logincountry__label`(label),
@@ -16,11 +16,11 @@ const countryRenderer = ({ phone, label, emoji }) => (
 export default function login() {
   const country = new Mutatable<Object>({});
 
-  let phoneInputRef;
+  let phoneInputRef: HTMLElement;
 
-  const handleSubmit = (event) => {
+  const handleSubmit = (event: Event) => {
     event.preventDefault();
-    phoneInputRef.blur();
+    if (phoneInputRef) phoneInputRef.blur();
   };
 
   return (
@@ -35,9 +35,9 @@ export default function login() {
             selected: 0,
             options: countries,
             optionRenderer: countryRenderer,
-            optionLabeler: (data) => data.label,
-            onChange: (c) => {
-              country.update(c);
+            optionLabeler: (data: Country) => data.label,
+            onChange: (data: Country) => {
+              country.update(data);
               if (phoneInputRef) phoneInputRef.focus();
             },
           }),
@@ -46,7 +46,7 @@ export default function login() {
             name: 'phone',
             prefix: country.use('phone'),
             formats: country.use('phoneFormats'),
-            ref: (r) => { phoneInputRef = r; },
+            ref: (r: HTMLInputElement) => { phoneInputRef = r; },
           }),
           button({ label: 'Next' }),
         ),

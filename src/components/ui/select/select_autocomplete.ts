@@ -1,7 +1,6 @@
-import Component from 'core/component';
 import { ComponentFactory } from 'core/factory';
 import { div } from 'core/html';
-import { mount, unmount, setValue, getAttribute } from 'core/dom';
+import { Component, mount, unmount, setValue, getAttribute } from 'core/dom';
 import { KEYBOARD } from 'const';
 import { textInput } from '../text_input/text_input';
 import './select_autocomplete.scss';
@@ -10,7 +9,7 @@ type Props = {
   label?: string,
   name?: string,
   selected: number,
-  options?: Array<any>,
+  options?: any[],
   optionRenderer?: (data: any) => any,
   optionLabeler?: (data: any) => any,
   onChange?: (data: any) => any,
@@ -25,11 +24,11 @@ type Props = {
  * - selectAutoComplete({ options: [{ id: 1, text: 'Orange' }], optionRenderer: (data) => div(data.text) })
  */
 export class SelectAutoComplete extends Component<HTMLDivElement> {
-  input: HTMLDivElement;
+  input: HTMLDivElement | undefined;
 
   optionsEl: HTMLDivElement;
 
-  options: Array<any>;
+  options: any[];
 
   optionLabeler: (data: any) => string;
 
@@ -39,7 +38,7 @@ export class SelectAutoComplete extends Component<HTMLDivElement> {
 
   highlighted: number = -1;
 
-  changeCallback: ?(data: any) => any;
+  changeCallback: undefined | ((data: any) => any);
 
   constructor({
     label = '',
@@ -52,11 +51,13 @@ export class SelectAutoComplete extends Component<HTMLDivElement> {
   }: Props) {
     super();
 
+    this.query = '';
+    this.selected = selected;
     this.options = options;
     this.optionLabeler = optionLabeler;
     this.changeCallback = onChange;
 
-    this.ref = new div`.select`(
+    this.element = new div`.select`(
       textInput({
         label,
         name,
@@ -64,14 +65,14 @@ export class SelectAutoComplete extends Component<HTMLDivElement> {
         onFocus: this.handleFocus,
         onKeyDown: this.handleKeyDown,
         onChange: this.handleTyping,
-        ref: (el) => { this.input = el; },
+        ref: (el: HTMLDivElement) => { this.input = el; },
       }),
       div`.select__arrow`({ onClick: this.handleArrowClick }),
     );
 
     // To Do wrapper for click outside event
     window.addEventListener('click', (event) => {
-      if (!this.ref.contains(event.target)) {
+      if (!this.element.contains(event.target as HTMLElement)) {
         this.handleBlur();
       }
     });
@@ -87,70 +88,69 @@ export class SelectAutoComplete extends Component<HTMLDivElement> {
 
   handleTyping = (query: string) => {
     if (!this.query && query) {
-      this.ref.className = 'select focused filled';
+      this.element.className = 'select focused filled';
     }
 
     if (this.query && !query) {
-      this.ref.className = 'select focused';
+      this.element.className = 'select focused';
     }
 
     this.query = query.toLowerCase();
     this.fetchOptions(true);
-  }
+  };
 
   handleFocus = () => {
-    this.ref.className = `select focused${this.query ? ' filled' : ''}`;
+    this.element.className = `select focused${this.query ? ' filled' : ''}`;
 
-    if (this.optionsEl.parentNode !== this.ref) {
-      mount(this.ref, this.optionsEl);
+    if (this.optionsEl.parentNode !== this.element) {
+      mount(this.element, this.optionsEl);
       if (this.selected) this.handleHighlight(this.selected);
     }
 
     this.fetchOptions();
-  }
+  };
 
   handleBlur = () => {
-    this.ref.className = `select${this.query ? ' filled' : ''}`;
+    this.element.className = `select${this.query ? ' filled' : ''}`;
 
     if (this.optionsEl) {
       unmount(this.optionsEl);
     }
 
-    this.input.blur();
-  }
+    this.input!.blur();
+  };
 
   handleSelect = (event: MouseEvent) => {
     if (event.currentTarget instanceof HTMLDivElement) {
       this.setSelected(parseInt(getAttribute(event.currentTarget, 'data-key'), 10));
     }
-  }
+  };
 
   setSelected = (key: number) => {
     this.selected = key === -1 ? 0 : key;
-    setValue(this.input, this.optionLabeler(this.options[this.selected]));
+    setValue(this.input!, this.optionLabeler(this.options[this.selected]));
     this.handleBlur();
 
     if (this.changeCallback) this.changeCallback(this.options[this.selected]);
-  }
+  };
 
   handleArrowClick = () => {
     if (this.query) {
-      setValue(this.input, '');
-      this.input.focus();
+      setValue(this.input!, '');
+      this.input!.focus();
       return;
     }
 
     if (!this.optionsEl.parentNode) {
-      this.input.focus();
+      this.input!.focus();
     } else {
       this.handleBlur();
     }
-  }
+  };
 
   handleHighlight = (index: number) => {
     if (this.highlighted > -1) {
-      const el = this.optionsEl.childNodes[this.highlighted];
-      el.className = el.className.replace(' active', '');
+      (this.optionsEl.childNodes[this.highlighted] as HTMLElement).className.replace(' active', '');
     }
 
     if (index >= this.options.length) {
@@ -162,15 +162,15 @@ export class SelectAutoComplete extends Component<HTMLDivElement> {
     }
 
     if (this.highlighted > -1) {
-      this.optionsEl.childNodes[this.highlighted].className += ' active';
+      (this.optionsEl.childNodes[this.highlighted] as HTMLElement).className += ' active';
     }
-  }
+  };
 
   handleMouseEnter = (event: Event) => {
     if (event.currentTarget instanceof HTMLDivElement) {
       this.handleHighlight(parseInt(getAttribute(event.currentTarget, 'data-key'), 10));
     }
-  }
+  };
 
   handleKeyDown = (event: KeyboardEvent) => {
     switch (event.keyCode) {
@@ -200,14 +200,15 @@ export class SelectAutoComplete extends Component<HTMLDivElement> {
 
       default:
     }
-  }
+  };
 
   fetchOptions = (highlight: boolean = false) => {
     let first = -1;
 
     for (let i = 0; i < this.optionsEl.childNodes.length; i++) {
-      const node = this.optionsEl.childNodes[i];
-      if (!this.query || node.textContent.toLowerCase().indexOf(this.query) > -1) {
+      const node = this.optionsEl.childNodes[i] as HTMLElement;
+
+      if (!this.query || node.textContent!.toLowerCase().indexOf(this.query) > -1) {
         node.style.display = '';
 
         if (first === -1) first = i;
@@ -217,7 +218,7 @@ export class SelectAutoComplete extends Component<HTMLDivElement> {
     }
 
     if (highlight) this.handleHighlight(first);
-  }
+  };
 }
 
 export const selectAutoComplete = ComponentFactory(SelectAutoComplete);

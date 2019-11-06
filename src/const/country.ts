@@ -1,3 +1,11 @@
+export type Country = {
+  code: string,
+  emoji: string,
+  label: string,
+  phone: string,
+  phoneFormats?: Array<string | number>,
+};
+
 export default [
   { code: 'ru', label: 'Russian Federation', emoji: '🇷🇺', phone: '+7', phoneFormats: [10, 'ddd ddd dd-dd'] },
   { code: 'us', label: 'United States', emoji: '🇱🇷', phone: '+1', phoneFormats: [10, 'ddd-ddd-dddd'] },
@@ -250,4 +258,4 @@ export default [
   // { code: 'YE', phone: '+967' },
   // { code: 'ZM', phone: '+260' },
   // { code: 'ZW', phone: '+263' },
-];
+] as Country[];

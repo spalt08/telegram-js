@@ -1,4 +1,4 @@
-import Component from 'core/component';
+import { Component } from 'core/dom';
 import { ComponentFactory } from 'core/factory';
 import { div, input } from 'core/html';
 import './text_input.scss';
@@ -22,7 +22,7 @@ export class TextInput extends Component<HTMLDivElement> {
   constructor({ label = '', onChange, onFocus, onBlur, ref, autocomplete, onKeyDown, name }: Props) {
     super();
 
-    this.ref = new div`.input`(
+    this.element = new div`.input`(
       this.input = new input({ type: 'text', name, autocomplete }),
       this.label = new div`.input__label`(label),
     );
@@ -33,26 +33,25 @@ export class TextInput extends Component<HTMLDivElement> {
     this.input.onfocus = () => {
       if (onFocus) onFocus();
       focused = true;
-      this.ref.className = `input focused${filled ? ' filled' : ''}`;
+      this.element.className = `input focused${filled ? ' filled' : ''}`;
     };
 
     this.input.onblur = () => {
       if (onBlur) onBlur();
       focused = false;
-      this.ref.className = `input${filled ? ' filled' : ''}`;
+      this.element.className = `input${filled ? ' filled' : ''}`;
     };
 
-    this.input.onkeydown = onKeyDown;
     this.input.oninput = (event: InputEvent) => {
       const value = (event.target instanceof HTMLInputElement) ? event.target.value : '';
 
       if (value && !filled) {
-        this.ref.className = `input${focused ? ' focused' : ''} filled`;
+        this.element.className = `input${focused ? ' focused' : ''} filled`;
         filled = true;
       }
 
       if (!value && filled) {
-        this.ref.className = `input${focused ? ' focused' : ''}`;
+        this.element.className = `input${focused ? ' focused' : ''}`;
         filled = false;
       }
 
@@ -60,6 +59,7 @@ export class TextInput extends Component<HTMLDivElement> {
     };
 
     if (ref) ref(this.input);
+    if (onKeyDown) this.input.onkeydown = onKeyDown;
   }
 }
 

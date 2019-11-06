@@ -1,13 +1,11 @@
 /* eslint-disable no-redeclare, no-param-reassign */
+import { Mutatable } from './mutation';
+import { Child, ComponentInterface } from './types';
 
 /**
  * Methods for manipulating with DOM.
  * All DOM manipulations should be done with this module.
  */
-
-import Component from './component';
-import { Mutatable } from './mutation';
-import { Child } from './types';
 
 /**
  * Mounts HTMLElement or Component to parent HTMLElement
@@ -16,6 +14,7 @@ import { Child } from './types';
  */
 export function mount(parent: Node | HTMLElement, child: Child) {
   // Mounting component
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   if (child instanceof Component) {
     child.mountTo(parent);
 
@@ -34,8 +33,12 @@ export function mount(parent: Node | HTMLElement, child: Child) {
     mount(parent, new child());
 
   // Mounting HTML Element
-  } else {
+  } else if (child instanceof HTMLElement) {
     parent.appendChild(child);
+
+  // Exception
+  } else {
+    throw new Error('Unknow child type passed');
   }
 }
 
@@ -106,10 +109,10 @@ export function setValue(element: HTMLElement, value: string | Mutatable<string>
  * Creates DOM element and returns it
  * @param {string} tag Tag name for element
  * @param {Object} props Properties for creation
- * @param {Array<Child>} children Child nodes or components
+ * @param {Child[]} children Child nodes or components
  */
-export function el<T>(tag: string, props?: Record<string, any>, children?: Array<Child>): T;
-export function el(tag: string, props: Record<string, any> = {}, children: Array<Child> = []): HTMLElement {
+export function el<T>(tag: string, props?: Record<string, any>, children?: Child[]): T;
+export function el(tag: string, props: Record<string, any> = {}, children: Child[] = []): HTMLElement {
   const element = document.createElement(tag);
 
   // Setting props
@@ -153,4 +156,32 @@ export function el(tag: string, props: Record<string, any> = {}, children: Array
   return element;
 }
 
-// export declare function el<T>(tag: string, props?: { [index: string]: any }, children?: Array<Child>): T;
+/**
+ * Base HTML Dom component wrapper
+ */
+export class Component<T extends HTMLElement> implements ComponentInterface<T> {
+  element: T;
+
+  constructor(tag?: string, props?: Record<string, any>, children?: Child[]) {
+    if (tag) {
+      this.element = el<T>(tag, props, children);
+    } else {
+      this.element = el('template');
+    }
+  }
+
+  mountTo(parent?: Node) {
+    if (parent && this.element) {
+      mount(parent, this.element);
+      if (this.didMount) this.didMount();
+    }
+  }
+
+  didMount() {}
+
+  unMount() {
+    if (this.element) {
+      unmount(this.element);
+    }
+  }
+}
