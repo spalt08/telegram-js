@@ -126,6 +126,10 @@ export function el(tag: string, props: Object = {}, children: Array<ElementOrCom
           element.addEventListener('click', props.onClick);
           break;
 
+        case 'onMouseEnter':
+          element.addEventListener('mouseenter', props.onMouseEnter);
+          break;
+
         default:
           setAttribute(element, propNames[i], props[propNames[i]]);
       }

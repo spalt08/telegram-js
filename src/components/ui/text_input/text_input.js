@@ -9,6 +9,7 @@ type Props = {
   onChange?: (value: string) => any;
   onFocus?: () => any;
   onBlur?: () => any;
+  onKeyDown?: () => any;
   label?: string,
   ref?: (HTMLInputElement) => any,
 };
@@ -18,7 +19,7 @@ export class TextInput extends Component<HTMLDivElement> {
 
   input: HTMLInputElement;
 
-  constructor({ label = '', onChange, onFocus, onBlur, ref }: Props) {
+  constructor({ label = '', onChange, onFocus, onBlur, ref, onKeyDown }: Props) {
     super();
 
     this.ref = new div`.input`(
@@ -30,6 +31,7 @@ export class TextInput extends Component<HTMLDivElement> {
 
     this.input.onfocus = onFocus;
     this.input.onblur = onBlur;
+    this.input.onkeydown = onKeyDown;
     this.input.oninput = (event: InputEvent) => {
       const value = (event.target instanceof HTMLInputElement) ? event.target.value : '';
 
