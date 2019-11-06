@@ -1,12 +1,13 @@
-import { mount, unmount, el, Child } from './dom';
+import { mount, unmount, el } from './dom';
+import { Child, ComponentInterface } from './types';
 
 /**
  * Base HTML Dom component wrapper
  */
-export default class Component<T extends HTMLElement> {
+export default class Component<T extends HTMLElement> implements ComponentInterface<T> {
   ref: T | undefined;
 
-  constructor(tag?: string, props: Object = {}, children: Child[] = []) {
+  constructor(tag: string = '', props: Record<string, any> = {}, children: Child[] = []) {
     if (tag) {
       this.ref = el<T>(tag, props, children);
     }

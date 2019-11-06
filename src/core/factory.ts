@@ -1,4 +1,4 @@
-import { Child } from './dom';
+import { Child } from './types';
 import { Mutatable } from './mutation';
 import { el } from './dom';
 

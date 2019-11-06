@@ -7,12 +7,7 @@
 
 import Component from './component';
 import { Mutatable } from './mutation';
-
-interface Factory {
-  new(): HTMLElement,
-};
-
-export type Child = Mutatable<any> | HTMLElement | Component<any> | Factory | string | number;
+import { Child } from './types';
 
 /**
  * Mounts HTMLElement or Component to parent HTMLElement
@@ -29,7 +24,7 @@ export function mount(parent: Node | HTMLElement, child: Child) {
     const node = document.createTextNode(child.value);
     parent.appendChild(node);
     child.subscribe((text) => { node.textContent = text; });
-  
+
   // Mounting text node
   } else if (typeof child === 'string' || typeof child === 'number') {
     parent.appendChild(document.createTextNode(child.toString()));

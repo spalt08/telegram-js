@@ -1,4 +1,5 @@
-import { mount, Child } from 'core/dom';
+import { Child } from 'core/types';
+import { mount } from 'core/dom';
 import { Component } from 'core';
 
 interface Factory {

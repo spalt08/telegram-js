@@ -1,7 +1,8 @@
 import Component from 'core/component';
 import { ComponentFactory } from 'core/factory';
 import { div } from 'core/html';
-import { mount, el, Child } from 'core/dom';
+import { mount, el } from 'core/dom';
+import { Child } from 'core/types';
 import './ripple.scss';
 
 type Props = {
