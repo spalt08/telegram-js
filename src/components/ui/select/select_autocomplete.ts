@@ -149,8 +149,12 @@ export class SelectAutoComplete extends Component<HTMLDivElement> {
   };
 
   handleHighlight = (index: number) => {
+    if (this.highlighted === index) return;
+
     if (this.highlighted > -1) {
-      (this.optionsEl.childNodes[this.highlighted] as HTMLElement).className.replace(' active', '');
+      (this.optionsEl.childNodes[this.highlighted] as HTMLElement).className = (
+        (this.optionsEl.childNodes[this.highlighted] as HTMLElement).className.replace(' active', '')
+      );
     }
 
     if (index >= this.options.length) {
