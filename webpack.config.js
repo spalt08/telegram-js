@@ -1,3 +1,5 @@
+/* eslint-disable import/no-extraneous-dependencies */
+
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
@@ -126,6 +128,7 @@ module.exports = (env, argv) => {
         chunkFilename: '[id].[hash].css',
       }),
       new ForkTsCheckerWebpackPlugin({
+        eslint: true,
         compilerOptions: {
           sourceMap: !isProduction,
           async: !isProduction,
