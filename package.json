@@ -4,9 +4,9 @@
   "description": "Pure and native web client for Telegram",
   "scripts": {
     "lint": "eslint --ext .js,.ts ./src",
-    "build": "webpack --progress",
-    "build:noprogress": "webpack",
-    "start": "cross-env NODE_ENV=development webpack-dev-server --progress",
+    "build": "webpack --mode=production --progress",
+    "build:noprogress": "webpack --mode=production",
+    "start": "webpack-dev-server --progress",
     "analyze:prod": "npm run build -- --analyze",
     "analyze:dev": "npm start -- --analyze"
   },
