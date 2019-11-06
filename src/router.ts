@@ -1,6 +1,4 @@
-// @flow
-
-import type { ElementOrComponent } from 'core/dom';
+import { ElementOrComponent } from 'core/dom';
 import { mount } from 'core/dom';
 import { Component } from 'core';
 
@@ -9,19 +7,17 @@ export const history = {
 };
 
 export class Router extends Component<HTMLDivElement> {
-  routes: { [string]: () => ElementOrComponent }
+  mountedComponent: ElementOrComponent | undefined;
 
-  mountedComponent: ?ElementOrComponent;
-
-  constructor(routes: { [string]: () => ElementOrComponent }) {
+  constructor(public routes: Record<string, () => ElementOrComponent>) {
     super('div', { className: 'main' });
 
     this.routes = routes;
 
-    window.onpopstate = (event) => {
+    window.addEventListener('popstate', (event) => {
       this.fetchLocation();
       event.preventDefault();
-    };
+    });
   }
 
   didMount() {

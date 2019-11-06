@@ -1,17 +1,17 @@
-// @flow
+type Receiver<T> = (value: T) => void;
 
-export default class Subscribable {
-  receivers: Array<(any) => any>;
+export default class Subscribable<T> {
+  receivers: Array<Receiver<T>>;
 
   constructor() {
     this.receivers = [];
   }
 
-  subscribe(receiver: (any) => any) {
+  subscribe(receiver: Receiver<T>) {
     this.receivers.push(receiver);
   }
 
-  unsubscribe(receiver: (any) => any) {
+  unsubscribe(receiver: Receiver<T>) {
     const index = this.receivers.indexOf(receiver);
 
     if (index > -1) {
@@ -19,7 +19,7 @@ export default class Subscribable {
     }
   }
 
-  broadcast(data: any) {
+  broadcast(data: T) {
     for (let i = 0; i < this.receivers.length; i++) {
       this.receivers[i](data);
     }

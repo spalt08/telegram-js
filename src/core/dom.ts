@@ -1,5 +1,4 @@
 /* eslint-disable no-redeclare, import/no-cycle, no-param-reassign */
-// @flow
 
 /**
  * Methods for manipulating with DOM.

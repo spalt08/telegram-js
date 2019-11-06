@@ -1,9 +1,7 @@
-// @flow
-
 import Subscribable from './emitter';
 
-export class Mutatable<T> extends Subscribable {
-  _value: T;
+export class Mutatable<T> extends Subscribable<T> {
+  protected _value: T;
 
   constructor(initialValue: T) {
     super();
