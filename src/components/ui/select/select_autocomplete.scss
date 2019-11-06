@@ -81,6 +81,7 @@
     background: #FFFFFF;
     border-bottom: 1px solid #F4F4F5;
     transition: background .15s ease-out;
+    user-select: none;
 
     &:last-child {
       border-bottom: 0;

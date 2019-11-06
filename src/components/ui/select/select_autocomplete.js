@@ -3,7 +3,7 @@
 import Component from 'core/component';
 import { ComponentFactory } from 'core/factory';
 import { div } from 'core/html';
-import { mount, unmount, setValue } from 'core/dom';
+import { mount, unmount, setValue, getAttribute } from 'core/dom';
 import { textInput } from '../text_input/text_input';
 import './select_autocomplete.scss';
 
@@ -20,8 +20,6 @@ export class SelectAutoComplete extends Component<HTMLDivElement> {
 
   options: Array<any>;
 
-  hideTimeout: number;
-
   query: string;
 
   selected: any;
@@ -32,15 +30,21 @@ export class SelectAutoComplete extends Component<HTMLDivElement> {
     this.options = options;
 
     this.ref = new div`.select`(
-      this.in = new textInput({
+      textInput({
         label,
         onFocus: this.handleFocus,
-        onBlur: this.handleBlur,
         onChange: this.handleTyping,
         ref: (el) => { this.input = el; },
       }),
       div`.select__arrow`({ onClick: this.handleArrowClick }),
     );
+
+    // To Do wrapper for click outside event
+    window.addEventListener('click', (event) => {
+      if (!this.ref.contains(event.target)) {
+        this.handleBlur();
+      }
+    });
 
     this.optionsEl = new div`.select__options`(
       ...this.options.map((text) => div`.select__option`({ key: text, onClick: this.handleSelect })(text)),
@@ -61,8 +65,6 @@ export class SelectAutoComplete extends Component<HTMLDivElement> {
   }
 
   handleFocus = () => {
-    if (this.hideTimeout) clearTimeout(this.hideTimeout);
-
     this.ref.className = `select focused${this.query ? ' filled' : ''}`;
 
     mount(this.ref, this.optionsEl);
@@ -74,23 +76,25 @@ export class SelectAutoComplete extends Component<HTMLDivElement> {
     this.ref.className = `select${this.query ? ' filled' : ''}`;
 
     if (this.optionsEl) {
-      this.hideTimeout = setTimeout(() => unmount(this.optionsEl), 100);
+      unmount(this.optionsEl);
     }
   }
 
   handleSelect = (event: MouseEvent) => {
-    setValue(this.input, event.currentTarget.__key);
-    this.ref.className = `select${this.query ? ' filled' : ''}`;
+    setValue(this.input, getAttribute(event.currentTarget, 'data-key'));
+    this.handleBlur();
   }
 
   handleArrowClick = () => {
     if (this.query) {
       setValue(this.input, '');
-      this.input.focus();
+      this.handleFocus();
     }
 
     if (!this.optionsEl.parentNode) {
       this.input.focus();
+    } else {
+      this.handleBlur();
     }
   }
 

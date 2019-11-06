@@ -1,4 +1,4 @@
-/* eslint-disable no-redeclare, import/no-cycle */
+/* eslint-disable no-redeclare, import/no-cycle, no-param-reassign */
 // @flow
 
 /**
@@ -41,35 +41,58 @@ export function unmount(element: any) {
   element.remove();
 }
 
-/** Setters */
-export function setAttribute(element: HTMLElement, propName: string, value: string | Mutatable<string>) {
+/**
+ * Sets any attribute to HTMLElement
+ * @param {HTMLElement} element HTML Element
+ * @param {string} attr Attribute name
+ * @param {string | Mutatable<string>} value Attribute value
+ */
+export function setAttribute(element: HTMLElement, attr: string, value: string | Mutatable<string>) {
   if (value instanceof Mutatable) {
-    value.subscribe((v) => element.setAttribute(propName, v));
+    value.subscribe((v) => element.setAttribute(attr, v));
   } else {
-    element.setAttribute(propName, value);
+    element.setAttribute(attr, value);
   }
 }
 
-/** Setters */
+/**
+ * Gets attribute from HTMLElement
+ * @param {HTMLElement} element HTML Element
+ * @param {string} attr Attribute name
+ */
+export function getAttribute(element: HTMLElement, attr: string): string {
+  return element.getAttribute(attr) || '';
+}
+
+/**
+ * Sets class name to HTMLElement
+ * @param {HTMLElement} element HTML Element
+ * @param {string | Mutatable<string>} className Class name to set
+ */
 export function setClassName(element: HTMLElement, className: string | Mutatable<string>) {
   if (className instanceof Mutatable) {
-    // eslint-disable-next-line no-param-reassign
     className.subscribe((cn) => { element.className = cn; });
   } else {
-    // eslint-disable-next-line no-param-reassign
     element.className = className;
   }
 }
 
-/** Setters */
+/**
+ * Updates value at HTMLElement and disatch input event;
+ * @param {HTMLElement} element HTML Element
+ * @param {string | Mutatable<string>} value Value to set
+ */
 export function setValue(element: HTMLElement, value: string | Mutatable<string>) {
-  if (value instanceof Mutatable) {
-    // eslint-disable-next-line no-param-reassign
-    value.subscribe((v) => { element.value = v; element.dispatchEvent(new Event('input')); });
-  } else {
-    // eslint-disable-next-line no-param-reassign
-    element.value = value;
-    element.dispatchEvent(new Event('input'));
+  if (element instanceof HTMLInputElement) {
+    if (value instanceof Mutatable) {
+      value.subscribe((v) => {
+        element.value = v;
+        element.dispatchEvent(new Event('input'));
+      });
+    } else {
+      element.value = value;
+      element.dispatchEvent(new Event('input'));
+    }
   }
 }
 
@@ -96,7 +119,7 @@ export function el(tag: string, props: Object = {}, children: Array<ElementOrCom
           break;
 
         case 'key':
-          element.__key = props.key;
+          setAttribute(element, 'data-key', props.key);
           break;
 
         case 'onClick':
