@@ -97,6 +97,7 @@ module.exports = (env, argv) => {
       contentBase: `./${destinationDirectory}`,
       port: 3000,
       hot: true,
+      publicPath: '/',
     },
 
     plugins: [
