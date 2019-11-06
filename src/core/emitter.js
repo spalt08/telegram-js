@@ -7,11 +7,12 @@ export default class Subscribable {
     this.receivers = [];
   }
 
-  subscribe(receiver: (any) => any) {
+  subscribe = (receiver: (any) => any) => {
     this.receivers.push(receiver);
+    if (this.didSubscribe) this.didSubscribe(receiver);
   }
 
-  unsubscribe(receiver: (any) => any) {
+  unsubscribe = (receiver: (any) => any) => {
     const index = this.receivers.indexOf(receiver);
 
     if (index > -1) {
@@ -19,7 +20,7 @@ export default class Subscribable {
     }
   }
 
-  broadcast(data: any) {
+  broadcast = (data: any) => {
     for (let i = 0; i < this.receivers.length; i++) {
       this.receivers[i](data);
     }

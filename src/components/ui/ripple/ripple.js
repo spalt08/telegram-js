@@ -13,9 +13,9 @@ type Props = {
 };
 
 export class Ripple extends Component<HTMLElement> {
-  boundingRect: DOMRect;
+  boundingRect: ClientRect;
 
-  constructor({ tag = 'div', className }: Props, children: Array<ElementOrComponent>) {
+  constructor({ tag = 'div', className = '' }: Props, children: Array<ElementOrComponent>) {
     super();
 
     this.ref = el(tag, { className: `ripple ${className}`, onClick: this.handleClick }, [

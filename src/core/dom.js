@@ -19,13 +19,12 @@ export type ElementOrComponent = HTMLElement | Component<HTMLElement>;
 export function mount(parent: Node | HTMLElement, child: any) {
   if (child instanceof Component) {
     child.mountTo(parent);
+  } else if (child instanceof Mutatable) {
+    const node = document.createTextNode(child.value);
+    parent.appendChild(node);
+    child.subscribe((text) => { node.textContent = text; });
   } else if (typeof child === 'string' || typeof child === 'number') {
-    if (child instanceof Mutatable) {
-      const node = document.createTextNode('');
-      child.subscribe((text) => { node.textContent = text; });
-    } else {
-      parent.appendChild(document.createTextNode(child));
-    }
+    parent.appendChild(document.createTextNode(child));
   } else if (typeof child === 'function') {
     mount(parent, new child());
   } else {
@@ -124,6 +123,10 @@ export function el(tag: string, props: Object = {}, children: Array<ElementOrCom
 
         case 'onClick':
           element.addEventListener('click', props.onClick);
+          break;
+
+        case 'onSubmit':
+          element.addEventListener('submit', props.onSubmit);
           break;
 
         case 'onMouseEnter':

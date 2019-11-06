@@ -11,9 +11,22 @@ export class Mutatable<T> extends Subscribable {
     this._value = initialValue;
   }
 
-  update(value: T) {
+  update = (value: T) => {
     this._value = value;
     this.broadcast(value);
+  }
+
+  use(propName: string): Mutatable<any> {
+    if (typeof this._value !== 'object') throw new Error('Cannot use propery of non-object for mutation');
+
+    const mutation = new Mutatable<any>((this._value[propName]: any));
+    this.subscribe((data: T) => mutation.update(data[propName]));
+
+    return mutation;
+  }
+
+  didSubscribe = (receiver: (any) => any) => {
+    receiver(this._value);
   }
 
   valueOf(): T {

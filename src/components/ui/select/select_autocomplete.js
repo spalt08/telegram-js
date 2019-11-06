@@ -10,8 +10,12 @@ import './select_autocomplete.scss';
 
 type Props = {
   label?: string,
+  name?: string,
+  selected: number,
   options?: Array<any>,
-  onChange?: (value: string) => any;
+  optionRenderer?: (data: any) => any,
+  optionLabeler?: (data: any) => any,
+  onChange?: (data: any) => any,
 };
 
 /**
@@ -29,20 +33,35 @@ export class SelectAutoComplete extends Component<HTMLDivElement> {
 
   options: Array<any>;
 
+  optionLabeler: (data: any) => string;
+
   query: string;
 
   selected: number;
 
   highlighted: number = -1;
 
-  constructor({ label = '', options = [] }: Props) {
+  changeCallback: ?(data: any) => any;
+
+  constructor({
+    label = '',
+    name = '',
+    selected,
+    options = [],
+    optionRenderer = (text: string) => text,
+    optionLabeler = (text: string) => text,
+    onChange,
+  }: Props) {
     super();
 
     this.options = options;
+    this.optionLabeler = optionLabeler;
+    this.changeCallback = onChange;
 
     this.ref = new div`.select`(
       textInput({
         label,
+        name,
         onFocus: this.handleFocus,
         onKeyDown: this.handleKeyDown,
         onChange: this.handleTyping,
@@ -59,12 +78,15 @@ export class SelectAutoComplete extends Component<HTMLDivElement> {
     });
 
     this.optionsEl = new div`.select__options`(
-      ...this.options.map((text, key) => div`.select__option`({ key, onClick: this.handleSelect, onMouseEnter: this.handleMouseEnter })(text)),
+      ...this.options.map((data, key) => div`.select__option`({ key, onClick: this.handleSelect, onMouseEnter: this.handleMouseEnter })(
+        optionRenderer(data),
+      )),
     );
+
+    if (selected !== undefined) this.setSelected(selected);
   }
 
   handleTyping = (query: string) => {
-    this.handleHighlight(-1);
     if (!this.query && query) {
       this.ref.className = 'select focused filled';
     }
@@ -74,7 +96,7 @@ export class SelectAutoComplete extends Component<HTMLDivElement> {
     }
 
     this.query = query.toLowerCase();
-    this.fetchOptions();
+    this.fetchOptions(true);
   }
 
   handleFocus = () => {
@@ -99,13 +121,17 @@ export class SelectAutoComplete extends Component<HTMLDivElement> {
   }
 
   handleSelect = (event: MouseEvent) => {
-    this.setSelected(parseInt(getAttribute(event.currentTarget, 'data-key'), 10));
+    if (event.currentTarget instanceof HTMLDivElement) {
+      this.setSelected(parseInt(getAttribute(event.currentTarget, 'data-key'), 10));
+    }
   }
 
   setSelected = (key: number) => {
     this.selected = key === -1 ? 0 : key;
-    setValue(this.input, this.options[this.selected]);
+    setValue(this.input, this.optionLabeler(this.options[this.selected]));
     this.handleBlur();
+
+    if (this.changeCallback) this.changeCallback(this.options[this.selected]);
   }
 
   handleArrowClick = () => {
@@ -130,7 +156,7 @@ export class SelectAutoComplete extends Component<HTMLDivElement> {
 
     if (index >= this.options.length) {
       this.highlighted = 0;
-    } else if (index <= -2) {
+    } else if (index <= -1) {
       this.highlighted = this.options.length - 1;
     } else {
       this.highlighted = index;
@@ -158,10 +184,11 @@ export class SelectAutoComplete extends Component<HTMLDivElement> {
         break;
 
       case KEYBOARD.ARROW_UP:
-        this.handleHighlight(this.highlighted === 0 ? this.highlighted - 2 : this.highlighted - 1);
+        this.handleHighlight(this.highlighted - 1);
         break;
 
       case KEYBOARD.ENTER:
+        event.preventDefault();
         this.setSelected(this.highlighted);
         break;
 
@@ -173,15 +200,21 @@ export class SelectAutoComplete extends Component<HTMLDivElement> {
     }
   }
 
-  fetchOptions = () => {
+  fetchOptions = (highlight: boolean = false) => {
+    let first = -1;
+
     for (let i = 0; i < this.optionsEl.childNodes.length; i++) {
       const node = this.optionsEl.childNodes[i];
       if (!this.query || node.textContent.toLowerCase().indexOf(this.query) > -1) {
         node.style.display = '';
+
+        if (first === -1) first = i;
       } else {
         node.style.display = 'none';
       }
     }
+
+    if (highlight) this.handleHighlight(first);
   }
 }
 

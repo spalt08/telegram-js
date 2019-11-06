@@ -1,22 +1,55 @@
 // @flow
 
 import { div, form, img, h1, p } from 'core/html';
-import { textInput, selectAutoComplete, button } from 'components/ui';
+import { Mutatable } from 'core/mutation';
+import { phoneInput, selectAutoComplete, button } from 'components/ui';
+import countries from 'const/country';
 import logo from './logo.svg';
 import './login.scss';
 
-const options = ['Orange', 'Apple', 'Pineapple'];
+const countryRenderer = ({ phone, label, emoji }) => (
+  div`.logincountry`(
+    div`.logincountry__flag`(emoji),
+    div`.logincountry__label`(label),
+    div`.logincountry__phone`(phone),
+  )
+);
 
 export default function login() {
+  const country = new Mutatable<Object>({});
+
+  let ref;
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    ref.blur();
+  };
+
   return (
     div`.login`(
-      form`.login__form`(
+      form`.login__form`({ onSubmit: handleSubmit })(
         img`.login__logo`({ src: logo }),
         h1`.login__title`('Sign in to Telegram'),
         p`.login__description`('Please confirm your country and enter your phone number.'),
         div`.login__inputs`(
-          selectAutoComplete({ label: 'Country', options }),
-          textInput({ label: 'Phone Number' }),
+          selectAutoComplete({
+            label: 'Country',
+            selected: 0,
+            options: countries,
+            optionRenderer: countryRenderer,
+            optionLabeler: (data) => data.label,
+            onChange: (c) => {
+              country.update(c);
+              if (ref) ref.focus();
+            },
+          }),
+          phoneInput({
+            label: 'Phone Number',
+            name: 'phone',
+            prefix: country.use('phone'),
+            formats: country.use('phoneFormats'),
+            ref: (r) => { ref = r; },
+          }),
           button({ label: 'Next' }),
         ),
       ),

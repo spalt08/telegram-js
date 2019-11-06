@@ -15,7 +15,7 @@ export class Button extends Component<HTMLDivElement> {
   constructor({ label = '' }: Props) {
     super();
 
-    this.ref = new ripple`.button`(
+    this.ref = ripple`.button`({ tag: 'button'})(
       label,
     );
   }
