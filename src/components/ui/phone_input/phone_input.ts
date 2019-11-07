@@ -1,4 +1,4 @@
-import { div, input } from 'core/html';
+import { div, input, text } from 'core/html';
 import { listen } from 'core/dom';
 import { Mutatable } from 'core/mutation';
 import './phone_input.scss';
@@ -18,9 +18,9 @@ export default function phoneInput({ label = '', prefix = '', formats = [], onCh
   const inputEl = input({ type: 'text', name, autocomplete: 'off' });
   const element = div`.phoneinput`(
     div`.phoneinput__container`(
-      div`.phoneinput__prefix`(prefix),
+      div`.phoneinput__prefix`(text(prefix)),
       inputEl,
-      div`.phoneinput__label`(label),
+      div`.phoneinput__label`(text(label)),
     ),
   );
 

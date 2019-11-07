@@ -1,4 +1,3 @@
-import { Child } from 'core/types';
 import { mount } from 'core/dom';
 import { div } from 'core/html';
 
@@ -9,9 +8,9 @@ export const history = {
 export class Router {
   element: HTMLDivElement;
 
-  mounted: Child | undefined;
+  mounted: Node | undefined;
 
-  constructor(public routes: Record<string, () => Child>) {
+  constructor(public routes: Record<string, () => Node>) {
     this.element = div`.main`();
     this.routes = routes;
 

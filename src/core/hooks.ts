@@ -23,8 +23,8 @@ export type WithLifecycleHook = WithHooks<{
 type OnMount = () => OnUnmount;
 type OnUnmount = () => void;
 
-function isWithHooks(base: { __hooks?: unknown }): base is WithHooks {
-  return !!base.__hooks;
+function isWithHooks(base: unknown): base is WithHooks {
+  return !!(base as { __hooks?: unknown }).__hooks;
 }
 
 function ensureWithHooks<T>(base: T): T & WithHooks {

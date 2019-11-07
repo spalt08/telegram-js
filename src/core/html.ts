@@ -1,4 +1,17 @@
 import { ElementFactory } from './factory';
+// eslint-disable-next-line import/named
+import { MaybeMutatable, Mutatable } from './mutation';
+
+export function text(value: MaybeMutatable<{ toString(): string; }>) {
+  if (value instanceof Mutatable) {
+    const node = document.createTextNode('');
+    value.subscribe((newValue) => {
+      node.textContent = newValue.toString();
+    });
+    return node;
+  }
+  return document.createTextNode(value.toString());
+}
 
 export const div = ElementFactory('div');
 export const span = ElementFactory('span');

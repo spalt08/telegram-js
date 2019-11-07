@@ -1,4 +1,3 @@
-import { Child } from './types';
 import { Mutatable } from './mutation';
 import { el } from './dom';
 
@@ -12,16 +11,16 @@ function literalsToClassname(strings: string[], ...values: unknown[]): string {
 /**
  * Transforms function arguments to props and childrens
  */
-function argsToPropsAndChildren(...args: unknown[]): [Record<string, unknown>, Child[]] {
+function argsToPropsAndChildren(...args: unknown[]): [Record<string, unknown>, Node[]] {
   let props: Record<string, unknown> = {};
-  let children: Child[] = [];
+  let children: Node[] = [];
 
   if (args.length > 0) {
-    if (args[0] !== null && typeof args[0] === 'object' && !(args[0] instanceof Mutatable) && !(args[0] instanceof HTMLElement)) {
+    if (args[0] !== null && typeof args[0] === 'object' && !(args[0] instanceof Mutatable) && !(args[0] instanceof Node)) {
       props = args[0] as Record<string, unknown>;
-      children = children.concat(args.slice(1) as Child[]);
+      children = [...children, ...args.slice(1) as Node[]];
     } else {
-      children = children.concat(args as Child[]);
+      children = [...children, ...args as Node[]];
     }
   }
 
@@ -37,8 +36,8 @@ function argsToPropsAndChildren(...args: unknown[]): [Record<string, unknown>, C
  */
 interface ElementFactoryGenericI<T> {
   (): T;
-  (...children: Child[]): T;
-  (props: Record<string, unknown>, ...children: Child[]): T;
+  (...children: Node[]): T;
+  (props: Record<string, unknown>, ...children: Node[]): T;
 }
 
 /**
@@ -72,8 +71,8 @@ export function ElementFactoryGeneric(tag: string, props?: Record<string, unknow
  * @param tag Tag name
  */
 export function ElementFactory<T extends keyof HTMLElementTagNameMap>(tag: T) {
-  function TemplatedResolver(...children: Child[]): HTMLElementTagNameMap[T];
-  function TemplatedResolver(props: Record<string, unknown>, ...children: Child[]): HTMLElementTagNameMap[T];
+  function TemplatedResolver(...children: Node[]): HTMLElementTagNameMap[T];
+  function TemplatedResolver(props: Record<string, unknown>, ...children: Node[]): HTMLElementTagNameMap[T];
   function TemplatedResolver(literals: TemplateStringsArray, ...placeholders: unknown[]): ElementFactoryGenericI<HTMLElementTagNameMap[T]>;
   function TemplatedResolver(...args: unknown[]) {
     // Called as Template Litteral

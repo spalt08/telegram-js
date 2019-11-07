@@ -46,3 +46,5 @@ export class Mutatable<T> extends Subscribable<T> {
 export function useMutation<T>(initialValue: T): Mutatable<T> {
   return new Mutatable<T>(initialValue);
 }
+
+export type MaybeMutatable<T> = T | Mutatable<T>;
