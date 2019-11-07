@@ -23,11 +23,13 @@ export default class LoginTransition {
   transitRight(elementCreator: () => HTMLElement) {
     if (this.mounted) {
       this.mounted.className += ' removed';
+      // todo: call once, for example: take(this.mounted, 'animationend', (event) => unmount(event.currentTarget as HTMLElement))
       this.mounted.addEventListener('animationend', (event) => unmount(event.currentTarget as HTMLElement));
     }
 
     this.mounted = elementCreator();
     this.mounted.className += ' appeared';
+    // todo: call once, for example: take(this.mounted, 'animationend', (event) => unmount(event.currentTarget as HTMLElement))
     this.mounted.addEventListener('animationend', (event) => {
       const self = (event.currentTarget as HTMLElement);
       self.className = self.className.replace(' appeared', '');
