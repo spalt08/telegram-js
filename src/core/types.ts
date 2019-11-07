@@ -14,4 +14,4 @@ export interface Factory<T> {
   new(): T,
 }
 
-export type Child = Mutatable<any> | HTMLElement | ComponentInterface<any> | Factory<HTMLElement> | string | number;
+export type Child = Node | HTMLDivElement | Mutatable<string | number> | string | number;

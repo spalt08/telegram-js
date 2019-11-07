@@ -1,45 +1,44 @@
 /* eslint-disable no-redeclare, no-param-reassign */
 import { Mutatable } from './mutation';
-import { Child, ComponentInterface } from './types';
+import { Child } from './types';
 
 /**
  * Methods for manipulating with DOM.
  * All DOM manipulations should be done with this module.
  */
 
+type WritableCSSProps = Exclude<keyof CSSStyleDeclaration, 'length' | 'parentRule'>;
+
 /**
  * Mounts HTMLElement or Component to parent HTMLElement
  * @param {Node} parent Element to mount in
  * @param {Child} child Element which mounted
+ * @returns {HTMLElement} Mounted Element
  */
-export function mount(parent: Node | HTMLElement, child: Child) {
-  // Mounting component
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  if (child instanceof Component) {
-    child.mountTo(parent);
-
+export function mount(parent: Node, child: Child): Node {
   // Mounting mutatable value
-  } else if (child instanceof Mutatable) {
-    const node = document.createTextNode(child.value);
+  if (child instanceof Mutatable) {
+    const node = document.createTextNode('');
+    child.subscribe((text) => { node.textContent = text ? text.toString() : ''; });
     parent.appendChild(node);
-    child.subscribe((text) => { node.textContent = text; });
+    return node;
+  }
 
   // Mounting text node
-  } else if (typeof child === 'string' || typeof child === 'number') {
-    parent.appendChild(document.createTextNode(child.toString()));
-
-  // Mounting factory
-  } else if (typeof child === 'function') {
-    mount(parent, new child());
+  if (typeof child === 'string' || typeof child === 'number') {
+    const node = document.createTextNode(child.toString());
+    parent.appendChild(node);
+    return node;
+  }
 
   // Mounting HTML Element
-  } else if (child instanceof HTMLElement) {
+  if (child instanceof HTMLElement) {
     parent.appendChild(child);
+    return child;
+  }
 
   // Exception
-  } else {
-    throw new Error('Unknow child type passed');
-  }
+  throw new Error('Unknow child type passed');
 }
 
 /**
@@ -87,19 +86,32 @@ export function setClassName(element: HTMLElement, className: string | Mutatable
 }
 
 /**
+ * Sets style to HTMLElement
+ */
+export function setStyle(element: HTMLElement, style: Partial<Pick<CSSStyleDeclaration, WritableCSSProps>>) {
+  // To Do: Support of mutation
+  const props = Object.keys(style) as WritableCSSProps[];
+
+  for (let i = 0; i < props.length; i++) {
+    // To Do: Fix
+    element.style[props[i]] = style[props[i]];
+  }
+}
+
+/**
  * Updates value at HTMLElement and disatch input event;
  * @param {HTMLElement} element HTML Element
  * @param {string | Mutatable<string>} value Value to set
  */
-export function setValue(element: HTMLElement, value: string | Mutatable<string>) {
+export function setValue(element: HTMLElement, value: Child) {
   if (element instanceof HTMLInputElement) {
     if (value instanceof Mutatable) {
       value.subscribe((v) => {
-        element.value = v;
+        element.value = v.toString();
         element.dispatchEvent(new Event('input'));
       });
     } else {
-      element.value = value;
+      element.value = value.toString();
       element.dispatchEvent(new Event('input'));
     }
   }
@@ -111,7 +123,8 @@ export function setValue(element: HTMLElement, value: string | Mutatable<string>
  * @param {Object} props Properties for creation
  * @param {Child[]} children Child nodes or components
  */
-export function el<T>(tag: string, props?: Record<string, any>, children?: Child[]): T;
+export function el<T extends keyof HTMLElementTagNameMap>(tag: T, props?: Record<string, any>, children?: Child[]): HTMLElementTagNameMap[T];
+export function el(tag: string, props?: Record<string, any>, children?: Child[]): HTMLElement;
 export function el(tag: string, props: Record<string, any> = {}, children: Child[] = []): HTMLElement {
   const element = document.createElement(tag);
 
@@ -122,6 +135,10 @@ export function el(tag: string, props: Record<string, any> = {}, children: Child
       switch (propNames[i]) {
         case 'className':
           setClassName(element, props.className);
+          break;
+
+        case 'style':
+          setStyle(element, props.style);
           break;
 
         case 'key':
@@ -138,6 +155,10 @@ export function el(tag: string, props: Record<string, any> = {}, children: Child
 
         case 'onMouseEnter':
           element.addEventListener('mouseenter', props.onMouseEnter);
+          break;
+
+        case 'onAnimationEnd':
+          element.addEventListener('animationend', props.onAnimationEnd);
           break;
 
         default:
@@ -157,31 +178,22 @@ export function el(tag: string, props: Record<string, any> = {}, children: Child
 }
 
 /**
- * Base HTML Dom component wrapper
+ * Attaches event listener to element
+ * @param element DOM Element
+ * @param event Event to listen
+ * @param cb Event listener function
  */
-export class Component<T extends HTMLElement> implements ComponentInterface<T> {
-  element: T;
+export function listen(element: HTMLElement, event: string, cb: undefined | ((event: Event) => void)) {
+  if (typeof cb !== 'function') return;
 
-  constructor(tag?: string, props?: Record<string, any>, children?: Child[]) {
-    if (tag) {
-      this.element = el<T>(tag, props, children);
-    } else {
-      this.element = el('template');
-    }
-  }
+  element.addEventListener(event, cb);
+}
 
-  mountTo(parent?: Node) {
-    if (parent && this.element) {
-      mount(parent, this.element);
-      if (this.didMount) this.didMount();
-    }
-  }
-
-  didMount() {}
-
-  unMount() {
-    if (this.element) {
-      unmount(this.element);
-    }
-  }
+/**
+ * Dispatch element event
+ * @param element DOM Element
+ * @param eventName Event to dispatch
+ */
+export function dispatch(element: HTMLElement, eventName: string) {
+  element.dispatchEvent(new Event(eventName));
 }
