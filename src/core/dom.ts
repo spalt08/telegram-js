@@ -7,6 +7,8 @@ import { Child } from './types';
  * All DOM manipulations should be done with this module.
  */
 
+type WritableCSSProps = Exclude<keyof CSSStyleDeclaration, 'length' | 'parentRule'>;
+
 /**
  * Mounts HTMLElement or Component to parent HTMLElement
  * @param {Node} parent Element to mount in
@@ -85,12 +87,10 @@ export function setClassName(element: HTMLElement, className: string | Mutatable
 
 /**
  * Sets style to HTMLElement
- * @param {HTMLElement} element HTML Element
- * @param {string | Mutatable<string>} className Class name to set
  */
-export function setStyle(element: HTMLElement, style: Record<string, unknown>) {
+export function setStyle(element: HTMLElement, style: Partial<Pick<CSSStyleDeclaration, WritableCSSProps>>) {
   // To Do: Support of mutation
-  const props = Object.keys(style);
+  const props = Object.keys(style) as WritableCSSProps[];
 
   for (let i = 0; i < props.length; i++) {
     // To Do: Fix
@@ -123,7 +123,8 @@ export function setValue(element: HTMLElement, value: Child) {
  * @param {Object} props Properties for creation
  * @param {Child[]} children Child nodes or components
  */
-export function el<T>(tag: string, props?: Record<string, any>, children?: Child[]): T;
+export function el<T extends keyof HTMLElementTagNameMap>(tag: T, props?: Record<string, any>, children?: Child[]): HTMLElementTagNameMap[T];
+export function el(tag: string, props?: Record<string, any>, children?: Child[]): HTMLElement;
 export function el(tag: string, props: Record<string, any> = {}, children: Child[] = []): HTMLElement {
   const element = document.createElement(tag);
 

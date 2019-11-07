@@ -4,7 +4,7 @@ import { Child } from 'core/types';
 import './ripple.scss';
 
 type Props = {
-  tag?: string,
+  tag?: keyof HTMLElementTagNameMap,
   className?: string,
 };
 

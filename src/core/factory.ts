@@ -46,45 +46,24 @@ interface ElementFactoryGenericI<T> {
  *
  * Usage example:
  * - div = ElementFactoryCommon<HTMLDivElement>('div', { className: 'string' })
- *
- * @param tag Tag name
  */
-export function ElementFactoryGeneric<T>(tag: string, props?: Record<string, unknown>): ElementFactoryGenericI<T> {
+export function ElementFactoryGeneric<T extends keyof HTMLElementTagNameMap>(
+  tag: T,
+  props?: Record<string, unknown>,
+): ElementFactoryGenericI<HTMLElementTagNameMap[T]>;
+export function ElementFactoryGeneric(tag: string, props?: Record<string, unknown>): ElementFactoryGenericI<HTMLElement>;
+export function ElementFactoryGeneric(tag: string, props?: Record<string, unknown>): ElementFactoryGenericI<HTMLElement> {
   return (...args: unknown[]) => {
     const [extendedProps, children] = argsToPropsAndChildren(...args);
-    return el<T>(tag, { ...props, ...extendedProps }, children);
+    return el(tag, { ...props, ...extendedProps }, children);
   };
-}
-
-/**
- * Wrapper for tagged literals, calling with props or calling with children
- */
-interface TemplatedResolverI<T> {
-  (...children: Child[]): T;
-  (props: Record<string, unknown>, ...children: Child[]): T;
-  (literals: TemplateStringsArray, ...placeholders: unknown[]): ElementFactoryGenericI<T>;
-}
-
-function TemplatedResolver<T>(...children: Child[]): T;
-function TemplatedResolver<T>(props: Record<string, unknown>, ...children: Child[]): T;
-function TemplatedResolver<T>(literals: TemplateStringsArray, ...placeholders: unknown[]): ElementFactoryGenericI<T>;
-function TemplatedResolver<T>(this: string, ...args: unknown[]) {
-  // Called as Template Litteral
-  if (args.length > 0 && args[0] !== null && typeof args[0] === 'object' && args[0].raw && Array.isArray(args[0])) {
-    const className = literalsToClassname(args[0] as string[], ...args.slice(1));
-    return ElementFactoryGeneric<T>(this.toString(), { className });
-  }
-
-  // Called without Template Litteral
-  const [props, children] = argsToPropsAndChildren(...args);
-  return el<T>(this.toString(), props, children);
 }
 
 /**
  * Tagged DOM element factory
  *
  * Usage example:
- * var div = ElementFactory<HTMLDivElement>('div')
+ * var div = ElementFactory('div')
  * - div(...children)
  * - div({ props }, ...chidren)
  * - div`.class`(...chidren)
@@ -92,7 +71,27 @@ function TemplatedResolver<T>(this: string, ...args: unknown[]) {
  *
  * @param tag Tag name
  */
-export function ElementFactory<T>(tag: string) {
-  // To Do: bind without type casting
-  return TemplatedResolver.bind(tag) as TemplatedResolverI<T>;
+export function ElementFactory<T extends keyof HTMLElementTagNameMap>(tag: T) {
+  function TemplatedResolver(...children: Child[]): HTMLElementTagNameMap[T];
+  function TemplatedResolver(props: Record<string, unknown>, ...children: Child[]): HTMLElementTagNameMap[T];
+  function TemplatedResolver(literals: TemplateStringsArray, ...placeholders: unknown[]): ElementFactoryGenericI<HTMLElementTagNameMap[T]>;
+  function TemplatedResolver(...args: unknown[]) {
+    // Called as Template Litteral
+    if (
+      args.length > 0
+      && args[0] !== null
+      && typeof args[0] === 'object'
+      && (args[0] as TemplateStringsArray).raw
+      && Array.isArray(args[0])
+    ) {
+      const className = literalsToClassname(args[0] as string[], ...args.slice(1));
+      return ElementFactoryGeneric(tag, { className });
+    }
+
+    // Called without Template Litteral
+    const [props, children] = argsToPropsAndChildren(...args);
+    return el(tag, props, children);
+  }
+
+  return TemplatedResolver;
 }
