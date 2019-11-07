@@ -11,35 +11,42 @@ import { Child, ComponentInterface } from './types';
  * Mounts HTMLElement or Component to parent HTMLElement
  * @param {Node} parent Element to mount in
  * @param {Child} child Element which mounted
+ * @returns {HTMLElement} Mounted Element
  */
-export function mount(parent: Node | HTMLElement, child: Child) {
+export function mount(parent: Node | HTMLElement, child: Child): HTMLElement | Node {
   // Mounting component
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   if (child instanceof Component) {
     child.mountTo(parent);
-
+    return child.element;
+  }
   // Mounting mutatable value
-  } else if (child instanceof Mutatable) {
+  if (child instanceof Mutatable) {
     const node = document.createTextNode(child.value);
     parent.appendChild(node);
     child.subscribe((text) => { node.textContent = text; });
+    return node;
+  }
 
   // Mounting text node
-  } else if (typeof child === 'string' || typeof child === 'number') {
-    parent.appendChild(document.createTextNode(child.toString()));
+  if (typeof child === 'string' || typeof child === 'number') {
+    const node = document.createTextNode(child.toString());
+    parent.appendChild(node);
+    return node;
+  }
 
   // Mounting factory
-  } else if (typeof child === 'function') {
-    mount(parent, new child());
+  if (typeof child === 'function') {
+    return mount(parent, new child());
+  }
 
   // Mounting HTML Element
-  } else if (child instanceof HTMLElement) {
+  if (child instanceof HTMLElement) {
     parent.appendChild(child);
-
-  // Exception
-  } else {
-    throw new Error('Unknow child type passed');
+    return child;
   }
+  // Exception
+  throw new Error('Unknow child type passed');
 }
 
 /**
