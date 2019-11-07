@@ -1,4 +1,5 @@
 import { div, input } from 'core/html';
+import { listen } from 'core/dom';
 import { Mutatable } from 'core/mutation';
 import './phone_input.scss';
 
@@ -62,13 +63,13 @@ export default function phoneInput({ label = '', prefix = '', formats = [], onCh
   // To Do: fix replacement
   const unformat = (str: string) => str.replace(' ', '').replace(' ', '').replace('-', '').replace('-', '');
 
-  inputEl.onfocus = () => { element.className = 'phoneinput focused'; };
-  inputEl.onblur = () => { element.className = 'phoneinput'; };
-  inputEl.oninput = (event: InputEvent) => {
+  listen(inputEl, 'focus', () => { element.className = 'phoneinput focused'; });
+  listen(inputEl, 'blur', () => { element.className = 'phoneinput'; });
+  listen(inputEl, 'input', (event: InputEvent) => {
     value = unformat(event.target instanceof HTMLInputElement ? event.target.value : '');
     inputEl.value = format(value);
     if (onChange) onChange(value);
-  };
+  });
 
   if (ref) ref(inputEl);
 

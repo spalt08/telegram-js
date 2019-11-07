@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { div } from 'core/html';
-import { mount, unmount, setValue, getAttribute } from 'core/dom';
+import { mount, unmount, listen, dispatch, setValue, getAttribute } from 'core/dom';
 import { KEYBOARD } from 'const';
 import textInput from '../text_input/text_input';
 import './select_autocomplete.scss';
@@ -36,104 +36,38 @@ export default function selectAutoComplete<T>({
   let highlighted = -1;
   let inputEl: HTMLInputElement;
 
-  let handleTyping = (_q: string) => {};
-  let handleBlur = () => {};
-  let handleFocus = () => {};
-  let handleKeyDown = (_event: KeyboardEvent) => {};
-  let handleArrowClick = () => {};
-  let handleSelect = (_event: MouseEvent) => {};
-  let handleMouseEnter = (_event: Event) => {};
-  let handleHighlight = (_index: number) => {};
-  let setSelected = (_index: number) => {};
-  let fetchOptions = (_highlight?: boolean) => {};
-
+  const arrow = div`.select__arrow`();
   const element = div`.select`(
     textInput({
       label,
       name,
       autocomplete: 'off',
-      onFocus: handleFocus,
-      onKeyDown: handleKeyDown,
-      onChange: handleTyping,
       ref: (el: HTMLInputElement) => { inputEl = el; },
     }),
-    div`.select__arrow`({ onClick: handleArrowClick }),
+    arrow,
   );
 
   const optionsEl = div`.select__options`(
     ...options.map((data: T, key: number) => (
-      div`.select__option`({ key, onClick: handleSelect, onMouseEnter: handleMouseEnter },
+      div`.select__option`({ key },
         optionRenderer(data),
       )
     )),
   );
 
-  if (selected !== undefined) setSelected(selected);
-
-  // To Do: wrapper for click outside event
-  window.addEventListener('click', (event) => {
-    if (!element.contains(event.target as HTMLElement)) {
-      handleBlur();
-    }
-  });
-
-  handleTyping = (q: string) => {
-    if (!query && q) element.className = 'select focused filled';
-    if (query && !q) element.className = 'select focused';
-
-    query = q.toLowerCase();
-    fetchOptions(true);
-  };
-
-  handleFocus = () => {
-    element.className = `select focused${query ? ' filled' : ''}`;
-    if (optionsEl.parentNode !== element) {
-      mount(element, optionsEl);
-      if (selected) handleHighlight(selected);
-    }
-    fetchOptions();
-  };
-
-  handleBlur = () => {
+  const performBlur = () => {
     element.className = `select${query ? ' filled' : ''}`;
     unmount(optionsEl);
     inputEl.blur();
   };
 
-  handleSelect = (event: MouseEvent) => event.currentTarget instanceof HTMLDivElement
-    && setSelected(parseInt(getAttribute(event.currentTarget, 'data-key'), 10));
-
-  setSelected = (key: number) => {
-    selected = key === -1 ? 0 : key;
-    setValue(inputEl, optionLabeler(options[selected]));
-    handleBlur();
-
-    if (onChange) onChange(options[selected]);
-  };
-
-  handleArrowClick = () => {
-    if (query) {
-      setValue(inputEl, '');
-      inputEl.focus();
-      return;
-    }
-
-    if (!optionsEl.parentNode) {
-      inputEl.focus();
-    } else {
-      handleBlur();
-    }
-  };
-
-  handleHighlight = (index: number) => {
+  const handleHighlight = (index: number) => {
     if (highlighted === index) return;
-
     if (highlighted > -1) {
       (optionsEl.childNodes[highlighted] as HTMLElement).className = (
         (optionsEl.childNodes[highlighted] as HTMLElement).className.replace(' active', '')
       );
     }
-
     if (index >= options.length) {
       highlighted = 0;
     } else if (index <= -1) {
@@ -141,22 +75,75 @@ export default function selectAutoComplete<T>({
     } else {
       highlighted = index;
     }
-
     if (highlighted > -1) {
       (optionsEl.childNodes[highlighted] as HTMLElement).className += ' active';
     }
   };
 
-  handleMouseEnter = (event: Event) => event.currentTarget instanceof HTMLDivElement
-    && handleHighlight(parseInt(getAttribute(event.currentTarget, 'data-key'), 10));
+  const fetchOptions = (highlight: boolean = false) => {
+    let first = -1;
 
-  handleKeyDown = (event: KeyboardEvent) => {
+    for (let i = 0; i < optionsEl.childNodes.length; i++) {
+      const node = optionsEl.childNodes[i] as HTMLElement;
+      if (!query || node.textContent!.toLowerCase().indexOf(query) > -1) {
+        node.style.display = '';
+        if (first === -1) first = i;
+      } else {
+        node.style.display = 'none';
+      }
+    }
+
+    if (highlight) handleHighlight(first);
+  };
+
+  const setSelected = (key: number) => {
+    selected = key === -1 ? 0 : key;
+    setValue(inputEl, optionLabeler(options[selected]));
+    performBlur();
+
+    if (onChange) onChange(options[selected]);
+  };
+
+  if (selected !== undefined) setSelected(selected);
+
+  listen(inputEl!, 'input', (event: Event) => {
+    const q = event.currentTarget instanceof HTMLInputElement ? event.currentTarget.value : '';
+
+    if (!query && q) element.className = 'select focused filled';
+    if (query && !q) element.className = 'select focused';
+
+    query = q.toLowerCase();
+    fetchOptions(true);
+  });
+
+  listen(inputEl!, 'blur', performBlur);
+  listen(inputEl!, 'focus', () => {
+    element.className = `select focused${query ? ' filled' : ''}`;
+    if (optionsEl.parentNode !== element) {
+      mount(element, optionsEl);
+      if (selected) handleHighlight(selected);
+    }
+    fetchOptions();
+  });
+
+  listen(arrow, 'click', () => {
+    if (query) {
+      setValue(inputEl, '');
+      inputEl.focus();
+      return;
+    }
+
+    if (!optionsEl.parentNode) inputEl.focus();
+    else performBlur();
+  });
+
+  listen(inputEl!, 'keydown', (event: KeyboardEvent) => {
     switch (event.keyCode) {
       case KEYBOARD.TAB:
         // To Do: shift tabs
         event.preventDefault();
         setSelected(highlighted);
-        handleBlur();
+        performBlur();
         break;
 
       case KEYBOARD.ARROW_DOWN:
@@ -173,30 +160,29 @@ export default function selectAutoComplete<T>({
         break;
 
       case KEYBOARD.ESC:
-        handleArrowClick();
+        dispatch(arrow, 'click');
         break;
 
       default:
     }
-  };
+  });
 
-  fetchOptions = (highlight: boolean = false) => {
-    let first = -1;
+  for (let i = 0; i < optionsEl.childNodes.length; i++) {
+    listen(optionsEl.childNodes[i] as HTMLDivElement, 'click', (event: MouseEvent) => event.currentTarget instanceof HTMLDivElement
+      && setSelected(parseInt(getAttribute(event.currentTarget, 'data-key'), 10)),
+    );
 
-    for (let i = 0; i < optionsEl.childNodes.length; i++) {
-      const node = optionsEl.childNodes[i] as HTMLElement;
+    listen(optionsEl.childNodes[i] as HTMLDivElement, 'mouseenter', (event: Event) => event.currentTarget instanceof HTMLDivElement
+      && handleHighlight(parseInt(getAttribute(event.currentTarget, 'data-key'), 10)),
+    );
+  }
 
-      if (!query || node.textContent!.toLowerCase().indexOf(query) > -1) {
-        node.style.display = '';
-
-        if (first === -1) first = i;
-      } else {
-        node.style.display = 'none';
-      }
+  // To Do: wrapper for click outside event
+  window.addEventListener('click', (event) => {
+    if (!element.contains(event.target as HTMLElement)) {
+      performBlur();
     }
-
-    if (highlight) handleHighlight(first);
-  };
+  });
 
   return element;
 }

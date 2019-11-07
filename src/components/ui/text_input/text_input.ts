@@ -1,18 +1,15 @@
 import { div, input } from 'core/html';
+import { listen } from 'core/dom';
 import './text_input.scss';
 
 type Props = {
-  onChange?: (value: string) => void;
-  onFocus?: () => void;
-  onBlur?: () => void;
-  onKeyDown?: (_event: KeyboardEvent) => void;
   label?: string,
   name?: string,
   autocomplete?: string,
   ref?: (ref: HTMLInputElement) => void,
 };
 
-export default function textInput({ label = '', onChange, onFocus, onBlur, ref, autocomplete, onKeyDown, name }: Props) {
+export default function textInput({ label = '', ref, autocomplete, name }: Props) {
   const inputEl = input({ type: 'text', name, autocomplete });
   const labelEl = div`.input__label`(label);
   const element = div`.input`(inputEl, labelEl);
@@ -20,19 +17,17 @@ export default function textInput({ label = '', onChange, onFocus, onBlur, ref, 
   let filled = false;
   let focused = false;
 
-  inputEl.onfocus = () => {
-    if (onFocus) onFocus();
+  listen(inputEl, 'focus', () => {
     focused = true;
     element.className = `input focused${filled ? ' filled' : ''}`;
-  };
+  });
 
-  inputEl.onblur = () => {
-    if (onBlur) onBlur();
+  listen(inputEl, 'blur', () => {
     focused = false;
     element.className = `input${filled ? ' filled' : ''}`;
-  };
+  });
 
-  inputEl.oninput = (event: Event) => {
+  listen(inputEl, 'input', (event: Event) => {
     const value = (event.target instanceof HTMLInputElement) ? event.target.value : '';
 
     if (value && !filled) {
@@ -44,12 +39,9 @@ export default function textInput({ label = '', onChange, onFocus, onBlur, ref, 
       element.className = `input${focused ? ' focused' : ''}`;
       filled = false;
     }
-
-    if (onChange) onChange(value);
-  };
+  });
 
   if (ref) ref(inputEl);
-  if (onKeyDown) inputEl.onkeydown = onKeyDown;
 
   return element;
 }

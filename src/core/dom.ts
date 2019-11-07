@@ -175,3 +175,24 @@ export function el(tag: string, props: Record<string, any> = {}, children: Child
 
   return element;
 }
+
+/**
+ * Attaches event listener to element
+ * @param element DOM Element
+ * @param event Event to listen
+ * @param cb Event listener function
+ */
+export function listen(element: HTMLElement, event: string, cb: undefined | ((event: Event) => void)) {
+  if (typeof cb !== 'function') return;
+
+  element.addEventListener(event, cb);
+}
+
+/**
+ * Dispatch element event
+ * @param element DOM Element
+ * @param eventName Event to dispatch
+ */
+export function dispatch(element: HTMLElement, eventName: string) {
+  element.dispatchEvent(new Event(eventName));
+}
