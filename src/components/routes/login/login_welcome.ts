@@ -1,4 +1,4 @@
-import { div, form, img, h1, p } from 'core/html';
+import { div, form, img, h1, p, text } from 'core/html';
 import { Mutatable } from 'core/mutation';
 import { phoneInput, selectAutoComplete, button } from 'components/ui';
 import countries, { Country } from 'const/country';
@@ -7,9 +7,9 @@ import './login.scss';
 
 const countryRenderer = ({ phone, label, emoji }: Country) => (
   div`.logincountry`(
-    div`.logincountry__flag`(emoji),
-    div`.logincountry__label`(label),
-    div`.logincountry__phone`(phone),
+    div`.logincountry__flag`(text(emoji)),
+    div`.logincountry__label`(text(label)),
+    div`.logincountry__phone`(text(phone)),
   )
 );
 
@@ -26,8 +26,8 @@ export default function loginWelcome() {
   return (
     form`.login__form`({ onSubmit: handleSubmit },
       img`.login__logo`({ src: logo }),
-      h1`.login__title`('Sign in to Telegram'),
-      p`.login__description`('Please confirm your country and enter your phone number.'),
+      h1`.login__title`(text('Sign in to Telegram')),
+      p`.login__description`(text('Please confirm your country and enter your phone number.')),
       div`.login__inputs`(
         selectAutoComplete<Country>({
           label: 'Country',
@@ -45,7 +45,7 @@ export default function loginWelcome() {
           name: 'phone',
           prefix: country.use('phone'),
           formats: country.use('phoneFormats'),
-          ref: (r: HTMLInputElement) => { phoneInputRef = r; },
+          ref: (r) => { phoneInputRef = r; },
         }),
         button({ label: 'Next' }),
       ),

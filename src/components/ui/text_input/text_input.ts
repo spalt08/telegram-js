@@ -1,4 +1,4 @@
-import { div, input } from 'core/html';
+import { div, input, text } from 'core/html';
 import { listen } from 'core/dom';
 import './text_input.scss';
 
@@ -11,7 +11,7 @@ type Props = {
 
 export default function textInput({ label = '', ref, autocomplete, name }: Props) {
   const inputEl = input({ type: 'text', name, autocomplete });
-  const labelEl = div`.input__label`(label);
+  const labelEl = div`.input__label`(text(label));
   const element = div`.input`(inputEl, labelEl);
 
   let filled = false;

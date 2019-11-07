@@ -1,5 +1,5 @@
-import { Child } from 'core/types';
-import { mount } from 'core/dom';
+import { mount, unmount } from 'core/dom';
+import { useListenWhileMounted, useOnMount } from 'core/hooks'; // eslint-disable-line import/named
 import { div } from 'core/html';
 
 export const history = {
@@ -9,23 +9,27 @@ export const history = {
 export class Router {
   element: HTMLDivElement;
 
-  mounted: Child | undefined;
+  mounted: Node | undefined;
 
-  constructor(public routes: Record<string, () => Child>) {
+  constructor(public routes: Record<string, () => Node>) {
     this.element = div`.main`();
     this.routes = routes;
 
-    window.addEventListener('popstate', (event) => {
-      this.fetchLocation();
+    useListenWhileMounted(this.element, window, 'popstate', (event: PopStateEvent) => {
       event.preventDefault();
+      this.fetchLocation();
     });
 
-    // To Do: this.element.onmount = this.fetchLocation;
-    this.fetchLocation();
+    useOnMount(this.element, () => this.fetchLocation());
   }
 
   fetchLocation() {
     const routeHandler = this.routes[window.location.pathname] || this.routes.default;
+
+    if (this.mounted) {
+      unmount(this.mounted);
+      this.mounted = undefined;
+    }
 
     if (routeHandler) {
       this.mounted = routeHandler();

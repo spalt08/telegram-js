@@ -1,5 +1,7 @@
 import Subscribable, { Receiver } from './emitter';
 
+export type MaybeMutatable<T> = T | Mutatable<T>;
+
 export class Mutatable<T> extends Subscribable<T> {
   protected _value: T;
 
@@ -43,6 +45,6 @@ export class Mutatable<T> extends Subscribable<T> {
   }
 }
 
-export function useMutation<T>(initialValue: T): Mutatable<T> {
+export function makeMutation<T>(initialValue: T): Mutatable<T> {
   return new Mutatable<T>(initialValue);
 }

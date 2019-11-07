@@ -23,7 +23,7 @@ export default class LoginTransition {
   transitRight(elementCreator: () => HTMLElement) {
     if (this.mounted) {
       this.mounted.className += ' removed';
-      this.mounted.addEventListener('animationend', (event) => unmount(event.currentTarget));
+      this.mounted.addEventListener('animationend', (event) => unmount(event.currentTarget as HTMLElement));
     }
 
     this.mounted = elementCreator();

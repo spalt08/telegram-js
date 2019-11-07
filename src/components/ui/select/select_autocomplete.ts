@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { div } from 'core/html';
+import { div, text as textNode } from 'core/html';
 import { mount, unmount, listen, dispatch, setValue, getAttribute } from 'core/dom';
 import { KEYBOARD } from 'const';
 import textInput from '../text_input/text_input';
@@ -10,14 +10,13 @@ type Props<T> = {
   name?: string,
   selected: number,
   options?: T[],
-  optionRenderer?: (data: T) => HTMLElement | string,
-  optionLabeler?: (data: T) => HTMLElement | string,
+  optionRenderer?: (data: T) => Node,
+  optionLabeler?: (data: T) => string,
   onChange?: (data: T) => void,
 };
 
 /**
  * Select with autocomplete
- * @extends Component HTMLDivElement
  *
  * Usage examples:
  * - selectAutoComplete({ label: 'Select Fruit', options: ['Orange', 'Apple', 'Pineapple']})
@@ -28,8 +27,8 @@ export default function selectAutoComplete<T>({
   name = '',
   selected,
   options = [],
-  optionRenderer = (text: T) => (typeof text === 'string' && text) || '',
-  optionLabeler = (text: T) => (typeof text === 'string' && text) || '',
+  optionRenderer = (text: T) => textNode(typeof text === 'string' ? text : ''),
+  optionLabeler = (text: T) => (typeof text === 'string' ? text : ''),
   onChange,
 }: Props<T>) {
   let query = '';

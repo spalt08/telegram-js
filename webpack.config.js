@@ -130,7 +130,6 @@ module.exports = (env, argv) => {
       new ForkTsCheckerWebpackPlugin({
         eslint: true,
         compilerOptions: {
-          sourceMap: !isProduction,
           async: !isProduction,
         },
       }),

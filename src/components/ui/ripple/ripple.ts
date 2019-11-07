@@ -1,6 +1,5 @@
 import { div } from 'core/html';
 import { mount, el, unmount, listen } from 'core/dom';
-import { Child } from 'core/types';
 import './ripple.scss';
 
 type Props = {
@@ -8,7 +7,7 @@ type Props = {
   className?: string,
 };
 
-export default function ripple({ tag = 'div', className = '' }: Props, children: Child[]) {
+export default function ripple({ tag = 'div', className = '' }: Props, children: Node[]) {
   const element = el(tag, { className: `ripple ${className}` }, [
     div`.ripple__content`(
       ...children,

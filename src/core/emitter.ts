@@ -1,11 +1,7 @@
 export type Receiver<T> = (value: T) => void;
 
 export default class Subscribable<T> {
-  receivers: Receiver<T>[];
-
-  constructor() {
-    this.receivers = [];
-  }
+  protected receivers: Receiver<T>[] = [];
 
   subscribe(receiver: Receiver<T>) {
     this.receivers.push(receiver);
@@ -20,8 +16,9 @@ export default class Subscribable<T> {
   }
 
   broadcast(data: T) {
-    for (let i = 0; i < this.receivers.length; i++) {
-      this.receivers[i](data);
+    const protectedReceivers = [...this.receivers];
+    for (let i = 0; i < protectedReceivers.length; i++) {
+      protectedReceivers[i](data);
     }
   }
 }
