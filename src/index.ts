@@ -9,5 +9,5 @@ const router = new Router({
 });
 
 window.addEventListener('load', () => {
-  mount(document.body, router);
+  mount(document.body, router.element);
 });

@@ -1,6 +1,6 @@
 /* eslint-disable no-redeclare, no-param-reassign */
 import { Mutatable } from './mutation';
-import { Child, ComponentInterface } from './types';
+import { Child } from './types';
 
 /**
  * Methods for manipulating with DOM.
@@ -13,18 +13,12 @@ import { Child, ComponentInterface } from './types';
  * @param {Child} child Element which mounted
  * @returns {HTMLElement} Mounted Element
  */
-export function mount(parent: Node | HTMLElement, child: Child): HTMLElement | Node {
-  // Mounting component
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  if (child instanceof Component) {
-    child.mountTo(parent);
-    return child.element;
-  }
+export function mount(parent: Node, child: Child): Node {
   // Mounting mutatable value
   if (child instanceof Mutatable) {
-    const node = document.createTextNode(child.value);
+    const node = document.createTextNode('');
+    child.subscribe((text) => { node.textContent = text ? text.toString() : ''; });
     parent.appendChild(node);
-    child.subscribe((text) => { node.textContent = text; });
     return node;
   }
 
@@ -35,16 +29,12 @@ export function mount(parent: Node | HTMLElement, child: Child): HTMLElement | N
     return node;
   }
 
-  // Mounting factory
-  if (typeof child === 'function') {
-    return mount(parent, new child());
-  }
-
   // Mounting HTML Element
   if (child instanceof HTMLElement) {
     parent.appendChild(child);
     return child;
   }
+
   // Exception
   throw new Error('Unknow child type passed');
 }
@@ -94,19 +84,34 @@ export function setClassName(element: HTMLElement, className: string | Mutatable
 }
 
 /**
+ * Sets style to HTMLElement
+ * @param {HTMLElement} element HTML Element
+ * @param {string | Mutatable<string>} className Class name to set
+ */
+export function setStyle(element: HTMLElement, style: Record<string, unknown>) {
+  // To Do: Support of mutation
+  const props = Object.keys(style);
+
+  for (let i = 0; i < props.length; i++) {
+    // To Do: Fix
+    element.style[props[i]] = style[props[i]];
+  }
+}
+
+/**
  * Updates value at HTMLElement and disatch input event;
  * @param {HTMLElement} element HTML Element
  * @param {string | Mutatable<string>} value Value to set
  */
-export function setValue(element: HTMLElement, value: string | Mutatable<string>) {
+export function setValue(element: HTMLElement, value: Child) {
   if (element instanceof HTMLInputElement) {
     if (value instanceof Mutatable) {
       value.subscribe((v) => {
-        element.value = v;
+        element.value = v.toString();
         element.dispatchEvent(new Event('input'));
       });
     } else {
-      element.value = value;
+      element.value = value.toString();
       element.dispatchEvent(new Event('input'));
     }
   }
@@ -131,6 +136,10 @@ export function el(tag: string, props: Record<string, any> = {}, children: Child
           setClassName(element, props.className);
           break;
 
+        case 'style':
+          setStyle(element, props.style);
+          break;
+
         case 'key':
           setAttribute(element, 'data-key', props.key);
           break;
@@ -147,6 +156,10 @@ export function el(tag: string, props: Record<string, any> = {}, children: Child
           element.addEventListener('mouseenter', props.onMouseEnter);
           break;
 
+        case 'onAnimationEnd':
+          element.addEventListener('animationend', props.onAnimationEnd);
+          break;
+
         default:
           setAttribute(element, propNames[i], props[propNames[i]]);
       }
@@ -161,34 +174,4 @@ export function el(tag: string, props: Record<string, any> = {}, children: Child
   }
 
   return element;
-}
-
-/**
- * Base HTML Dom component wrapper
- */
-export class Component<T extends HTMLElement> implements ComponentInterface<T> {
-  element: T;
-
-  constructor(tag?: string, props?: Record<string, any>, children?: Child[]) {
-    if (tag) {
-      this.element = el<T>(tag, props, children);
-    } else {
-      this.element = el('template');
-    }
-  }
-
-  mountTo(parent?: Node) {
-    if (parent && this.element) {
-      mount(parent, this.element);
-      if (this.didMount) this.didMount();
-    }
-  }
-
-  didMount() {}
-
-  unMount() {
-    if (this.element) {
-      unmount(this.element);
-    }
-  }
 }

@@ -24,12 +24,12 @@ export default function loginWelcome() {
   };
 
   return (
-    form`.login__form`({ onSubmit: handleSubmit })(
+    form`.login__form`({ onSubmit: handleSubmit },
       img`.login__logo`({ src: logo }),
       h1`.login__title`('Sign in to Telegram'),
       p`.login__description`('Please confirm your country and enter your phone number.'),
       div`.login__inputs`(
-        selectAutoComplete({
+        selectAutoComplete<Country>({
           label: 'Country',
           selected: 0,
           options: countries,

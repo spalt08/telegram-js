@@ -1,6 +1,5 @@
-import { ComponentFactory } from 'core/factory';
 import { div } from 'core/html';
-import { Component, mount, el } from 'core/dom';
+import { mount, el, unmount } from 'core/dom';
 import { Child } from 'core/types';
 import './ripple.scss';
 
@@ -9,28 +8,27 @@ type Props = {
   className?: string,
 };
 
-export class Ripple extends Component<HTMLElement> {
-  constructor({ tag = 'div', className = '' }: Props, children: Child[]) {
-    super();
+export default function ripple({ tag = 'div', className = '' }: Props, children: Child[]) {
+  let handleClick = (_event: MouseEvent) => {};
 
-    this.element = el(tag, { className: `ripple ${className}`, onClick: this.handleClick }, [
-      div`.ripple__content`(
-        ...children,
-      ),
-    ]);
-  }
+  const element = el(tag, { className: `ripple ${className}`, onClick: handleClick }, [
+    div`.ripple__content`(
+      ...children,
+    ),
+  ]) as HTMLElement;
 
   handleClick = (event: MouseEvent) => {
-    const effect = new div`.ripple__effect`();
-    const rect = this.element.getBoundingClientRect();
+    const rect = element.getBoundingClientRect();
+    const effect = div`.ripple__effect`({
+      style: {
+        left: `${event.clientX - rect.left}px`,
+        top: `${event.clientY - rect.top + rect.height / 2}px`,
+      },
+      onAnimationEnd: () => unmount(effect),
+    });
 
-    effect.style.left = `${event.clientX - rect.left}px`;
-    effect.style.top = `${event.clientY - rect.top + rect.height / 2}px`;
-
-    effect.addEventListener('animationend', () => effect.remove());
-
-    mount(this.element, effect);
+    mount(element, effect);
   };
-}
 
-export const ripple = ComponentFactory(Ripple);
+  return element;
+}

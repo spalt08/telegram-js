@@ -1,77 +1,41 @@
-import { Component } from 'core/dom';
-import { ComponentFactory } from 'core/factory';
 import { div, input } from 'core/html';
 import { Mutatable } from 'core/mutation';
 import './phone_input.scss';
 
 type Props = {
   onChange?: (value: string) => any;
-  prefix?: string,
-  formats?: Array<string | number>,
+  prefix?: string | Mutatable<string>,
+  formats?: Array<string | number> | Mutatable<Array<string | number>>,
   label?: string,
   name?: string,
   ref?: (ref: HTMLInputElement) => any,
 };
 
-export class PhoneInput extends Component<HTMLDivElement> {
-  input: HTMLInputElement;
+export default function phoneInput({ label = '', prefix = '', formats = [], onChange, ref, name }: Props) {
+  let value = '';
 
-  value: string;
+  const inputEl = input({ type: 'text', name, autocomplete: 'off' });
+  const element = div`.phoneinput`(
+    div`.phoneinput__container`(
+      div`.phoneinput__prefix`(prefix),
+      inputEl,
+      div`.phoneinput__label`(label),
+    ),
+  );
 
-  formats: Array<string | number> = [];
-
-  constructor({ label = '', prefix = '', formats = [], onChange, ref, name }: Props) {
-    super();
-
-    this.element = new div`.phoneinput`(
-      div`.phoneinput__container`(
-        div`.phoneinput__prefix`(prefix),
-        this.input = new input({ type: 'text', name, autocomplete: 'off' }),
-        div`.phoneinput__label`(label),
-      ),
-    );
-
-    this.input.onfocus = () => {
-      this.element.className = 'phoneinput focused';
-    };
-
-    this.input.onblur = () => {
-      this.element.className = 'phoneinput';
-    };
-
-    if (formats instanceof Mutatable) {
-      formats.subscribe((f) => { this.formats = f; });
-    } else {
-      this.formats = formats;
-    }
-
-    this.value = '';
-
-    this.input.oninput = (event: InputEvent) => {
-      const inputed = (event.target instanceof HTMLInputElement) ? event.target.value : '';
-
-      this.value = this.unformat(inputed);
-
-      if (onChange) onChange(this.value);
-
-      this.input.value = this.format(this.value);
-    };
-
-    if (ref) ref(this.input);
-  }
-
-  format = (str: string): string => {
+  const format = (str: string): string => {
     if (!str) return '';
-    if (!this.formats) return str;
+    if (!formats) return str;
 
     let formated = '';
     let maxLength = 0;
+    const formatsVal = formats instanceof Mutatable ? formats.value : formats;
 
-    for (let i = 0; i < this.formats.length; i += 2) {
-      maxLength = this.formats[i] as number;
+    for (let i = 0; i < formatsVal.length; i += 2) {
+      maxLength = formatsVal[i] as number;
 
-      if (typeof this.formats[i] === 'number' && str.length <= this.formats[i]) {
-        const pattern = this.formats[i + 1] as string;
+      if (typeof formatsVal[i] === 'number' && str.length <= formatsVal[i]) {
+        const pattern = formatsVal[i + 1] as string;
         const literals = [' ', '-'];
         let offset = 0;
         let len = 0;
@@ -92,11 +56,21 @@ export class PhoneInput extends Component<HTMLDivElement> {
       }
     }
 
-    return this.format(str.slice(0, maxLength));
+    return format(str.slice(0, maxLength));
   };
 
   // To Do: fix replacement
-  unformat = (str: string) => str.replace(' ', '').replace(' ', '').replace('-', '').replace('-', '');
-}
+  const unformat = (str: string) => str.replace(' ', '').replace(' ', '').replace('-', '').replace('-', '');
 
-export const phoneInput = ComponentFactory(PhoneInput);
+  inputEl.onfocus = () => { element.className = 'phoneinput focused'; };
+  inputEl.onblur = () => { element.className = 'phoneinput'; };
+  inputEl.oninput = (event: InputEvent) => {
+    value = unformat(event.target instanceof HTMLInputElement ? event.target.value : '');
+    inputEl.value = format(value);
+    if (onChange) onChange(value);
+  };
+
+  if (ref) ref(inputEl);
+
+  return element;
+}
