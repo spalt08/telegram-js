@@ -1,66 +1,47 @@
-import { Component } from 'core/dom';
-import { ComponentFactory } from 'core/factory';
 import { div, input } from 'core/html';
+import { listen } from 'core/dom';
 import './text_input.scss';
 
 type Props = {
-  onChange?: (value: string) => any;
-  onFocus?: () => any;
-  onBlur?: () => any;
-  onKeyDown?: () => any;
   label?: string,
   name?: string,
   autocomplete?: string,
-  ref?: (ref: HTMLInputElement) => any,
+  ref?: (ref: HTMLInputElement) => void,
 };
 
-export class TextInput extends Component<HTMLDivElement> {
-  label: HTMLDivElement;
+export default function textInput({ label = '', ref, autocomplete, name }: Props) {
+  const inputEl = input({ type: 'text', name, autocomplete });
+  const labelEl = div`.input__label`(label);
+  const element = div`.input`(inputEl, labelEl);
 
-  input: HTMLInputElement;
+  let filled = false;
+  let focused = false;
 
-  constructor({ label = '', onChange, onFocus, onBlur, ref, autocomplete, onKeyDown, name }: Props) {
-    super();
+  listen(inputEl, 'focus', () => {
+    focused = true;
+    element.className = `input focused${filled ? ' filled' : ''}`;
+  });
 
-    this.element = new div`.input`(
-      this.input = new input({ type: 'text', name, autocomplete }),
-      this.label = new div`.input__label`(label),
-    );
+  listen(inputEl, 'blur', () => {
+    focused = false;
+    element.className = `input${filled ? ' filled' : ''}`;
+  });
 
-    let filled = false;
-    let focused = false;
+  listen(inputEl, 'input', (event: Event) => {
+    const value = (event.target instanceof HTMLInputElement) ? event.target.value : '';
 
-    this.input.onfocus = () => {
-      if (onFocus) onFocus();
-      focused = true;
-      this.element.className = `input focused${filled ? ' filled' : ''}`;
-    };
+    if (value && !filled) {
+      element.className = `input${focused ? ' focused' : ''} filled`;
+      filled = true;
+    }
 
-    this.input.onblur = () => {
-      if (onBlur) onBlur();
-      focused = false;
-      this.element.className = `input${filled ? ' filled' : ''}`;
-    };
+    if (!value && filled) {
+      element.className = `input${focused ? ' focused' : ''}`;
+      filled = false;
+    }
+  });
 
-    this.input.oninput = (event: InputEvent) => {
-      const value = (event.target instanceof HTMLInputElement) ? event.target.value : '';
+  if (ref) ref(inputEl);
 
-      if (value && !filled) {
-        this.element.className = `input${focused ? ' focused' : ''} filled`;
-        filled = true;
-      }
-
-      if (!value && filled) {
-        this.element.className = `input${focused ? ' focused' : ''}`;
-        filled = false;
-      }
-
-      if (onChange) onChange(value);
-    };
-
-    if (ref) ref(this.input);
-    if (onKeyDown) this.input.onkeydown = onKeyDown;
-  }
+  return element;
 }
-
-export const textInput = ComponentFactory(TextInput);

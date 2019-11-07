@@ -8,20 +8,19 @@
   }
 
   &__effect {
-    opacity: 1;
     background-color: rgba(0, 0, 0, 0.08);
     width: 30px;
     height: 30px;
     position: absolute;
     transform: translateX(-50%) translateY(-50%);
     border-radius: 50%;
-    animation: click .8s ease-out forwards;
+    animation: click .9s ease-out forwards;
     z-index: 1;
   }
 }
 
 @keyframes click {
-	0%   { transform: translate(-50%, -50%); opacity: 1; }
-	80%  { transform: translate(-50%, -50%) scale(25); opacity: 1;  }
+	0%   { transform: translate(-50%, -50%); }
+	80%  { transform: translate(-50%, -50%) scale(25);  }
 	100% { transform: translate(-50%, -50%) scale(25); opacity: 0; }
 }

@@ -9,7 +9,7 @@ const router = new Router({
 });
 
 window.addEventListener('load', () => {
-  mount(document.body, router);
+  mount(document.body, router.element);
 });
 
 // todo: Check in IE 11 and add required polyfills: Node.prototype.remove, Object.assign
