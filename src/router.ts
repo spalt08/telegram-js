@@ -1,4 +1,4 @@
-import { mount } from 'core/dom';
+import { mount, unmount } from 'core/dom';
 import { div } from 'core/html';
 
 export const history = {
@@ -25,6 +25,11 @@ export class Router {
 
   fetchLocation() {
     const routeHandler = this.routes[window.location.pathname] || this.routes.default;
+
+    if (this.mounted) {
+      unmount(this.mounted);
+      this.mounted = undefined;
+    }
 
     if (routeHandler) {
       this.mounted = routeHandler();

@@ -1,5 +1,6 @@
 /* eslint-disable no-redeclare, no-param-reassign */
 import { MaybeMutatable, Mutatable } from './mutation';
+import { isMountTriggered, triggerMount, triggerUnmount } from './hooks';
 
 /**
  * Methods for manipulating with DOM.
@@ -7,6 +8,47 @@ import { MaybeMutatable, Mutatable } from './mutation';
  */
 
 type WritableCSSProps = Exclude<keyof CSSStyleDeclaration, 'length' | 'parentRule'>;
+
+/**
+ * Checks if the node is in the page document
+ */
+export function isMounted(element: Node): boolean {
+  return element.isConnected;
+}
+
+function triggerMountRecursive(element: Node) {
+  // The parent is triggered as mounted means that the children are triggered too (if they use mount/unmount as expected)
+  if (isMountTriggered(element) === true) {
+    return;
+  }
+
+  try {
+    triggerMount(element);
+  } catch (error) {
+    console.error(error); // eslint-disable-line no-console
+  }
+
+  for (let i = 0; i < element.childNodes.length; i++) {
+    triggerMountRecursive(element.childNodes[i]);
+  }
+}
+
+function triggerUnmountRecursive(element: Node) {
+  // The parent is triggered as unmounted means that the children are triggered too (if they use mount/unmount as expected)
+  if (isMountTriggered(element) === false) {
+    return;
+  }
+
+  try {
+    triggerUnmount(element);
+  } catch (error) {
+    console.error(error); // eslint-disable-line no-console
+  }
+
+  for (let i = 0; i < element.childNodes.length; i++) {
+    triggerUnmountRecursive(element.childNodes[i]);
+  }
+}
 
 /**
  * Mounts HTMLElement or Component to parent HTMLElement
@@ -20,6 +62,13 @@ export function mount(parent: Node, child: Node, before?: Node) {
   } else {
     parent.appendChild(child);
   }
+
+  if (isMounted(parent)) {
+    triggerMountRecursive(child);
+  } else {
+    // For a case when the child is remounted to an unmounted parent
+    triggerUnmountRecursive(child);
+  }
 }
 
 /**
@@ -29,15 +78,17 @@ export function unmount(element: Node) {
   if (element.parentNode) {
     element.parentNode.removeChild(element);
   }
+
+  triggerUnmountRecursive(element);
 }
 
 /**
  * Sets any attribute to HTMLElement
- * @param {HTMLElement} element HTML Element
- * @param {string} attr Attribute name
- * @param {string | Mutatable<string>} value Attribute value
+ * @param element HTML Element
+ * @param attr Attribute name
+ * @param value Attribute value
  */
-export function setAttribute(element: HTMLElement, attr: string, value: MaybeMutatable<string>) {
+export function setAttribute(element: Element, attr: string, value: MaybeMutatable<string>) {
   if (value instanceof Mutatable) {
     value.subscribe((v) => element.setAttribute(attr, v));
   } else {
@@ -56,10 +107,10 @@ export function getAttribute(element: HTMLElement, attr: string): string {
 
 /**
  * Sets class name to HTMLElement
- * @param {HTMLElement} element HTML Element
- * @param {string | Mutatable<string>} className Class name to set
+ * @param element HTML Element
+ * @param className Class name to set
  */
-export function setClassName(element: HTMLElement, className: MaybeMutatable<string>) {
+export function setClassName(element: Element, className: MaybeMutatable<string>) {
   if (className instanceof Mutatable) {
     className.subscribe((cn) => { element.className = cn; });
   } else {

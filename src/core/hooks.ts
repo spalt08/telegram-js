@@ -1,6 +1,13 @@
+/* eslint-disable no-param-reassign */
+
+/*
+ * Tools for one parts of the application to communicate with others though DOM nodes
+ */
+
 interface LifecycleListeners {
   mount?: Array<() => void>;
   unmount?: Array<() => void>;
+  isMountTriggered?: boolean;
 }
 
 interface Hooks {
@@ -20,7 +27,7 @@ export type WithLifecycleHook = WithHooks<{
   lifecycle: LifecycleListeners;
 }>;
 
-type OnMount = () => OnUnmount;
+type OnMount = () => OnUnmount | void;
 type OnUnmount = () => void;
 
 function isWithHooks(base: unknown): base is WithHooks {
@@ -57,21 +64,20 @@ export function getInterface<TBase extends WithInterfaceHook<any>>(base: TBase)
 }
 
 /**
- * Attaches mount and unmount event listeners to an element.
+ * Attaches mount and optional unmount event listeners to an element.
  * They should be triggered manually.
  *
  * @example
- * useLifecycle(element, () => {
+ * useOnMount(element, () => {
  *   const intervalId = setInterval(() => console.log('tick'), 1000);
- *   return () => clearInterval(intervalId);
+ *   return () => clearInterval(intervalId); // Optionally return an unmount listener
  * });
+ *
+ * // In the real app these function are called by the `mount` and `unmount` functions
  * triggerMount(element);
  * triggerUnmount(element);
  */
-export function useLifecycle<TBase>(
-  base: TBase,
-  onMount: OnMount,
-) {
+export function useOnMount<TBase>(base: TBase, onMount: OnMount) {
   const enhanced = ensureWithHooks(base);
   const lifecycle = enhanced.__hooks.lifecycle || {};
   enhanced.__hooks.lifecycle = lifecycle;
@@ -79,6 +85,10 @@ export function useLifecycle<TBase>(
 
   lifecycle.mount.push(() => {
     const onUnmount = onMount();
+    if (!onUnmount) {
+      return;
+    }
+
     const handleUnmount = () => {
       try {
         onUnmount();
@@ -91,27 +101,62 @@ export function useLifecycle<TBase>(
         }
       }
     };
-    lifecycle.unmount = lifecycle.unmount || [];
-    lifecycle.unmount.push(handleUnmount);
+    useOnUnmount(enhanced, handleUnmount); // eslint-disable-line @typescript-eslint/no-use-before-define
   });
 
   return enhanced as TBase & WithLifecycleHook;
 }
 
 /**
- * Triggers the mount event listeners on the value (does nothing if there are no listeners)
+ * Attaches an unmount event listener to an element.
+ * It should be triggered manually.
+ *
+ * @example
+ * useOnUnmount(element, () => {
+ *   window.removeEventListener(...);
+ * });
+ *
+ * // In the real app this function is called by the `unmount` functions
+ * triggerUnmount(element);
+ */
+export function useOnUnmount<TBase>(base: TBase, onUnmount: OnUnmount) {
+  const enhanced = ensureWithHooks(base);
+  const lifecycle = enhanced.__hooks.lifecycle || {};
+  enhanced.__hooks.lifecycle = lifecycle;
+  lifecycle.unmount = lifecycle.unmount || [];
+  lifecycle.unmount.push(onUnmount);
+  return enhanced as TBase & WithLifecycleHook;
+}
+
+/**
+ * Checks if the element is in the mounted hook state (the last triggered event from mount/unmount was mount).
+ * Undefined means not subscribed or never mounted before.
+ */
+export function isMountTriggered(base: unknown): boolean | undefined {
+  if (!isWithHooks(base)) {
+    return undefined;
+  }
+  return base.__hooks.lifecycle && base.__hooks.lifecycle.isMountTriggered;
+}
+
+/**
+ * Triggers the mount event listeners on the value (does nothing if there are no listeners or it's already mounted)
  */
 export function triggerMount(base: unknown) {
-  if (isWithHooks(base) && base.__hooks.lifecycle && base.__hooks.lifecycle.mount) {
+  if (isWithHooks(base) && base.__hooks.lifecycle && base.__hooks.lifecycle.mount && !isMountTriggered(base)) {
+    console.log('Mount (hook)', base); // todo: For test, remove later
+    base.__hooks.lifecycle.isMountTriggered = true;
     [...base.__hooks.lifecycle.mount].forEach((onMount) => onMount());
   }
 }
 
 /**
- * Triggers the unmount event listeners on the value (does nothing if there are no listeners)
+ * Triggers the unmount event listeners on the value (does nothing if there are no listeners or it's already unmounted)
  */
 export function triggerUnmount(base: unknown) {
-  if (isWithHooks(base) && base.__hooks.lifecycle && base.__hooks.lifecycle.unmount) {
+  if (isWithHooks(base) && base.__hooks.lifecycle && base.__hooks.lifecycle.unmount && isMountTriggered(base)) {
+    console.log('Unmount (hook)', base); // todo: For test, remove later
+    base.__hooks.lifecycle.isMountTriggered = false;
     [...base.__hooks.lifecycle.unmount].forEach((onUnmount) => onUnmount());
   }
 }
