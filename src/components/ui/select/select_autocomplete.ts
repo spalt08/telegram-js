@@ -116,7 +116,6 @@ export default function selectAutoComplete<T>({
     fetchOptions(true);
   });
 
-  listen(inputEl!, 'blur', performBlur);
   listen(inputEl!, 'focus', () => {
     element.className = `select focused${query ? ' filled' : ''}`;
     if (optionsEl.parentNode !== element) {
