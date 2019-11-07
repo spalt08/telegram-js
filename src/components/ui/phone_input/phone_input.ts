@@ -1,12 +1,12 @@
 import { div, input, text } from 'core/html';
 import { listen } from 'core/dom';
-import { Mutatable } from 'core/mutation';
+import { MaybeMutatable, Mutatable } from 'core/mutation';
 import './phone_input.scss';
 
 type Props = {
   onChange?: (value: string) => any;
-  prefix?: string | Mutatable<string>,
-  formats?: Array<string | number> | Mutatable<Array<string | number>>,
+  prefix?: MaybeMutatable<string>,
+  formats?: MaybeMutatable<Array<string | number>>,
   label?: string,
   name?: string,
   ref?: (ref: HTMLInputElement) => any,

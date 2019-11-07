@@ -1,20 +1,11 @@
 import { ElementFactory } from './factory';
-// eslint-disable-next-line import/named
-import { MaybeMutatable, Mutatable } from './mutation';
-import { useOnMount } from './hooks';
+import { MaybeMutatable } from './mutation';
+import { useMaybeMutable } from './hooks'; // eslint-disable-line import/named
 
-export function text<T extends { toString(): string; }>(value: MaybeMutatable<T>) {
-  if (!(value instanceof Mutatable)) {
-    return document.createTextNode(value.toString());
-  }
-
+export function text(value: MaybeMutatable<{ toString(): string; }>) {
   const node = document.createTextNode('');
-  const onNewValue = (newValue: T) => {
+  useMaybeMutable(node, value, (newValue) => {
     node.textContent = newValue.toString();
-  };
-  useOnMount(node, () => {
-    value.subscribe(onNewValue);
-    return () => value.unsubscribe(onNewValue);
   });
   return node;
 }

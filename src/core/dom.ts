@@ -1,6 +1,6 @@
 /* eslint-disable no-redeclare, no-param-reassign */
-import { MaybeMutatable, Mutatable } from './mutation';
-import { isMountTriggered, triggerMount, triggerUnmount } from './hooks';
+import { MaybeMutatable } from './mutation';
+import { isMountTriggered, triggerMount, triggerUnmount, useMaybeMutable } from './hooks';
 
 /**
  * Methods for manipulating with DOM.
@@ -89,11 +89,7 @@ export function unmount(element: Node) {
  * @param value Attribute value
  */
 export function setAttribute(element: Element, attr: string, value: MaybeMutatable<string>) {
-  if (value instanceof Mutatable) {
-    value.subscribe((v) => element.setAttribute(attr, v));
-  } else {
-    element.setAttribute(attr, value);
-  }
+  useMaybeMutable(element, value, (v) => element.setAttribute(attr, v));
 }
 
 /**
@@ -111,11 +107,7 @@ export function getAttribute(element: HTMLElement, attr: string): string {
  * @param className Class name to set
  */
 export function setClassName(element: Element, className: MaybeMutatable<string>) {
-  if (className instanceof Mutatable) {
-    className.subscribe((cn) => { element.className = cn; });
-  } else {
-    element.className = className;
-  }
+  useMaybeMutable(element, className, (cn) => { element.className = cn; });
 }
 
 /**
@@ -137,15 +129,10 @@ export function setStyle(element: HTMLElement, style: Partial<Pick<CSSStyleDecla
  * @param value Value to set
  */
 export function setValue(element: HTMLInputElement, value: MaybeMutatable<string>) {
-  if (value instanceof Mutatable) {
-    value.subscribe((v) => {
-      element.value = v;
-      element.dispatchEvent(new Event('input'));
-    });
-  } else {
-    element.value = value;
+  useMaybeMutable(element, value, (v) => {
+    element.value = v;
     element.dispatchEvent(new Event('input'));
-  }
+  });
 }
 
 /**

@@ -4,6 +4,8 @@
  * Tools for one parts of the application to communicate with others though DOM nodes
  */
 
+import { MaybeMutatable, Mutatable } from './mutation';
+
 interface LifecycleListeners {
   mount?: Array<() => void>;
   unmount?: Array<() => void>;
@@ -26,9 +28,6 @@ export type WithInterfaceHook<TInterface> = WithHooks<{
 export type WithLifecycleHook = WithHooks<{
   lifecycle: LifecycleListeners;
 }>;
-
-type OnMount = () => OnUnmount | void;
-type OnUnmount = () => void;
 
 function isWithHooks(base: unknown): base is WithHooks {
   return !!(base as { __hooks?: unknown }).__hooks;
@@ -64,46 +63,24 @@ export function getInterface<TBase extends WithInterfaceHook<any>>(base: TBase)
 }
 
 /**
- * Attaches mount and optional unmount event listeners to an element.
- * They should be triggered manually.
+ * Attaches a mount event listener to an element.
+ * It should be triggered manually.
  *
  * @example
+ * let intervalId = 0;
  * useOnMount(element, () => {
- *   const intervalId = setInterval(() => console.log('tick'), 1000);
- *   return () => clearInterval(intervalId); // Optionally return an unmount listener
+ *   intervalId = setInterval(() => console.log('tick'), 1000);
  * });
  *
- * // In the real app these function are called by the `mount` and `unmount` functions
+ * // In the real app this function is called by the `mount` and `unmount` functions
  * triggerMount(element);
- * triggerUnmount(element);
  */
-export function useOnMount<TBase>(base: TBase, onMount: OnMount) {
+export function useOnMount<TBase>(base: TBase, onMount: () => void) {
   const enhanced = ensureWithHooks(base);
   const lifecycle = enhanced.__hooks.lifecycle || {};
   enhanced.__hooks.lifecycle = lifecycle;
   lifecycle.mount = lifecycle.mount || [];
-
-  lifecycle.mount.push(() => {
-    const onUnmount = onMount();
-    if (!onUnmount) {
-      return;
-    }
-
-    const handleUnmount = () => {
-      try {
-        onUnmount();
-      } finally {
-        if (lifecycle.unmount) {
-          const listenerIndex = lifecycle.unmount.indexOf(handleUnmount);
-          if (listenerIndex > -1) {
-            lifecycle.unmount.splice(listenerIndex, 1);
-          }
-        }
-      }
-    };
-    useOnUnmount(enhanced, handleUnmount); // eslint-disable-line @typescript-eslint/no-use-before-define
-  });
-
+  lifecycle.mount.push(onMount);
   return enhanced as TBase & WithLifecycleHook;
 }
 
@@ -112,20 +89,47 @@ export function useOnMount<TBase>(base: TBase, onMount: OnMount) {
  * It should be triggered manually.
  *
  * @example
- * useOnUnmount(element, () => {
- *   window.removeEventListener(...);
+ * // ...
+ * useOnMount(element, () => {
+ *   clearInterval(intervalId);
  * });
  *
  * // In the real app this function is called by the `unmount` functions
  * triggerUnmount(element);
  */
-export function useOnUnmount<TBase>(base: TBase, onUnmount: OnUnmount) {
+export function useOnUnmount<TBase>(base: TBase, onUnmount: () => void) {
   const enhanced = ensureWithHooks(base);
   const lifecycle = enhanced.__hooks.lifecycle || {};
   enhanced.__hooks.lifecycle = lifecycle;
   lifecycle.unmount = lifecycle.unmount || [];
   lifecycle.unmount.push(onUnmount);
   return enhanced as TBase & WithLifecycleHook;
+}
+
+/**
+ * Removes the listener added by useOnMount
+ */
+export function unuseOnMount(base: unknown, onMount: () => void) {
+  const mounts = isWithHooks(base) && base.__hooks.lifecycle && base.__hooks.lifecycle.unmount;
+  if (mounts) {
+    const listenerIndex = mounts.indexOf(onMount);
+    if (listenerIndex > -1) {
+      mounts.splice(listenerIndex, 1);
+    }
+  }
+}
+
+/**
+ * Removes the listener added by useOnUnmount
+ */
+export function unuseOnOnmount(base: unknown, onUnmount: () => void) {
+  const unmounts = isWithHooks(base) && base.__hooks.lifecycle && base.__hooks.lifecycle.unmount;
+  if (unmounts) {
+    const listenerIndex = unmounts.indexOf(onUnmount);
+    if (listenerIndex > -1) {
+      unmounts.splice(listenerIndex, 1);
+    }
+  }
 }
 
 /**
@@ -144,7 +148,7 @@ export function isMountTriggered(base: unknown): boolean | undefined {
  */
 export function triggerMount(base: unknown) {
   if (isWithHooks(base) && base.__hooks.lifecycle && base.__hooks.lifecycle.mount && !isMountTriggered(base)) {
-    console.log('Mount (hook)', base); // todo: For test, remove later
+    console.log('[hook] Mount', base); // todo: For test, remove later
     base.__hooks.lifecycle.isMountTriggered = true;
     [...base.__hooks.lifecycle.mount].forEach((onMount) => onMount());
   }
@@ -155,8 +159,79 @@ export function triggerMount(base: unknown) {
  */
 export function triggerUnmount(base: unknown) {
   if (isWithHooks(base) && base.__hooks.lifecycle && base.__hooks.lifecycle.unmount && isMountTriggered(base)) {
-    console.log('Unmount (hook)', base); // todo: For test, remove later
+    console.log('[hook] Unmount', base); // todo: For test, remove later
     base.__hooks.lifecycle.isMountTriggered = false;
     [...base.__hooks.lifecycle.unmount].forEach((onUnmount) => onUnmount());
   }
+}
+
+/**
+ * Calls the function when the element is mounted and the other function when unmounted.
+ * In contrast to useOnMount, also calls the function during hooking if the element is mounted.
+ *
+ * @example
+ * useWhileMounted(element, () => {
+ *   const intervalId = setInterval(() => console.log('tick'), 1000);
+ *   return () => clearInterval(intervalId); // Return an unmount listener
+ * });
+ */
+export function useWhileMounted<TBase>(base: TBase, onMount: () => () => void) {
+  const handleMount = () => {
+    const onUnmount = onMount();
+    const handleUnmount = () => {
+      unuseOnOnmount(base, handleUnmount);
+      onUnmount();
+    };
+    useOnUnmount(base, handleUnmount);
+  };
+
+  if (isMountTriggered(base)) {
+    handleMount();
+  }
+
+  return useOnMount(base, handleMount);
+}
+
+/**
+ * Attaches an event listener while the element is mounted.
+ * Use it to attach event listener to an object outside the element.
+ *
+ * Call it before the element is mounted.
+ *
+ * @example
+ * useListenWhileMounted(element, window, 'resize', () => {
+ *   console.log('Window resized');
+ * });
+ */
+export function useListenWhileMounted(base: unknown, target: EventTarget, event: string, cb: (event: Event) => void) {
+  return useWhileMounted(base, () => {
+    target.addEventListener(event, cb);
+    return () => target.removeEventListener(event, cb);
+  });
+}
+
+/**
+ * Listens to the Mutable value change while the element is mounted
+ *
+ * @example
+ * useMutable(element, mutableValue, (newValue) => {
+ *   element.foo = newValue;
+ * });
+ */
+export function useMutable<T>(base: unknown, value: Mutatable<T>, onChange: (newValue: T) => void) {
+  return useWhileMounted(base, () => {
+    value.subscribe(onChange);
+    return () => value.unsubscribe(onChange);
+  });
+}
+
+/**
+ * Listens to the MaybeMutable value change while the element is mounted
+ */
+export function useMaybeMutable<T>(base: unknown, value: MaybeMutatable<T>, onChange: (newValue: T) => void) {
+  if (value instanceof Mutatable) {
+    return useMutable(base, value, onChange);
+  }
+
+  return onChange(value);
 }

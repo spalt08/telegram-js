@@ -1,4 +1,3 @@
-import { Mutatable } from './mutation';
 import { el } from './dom';
 
 /**
@@ -16,7 +15,7 @@ function argsToPropsAndChildren(...args: unknown[]): [Record<string, unknown>, N
   let children: Node[] = [];
 
   if (args.length > 0) {
-    if (args[0] !== null && typeof args[0] === 'object' && !(args[0] instanceof Mutatable) && !(args[0] instanceof Node)) {
+    if (!(args[0] instanceof Node)) {
       props = args[0] as Record<string, unknown>;
       children = [...children, ...args.slice(1) as Node[]];
     } else {

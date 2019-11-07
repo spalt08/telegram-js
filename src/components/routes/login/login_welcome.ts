@@ -45,7 +45,7 @@ export default function loginWelcome() {
           name: 'phone',
           prefix: country.use('phone'),
           formats: country.use('phoneFormats'),
-          ref: (r: HTMLInputElement) => { phoneInputRef = r; },
+          ref: (r) => { phoneInputRef = r; },
         }),
         button({ label: 'Next' }),
       ),
