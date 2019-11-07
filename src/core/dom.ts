@@ -140,7 +140,6 @@ export function setStyle(element: HTMLElement, style: Partial<Pick<CSSStyleDecla
 export function setValue(element: HTMLInputElement, value: MaybeMutatable<string>) {
   useMaybeMutatable(element, value, (v) => {
     element.value = v;
-    console.log('setted', v);
     dispatch(element, 'input');
   });
 }
