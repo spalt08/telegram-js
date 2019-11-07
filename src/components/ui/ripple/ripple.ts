@@ -7,6 +7,9 @@ type Props = {
   className?: string,
 };
 
+/**
+ * Any HTML element with click ripple animation
+ */
 export default function ripple({ tag = 'div', className = '' }: Props, children: Node[]) {
   const element = el(tag, { className: `ripple ${className}` }, [
     div`.ripple__content`(

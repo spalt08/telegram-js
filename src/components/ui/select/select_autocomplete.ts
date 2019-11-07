@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
 import { div, text as textNode } from 'core/html';
 import { mount, unmount, listen, dispatch, setValue, getAttribute } from 'core/dom';
+import { useListenWhileMounted } from 'core/hooks';
 import { KEYBOARD } from 'const';
 import textInput from '../text_input/text_input';
 import './select_autocomplete.scss';
@@ -18,9 +19,9 @@ type Props<T> = {
 /**
  * Select with autocomplete
  *
- * Usage examples:
- * - selectAutoComplete({ label: 'Select Fruit', options: ['Orange', 'Apple', 'Pineapple']})
- * - selectAutoComplete({ options: [{ id: 1, text: 'Orange' }], optionRenderer: (data) => div(data.text) })
+ * @example
+ * selectAutoComplete({ label: 'Select Fruit', options: ['Orange', 'Apple', 'Pineapple']})
+ * selectAutoComplete({ options: [{ id: 1, text: 'Orange' }], optionRenderer: data => div`.option`(data.text), optionLabeler: data => data.text })
  */
 export default function selectAutoComplete<T>({
   label = '',
@@ -103,8 +104,6 @@ export default function selectAutoComplete<T>({
     if (onChange) onChange(options[selected]);
   };
 
-  if (selected !== undefined) setSelected(selected);
-
   listen(inputEl!, 'input', (event: Event) => {
     const q = event.currentTarget instanceof HTMLInputElement ? event.currentTarget.value : '';
 
@@ -175,8 +174,9 @@ export default function selectAutoComplete<T>({
     );
   }
 
-  // To Do: wrapper for click outside event
-  window.addEventListener('click', (event) => {
+  if (selected !== undefined) setSelected(selected);
+
+  useListenWhileMounted(element, window, 'click', (event: MouseEvent) => {
     if (!element.contains(event.target as HTMLElement)) {
       performBlur();
     }

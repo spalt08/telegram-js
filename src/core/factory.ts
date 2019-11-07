@@ -29,9 +29,9 @@ function argsToPropsAndChildren(...args: unknown[]): [Record<string, unknown>, N
 /**
  * Wrapper for calling with props or calling with children
  *
- * Usage examples:
- * - div(...children)
- * - div({ props }, ...chidren)
+ * @example
+ * div(...children)
+ * div({ props }, ...chidren)
  */
 interface ElementFactoryGenericI<T> {
   (): T;
@@ -42,8 +42,8 @@ interface ElementFactoryGenericI<T> {
 /**
  * DOM element factory for tag
  *
- * Usage example:
- * - div = ElementFactoryCommon<HTMLDivElement>('div', { className: 'string' })
+ * @example
+ * div = ElementFactoryCommon<HTMLDivElement>('div', { className: 'string' })
  */
 export function ElementFactoryGeneric<T extends keyof HTMLElementTagNameMap>(
   tag: T,
@@ -60,14 +60,14 @@ export function ElementFactoryGeneric(tag: string, props?: Record<string, unknow
 /**
  * Tagged DOM element factory
  *
- * Usage example:
+ * @example
  * var div = ElementFactory('div')
- * - div(...children)
- * - div({ props }, ...chidren)
- * - div`.class`(...chidren)
- * - div`.class`({ props }, ...chidren)
  *
- * @param tag Tag name
+ * div(...children)
+ * div({ props }, ...chidren)
+ * div`.class`(...chidren)
+ * div`.class`({ props }, ...chidren)
+ *
  */
 export function ElementFactory<T extends keyof HTMLElementTagNameMap>(tag: T) {
   function TemplatedResolver(...children: Node[]): HTMLElementTagNameMap[T];

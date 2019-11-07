@@ -12,6 +12,12 @@ type Props = {
   ref?: (ref: HTMLInputElement) => any,
 };
 
+/**
+ * Phone input element with autoformatter
+ *
+ * @example
+ * phoneInput({ label: 'Phone', prefix: '+44', formats: [9, 'dddd ddddd', 10, 'ddd ddd dddd'] })
+ */
 export default function phoneInput({ label = '', prefix = '', formats = [], onChange, ref, name }: Props) {
   let value = '';
 

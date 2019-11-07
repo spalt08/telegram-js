@@ -9,6 +9,12 @@ type Props = {
   ref?: (ref: HTMLInputElement) => void,
 };
 
+/**
+ * Basic text input element
+ *
+ * @example
+ * textInput({ label: 'Name' })
+ */
 export default function textInput({ label = '', ref, autocomplete, name }: Props) {
   const inputEl = input({ type: 'text', name, autocomplete });
   const labelEl = div`.input__label`(text(label));

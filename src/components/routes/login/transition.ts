@@ -5,6 +5,15 @@ type Props = {
   className?: string,
 };
 
+/**
+ * Component for handling login transition animations
+ *
+ * @example
+ * const transitioner = new LoginTransition({}, div`.one`() );
+ *
+ * transitioner.translateRight( div`.two`() );
+ * transitioner.translateLeft( div`.three`() );
+ */
 export default class LoginTransition {
   element: HTMLDivElement;
 
@@ -20,7 +29,7 @@ export default class LoginTransition {
     }
   }
 
-  transitRight(elementCreator: () => HTMLElement) {
+  translateRight(elementCreator: () => HTMLElement) {
     if (this.mounted) {
       this.mounted.className += ' removed';
       // todo: call once, for example: take(this.mounted, 'animationend', (event) => unmount(event.currentTarget as HTMLElement))

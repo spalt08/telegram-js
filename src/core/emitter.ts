@@ -1,5 +1,8 @@
 export type Receiver<T> = (value: T) => void;
 
+/**
+ * Absctact class for subscribing to anything
+ */
 export default class Subscribable<T> {
   protected receivers: Receiver<T>[] = [];
 

@@ -2,6 +2,17 @@ import Subscribable, { Receiver } from './emitter';
 
 export type MaybeMutatable<T> = T | Mutatable<T>;
 
+/**
+ * Wrapper for any mutatable data.
+ * Helps implement rerenders and other stuff.
+ *
+ * @example
+ * const isConnected = new Mutatable<boolean(false);
+ *
+ * isConnected.subscribe(newValue => alert('Connected!'))
+ *
+ * isConnected.update(true)
+ */
 export class Mutatable<T> extends Subscribable<T> {
   protected _value: T;
 
@@ -16,17 +27,9 @@ export class Mutatable<T> extends Subscribable<T> {
     this.broadcast(value);
   };
 
-  use(propName: string): Mutatable<any> {
-    if (typeof this._value === 'object') {
-      const mutation = new Mutatable<any>((this._value as Record<string, any>)[propName]);
-      this.subscribe((data: T) => mutation.update((data as Record<string, any>)[propName]));
-
-      return mutation;
-    }
-
-    throw new Error('Cannot use propery of non-object for mutation');
-  }
-
+  /**
+   * Emits single update event after subscription
+   */
   subscribe(receiver: Receiver<T>) {
     super.subscribe(receiver);
     receiver(this._value);
@@ -47,4 +50,15 @@ export class Mutatable<T> extends Subscribable<T> {
 
 export function makeMutation<T>(initialValue: T): Mutatable<T> {
   return new Mutatable<T>(initialValue);
+}
+
+/**
+ * Inherit Mutatable from another Mutatable
+ */
+export function mutateProperty<T>(from: Mutatable<Record<string, T>>, propName: string) {
+  const newMutatable = new Mutatable<T>(from.value[propName]);
+
+  from.subscribe((data: Record<string, T>) => newMutatable.update(data[propName]));
+
+  return newMutatable;
 }

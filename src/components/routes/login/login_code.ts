@@ -2,6 +2,9 @@ import { div, form, h1, p, text } from 'core/html';
 import { button, textInput } from 'components/ui';
 import './login.scss';
 
+/**
+ * Layout for entering SMS code for sign in
+ */
 export default function loginCode() {
   return (
     form`.login__form`(

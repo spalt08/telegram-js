@@ -7,6 +7,9 @@ type Props = {
   label?: MaybeMutatable<string>,
 };
 
+/**
+ * Basic button
+ */
 export default function button({ label = '' }: Props) {
   return ripple({ tag: 'button', className: 'button' }, [
     text(label),

@@ -6,6 +6,15 @@ export const history = {
   push: (path: string) => window.history.pushState({ path }, 'Telegram Web', path),
 };
 
+/**
+ * Main router handler
+ *
+ * @example
+ * const router = new Router({
+ *  '/login': div`.login`(...children),
+ *  '/messages': div`.messages`(...children),
+ * })
+ */
 export class Router {
   element: HTMLDivElement;
 

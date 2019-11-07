@@ -1,4 +1,4 @@
-/* eslint-disable no-redeclare, no-param-reassign */
+/* eslint-disable no-param-reassign */
 import { MaybeMutatable } from './mutation';
 import { isMountTriggered, triggerMount, triggerUnmount, useMaybeMutatable } from './hooks';
 
@@ -51,10 +51,28 @@ function triggerUnmountRecursive(element: Node) {
 }
 
 /**
- * Mounts HTMLElement or Component to parent HTMLElement
- * @param {Node} parent Element to mount in
- * @param {Node} child Element which mounted
- * @param {Node} [before] Element to mount before which
+ * Attach event listener to element
+ */
+export function listen<K extends keyof HTMLElementEventMap>(
+  element: HTMLElement,
+  event: string,
+  cb: undefined | ((event: HTMLElementEventMap[K]) => void),
+) {
+  if (typeof cb !== 'function') return;
+
+  element.addEventListener(event, cb);
+}
+
+/**
+ * Dispatch element event
+ */
+export function dispatch(element: HTMLElement, eventName: string) {
+  element.dispatchEvent(new Event(eventName));
+}
+
+
+/**
+ * Mounts Node to parent Node
  */
 export function mount(parent: Node, child: Node, before?: Node) {
   if (before) {
@@ -84,9 +102,6 @@ export function unmount(element: Node) {
 
 /**
  * Sets any attribute to HTMLElement
- * @param element HTML Element
- * @param attr Attribute name
- * @param value Attribute value
  */
 export function setAttribute(element: Element, attr: string, value: MaybeMutatable<string>) {
   useMaybeMutatable(element, value, (v) => element.setAttribute(attr, v));
@@ -94,8 +109,6 @@ export function setAttribute(element: Element, attr: string, value: MaybeMutatab
 
 /**
  * Gets attribute from HTMLElement
- * @param {HTMLElement} element HTML Element
- * @param {string} attr Attribute name
  */
 export function getAttribute(element: HTMLElement, attr: string): string {
   return element.getAttribute(attr) || '';
@@ -103,8 +116,6 @@ export function getAttribute(element: HTMLElement, attr: string): string {
 
 /**
  * Sets class name to HTMLElement
- * @param element HTML Element
- * @param className Class name to set
  */
 export function setClassName(element: Element, className: MaybeMutatable<string>) {
   useMaybeMutatable(element, className, (cn) => { element.className = cn; });
@@ -124,22 +135,18 @@ export function setStyle(element: HTMLElement, style: Partial<Pick<CSSStyleDecla
 }
 
 /**
- * Updates value at HTMLElement and disatch input event;
- * @param element HTML Element
- * @param value Value to set
+ * Updates value at HTMLElement and disatch input event;x
  */
 export function setValue(element: HTMLInputElement, value: MaybeMutatable<string>) {
   useMaybeMutatable(element, value, (v) => {
     element.value = v;
-    element.dispatchEvent(new Event('input'));
+    console.log('setted', v);
+    dispatch(element, 'input');
   });
 }
 
 /**
  * Creates DOM element and returns it
- * @param {string} tag Tag name for element
- * @param {Object} props Properties for creation
- * @param {Node[]} children Child nodes or components
  */
 export function el<T extends keyof HTMLElementTagNameMap>(tag: T, props?: Record<string, any>, children?: Node[]): HTMLElementTagNameMap[T];
 export function el(tag: string, props?: Record<string, any>, children?: Node[]): HTMLElement;
@@ -163,22 +170,6 @@ export function el(tag: string, props: Record<string, any> = {}, children: Node[
           setAttribute(element, 'data-key', props.key);
           break;
 
-        case 'onClick':
-          element.addEventListener('click', props.onClick);
-          break;
-
-        case 'onSubmit':
-          element.addEventListener('submit', props.onSubmit);
-          break;
-
-        case 'onMouseEnter':
-          element.addEventListener('mouseenter', props.onMouseEnter);
-          break;
-
-        case 'onAnimationEnd':
-          element.addEventListener('animationend', props.onAnimationEnd);
-          break;
-
         default:
           setAttribute(element, propNames[i], props[propNames[i]]);
       }
@@ -193,29 +184,4 @@ export function el(tag: string, props: Record<string, any> = {}, children: Node[
   }
 
   return element;
-}
-
-/**
- * Attaches event listener to element
- * @param element DOM Element
- * @param event Event to listen
- * @param cb Event listener function
- */
-export function listen<K extends keyof HTMLElementEventMap>(
-  element: HTMLElement,
-  event: string,
-  cb: undefined | ((event: HTMLElementEventMap[K]) => void),
-) {
-  if (typeof cb !== 'function') return;
-
-  element.addEventListener(event, cb);
-}
-
-/**
- * Dispatch element event
- * @param element DOM Element
- * @param eventName Event to dispatch
- */
-export function dispatch(element: HTMLElement, eventName: string) {
-  element.dispatchEvent(new Event(eventName));
 }
