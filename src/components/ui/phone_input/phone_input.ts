@@ -1,7 +1,7 @@
 import { div, input, text } from 'core/html';
 import { listen } from 'core/dom';
 import { getMaybeMutatableValue, mapMutatable, MaybeMutatable, Mutatable, noRepeatMutatable } from 'core/mutation';
-import { useInterface, useMaybeMutatable, useMutatable } from 'core/hooks';
+import { useInterface, useMaybeMutatable, useSubscribable } from 'core/hooks';
 import './phone_input.scss';
 
 type Props = {
@@ -78,8 +78,8 @@ export default function phoneInput({ label = '', prefix = '', formats = [], onCh
 
   if (error) {
     const hasError = noRepeatMutatable(mapMutatable(error, (message) => message !== undefined));
-    useMutatable(element, hasError, (isError) => { element.classList[isError ? 'add' : 'remove']('error'); });
-    useMutatable(element, error, (errorMessage) => labelText.update(errorMessage === undefined ? label : errorMessage));
+    useSubscribable(element, hasError, (isError) => { element.classList[isError ? 'add' : 'remove']('error'); });
+    useSubscribable(element, error, (errorMessage) => labelText.update(errorMessage === undefined ? label : errorMessage));
   }
 
   useMaybeMutatable(element, formats, formatCurrentValue);

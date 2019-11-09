@@ -2,7 +2,7 @@ import { div, input, text } from 'core/html';
 import { listen } from 'core/dom';
 import { mapMutatable, Mutatable, noRepeatMutatable } from 'core/mutation';
 import './text_input.scss';
-import { useMutatable } from '../../../core/hooks';
+import { useSubscribable } from '../../../core/hooks';
 
 type Props = {
   label?: string,
@@ -53,8 +53,8 @@ export default function textInput({ label = '', ref, autocomplete, name, error, 
 
   if (error) {
     const hasError = noRepeatMutatable(mapMutatable(error, (message) => message !== undefined));
-    useMutatable(element, hasError, (isError) => { element.classList[isError ? 'add' : 'remove']('error'); });
-    useMutatable(element, error, (errorMessage) => labelText.update(errorMessage === undefined ? label : errorMessage));
+    useSubscribable(element, hasError, (isError) => { element.classList[isError ? 'add' : 'remove']('error'); });
+    useSubscribable(element, error, (errorMessage) => labelText.update(errorMessage === undefined ? label : errorMessage));
   }
 
   if (ref) ref(inputEl);

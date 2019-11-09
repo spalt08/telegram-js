@@ -6,6 +6,7 @@
  * Warning! These lifecycle hooks work only when you use `mount` and `unmount` functions instead of manual DOM attaching/detaching.
  */
 
+import Subscribable from './emitter';
 import { MaybeMutatable, Mutatable } from './mutation';
 import { listen, unlisten } from './dom'; // eslint-disable-line import/no-cycle
 
@@ -220,17 +221,17 @@ export function useListenWhileMounted(base: unknown, target: EventTarget, event:
 }
 
 /**
- * Listens to the Mutatable value change during the element is mounted
+ * Listens to the Subscribable data change during the element is mounted
  *
  * @example
- * useMutable(element, mutableValue, (newValue) => {
- *   element.foo = newValue;
+ * useSubscribable(element, subscribable, (event) => {
+ *   element.foo = event;
  * });
  */
-export function useMutatable<T>(base: unknown, value: Mutatable<T>, onChange: (newValue: T) => void) {
+export function useSubscribable<T>(base: unknown, subscribable: Subscribable<T>, onChange: (newValue: T) => void) {
   return useWhileMounted(base, () => {
-    value.subscribe(onChange);
-    return () => value.unsubscribe(onChange);
+    subscribable.subscribe(onChange);
+    return () => subscribable.unsubscribe(onChange);
   });
 }
 
@@ -239,7 +240,7 @@ export function useMutatable<T>(base: unknown, value: Mutatable<T>, onChange: (n
  */
 export function useMaybeMutatable<T>(base: unknown, value: MaybeMutatable<T>, onChange: (newValue: T) => void) {
   if (value instanceof Mutatable) {
-    return useMutatable(base, value, onChange);
+    return useSubscribable(base, value, onChange);
   }
 
   return onChange(value);
