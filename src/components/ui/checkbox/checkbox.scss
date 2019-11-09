@@ -1,0 +1,42 @@
+.checkbox {
+  display: inline-block;
+  vertical-align: middle;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  position: relative;
+
+  &__input {
+    display: none;
+  }
+
+  &__on,
+  &__off {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transition: .2s ease;
+
+    path {
+      fill: #4EA4F5;
+      transition: .2s ease;
+    }
+
+    :hover > &,
+    :focus > & {
+      path {
+        fill: #4797E2;
+      }
+    }
+  }
+
+  &__on {
+    opacity: 0;
+  }
+
+  &__input:checked + &__on {
+    opacity: 1;
+  }
+}

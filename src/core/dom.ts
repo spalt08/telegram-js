@@ -168,8 +168,12 @@ export function setElementProps(element: HTMLElement | SVGElement, props: Record
       continue;
     }
 
-    if (propName === 'className' && element instanceof HTMLElement) {
-      setClassName(element, propValue);
+    if (propName === 'className') {
+      if (element instanceof HTMLElement) {
+        setClassName(element, propValue);
+      } else {
+        setAttribute(element, 'class', propValue);
+      }
       continue;
     }
 

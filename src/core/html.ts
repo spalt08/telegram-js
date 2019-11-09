@@ -20,6 +20,7 @@ export const img = ElementFactory('img');
 export const h1 = ElementFactory('h1');
 export const p = ElementFactory('p');
 export const input = ElementFactory('input');
+export const label = ElementFactory('label');
 
 /**
  * Wrapper for any text children

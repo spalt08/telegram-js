@@ -1,7 +1,7 @@
-import { div, form, img, h1, p, text } from 'core/html';
+import { div, form, img, h1, p, text, label } from 'core/html';
 import { blurAll, listen } from 'core/dom';
 import { Mutatable, mutateProperty } from 'core/mutation';
-import { phoneInput, selectAutoComplete, button } from 'components/ui';
+import { phoneInput, selectAutoComplete, button, checkbox } from 'components/ui';
 import countries, { Country } from 'const/country';
 import { getInterface } from 'core/hooks';
 import logo from './logo.svg';
@@ -46,6 +46,9 @@ export default function loginWelcome({ onSubmit }: Props) {
       getInterface(phoneField).focus();
     },
   });
+  const rememberField = checkbox({
+    checked: true,
+  });
 
   const element = (
     form`.login__form`(
@@ -55,6 +58,10 @@ export default function loginWelcome({ onSubmit }: Props) {
       div`.login__inputs`(
         countryField,
         phoneField,
+        label`.login__checkmark`(
+          rememberField,
+          text('Keep me signed in'),
+        ),
         button({ label: 'Next' }),
       ),
     )
@@ -63,7 +70,10 @@ export default function loginWelcome({ onSubmit }: Props) {
   listen(element, 'submit', (event: Event) => {
     event.preventDefault();
     blurAll(element);
-    onSubmit(getInterface(countryField).getValue().phone + getInterface(phoneField).getValue(), true);
+    onSubmit(
+      getInterface(countryField).getValue().phone + getInterface(phoneField).getValue(),
+      getInterface(rememberField).getChecked(),
+    );
   });
 
   return element;
