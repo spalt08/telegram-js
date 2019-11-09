@@ -20,14 +20,6 @@
     align-items: center;
   }
 
-  &.focused {
-    border-color: #4EA4F5;
-  }
-
-  &.focused &__container {
-    border-color: #4EA4F5;
-  }
-
   &__label {
     position: absolute;
     display: flex;
@@ -49,8 +41,22 @@
     line-height: 135%;
   }
 
+  &.focused,
+  &.focused &__container {
+    border-color: #4EA4F5;
+  }
+
   &.focused &__label {
     color: #4EA4F5;
+  }
+
+  &.error,
+  &.error &__container {
+    border-color: #ea615d;
+  }
+
+  &.error &__label {
+    color: #ea615d;
   }
 
   & input {

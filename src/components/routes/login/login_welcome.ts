@@ -7,10 +7,10 @@ import { getInterface } from 'core/hooks';
 import logo from './logo.svg';
 import './login.scss';
 
-const countryOptionRenderer = ({ phone, label, emoji }: Country) => (
+const countryOptionRenderer = ({ phone, label: countryLabel, emoji }: Country) => (
   div`.logincountry`(
     div`.logincountry__flag`(text(emoji)),
-    div`.logincountry__label`(text(label)),
+    div`.logincountry__label`(text(countryLabel)),
     div`.logincountry__phone`(text(phone)),
   )
 );
@@ -29,11 +29,18 @@ export default function loginWelcome({ onSubmit }: Props) {
     label: '',
     phone: '',
   });
+  const phoneFieldError = new Mutatable<undefined | string>(undefined);
   const phoneField = phoneInput({
     label: 'Phone Number',
     name: 'phone',
     prefix: mutateProperty(country, 'phone'),
     formats: mutateProperty(country, 'phoneFormats'),
+    error: phoneFieldError,
+    onChange() {
+      if (phoneFieldError.value !== undefined) {
+        phoneFieldError.update(undefined);
+      }
+    },
   });
   const countryField = selectAutoComplete<Country>({
     label: 'Country',
@@ -41,7 +48,7 @@ export default function loginWelcome({ onSubmit }: Props) {
     options: countries,
     optionRenderer: countryOptionRenderer,
     optionLabeler: (data) => data.label,
-    onChange: (data) => {
+    onChange(data) {
       country.update(data);
       getInterface(phoneField).focus();
     },
@@ -70,6 +77,7 @@ export default function loginWelcome({ onSubmit }: Props) {
   listen(element, 'submit', (event: Event) => {
     event.preventDefault();
     blurAll(element);
+    phoneFieldError.update('Invalid phone');
     onSubmit(
       getInterface(countryField).getValue().phone + getInterface(phoneField).getValue(),
       getInterface(rememberField).getChecked(),

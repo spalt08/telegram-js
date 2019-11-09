@@ -56,6 +56,7 @@ export function makeMutation<T>(initialValue: T): Mutatable<T> {
  * Converts values from a mutation to another mutation
  */
 export function mapMutatable<T, P>(source: Mutatable<T>, map: (value: T) => P): Mutatable<P> {
+  // todo: Never unsubscribes, it's a potential memory leak. Solve.
   const destination = new Mutatable(map(source.value));
   source.subscribe((value) => destination.update(map(value)));
   return destination;
@@ -70,4 +71,20 @@ export function mutateProperty<T extends object, P extends keyof T>(from: Mutata
 
 export function getMaybeMutatableValue<T>(source: MaybeMutatable<T>): T {
   return source instanceof Mutatable ? source.value : source;
+}
+
+/**
+ * Emits a new value only if it's different from the previous value
+ */
+export function noRepeatMutatable<T>(source: Mutatable<T>): Mutatable<T> {
+  // todo: Never unsubscribes, it's a potential memory leak. Solve.
+  let lastValue = source.value;
+  const destination = new Mutatable(lastValue);
+  source.subscribe((newValue) => {
+    if (newValue !== lastValue) {
+      lastValue = newValue;
+      destination.update(newValue);
+    }
+  });
+  return destination;
 }

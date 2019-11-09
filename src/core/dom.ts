@@ -168,15 +168,6 @@ export function setElementProps(element: HTMLElement | SVGElement, props: Record
       continue;
     }
 
-    if (propName === 'className') {
-      if (element instanceof HTMLElement) {
-        setClassName(element, propValue);
-      } else {
-        setAttribute(element, 'class', propValue);
-      }
-      continue;
-    }
-
     if (propName.slice(0, 2) === 'on') {
       listen(element, propName.slice(2).toLowerCase(), propValue);
       continue;
@@ -185,6 +176,14 @@ export function setElementProps(element: HTMLElement | SVGElement, props: Record
     switch (propNames[i]) {
       case 'style':
         setStyle(element, propValue);
+        break;
+
+      case 'className':
+        if (element instanceof HTMLElement) {
+          setClassName(element, propValue);
+        } else {
+          setAttribute(element, 'class', propValue);
+        }
         break;
 
       case 'key':

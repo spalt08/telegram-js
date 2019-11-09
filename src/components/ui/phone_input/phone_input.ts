@@ -1,7 +1,7 @@
 import { div, input, text } from 'core/html';
 import { listen } from 'core/dom';
-import { getMaybeMutatableValue, MaybeMutatable } from 'core/mutation';
-import { useInterface, useMaybeMutatable } from 'core/hooks';
+import { getMaybeMutatableValue, mapMutatable, MaybeMutatable, Mutatable, noRepeatMutatable } from 'core/mutation';
+import { useInterface, useMaybeMutatable, useMutatable } from 'core/hooks';
 import './phone_input.scss';
 
 type Props = {
@@ -11,6 +11,7 @@ type Props = {
   label?: string,
   name?: string,
   ref?: (ref: HTMLInputElement) => any,
+  error?: Mutatable<string | undefined>,
 };
 
 /**
@@ -19,15 +20,14 @@ type Props = {
  * @example
  * phoneInput({ label: 'Phone', prefix: '+44', formats: [9, 'dddd ddddd', 10, 'ddd ddd dddd'] })
  */
-export default function phoneInput({ label = '', prefix = '', formats = [], onChange, ref, name }: Props) {
-  let value = '';
-
+export default function phoneInput({ label = '', prefix = '', formats = [], onChange, ref, name, error }: Props) {
+  const labelText = new Mutatable(label);
   const inputEl = input({ type: 'text', name });
   const element = div`.phoneinput`(
     div`.phoneinput__container`(
       div`.phoneinput__prefix`(text(prefix)),
       inputEl,
-      div`.phoneinput__label`(text(label)),
+      div`.phoneinput__label`(text(labelText)),
     ),
   );
 
@@ -76,12 +76,18 @@ export default function phoneInput({ label = '', prefix = '', formats = [], onCh
 
   const formatCurrentValue = () => setValue(getValue());
 
+  if (error) {
+    const hasError = noRepeatMutatable(mapMutatable(error, (message) => message !== undefined));
+    useMutatable(element, hasError, (isError) => { element.classList[isError ? 'add' : 'remove']('error'); });
+    useMutatable(element, error, (errorMessage) => labelText.update(errorMessage === undefined ? label : errorMessage));
+  }
+
   useMaybeMutatable(element, formats, formatCurrentValue);
 
   listen(inputEl, 'focus', () => element.classList.add('focused'));
   listen(inputEl, 'blur', () => element.classList.remove('focused'));
   listen(inputEl, 'input', () => {
-    value = getValue();
+    const value = getValue();
     setValue(value);
     if (onChange) onChange(value);
   });

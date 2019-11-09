@@ -3,10 +3,7 @@
   background: #FFFFFF;
   border-radius: 11px;
   border: 1px solid transparent;
-
-  &.focused {
-    border-color: #4EA4F5;
-  }
+  transition: border-color .2s ease;
 
   &__label {
     position: absolute;
@@ -34,11 +31,7 @@
     z-index: 1;
   }
 
-  &.filled input:focus + .input__label {
-    color: #4EA4F5;
-  }
-
-  & input {
+  input {
     appearance: none;
     padding: 1rem 14px;
     height: 48px;
@@ -52,10 +45,30 @@
     z-index: 1;
     background: transparent;
     font-size: 1rem;
+  }
 
-    &:focus {
+  &.focused {
+    border-color: #4EA4F5;
+
+    input {
       outline: none;
       border-color: #4EA4F5;
     }
+  }
+
+  &.focused.filled &__label {
+    color: #4EA4F5;
+  }
+
+  &.error {
+    border-color: #ea615d;
+
+    input {
+      border-color: #ea615d;
+    }
+  }
+
+  &.error.filled &__label {
+    color: #ea615d;
   }
 }
