@@ -156,21 +156,22 @@ export function el(tag: string, props: Record<string, any> = {}, children: Node[
   if (typeof props === 'object') {
     const propNames = Object.keys(props);
     for (let i = 0; i < propNames.length; i++) {
+      const propValue = props[propNames[i]];
       switch (propNames[i]) {
         case 'className':
-          setClassName(element, props.className);
+          setClassName(element, propValue);
           break;
 
         case 'style':
-          setStyle(element, props.style);
+          setStyle(element, propValue);
           break;
 
         case 'key':
-          setAttribute(element, 'data-key', props.key);
+          setAttribute(element, 'data-key', propValue);
           break;
 
         default:
-          setAttribute(element, propNames[i], props[propNames[i]]);
+          setAttribute(element, propNames[i], propValue);
       }
     }
   }

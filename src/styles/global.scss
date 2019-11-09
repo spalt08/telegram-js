@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap&subset=cyrillic');
+@import url('https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap');
 
 html {
   box-sizing: border-box;
@@ -21,14 +21,27 @@ body {
   font-size: 1rem;
   line-height: 1.35;
   color: #000000;
-  font-family: 'Roboto', sans-serif;
   height: 100%;
   overflow: hidden;
   padding: 0;
   margin: 0;
 }
 
+body, input, select, textarea, button {
+  font-family: 'Roboto', sans-serif;
+}
+
 .main {
   width: 100%;
   height: 100%;
+}
+
+// Force autocomplete off in Safari
+input[autocomplete="off"]::-webkit-contacts-auto-fill-button {
+  visibility: hidden;
+  display: none !important;
+  pointer-events: none;
+  height: 0;
+  width: 0;
+  margin: 0;
 }

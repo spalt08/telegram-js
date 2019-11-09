@@ -21,7 +21,7 @@ type Props = {
 export default function phoneInput({ label = '', prefix = '', formats = [], onChange, ref, name }: Props) {
   let value = '';
 
-  const inputEl = input({ type: 'text', name, autocomplete: 'off' });
+  const inputEl = input({ type: 'text', name });
   const element = div`.phoneinput`(
     div`.phoneinput__container`(
       div`.phoneinput__prefix`(text(prefix)),

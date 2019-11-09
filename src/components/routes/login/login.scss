@@ -51,11 +51,11 @@
   &__transition {
     & .removed {
       position: absolute;
-      animation: fadeOutLeft .3s linear forwards;
+      animation: fadeOutLeft .3s ease-in-out forwards;
     }
 
     & .appeared {
-      animation: fadeInRight .3s linear backwards;
+      animation: fadeInRight .3s ease-in-out backwards;
       animation-delay: .1s;
     }
   }
