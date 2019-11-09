@@ -21,8 +21,8 @@
   ],
   "rules": {
     "max-len": [2, 150, 4],
-    "no-continue": 0,
-    "no-bitwise": 0,
+    "no-continue": "off",
+    "no-bitwise": "off",
     "no-underscore-dangle": "off",
     "no-plusplus": "off",
     "object-curly-newline": "off",

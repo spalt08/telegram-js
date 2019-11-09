@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 import { div, text as textNode } from 'core/html';
 import { mount, unmount, listen, dispatch, setValue, getAttribute } from 'core/dom';
-import { useOutsideEvent } from 'core/hooks';
+import { useInterface, useOutsideEvent } from 'core/hooks';
 import { KEYBOARD } from 'const';
 import textInput from '../text_input/text_input';
 import './select_autocomplete.scss';
@@ -56,7 +56,7 @@ export default function selectAutoComplete<T>({
   );
 
   const performBlur = () => {
-    element.className = `select${query ? ' filled' : ''}`;
+    element.classList.remove('focused');
     unmount(optionsEl);
     inputEl.blur();
   };
@@ -64,9 +64,7 @@ export default function selectAutoComplete<T>({
   const handleHighlight = (index: number) => {
     if (highlighted === index) return;
     if (highlighted > -1) {
-      (optionsEl.childNodes[highlighted] as HTMLElement).className = (
-        (optionsEl.childNodes[highlighted] as HTMLElement).className.replace(' active', '')
-      );
+      (optionsEl.childNodes[highlighted] as HTMLElement).classList.remove('active');
     }
     if (index >= options.length) {
       highlighted = 0;
@@ -76,7 +74,7 @@ export default function selectAutoComplete<T>({
       highlighted = index;
     }
     if (highlighted > -1) {
-      (optionsEl.childNodes[highlighted] as HTMLElement).className += ' active';
+      (optionsEl.childNodes[highlighted] as HTMLElement).classList.add('active');
     }
   };
 
@@ -107,15 +105,15 @@ export default function selectAutoComplete<T>({
   listen(inputEl!, 'input', (event: Event) => {
     const q = event.currentTarget instanceof HTMLInputElement ? event.currentTarget.value : '';
 
-    if (!query && q) element.className = 'select focused filled';
-    if (query && !q) element.className = 'select focused';
+    if (!query && q) element.classList.add('filled');
+    if (query && !q) element.classList.remove('filled');
 
     query = q.toLowerCase();
     fetchOptions(true);
   });
 
   listen(inputEl!, 'focus', () => {
-    element.className = `select focused${query ? ' filled' : ''}`;
+    element.classList.add('focused');
     if (optionsEl.parentNode !== element) {
       mount(element, optionsEl);
       if (selected) handleHighlight(selected);
@@ -179,5 +177,9 @@ export default function selectAutoComplete<T>({
 
   useOutsideEvent(element, 'click', performBlur);
 
-  return element;
+  return useInterface(element, {
+    getValue(): T {
+      return options[selected];
+    },
+  });
 }

@@ -1,6 +1,7 @@
 import { div, input, text } from 'core/html';
 import { listen } from 'core/dom';
-import { MaybeMutatable, Mutatable } from 'core/mutation';
+import { getMaybeMutatableValue, MaybeMutatable } from 'core/mutation';
+import { useInterface, useMaybeMutatable } from 'core/hooks';
 import './phone_input.scss';
 
 type Props = {
@@ -35,7 +36,7 @@ export default function phoneInput({ label = '', prefix = '', formats = [], onCh
 
     let formated = '';
     let maxLength = 0;
-    const formatsVal = formats instanceof Mutatable ? formats.value : formats;
+    const formatsVal = getMaybeMutatableValue(formats);
 
     if (!formatsVal) return str;
 
@@ -67,18 +68,34 @@ export default function phoneInput({ label = '', prefix = '', formats = [], onCh
     return format(str.slice(0, maxLength));
   };
 
-  // To Do: fix replacement
+  // todo: fix replacement
   const unformat = (str: string) => str.replace(' ', '').replace(' ', '').replace('-', '').replace('-', '');
 
-  listen(inputEl, 'focus', () => { element.className = 'phoneinput focused'; });
-  listen(inputEl, 'blur', () => { element.className = 'phoneinput'; });
-  listen(inputEl, 'input', (event: InputEvent) => {
-    value = unformat(event.target instanceof HTMLInputElement ? event.target.value : '');
-    inputEl.value = format(value);
+  const getValue = () => unformat(inputEl.value);
+  const setValue = (v: string) => { inputEl.value = format(v); };
+
+  const formatCurrentValue = () => setValue(getValue());
+
+  useMaybeMutatable(element, formats, formatCurrentValue);
+
+  listen(inputEl, 'focus', () => element.classList.add('focused'));
+  listen(inputEl, 'blur', () => element.classList.remove('focused'));
+  listen(inputEl, 'input', () => {
+    value = getValue();
+    setValue(value);
     if (onChange) onChange(value);
   });
 
   if (ref) ref(inputEl);
 
-  return element;
+  return useInterface(element, {
+    focus() {
+      inputEl.focus();
+    },
+    blur() {
+      inputEl.blur();
+    },
+    getValue,
+    setValue,
+  });
 }

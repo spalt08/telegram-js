@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import LoginTransition from './transition';
 import loginWelcome from './login_welcome';
 import loginCode from './login_code';
@@ -8,12 +9,21 @@ import './login.scss';
  */
 export default function login() {
   const controller = new LoginTransition({ className: 'login' }, [
-    loginWelcome,
+    makeLoginWelcome,
   ]);
 
-  setTimeout(() => controller.translateRight(loginCode), 1000);
-  setTimeout(() => controller.translateRight(loginWelcome), 2000);
-  // setTimeout(() => controller.translateRight(loginCode), 3000);
+  function makeLoginWelcome() {
+    return loginWelcome({
+      onSubmit(phone: string, remember: boolean) {
+        console.log('Phone submit', { phone, remember });
+        controller.translateRight(makeLoginCode);
+      },
+    });
+  }
+
+  function makeLoginCode() {
+    return loginCode();
+  }
 
   return controller.element;
 }

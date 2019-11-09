@@ -21,28 +21,25 @@ export default function textInput({ label = '', ref, autocomplete, name }: Props
   const element = div`.input`(inputEl, labelEl);
 
   let filled = false;
-  let focused = false;
 
   listen(inputEl, 'focus', () => {
-    focused = true;
-    element.className = `input focused${filled ? ' filled' : ''}`;
+    element.classList.add('focused');
   });
 
   listen(inputEl, 'blur', () => {
-    focused = false;
-    element.className = `input${filled ? ' filled' : ''}`;
+    element.classList.remove('focused');
   });
 
   listen(inputEl, 'input', (event: Event) => {
     const value = (event.target instanceof HTMLInputElement) ? event.target.value : '';
 
     if (value && !filled) {
-      element.className = `input${focused ? ' focused' : ''} filled`;
+      element.classList.add('filled');
       filled = true;
     }
 
     if (!value && filled) {
-      element.className = `input${focused ? ' focused' : ''}`;
+      element.classList.remove('filled');
       filled = false;
     }
   });

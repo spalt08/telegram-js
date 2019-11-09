@@ -1,8 +1,9 @@
 import { div, form, img, h1, p, text } from 'core/html';
-import { listen } from 'core/dom';
+import { blurAll, listen } from 'core/dom';
 import { Mutatable, mutateProperty } from 'core/mutation';
 import { phoneInput, selectAutoComplete, button } from 'components/ui';
 import countries, { Country } from 'const/country';
+import { getInterface } from 'core/hooks';
 import logo from './logo.svg';
 import './login.scss';
 
@@ -14,17 +15,37 @@ const countryOptionRenderer = ({ phone, label, emoji }: Country) => (
   )
 );
 
+interface Props {
+  onSubmit(phone: string, remember: boolean): void;
+}
+
 /**
  * Welcome form layout with phone number input to sign in / sign up
  */
-export default function loginWelcome() {
+export default function loginWelcome({ onSubmit }: Props) {
   const country = new Mutatable<Country>({
     code: '',
     emoji: '',
     label: '',
     phone: '',
   });
-  let phoneInputRef: HTMLElement;
+  const phoneField = phoneInput({
+    label: 'Phone Number',
+    name: 'phone',
+    prefix: mutateProperty(country, 'phone'),
+    formats: mutateProperty(country, 'phoneFormats'),
+  });
+  const countryField = selectAutoComplete<Country>({
+    label: 'Country',
+    selected: 0,
+    options: countries,
+    optionRenderer: countryOptionRenderer,
+    optionLabeler: (data) => data.label,
+    onChange: (data) => {
+      country.update(data);
+      getInterface(phoneField).focus();
+    },
+  });
 
   const element = (
     form`.login__form`(
@@ -32,24 +53,8 @@ export default function loginWelcome() {
       h1`.login__title`(text('Sign in to Telegram')),
       p`.login__description`(text('Please confirm your country and enter your phone number.')),
       div`.login__inputs`(
-        selectAutoComplete<Country>({
-          label: 'Country',
-          selected: 0,
-          options: countries,
-          optionRenderer: countryOptionRenderer,
-          optionLabeler: (data) => data.label,
-          onChange: (data) => {
-            country.update(data);
-            if (phoneInputRef) phoneInputRef.focus();
-          },
-        }),
-        phoneInput({
-          label: 'Phone Number',
-          name: 'phone',
-          prefix: mutateProperty(country, 'phone'),
-          formats: mutateProperty(country, 'phoneFormats'),
-          ref: (r) => { phoneInputRef = r; },
-        }),
+        countryField,
+        phoneField,
         button({ label: 'Next' }),
       ),
     )
@@ -57,7 +62,8 @@ export default function loginWelcome() {
 
   listen(element, 'submit', (event: Event) => {
     event.preventDefault();
-    if (phoneInputRef) phoneInputRef.blur();
+    blurAll(element);
+    onSubmit(getInterface(countryField).getValue().phone + getInterface(phoneField).getValue(), true);
   });
 
   return element;

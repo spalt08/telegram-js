@@ -201,3 +201,16 @@ export function el(tag: string, props: Record<string, any> = {}, children: Node[
 
   return element;
 }
+
+export function blurAll(insideElement?: Node) {
+  const focusedElement = document.activeElement;
+  if (!focusedElement || !(focusedElement instanceof HTMLElement || focusedElement instanceof SVGElement)) {
+    return;
+  }
+
+  if (insideElement && !insideElement.contains(focusedElement)) {
+    return;
+  }
+
+  focusedElement.blur();
+}

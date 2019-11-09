@@ -67,3 +67,7 @@ export function mapMutatable<T, P>(source: Mutatable<T>, map: (value: T) => P): 
 export function mutateProperty<T extends object, P extends keyof T>(from: Mutatable<T>, propName: P): Mutatable<T[P]> {
   return mapMutatable(from, (value) => value[propName]);
 }
+
+export function getMaybeMutatableValue<T>(source: MaybeMutatable<T>): T {
+  return source instanceof Mutatable ? source.value : source;
+}
