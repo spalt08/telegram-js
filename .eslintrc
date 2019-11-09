@@ -4,7 +4,8 @@
     "es6": true
   },
   "extends": [
-    "airbnb-typescript"
+    "airbnb-typescript",
+    "plugin:compat/recommended"
   ],
   "globals": {
     "Atomics": "readonly",

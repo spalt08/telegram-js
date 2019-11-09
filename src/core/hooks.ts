@@ -36,10 +36,12 @@ function isWithHooks(base: unknown): base is WithHooks {
   return !!(base as { __hooks?: unknown }).__hooks;
 }
 
-function ensureWithHooks<T>(base: T): T & WithHooks {
-  return isWithHooks(base)
-    ? base
-    : Object.assign(base, { __hooks: {} });
+function ensureWithHooks<T>(base: T) {
+  if (isWithHooks(base)) {
+    return base;
+  }
+  (base as T & WithHooks).__hooks = {};
+  return base as T & WithHooks;
 }
 
 /**
