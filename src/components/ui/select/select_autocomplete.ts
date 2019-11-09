@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 import { div, text as textNode } from 'core/html';
 import { mount, unmount, listen, dispatch, setValue, getAttribute } from 'core/dom';
-import { useListenWhileMounted } from 'core/hooks';
+import { useOutsideEvent } from 'core/hooks';
 import { KEYBOARD } from 'const';
 import textInput from '../text_input/text_input';
 import './select_autocomplete.scss';
@@ -157,6 +157,7 @@ export default function selectAutoComplete<T>({
         break;
 
       case KEYBOARD.ESC:
+        event.preventDefault();
         dispatch(arrow, 'click');
         break;
 
@@ -176,11 +177,7 @@ export default function selectAutoComplete<T>({
 
   if (selected !== undefined) setSelected(selected);
 
-  useListenWhileMounted(element, window, 'click', (event: MouseEvent) => {
-    if (!element.contains(event.target as HTMLElement)) {
-      performBlur();
-    }
-  });
+  useOutsideEvent(element, 'click', performBlur);
 
   return element;
 }

@@ -242,3 +242,14 @@ export function useMaybeMutatable<T>(base: unknown, value: MaybeMutatable<T>, on
 
   return onChange(value);
 }
+
+/**
+ * Listens to an event outside the hooked element while it's mounted
+ */
+export function useOutsideEvent<P extends keyof HTMLElementEventMap>(base: HTMLElement, name: P, cb: (event: HTMLElementEventMap[P]) => void) {
+  return useListenWhileMounted(base, window, name, (event: HTMLElementEventMap[P]) => {
+    if (!base.contains(event.target as HTMLElement)) {
+      cb(event);
+    }
+  });
+}
