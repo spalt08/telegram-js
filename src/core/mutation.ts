@@ -53,12 +53,17 @@ export function makeMutation<T>(initialValue: T): Mutatable<T> {
 }
 
 /**
- * Inherit Mutatable from another Mutatable
+ * Converts values from a mutation to another mutation
  */
-export function mutateProperty<T>(from: Mutatable<Record<string, T>>, propName: string) {
-  const newMutatable = new Mutatable<T>(from.value[propName]);
+export function mapMutatable<T, P>(source: Mutatable<T>, map: (value: T) => P): Mutatable<P> {
+  const destination = new Mutatable(map(source.value));
+  source.subscribe((value) => destination.update(map(value)));
+  return destination;
+}
 
-  from.subscribe((data: Record<string, T>) => newMutatable.update(data[propName]));
-
-  return newMutatable;
+/**
+ * Extracts a property from the mutatable object values
+ */
+export function mutateProperty<T extends object, P extends keyof T>(from: Mutatable<T>, propName: P): Mutatable<T[P]> {
+  return mapMutatable(from, (value) => value[propName]);
 }

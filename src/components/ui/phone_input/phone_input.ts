@@ -6,7 +6,7 @@ import './phone_input.scss';
 type Props = {
   onChange?: (value: string) => any;
   prefix?: MaybeMutatable<string>,
-  formats?: MaybeMutatable<Array<string | number>>,
+  formats?: MaybeMutatable<Array<string | number> | undefined>,
   label?: string,
   name?: string,
   ref?: (ref: HTMLInputElement) => any,
@@ -32,11 +32,12 @@ export default function phoneInput({ label = '', prefix = '', formats = [], onCh
 
   const format = (str: string): string => {
     if (!str) return '';
-    if (!formats) return str;
 
     let formated = '';
     let maxLength = 0;
     const formatsVal = formats instanceof Mutatable ? formats.value : formats;
+
+    if (!formatsVal) return str;
 
     for (let i = 0; i < formatsVal.length; i += 2) {
       maxLength = formatsVal[i] as number;

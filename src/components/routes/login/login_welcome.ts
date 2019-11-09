@@ -18,7 +18,12 @@ const countryOptionRenderer = ({ phone, label, emoji }: Country) => (
  * Welcome form layout with phone number input to sign in / sign up
  */
 export default function loginWelcome() {
-  const country = new Mutatable<Record<string, any>>({});
+  const country = new Mutatable<Country>({
+    code: '',
+    emoji: '',
+    label: '',
+    phone: '',
+  });
   let phoneInputRef: HTMLElement;
 
   const element = (
@@ -32,8 +37,8 @@ export default function loginWelcome() {
           selected: 0,
           options: countries,
           optionRenderer: countryOptionRenderer,
-          optionLabeler: (data: Country) => data.label,
-          onChange: (data: Country) => {
+          optionLabeler: (data) => data.label,
+          onChange: (data) => {
             country.update(data);
             if (phoneInputRef) phoneInputRef.focus();
           },
@@ -41,8 +46,8 @@ export default function loginWelcome() {
         phoneInput({
           label: 'Phone Number',
           name: 'phone',
-          prefix: mutateProperty<string>(country, 'phone'),
-          formats: mutateProperty<Array<string | number>>(country, 'phoneFormats'),
+          prefix: mutateProperty(country, 'phone'),
+          formats: mutateProperty(country, 'phoneFormats'),
           ref: (r) => { phoneInputRef = r; },
         }),
         button({ label: 'Next' }),
