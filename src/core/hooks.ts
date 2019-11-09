@@ -209,8 +209,8 @@ export function useWhileMounted<TBase>(base: TBase, onMount: () => () => void) {
  *   console.log('Window resized');
  * });
  */
-// eslint-disable-next-line max-len
-export function useListenWhileMounted<T, K extends keyof HTMLElementEventMap>(base: T, target: HTMLElement, event: K, cb: (event: HTMLElementEventMap[K]) => void): T & WithLifecycleHook;
+export function useListenWhileMounted<T, K extends keyof HTMLElementEventMap>(base: T, target: HTMLElement, event: K, cb: (event: HTMLElementEventMap[K]) => void): T & WithLifecycleHook; // eslint-disable-line max-len
+export function useListenWhileMounted<T, K extends keyof SVGElementEventMap>(base: T, target: SVGElement, event: K, cb: (event: SVGElementEventMap[K]) => void): T & WithLifecycleHook; // eslint-disable-line max-len
 export function useListenWhileMounted<T>(base: T, target: EventTarget, event: string, cb: (event: Event) => void): T & WithLifecycleHook;
 export function useListenWhileMounted(base: unknown, target: EventTarget, event: string, cb: (event: Event) => void) {
   return useWhileMounted(base, () => {

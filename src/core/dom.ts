@@ -55,6 +55,7 @@ function triggerUnmountRecursive(element: Node) {
  * Attach event listener to element
  */
 export function listen<K extends keyof HTMLElementEventMap>(element: HTMLElement, event: K, cb: (event: HTMLElementEventMap[K]) => void): void;
+export function listen<K extends keyof SVGElementEventMap>(element: SVGElement, event: K, cb: (event: SVGElementEventMap[K]) => void): void;
 export function listen(element: EventTarget, event: string, cb: (event: Event) => void): void;
 export function listen(element: EventTarget, event: string, cb: (event: Event) => void) {
   element.addEventListener(event, cb);
@@ -64,6 +65,7 @@ export function listen(element: EventTarget, event: string, cb: (event: Event) =
  * Remove event listener from element
  */
 export function unlisten<K extends keyof HTMLElementEventMap>(element: HTMLElement, event: K, cb: (event: HTMLElementEventMap[K]) => void): void;
+export function unlisten<K extends keyof SVGElementEventMap>(element: SVGElement, event: K, cb: (event: SVGElementEventMap[K]) => void): void;
 export function unlisten(element: EventTarget, event: string, cb: (event: Event) => void): void;
 export function unlisten(element: EventTarget, event: string, cb: (event: Event) => void) {
   element.removeEventListener(event, cb);
@@ -133,7 +135,7 @@ export function setClassName(element: Element, className: MaybeMutatable<string>
 /**
  * Sets style to HTMLElement
  */
-export function setStyle(element: HTMLElement, style: Partial<Pick<CSSStyleDeclaration, WritableCSSProps>>) {
+export function setStyle(element: HTMLElement | SVGElement, style: Partial<Pick<CSSStyleDeclaration, WritableCSSProps>>) {
   // To Do: Support of mutation
   const props = Object.keys(style) as WritableCSSProps[];
 
@@ -154,6 +156,44 @@ export function setValue(element: HTMLInputElement, value: MaybeMutatable<string
 }
 
 /**
+ * Sets props to an element
+ */
+export function setElementProps(element: HTMLElement | SVGElement, props: Record<string, any>) {
+  const propNames = Object.keys(props);
+  for (let i = 0; i < propNames.length; i++) {
+    const propName = propNames[i];
+    const propValue = props[propName];
+
+    if (propValue === undefined) {
+      continue;
+    }
+
+    if (propName === 'className' && element instanceof HTMLElement) {
+      setClassName(element, propValue);
+      continue;
+    }
+
+    if (propName.slice(0, 2) === 'on') {
+      listen(element, propName.slice(2).toLowerCase(), propValue);
+      continue;
+    }
+
+    switch (propNames[i]) {
+      case 'style':
+        setStyle(element, propValue);
+        break;
+
+      case 'key':
+        setAttribute(element, 'data-key', propValue);
+        break;
+
+      default:
+        setAttribute(element, propNames[i], propValue);
+    }
+  }
+}
+
+/**
  * Creates DOM element and returns it
  */
 export function el<T extends keyof HTMLElementTagNameMap>(tag: T, props?: Record<string, any>, children?: Node[]): HTMLElementTagNameMap[T];
@@ -162,34 +202,8 @@ export function el(tag: string, props: Record<string, any> = {}, children: Node[
   const element = document.createElement(tag);
 
   // Setting props
-  if (typeof props === 'object') {
-    const propNames = Object.keys(props);
-    for (let i = 0; i < propNames.length; i++) {
-      const propName = propNames[i];
-      const propValue = props[propName];
-
-      if (propName.slice(0, 2) === 'on') {
-        listen(element, propName.slice(2).toLowerCase(), propValue);
-        continue;
-      }
-
-      switch (propNames[i]) {
-        case 'className':
-          setClassName(element, propValue);
-          break;
-
-        case 'style':
-          setStyle(element, propValue);
-          break;
-
-        case 'key':
-          setAttribute(element, 'data-key', propValue);
-          break;
-
-        default:
-          setAttribute(element, propNames[i], propValue);
-      }
-    }
+  if (props) {
+    setElementProps(element, props);
   }
 
   // Mounting children
@@ -213,4 +227,25 @@ export function blurAll(insideElement?: Node) {
   }
 
   focusedElement.blur();
+}
+
+const svgFromCodeTempRoot = document.createElement('div');
+
+/**
+ * Makes an <svg /> element from the SVG code
+ */
+export function svgFromCode(code: string, props?: Record<string, any>): SVGSVGElement {
+  svgFromCodeTempRoot.innerHTML = code;
+  const element = svgFromCodeTempRoot.lastElementChild;
+  svgFromCodeTempRoot.innerHTML = '';
+
+  if (!(element instanceof SVGSVGElement)) {
+    throw new TypeError('The code is not an SVG code');
+  }
+
+  if (props) {
+    setElementProps(element, props);
+  }
+
+  return element;
 }

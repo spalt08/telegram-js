@@ -1,4 +1,4 @@
-import { el } from './dom';
+import { el, setElementProps, svgFromCode } from './dom';
 
 /**
  * Transforms ES tagged litterals to className
@@ -92,4 +92,20 @@ export function ElementFactory<T extends keyof HTMLElementTagNameMap>(tag: T) {
   }
 
   return TemplatedResolver;
+}
+
+export function svgCodeToComponent(code: string) {
+  const svg = svgFromCode(code);
+
+  // To not keep the code in memory
+  code = ''; // eslint-disable-line no-param-reassign
+
+  return (props?: Record<string, unknown>) => {
+    // todo: Check if calling svgFromCode every time is faster than cloning an SVG
+    const svgCopy = svg.cloneNode(true) as typeof svg;
+    if (props) {
+      setElementProps(svgCopy, props);
+    }
+    return svgCopy;
+  };
 }

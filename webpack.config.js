@@ -68,8 +68,30 @@ module.exports = (env, argv) => {
           use: ['sass-loader'],
         },
         {
-          test: /\.(svg|png|jpe?g|gif|woff|woff2|otf|ttf|eot)$/,
-          loader: 'file-loader',
+          oneOf: [
+            {
+              resourceQuery: /(^|\?|&)raw($|&)/i,
+              loader: 'raw-loader',
+            },
+            {
+              test: /\.(svg|png|jpe?g|gif|woff|woff2|otf|ttf|eot)$/,
+              loader: 'file-loader',
+              options: {
+                name: 'assets/[contenthash].[ext]',
+              },
+            },
+          ],
+        },
+        {
+          test: /\.svg$/,
+          loader: 'svgo-loader',
+          options: {
+            plugins: [
+              { removeViewBox: false },
+              { convertShapeToPath: false },
+              { cleanupIDs: false },
+            ],
+          },
         },
       ],
     },
