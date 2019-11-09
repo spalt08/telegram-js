@@ -15,14 +15,14 @@ export default function ripple({ tag = 'div', className = '' }: Props, children:
     div`.ripple__content`(
       ...children,
     ),
-  ]) as HTMLElement;
+  ]);
 
-  listen(element, 'click', (event: MouseEvent) => {
+  listen(element, 'click', (event) => {
     const rect = element.getBoundingClientRect();
     const effect = div`.ripple__effect`({
       style: {
         left: `${event.clientX - rect.left}px`,
-        top: `${event.clientY - rect.top + rect.height / 2}px`,
+        top: `${event.clientY - rect.top}px`,
       },
       onAnimationEnd: () => unmount(effect),
     });

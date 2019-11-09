@@ -7,6 +7,7 @@
  */
 
 import { MaybeMutatable, Mutatable } from './mutation';
+import { listen, unlisten } from './dom'; // eslint-disable-line import/no-cycle
 
 interface LifecycleListeners {
   mount?: Array<() => void>;
@@ -206,10 +207,13 @@ export function useWhileMounted<TBase>(base: TBase, onMount: () => () => void) {
  *   console.log('Window resized');
  * });
  */
+// eslint-disable-next-line max-len
+export function useListenWhileMounted<T, K extends keyof HTMLElementEventMap>(base: T, target: HTMLElement, event: K, cb: (event: HTMLElementEventMap[K]) => void): T & WithLifecycleHook;
+export function useListenWhileMounted<T>(base: T, target: EventTarget, event: string, cb: (event: Event) => void): T & WithLifecycleHook;
 export function useListenWhileMounted(base: unknown, target: EventTarget, event: string, cb: (event: Event) => void) {
   return useWhileMounted(base, () => {
-    target.addEventListener(event, cb);
-    return () => target.removeEventListener(event, cb);
+    listen(target, event, cb);
+    return () => unlisten(target, event, cb);
   });
 }
 

@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { MaybeMutatable } from './mutation';
+// eslint-disable-next-line import/no-cycle
 import { isMountTriggered, triggerMount, triggerUnmount, useMaybeMutatable } from './hooks';
 
 /**
@@ -53,23 +54,31 @@ function triggerUnmountRecursive(element: Node) {
 /**
  * Attach event listener to element
  */
-export function listen<K extends keyof HTMLElementEventMap>(
-  element: HTMLElement,
-  event: string,
-  cb: undefined | ((event: HTMLElementEventMap[K]) => void),
-) {
-  if (typeof cb !== 'function') return;
-
+export function listen<K extends keyof HTMLElementEventMap>(element: HTMLElement, event: K, cb: (event: HTMLElementEventMap[K]) => void): void;
+export function listen(element: EventTarget, event: string, cb: (event: Event) => void): void;
+export function listen(element: EventTarget, event: string, cb: (event: Event) => void) {
   element.addEventListener(event, cb);
+}
+
+/**
+ * Remove event listener from element
+ */
+export function unlisten<K extends keyof HTMLElementEventMap>(element: HTMLElement, event: K, cb: (event: HTMLElementEventMap[K]) => void): void;
+export function unlisten(element: EventTarget, event: string, cb: (event: Event) => void): void;
+export function unlisten(element: EventTarget, event: string, cb: (event: Event) => void) {
+  element.removeEventListener(event, cb);
 }
 
 /**
  * Dispatch element event
  */
-export function dispatch(element: HTMLElement, eventName: string) {
-  element.dispatchEvent(new Event(eventName));
-}
+export function dispatch(element: EventTarget, eventName: string, bubbles = false, cancelable = false) {
+  // @link https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Creating_and_triggering_events#The_old-fashioned_wayv
+  const event = document.createEvent('Event');
+  event.initEvent(eventName, bubbles, cancelable);
 
+  element.dispatchEvent(event);
+}
 
 /**
  * Mounts Node to parent Node
@@ -156,7 +165,14 @@ export function el(tag: string, props: Record<string, any> = {}, children: Node[
   if (typeof props === 'object') {
     const propNames = Object.keys(props);
     for (let i = 0; i < propNames.length; i++) {
-      const propValue = props[propNames[i]];
+      const propName = propNames[i];
+      const propValue = props[propName];
+
+      if (propName.slice(0, 2) === 'on') {
+        listen(element, propName.slice(2).toLowerCase(), propValue);
+        continue;
+      }
+
       switch (propNames[i]) {
         case 'className':
           setClassName(element, propValue);
