@@ -21,8 +21,8 @@ export default function ripple({ tag = 'div', className = '' }: Props, children:
     const rect = element.getBoundingClientRect();
     const effect = div`.ripple__effect`({
       style: {
-        left: `${event.clientX - rect.left}px`,
-        top: `${event.clientY - rect.top}px`,
+        left: `${((event.clientX - rect.left) / (rect.right - rect.left)) * 100}%`,
+        top: `${((event.clientY - rect.top) / (rect.bottom - rect.top)) * 100}%`,
       },
       onAnimationEnd: () => unmount(effect),
     });

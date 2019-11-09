@@ -6,7 +6,6 @@ const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const autoprefixer = require('autoprefixer');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
@@ -53,12 +52,12 @@ module.exports = (env, argv) => {
               loader: 'css-loader',
               options: {
                 sourceMap: !isProduction,
+                importLoaders: 1,
               },
             },
             {
               loader: 'postcss-loader',
               options: {
-                plugins: [autoprefixer],
                 sourceMap: !isProduction && 'inline',
               },
             },
