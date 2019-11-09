@@ -46,7 +46,7 @@ module.exports = (env, argv) => {
             {
               loader: MiniCssExtractPlugin.loader,
               options: {
-                hmr: !isProduction,
+                reloadAll: true,
               },
             },
             {
@@ -99,7 +99,6 @@ module.exports = (env, argv) => {
     devServer: {
       contentBase: `./${destinationDirectory}`,
       port: 3000,
-      hot: true,
       publicPath: '/',
     },
 
