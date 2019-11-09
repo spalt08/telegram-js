@@ -12,6 +12,7 @@
 
   &__on,
   &__off {
+    transform: translate3d(0, 0, 0); // To make the icons not jump in Safari during the transition
     position: absolute;
     top: 0;
     left: 0;
