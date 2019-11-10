@@ -120,6 +120,7 @@ module.exports = (env, argv) => {
     devServer: {
       contentBase: `./${destinationDirectory}`,
       port: 3000,
+      host: '0.0.0.0',
       publicPath: '/',
     },
 
