@@ -1,0 +1,37 @@
+<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .xb8ytEhx {
+        stroke: #000;
+        stroke-dasharray: 1, 200;
+        stroke-dashoffset: 0;
+        stroke-linecap: round;
+        fill: none;
+        animation: xb8ytEhx_dash 1.5s ease-in-out infinite, xb8ytEhx_rotate 2s linear infinite;
+        transform-origin: center;
+      }
+
+      @keyframes xb8ytEhx_rotate {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes xb8ytEhx_dash {
+        0% {
+          stroke-dasharray: 1, 200;
+          stroke-dashoffset: 0;
+        }
+        50% {
+          stroke-dasharray: 89, 200;
+          stroke-dashoffset: -35px;
+        }
+        100% {
+          stroke-dasharray: 89, 200;
+          stroke-dashoffset: -124px;
+        }
+      }
+    </style>
+  </defs>
+  <circle class="xb8ytEhx" r="20" cx="22" cy="22" stroke-width="4" />
+</svg>

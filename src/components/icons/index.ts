@@ -163,6 +163,9 @@ export const lock = /*#__PURE__*/svgCodeToComponent(lockCode);
 import logoutCode from './logout.svg?raw';
 export const logout = /*#__PURE__*/svgCodeToComponent(logoutCode);
 
+import materialSpinnerCode from './material_spinner.svg?raw';
+export const materialSpinner = /*#__PURE__*/svgCodeToComponent(materialSpinnerCode);
+
 import menuCode from './menu.svg?raw';
 export const menu = /*#__PURE__*/svgCodeToComponent(menuCode);
 

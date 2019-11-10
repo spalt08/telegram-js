@@ -2,16 +2,15 @@ import { div } from 'core/html';
 import { mount, el, unmount, listen } from 'core/dom';
 import './ripple.scss';
 
-type Props = {
-  tag?: keyof HTMLElementTagNameMap,
-  className?: string,
-};
+interface Props extends Record<string, any> {
+  tag?: keyof HTMLElementTagNameMap;
+}
 
 /**
  * Any HTML element with click ripple animation
  */
-export default function ripple({ tag = 'div', className = '' }: Props, children: Node[]) {
-  const element = el(tag, { className: `ripple ${className}` }, [
+export default function ripple({ tag = 'div', className = '', ...props }: Props, children: Node[]) {
+  const element = el(tag, { className: `ripple ${className}`, ...props }, [
     div`.ripple__content`(
       ...children,
     ),

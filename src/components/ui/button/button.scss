@@ -1,9 +1,10 @@
 .button {
+  position: relative;
   appearance: none;
   border: none;
-  font-size: 1rem;
+  font-size: 16px;
   margin: 0;
-  height: 48px;
+  min-height: 54px;
   width: 100%;
   background: #4EA4F5;
   color: #FFFFFF;
@@ -17,9 +18,38 @@
   transition: .2s ease;
   outline: none;
   cursor: pointer;
+  padding: 5px 10px;
 
   &:hover, &:focus {
     background: #4797E2;
     outline: none;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    background: #4797E2;
+  }
+
+  &__spinner {
+    $size: 27px;
+    display: none;
+    position: absolute;
+    width: $size;
+    height: $size;
+    top: calc(50% - #{$size / 2});
+    right: 13px;
+
+    circle {
+      stroke: #FFFFFF;
+    }
+  }
+
+  &.loading {
+    padding-left: 45px;
+    padding-right: 45px;
+  }
+
+  &.loading &__spinner {
+    display: block;
   }
 }

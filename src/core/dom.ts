@@ -178,6 +178,7 @@ export function setElementProps(element: HTMLElement | SVGElement, props: Record
         setStyle(element, propValue);
         break;
 
+      case 'class':
       case 'className':
         if (element instanceof HTMLElement) {
           setClassName(element, propValue);

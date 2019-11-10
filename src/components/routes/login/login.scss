@@ -4,12 +4,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: scroll;
+  overflow: auto;
   animation: appear .4s ease-out;
 
   &__form {
     width: 100%;
-    max-width: 26rem;
+    max-width: 426px;
     padding: 2rem;
     display: flex;
     flex-direction: column;
@@ -18,17 +18,18 @@
   }
 
   &__logo {
-    width: 10rem;
-    height: 10rem;
-    margin-bottom: 2.8rem;
+    display: block;
+    width: 162px;
+    height: 162px;
+    margin-bottom: 42px;
   }
 
   &__title {
-    font-size: 2rem;
+    font-size: 32px;
     font-weight: 500;
     padding: 0;
     margin: 0;
-    margin-bottom: .7rem;
+    margin-bottom: 9px;
   }
 
   &__description {
@@ -37,20 +38,20 @@
     padding: 0;
     margin: 0;
     max-width: 16rem;
-    margin-bottom: 3rem;
+    margin-bottom: 48px;
   }
 
   &__inputs {
     width: 100%;
 
     & .input, & .phoneinput {
-      margin-bottom: 24px;
+      margin-bottom: 22px;
     }
   }
 
   &__checkmark {
     display: block;
-    margin: 0 14px 38px;
+    margin: 0 14px 43px;
     font-size: 16px;
 
     > .checkbox:first-child {

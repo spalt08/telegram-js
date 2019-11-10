@@ -24,8 +24,8 @@ export default function checkbox({ checked, className = '', onChange }: Props = 
   });
   const element = label`.checkbox ${className}`(
     inputEl,
-    icons.checkboxon({ className: 'checkbox__on' }),
-    icons.checkboxempty({ className: 'checkbox__off' }),
+    icons.checkboxon({ class: 'checkbox__on' }),
+    icons.checkboxempty({ class: 'checkbox__off' }),
   );
 
   return useInterface(element, {
