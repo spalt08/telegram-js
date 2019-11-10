@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import LoginTransition from './transition';
 import loginWelcomeContainer from './login_welcome_container';
-import loginCode from './login_code';
+import loginCodeContainer from './login_code_container';
 import './login.scss';
 
 /**
@@ -13,13 +13,15 @@ export default function login() {
   ]);
 
   function makeLoginWelcome() {
-    return loginWelcomeContainer(() => {
-      controller.translateRight(makeLoginCode);
+    return loginWelcomeContainer({
+      onRedirectToCode(phone) {
+        controller.translateRight(() => makeLoginCode(phone));
+      },
     });
   }
 
-  function makeLoginCode() {
-    return loginCode();
+  function makeLoginCode(phone: string) {
+    return loginCodeContainer({ phone });
   }
 
   return controller.element;

@@ -13,7 +13,11 @@ function loginMock(phone: string, remember: boolean, callback: (error: string | 
   }, 2000);
 }
 
-export default function loginWelcomeContainer(onRedirectToCode: () => void) {
+interface Props {
+  onRedirectToCode(phone: string): void;
+}
+
+export default function loginWelcomeContainer({ onRedirectToCode }: Props) {
   const isSubmitting = new BehaviorSubject(false);
   const phoneError = new Subject<string>();
 
@@ -27,7 +31,7 @@ export default function loginWelcomeContainer(onRedirectToCode: () => void) {
         if (error) {
           phoneError.next(error);
         } else {
-          onRedirectToCode();
+          onRedirectToCode(phone);
         }
       });
     },

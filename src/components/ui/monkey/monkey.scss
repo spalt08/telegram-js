@@ -1,0 +1,12 @@
+.twofaMonkey {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 140px;
+  height: 140px;
+
+  > img {
+    max-width: 100%;
+    max-height: 100%;
+  }
+}

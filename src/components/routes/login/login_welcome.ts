@@ -93,7 +93,7 @@ export default function loginWelcome({ isSubmitting, phoneError, onSubmit }: Pro
     blurAll(element);
     if (!isCurrentlySubmitting) {
       onSubmit(
-        getInterface(countryField).getValue().phone + getInterface(phoneField).getValue(),
+        getInterface(countryField).getValue().phone.replace(/[^+\d]/g, '') + getInterface(phoneField).getValue(),
         getInterface(rememberField).getChecked(),
       );
     }
