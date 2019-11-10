@@ -72,6 +72,20 @@ export function unlisten(element: EventTarget, event: string, cb: (event: Event)
 }
 
 /**
+ * Attach event listener that fires once to element
+ */
+export function listenOnce<K extends keyof HTMLElementEventMap>(element: HTMLElement, event: K, cb: (event: HTMLElementEventMap[K]) => void): void;
+export function listenOnce<K extends keyof SVGElementEventMap>(element: SVGElement, event: K, cb: (event: SVGElementEventMap[K]) => void): void;
+export function listenOnce(element: EventTarget, event: string, cb: (event: Event) => void): void;
+export function listenOnce(element: EventTarget, event: string, cb: (event: Event) => void) {
+  const handle = (e: Event) => {
+    element.removeEventListener(event, handle);
+    cb(e);
+  };
+  element.addEventListener(event, handle);
+}
+
+/**
  * Dispatch element event
  */
 export function dispatch(element: EventTarget, eventName: string, bubbles = false, cancelable = false) {

@@ -1,4 +1,4 @@
-import { mount, unmount } from 'core/dom';
+import { listenOnce, mount, unmount } from 'core/dom';
 import { div } from 'core/html';
 
 type Props = {
@@ -31,17 +31,19 @@ export default class LoginTransition {
 
   translateRight(elementCreator: () => HTMLElement) {
     if (this.mounted) {
-      this.mounted.className += ' removed';
-      // todo: call once, for example: take(this.mounted, 'animationend', (event) => unmount(event.currentTarget as HTMLElement))
-      this.mounted.addEventListener('animationend', (event) => unmount(event.currentTarget as HTMLElement));
+      this.mounted.classList.add('removed');
+      listenOnce(this.mounted, 'animationend', (event) => {
+        const self = event.currentTarget as HTMLElement;
+        unmount(self);
+        self.classList.remove('removed'); // For a cased when the element will be reused
+      });
     }
 
     this.mounted = elementCreator();
-    this.mounted.className += ' appeared';
-    // todo: call once, for example: take(this.mounted, 'animationend', (event) => unmount(event.currentTarget as HTMLElement))
-    this.mounted.addEventListener('animationend', (event) => {
-      const self = (event.currentTarget as HTMLElement);
-      self.className = self.className.replace(' appeared', '');
+    this.mounted.classList.add('appeared');
+    listenOnce(this.mounted, 'animationend', (event: Event) => {
+      const self = event.currentTarget as HTMLElement;
+      self.classList.remove('appeared');
     });
     mount(this.element, this.mounted);
   }

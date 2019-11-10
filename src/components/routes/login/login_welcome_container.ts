@@ -1,8 +1,12 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import { BehaviorSubject, Subject } from 'rxjs';
+import { Country } from 'const/country';
+import { formatWithCountry, unformatWithCountry } from 'helpers/phone_number';
 import loginWelcome from './login_welcome';
 
 function loginMock(phone: string, remember: boolean, callback: (error: string | null) => void) {
+  console.log('Mock login', phone, remember);
+
   if (phone.length < 5) {
     callback('Invalid Phone Number');
     return;
@@ -24,14 +28,14 @@ export default function loginWelcomeContainer({ onRedirectToCode }: Props) {
   return loginWelcome({
     isSubmitting,
     phoneError,
-    onSubmit(phone: string, remember: boolean): void {
+    onSubmit(phoneCountry: Country, phoneNumber: string, remember: boolean): void {
       isSubmitting.next(true);
-      loginMock(phone, remember, (error) => {
+      loginMock(unformatWithCountry(phoneCountry, phoneNumber), remember, (error) => {
         isSubmitting.next(false);
         if (error) {
           phoneError.next(error);
         } else {
-          onRedirectToCode(phone);
+          onRedirectToCode(formatWithCountry(phoneCountry, phoneNumber));
         }
       });
     },

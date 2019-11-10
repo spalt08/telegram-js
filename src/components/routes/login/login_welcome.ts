@@ -19,7 +19,7 @@ const countryOptionRenderer = ({ phone, label: countryLabel, emoji }: Country) =
 interface Props {
   isSubmitting?: Observable<boolean>;
   phoneError?: Observable<string>;
-  onSubmit(phone: string, remember: boolean): void;
+  onSubmit(phoneCountry: Country, phoneNumber: string, remember: boolean): void;
 }
 
 /**
@@ -93,7 +93,8 @@ export default function loginWelcome({ isSubmitting, phoneError, onSubmit }: Pro
     blurAll(element);
     if (!isCurrentlySubmitting) {
       onSubmit(
-        getInterface(countryField).getValue().phone.replace(/[^+\d]/g, '') + getInterface(phoneField).getValue(),
+        getInterface(countryField).getValue(),
+        getInterface(phoneField).getValue(),
         getInterface(rememberField).getChecked(),
       );
     }

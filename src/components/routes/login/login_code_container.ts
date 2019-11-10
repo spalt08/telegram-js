@@ -2,6 +2,8 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import loginCode from './login_code';
 
 function codeSendMock(code: string, callback: (error: string | null) => void) {
+  console.log('Mock code sent', code);
+
   if (code.length < 5) {
     callback('Invalid Code');
     return;
@@ -31,8 +33,6 @@ export default function loginCodeContainer({ phone, onReturnToPhone }: Props) {
         isSubmitting.next(false);
         if (error) {
           codeError.next(error);
-        } else {
-          console.log('Code sent', code);
         }
       });
     },

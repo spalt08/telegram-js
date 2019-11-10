@@ -9,7 +9,7 @@ import * as icons from 'components/icons';
 import './login.scss';
 
 interface Props {
-  phone: MaybeObservable<string>;
+  phone: MaybeObservable<string>; // Formatted, please
   isSubmitting?: Observable<boolean>;
   codeError?: Observable<string>;
   onSubmit(code: string): void;
@@ -45,7 +45,7 @@ export default function loginCode({ phone, isSubmitting, codeError, onSubmit, on
         className: 'login__monkey',
       }),
       h1`.login__title`(
-        text(phone), // todo: Make it formatted
+        text(phone),
         icons.edit({ class: 'login__title_icon', onClick: onReturnToPhone }),
       ),
       p`.login__description`(text('We have sent you an SMS with the code')),

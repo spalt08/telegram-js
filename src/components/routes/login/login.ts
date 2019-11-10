@@ -8,8 +8,11 @@ import './login.scss';
  * Handler for route /login
  */
 export default function login() {
+  // Not removed from memory to not reset the inputs
+  const loginWelcomeElement = makeLoginWelcome();
+
   const controller = new LoginTransition({ className: 'login' }, [
-    makeLoginWelcome,
+    () => loginWelcomeElement,
   ]);
 
   function makeLoginWelcome() {
@@ -25,7 +28,7 @@ export default function login() {
       phone,
       onReturnToPhone() {
         // todo: Translate left
-        controller.translateRight(makeLoginWelcome);
+        controller.translateRight(() => loginWelcomeElement);
       },
     });
   }

@@ -4,6 +4,7 @@ import { div, input, text } from 'core/html';
 import { listen } from 'core/dom';
 import { useInterface, useMaybeObservable, useObservable } from 'core/hooks';
 import { MaybeObservable } from 'core/types';
+import { format, unformat } from 'helpers/phone_number';
 import './phone_input.scss';
 
 type Props = {
@@ -35,44 +36,8 @@ export default function phoneInput({ label = '', prefix = '', formats = [], onCh
 
   let currentFormat: Array<string | number> | undefined;
 
-  const format = (str: string): string => {
-    if (!str || !currentFormat) return '';
-
-    let formated = '';
-    let maxLength = 0;
-
-    for (let i = 0; i < currentFormat.length; i += 2) {
-      maxLength = currentFormat[i] as number;
-
-      if (typeof currentFormat[i] === 'number' && str.length <= currentFormat[i]) {
-        const pattern = currentFormat[i + 1] as string;
-        const literals = [' ', '-'];
-        let offset = 0;
-        let len = 0;
-
-        for (let j = 0; j < pattern.length && offset + len < str.length; j++) {
-          if (literals.indexOf(pattern[j]) === -1) {
-            len++;
-            continue;
-          }
-
-          formated += str.slice(offset, offset + len);
-          formated += pattern[j];
-          offset += len;
-          len = 0;
-        }
-
-        return formated + str.slice(offset);
-      }
-    }
-
-    return format(str.slice(0, maxLength));
-  };
-
-  const unformat = (str: string) => str.replace(/[^\d]/g, '');
-
   const getValue = () => unformat(inputEl.value);
-  const setValue = (v: string) => { inputEl.value = format(v); };
+  const setValue = (v: string) => { inputEl.value = currentFormat ? format(currentFormat, v) : v; };
 
   useMaybeObservable(element, formats, (newFormat) => {
     currentFormat = newFormat;
