@@ -1,6 +1,6 @@
+import { BehaviorSubject } from 'rxjs';
 import { div, form, h1, p, text } from 'core/html';
 import { button, textInput } from 'components/ui';
-import { Mutatable } from 'core/mutation';
 import { listen } from 'core/dom';
 import './login.scss';
 
@@ -8,7 +8,7 @@ import './login.scss';
  * Layout for entering SMS code for sign in
  */
 export default function loginCode() {
-  const codeFieldError = new Mutatable<undefined | string>(undefined);
+  const codeFieldError = new BehaviorSubject<undefined | string>(undefined);
 
   const element = (
     form`.login__form`(
@@ -20,7 +20,7 @@ export default function loginCode() {
           error: codeFieldError,
           onChange() {
             if (codeFieldError.value !== undefined) {
-              codeFieldError.update(undefined);
+              codeFieldError.next(undefined);
             }
           },
         }),
@@ -31,7 +31,7 @@ export default function loginCode() {
 
   listen(element, 'submit', (event: Event) => {
     event.preventDefault();
-    codeFieldError.update('Invalid code');
+    codeFieldError.next('Invalid code');
   });
 
   return element;

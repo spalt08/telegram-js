@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
-import { MaybeMutatable } from './mutation';
 // eslint-disable-next-line import/no-cycle
-import { isMountTriggered, triggerMount, triggerUnmount, useMaybeMutatable } from './hooks';
+import { isMountTriggered, triggerMount, triggerUnmount, useMaybeObservable } from './hooks';
+import { MaybeObservable } from './types';
 
 /**
  * Methods for manipulating with DOM.
@@ -114,8 +114,8 @@ export function unmount(element: Node) {
 /**
  * Sets any attribute to HTMLElement
  */
-export function setAttribute(element: Element, attr: string, value: MaybeMutatable<string>) {
-  useMaybeMutatable(element, value, (v) => element.setAttribute(attr, v));
+export function setAttribute(element: Element, attr: string, value: MaybeObservable<string>) {
+  useMaybeObservable(element, value, (v) => element.setAttribute(attr, v));
 }
 
 /**
@@ -128,8 +128,8 @@ export function getAttribute(element: HTMLElement, attr: string): string {
 /**
  * Sets class name to HTMLElement
  */
-export function setClassName(element: Element, className: MaybeMutatable<string>) {
-  useMaybeMutatable(element, className, (cn) => { element.className = cn; });
+export function setClassName(element: Element, className: MaybeObservable<string>) {
+  useMaybeObservable(element, className, (cn) => { element.className = cn; });
 }
 
 /**
@@ -148,8 +148,8 @@ export function setStyle(element: HTMLElement | SVGElement, style: Partial<Pick<
 /**
  * Updates value at HTMLElement and disatch input event;x
  */
-export function setValue(element: HTMLInputElement, value: MaybeMutatable<string>) {
-  useMaybeMutatable(element, value, (v) => {
+export function setValue(element: HTMLInputElement, value: MaybeObservable<string>) {
+  useMaybeObservable(element, value, (v) => {
     element.value = v;
     dispatch(element, 'input');
   });

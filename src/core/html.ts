@@ -1,6 +1,6 @@
 import { ElementFactory } from './factory';
-import { MaybeMutatable } from './mutation';
-import { useMaybeMutatable } from './hooks'; // eslint-disable-line import/named
+import { useMaybeObservable } from './hooks';
+import { MaybeObservable } from './types'; // eslint-disable-line import/named
 
 /**
  * Syntax sugar for rendering HTML tree
@@ -25,9 +25,9 @@ export const label = ElementFactory('label');
 /**
  * Wrapper for any text children
  */
-export function text(value: MaybeMutatable<{ toString(): string; }>) {
+export function text(value: MaybeObservable<{ toString(): string; }>) {
   const node = document.createTextNode('');
-  useMaybeMutatable(node, value, (newValue) => {
+  useMaybeObservable(node, value, (newValue) => {
     node.textContent = newValue.toString();
   });
   return node;

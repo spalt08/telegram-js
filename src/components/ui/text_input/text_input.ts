@@ -1,15 +1,16 @@
+import { BehaviorSubject, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { div, input, text } from 'core/html';
 import { listen } from 'core/dom';
-import { mapMutatable, Mutatable, noRepeatMutatable } from 'core/mutation';
+import { useObservable } from 'core/hooks';
 import './text_input.scss';
-import { useSubscribable } from '../../../core/hooks';
 
 type Props = {
   label?: string,
   name?: string,
   autocomplete?: string,
   ref?: (ref: HTMLInputElement) => void,
-  error?: Mutatable<string | undefined>,
+  error?: Observable<string | undefined>,
   onChange?(value: string): void;
 };
 
@@ -20,7 +21,7 @@ type Props = {
  * textInput({ label: 'Name' })
  */
 export default function textInput({ label = '', ref, autocomplete, name, error, onChange }: Props) {
-  const labelText = new Mutatable(label);
+  const labelText = new BehaviorSubject(label);
   const inputEl = input({ type: 'text', name, autocomplete });
   const labelEl = div`.input__label`(text(labelText));
   const element = div`.input`(inputEl, labelEl);
@@ -52,9 +53,9 @@ export default function textInput({ label = '', ref, autocomplete, name, error, 
   });
 
   if (error) {
-    const hasError = noRepeatMutatable(mapMutatable(error, (message) => message !== undefined));
-    useSubscribable(element, hasError, (isError) => { element.classList[isError ? 'add' : 'remove']('error'); });
-    useSubscribable(element, error, (errorMessage) => labelText.update(errorMessage === undefined ? label : errorMessage));
+    const hasError = error.pipe(map((message) => message !== undefined));
+    useObservable(element, hasError, (isError) => { element.classList[isError ? 'add' : 'remove']('error'); });
+    useObservable(element, error, (errorMessage) => labelText.next(errorMessage === undefined ? label : errorMessage));
   }
 
   if (ref) ref(inputEl);

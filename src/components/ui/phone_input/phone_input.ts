@@ -1,17 +1,19 @@
+import { BehaviorSubject, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { div, input, text } from 'core/html';
 import { listen } from 'core/dom';
-import { getMaybeMutatableValue, mapMutatable, MaybeMutatable, Mutatable, noRepeatMutatable } from 'core/mutation';
-import { useInterface, useMaybeMutatable, useSubscribable } from 'core/hooks';
+import { useInterface, useMaybeObservable, useObservable } from 'core/hooks';
+import { MaybeObservable } from 'core/types';
 import './phone_input.scss';
 
 type Props = {
   onChange?: (value: string) => any;
-  prefix?: MaybeMutatable<string>,
-  formats?: MaybeMutatable<Array<string | number> | undefined>,
+  prefix?: MaybeObservable<string>,
+  formats?: MaybeObservable<Array<string | number> | undefined>,
   label?: string,
   name?: string,
   ref?: (ref: HTMLInputElement) => any,
-  error?: Mutatable<string | undefined>,
+  error?: Observable<string | undefined>,
 };
 
 /**
@@ -21,7 +23,7 @@ type Props = {
  * phoneInput({ label: 'Phone', prefix: '+44', formats: [9, 'dddd ddddd', 10, 'ddd ddd dddd'] })
  */
 export default function phoneInput({ label = '', prefix = '', formats = [], onChange, ref, name, error }: Props) {
-  const labelText = new Mutatable(label);
+  const labelText = new BehaviorSubject(label);
   const inputEl = input({ type: 'text', name });
   const element = div`.phoneinput`(
     div`.phoneinput__container`(
@@ -31,20 +33,19 @@ export default function phoneInput({ label = '', prefix = '', formats = [], onCh
     ),
   );
 
+  let currentFormat: Array<string | number> | undefined;
+
   const format = (str: string): string => {
-    if (!str) return '';
+    if (!str || !currentFormat) return '';
 
     let formated = '';
     let maxLength = 0;
-    const formatsVal = getMaybeMutatableValue(formats);
 
-    if (!formatsVal) return str;
+    for (let i = 0; i < currentFormat.length; i += 2) {
+      maxLength = currentFormat[i] as number;
 
-    for (let i = 0; i < formatsVal.length; i += 2) {
-      maxLength = formatsVal[i] as number;
-
-      if (typeof formatsVal[i] === 'number' && str.length <= formatsVal[i]) {
-        const pattern = formatsVal[i + 1] as string;
+      if (typeof currentFormat[i] === 'number' && str.length <= currentFormat[i]) {
+        const pattern = currentFormat[i + 1] as string;
         const literals = [' ', '-'];
         let offset = 0;
         let len = 0;
@@ -74,15 +75,16 @@ export default function phoneInput({ label = '', prefix = '', formats = [], onCh
   const getValue = () => unformat(inputEl.value);
   const setValue = (v: string) => { inputEl.value = format(v); };
 
-  const formatCurrentValue = () => setValue(getValue());
+  useMaybeObservable(element, formats, (newFormat) => {
+    currentFormat = newFormat;
+    setValue(getValue());
+  });
 
   if (error) {
-    const hasError = noRepeatMutatable(mapMutatable(error, (message) => message !== undefined));
-    useSubscribable(element, hasError, (isError) => { element.classList[isError ? 'add' : 'remove']('error'); });
-    useSubscribable(element, error, (errorMessage) => labelText.update(errorMessage === undefined ? label : errorMessage));
+    const hasError = error.pipe(map((message) => message !== undefined));
+    useObservable(element, hasError, (isError) => { element.classList[isError ? 'add' : 'remove']('error'); });
+    useObservable(element, error, (errorMessage) => labelText.next(errorMessage === undefined ? label : errorMessage));
   }
-
-  useMaybeMutatable(element, formats, formatCurrentValue);
 
   listen(inputEl, 'focus', () => element.classList.add('focused'));
   listen(inputEl, 'blur', () => element.classList.remove('focused'));

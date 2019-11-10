@@ -6,9 +6,9 @@
  * Warning! These lifecycle hooks work only when you use `mount` and `unmount` functions instead of manual DOM attaching/detaching.
  */
 
-import Subscribable from './emitter';
-import { MaybeMutatable, Mutatable } from './mutation';
+import { Observable } from 'rxjs';
 import { listen, unlisten } from './dom'; // eslint-disable-line import/no-cycle
+import { MaybeObservable } from './types';
 
 interface LifecycleListeners {
   mount?: Array<() => void>;
@@ -221,26 +221,26 @@ export function useListenWhileMounted(base: unknown, target: EventTarget, event:
 }
 
 /**
- * Listens to the Subscribable data change during the element is mounted
+ * Listens to the Observable data change during the element is mounted
  *
  * @example
- * useSubscribable(element, subscribable, (event) => {
+ * useSubscribable(element, observable, (event) => {
  *   element.foo = event;
  * });
  */
-export function useSubscribable<T>(base: unknown, subscribable: Subscribable<T>, onChange: (newValue: T) => void) {
+export function useObservable<T>(base: unknown, observable: Observable<T>, onChange: (newValue: T) => void) {
   return useWhileMounted(base, () => {
-    subscribable.subscribe(onChange);
-    return () => subscribable.unsubscribe(onChange);
+    const subscription = observable.subscribe(onChange);
+    return () => subscription.unsubscribe();
   });
 }
 
 /**
- * Listens to the MaybeMutatable value change during the element is mounted
+ * Listens to the MaybeBehaviorSubject value change during the element is mounted
  */
-export function useMaybeMutatable<T>(base: unknown, value: MaybeMutatable<T>, onChange: (newValue: T) => void) {
-  if (value instanceof Mutatable) {
-    return useSubscribable(base, value, onChange);
+export function useMaybeObservable<T>(base: unknown, value: MaybeObservable<T>, onChange: (newValue: T) => void) {
+  if (value instanceof Observable) {
+    return useObservable(base, value, onChange);
   }
 
   return onChange(value);

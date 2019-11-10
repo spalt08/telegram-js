@@ -1,6 +1,7 @@
+import { BehaviorSubject } from 'rxjs';
+import { pluck } from 'rxjs/operators';
 import { div, form, img, h1, p, text, label } from 'core/html';
 import { blurAll, listen } from 'core/dom';
-import { Mutatable, mutateProperty } from 'core/mutation';
 import { phoneInput, selectAutoComplete, button, checkbox } from 'components/ui';
 import countries, { Country } from 'const/country';
 import { getInterface } from 'core/hooks';
@@ -23,22 +24,22 @@ interface Props {
  * Welcome form layout with phone number input to sign in / sign up
  */
 export default function loginWelcome({ onSubmit }: Props) {
-  const country = new Mutatable<Country>({
+  const country = new BehaviorSubject<Country>({
     code: '',
     emoji: '',
     label: '',
     phone: '',
   });
-  const phoneFieldError = new Mutatable<undefined | string>(undefined);
+  const phoneFieldError = new BehaviorSubject<undefined | string>(undefined);
   const phoneField = phoneInput({
     label: 'Phone Number',
     name: 'phone',
-    prefix: mutateProperty(country, 'phone'),
-    formats: mutateProperty(country, 'phoneFormats'),
+    prefix: country.pipe(pluck('phone')),
+    formats: country.pipe(pluck('phoneFormats')),
     error: phoneFieldError,
     onChange() {
       if (phoneFieldError.value !== undefined) {
-        phoneFieldError.update(undefined);
+        phoneFieldError.next(undefined);
       }
     },
   });
@@ -49,7 +50,7 @@ export default function loginWelcome({ onSubmit }: Props) {
     optionRenderer: countryOptionRenderer,
     optionLabeler: (data) => data.label,
     onChange(data) {
-      country.update(data);
+      country.next(data);
       getInterface(phoneField).focus();
     },
   });
@@ -77,7 +78,7 @@ export default function loginWelcome({ onSubmit }: Props) {
   listen(element, 'submit', (event: Event) => {
     event.preventDefault();
     blurAll(element);
-    phoneFieldError.update('Invalid phone');
+    phoneFieldError.next('Invalid phone');
     onSubmit(
       getInterface(countryField).getValue().phone + getInterface(phoneField).getValue(),
       getInterface(rememberField).getChecked(),

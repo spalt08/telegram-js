@@ -25,6 +25,9 @@
     "Sergey Mostsevenko <finesserus@gmail.com>"
   ],
   "homepage": "https://github.com/spalt08/telegram-js",
+  "dependencies": {
+    "rxjs": "^6.5.3"
+  },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^2.6.1",
     "@typescript-eslint/parser": "^2.6.1",
@@ -59,6 +62,5 @@
     "webpack-bundle-analyzer": "^3.6.0",
     "webpack-cli": "^3.3.10",
     "webpack-dev-server": "^3.9.0"
-  },
-  "dependencies": {}
+  }
 }

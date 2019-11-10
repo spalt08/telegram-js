@@ -1,15 +1,15 @@
 import { text } from 'core/html';
-import { MaybeMutatable } from 'core/mutation';
-import { useMaybeMutatable } from 'core/hooks';
+import { MaybeObservable } from 'core/types';
+import { useMaybeObservable } from 'core/hooks';
 import { mount, unmount } from 'core/dom';
 import ripple from '../ripple/ripple';
 import { materialSpinner } from '../../icons';
 import './button.scss';
 
 type Props = {
-  label?: MaybeMutatable<string>,
-  disabled?: MaybeMutatable<boolean | undefined>,
-  loading?: MaybeMutatable<boolean>,
+  label?: MaybeObservable<string>,
+  disabled?: MaybeObservable<boolean | undefined>,
+  loading?: MaybeObservable<boolean>,
 };
 
 /**
@@ -24,7 +24,7 @@ export default function button({ label = '', disabled, loading }: Props) {
 
   let spinner: Node | undefined;
 
-  useMaybeMutatable(element, loading, (isLoading) => {
+  useMaybeObservable(element, loading, (isLoading) => {
     if (isLoading && !spinner) {
       element.classList.add('loading');
       spinner = materialSpinner({ class: 'button__spinner' });
