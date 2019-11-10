@@ -14,9 +14,10 @@ function codeSendMock(code: string, callback: (error: string | null) => void) {
 
 interface Props {
   phone: string;
+  onReturnToPhone(): void;
 }
 
-export default function loginCodeContainer({ phone }: Props) {
+export default function loginCodeContainer({ phone, onReturnToPhone }: Props) {
   const isSubmitting = new BehaviorSubject(false);
   const codeError = new Subject<string>();
 
@@ -35,5 +36,6 @@ export default function loginCodeContainer({ phone }: Props) {
         }
       });
     },
+    onReturnToPhone,
   });
 }

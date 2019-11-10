@@ -21,7 +21,13 @@ export default function login() {
   }
 
   function makeLoginCode(phone: string) {
-    return loginCodeContainer({ phone });
+    return loginCodeContainer({
+      phone,
+      onReturnToPhone() {
+        // todo: Translate left
+        controller.translateRight(makeLoginWelcome);
+      },
+    });
   }
 
   return controller.element;

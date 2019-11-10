@@ -1,22 +1,25 @@
 import { BehaviorSubject, Observable } from 'rxjs';
 import { div, form, h1, p, text } from 'core/html';
-import { button, MonkeyState, textInput, monkey } from 'components/ui';
+import { button, textInput, monkey } from 'components/ui';
+import { State as MonkeyState } from 'components/ui/monkey/monkey';
 import { blurAll, listen } from 'core/dom';
 import { MaybeObservable } from 'core/types';
+import { getInterface, useObservable } from 'core/hooks';
+import * as icons from 'components/icons';
 import './login.scss';
-import { getInterface, useObservable } from '../../../core/hooks';
 
 interface Props {
   phone: MaybeObservable<string>;
   isSubmitting?: Observable<boolean>;
   codeError?: Observable<string>;
   onSubmit(code: string): void;
+  onReturnToPhone(): void;
 }
 
 /**
  * Layout for entering SMS code for sign in
  */
-export default function loginCode({ phone, isSubmitting, codeError, onSubmit }: Props) {
+export default function loginCode({ phone, isSubmitting, codeError, onSubmit, onReturnToPhone }: Props) {
   const codeFieldError = new BehaviorSubject<undefined | string>(undefined);
   const monkeyState = new BehaviorSubject<MonkeyState>('idle');
 
@@ -41,7 +44,10 @@ export default function loginCode({ phone, isSubmitting, codeError, onSubmit }: 
         state: monkeyState,
         className: 'login__monkey',
       }),
-      h1`.login__title`(text(phone)), // todo: Make it formatted
+      h1`.login__title`(
+        text(phone), // todo: Make it formatted
+        icons.edit({ class: 'login__title_icon', onClick: onReturnToPhone }),
+      ),
       p`.login__description`(text('We have sent you an SMS with the code')),
       div`.login__inputs`(
         codeField,
