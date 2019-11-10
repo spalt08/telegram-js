@@ -114,22 +114,35 @@ export function unmount(element: Node) {
 /**
  * Sets any attribute to HTMLElement
  */
-export function setAttribute(element: Element, attr: string, value: MaybeObservable<string>) {
-  useMaybeObservable(element, value, (v) => element.setAttribute(attr, v));
+export function setAttribute(element: Element, attr: string, value: MaybeObservable<string | undefined>) {
+  useMaybeObservable(element, value, (v) => {
+    if (v === undefined) {
+      element.removeAttribute(attr);
+    } else {
+      element.setAttribute(attr, v);
+    }
+  });
 }
 
 /**
  * Gets attribute from HTMLElement
  */
-export function getAttribute(element: HTMLElement, attr: string): string {
+export function getAttribute(element: Element, attr: string): string {
   return element.getAttribute(attr) || '';
 }
 
 /**
  * Sets class name to HTMLElement
  */
-export function setClassName(element: Element, className: MaybeObservable<string>) {
-  useMaybeObservable(element, className, (cn) => { element.className = cn; });
+export function setClassName(element: Element, className: MaybeObservable<string | undefined>) {
+  useMaybeObservable(element, className, (cn = '') => { element.className = cn; });
+}
+
+/**
+ * Sets any property to HTMLElement
+ */
+export function setProperty<T extends Node, K extends keyof T>(element: T, prop: K, value: MaybeObservable<T[K]>) {
+  useMaybeObservable(element, value, (v) => { element[prop] = v; });
 }
 
 /**
@@ -164,18 +177,16 @@ export function setElementProps(element: HTMLElement | SVGElement, props: Record
     const propName = propNames[i];
     const propValue = props[propName];
 
-    if (propValue === undefined) {
-      continue;
-    }
-
     if (propName.slice(0, 2) === 'on') {
       listen(element, propName.slice(2).toLowerCase(), propValue);
       continue;
     }
 
-    switch (propNames[i]) {
+    switch (propName) {
       case 'style':
-        setStyle(element, propValue);
+        if (propValue !== undefined) {
+          setStyle(element, propValue);
+        }
         break;
 
       case 'class':
@@ -187,12 +198,19 @@ export function setElementProps(element: HTMLElement | SVGElement, props: Record
         }
         break;
 
+      case 'disabled':
+      case 'checked':
+      case 'selected':
+      case 'value':
+        setProperty(element as any, propName, propValue);
+        break;
+
       case 'key':
         setAttribute(element, 'data-key', propValue);
         break;
 
       default:
-        setAttribute(element, propNames[i], propValue);
+        setAttribute(element, propName, propValue);
     }
   }
 }

@@ -1,10 +1,10 @@
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { pluck } from 'rxjs/operators';
 import { div, form, img, h1, p, text, label } from 'core/html';
 import { blurAll, listen } from 'core/dom';
 import { phoneInput, selectAutoComplete, button, checkbox } from 'components/ui';
 import countries, { Country } from 'const/country';
-import { getInterface } from 'core/hooks';
+import { getInterface, useObservable } from 'core/hooks';
 import logo from './logo.svg';
 import './login.scss';
 
@@ -17,13 +17,17 @@ const countryOptionRenderer = ({ phone, label: countryLabel, emoji }: Country) =
 );
 
 interface Props {
+  isSubmitting?: Observable<boolean>;
+  phoneError?: Observable<string>;
   onSubmit(phone: string, remember: boolean): void;
 }
 
 /**
  * Welcome form layout with phone number input to sign in / sign up
+ *
+ * @todo: Fix the upper cut on low screens
  */
-export default function loginWelcome({ onSubmit }: Props) {
+export default function loginWelcome({ isSubmitting, phoneError, onSubmit }: Props) {
   const country = new BehaviorSubject<Country>({
     code: '',
     emoji: '',
@@ -70,20 +74,34 @@ export default function loginWelcome({ onSubmit }: Props) {
           rememberField,
           text('Keep me signed in'),
         ),
-        button({ label: 'Next' }),
+        button({
+          label: 'Next',
+          disabled: isSubmitting,
+          loading: isSubmitting,
+        }),
       ),
     )
   );
 
+  let isCurrentlySubmitting = false;
+  if (isSubmitting) {
+    useObservable(element, isSubmitting, (s) => { isCurrentlySubmitting = s; });
+  }
+
   listen(element, 'submit', (event: Event) => {
     event.preventDefault();
     blurAll(element);
-    phoneFieldError.next('Invalid phone');
-    onSubmit(
-      getInterface(countryField).getValue().phone + getInterface(phoneField).getValue(),
-      getInterface(rememberField).getChecked(),
-    );
+    if (!isCurrentlySubmitting) {
+      onSubmit(
+        getInterface(countryField).getValue().phone + getInterface(phoneField).getValue(),
+        getInterface(rememberField).getChecked(),
+      );
+    }
   });
+
+  if (phoneError) {
+    useObservable(element, phoneError, (errorMessage) => phoneFieldError.next(errorMessage));
+  }
 
   return element;
 }

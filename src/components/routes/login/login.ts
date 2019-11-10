@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import LoginTransition from './transition';
-import loginWelcome from './login_welcome';
+import loginWelcomeContainer from './login_welcome_container';
 import loginCode from './login_code';
 import './login.scss';
 
@@ -13,11 +13,8 @@ export default function login() {
   ]);
 
   function makeLoginWelcome() {
-    return loginWelcome({
-      onSubmit(phone: string, remember: boolean) {
-        console.log('Phone submit', { phone, remember });
-        controller.translateRight(makeLoginCode);
-      },
+    return loginWelcomeContainer(() => {
+      controller.translateRight(makeLoginCode);
     });
   }
 

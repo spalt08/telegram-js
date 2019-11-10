@@ -8,7 +8,7 @@ import './button.scss';
 
 type Props = {
   label?: MaybeObservable<string>,
-  disabled?: MaybeObservable<boolean | undefined>,
+  disabled?: MaybeObservable<boolean>,
   loading?: MaybeObservable<boolean>,
 };
 
