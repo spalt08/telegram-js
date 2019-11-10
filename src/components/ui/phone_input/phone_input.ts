@@ -24,7 +24,7 @@ type Props = {
  */
 export default function phoneInput({ label = '', prefix = '', formats = [], onChange, ref, name, error }: Props) {
   const labelText = new BehaviorSubject(label);
-  const inputEl = input({ type: 'text', name });
+  const inputEl = input({ type: 'tel', name });
   const element = div`.phoneinput`(
     div`.phoneinput__container`(
       div`.phoneinput__prefix`(text(prefix)),
@@ -69,8 +69,7 @@ export default function phoneInput({ label = '', prefix = '', formats = [], onCh
     return format(str.slice(0, maxLength));
   };
 
-  // todo: fix replacement
-  const unformat = (str: string) => str.replace(' ', '').replace(' ', '').replace('-', '').replace('-', '');
+  const unformat = (str: string) => str.replace(/[^\d]/g, '');
 
   const getValue = () => unformat(inputEl.value);
   const setValue = (v: string) => { inputEl.value = format(v); };
