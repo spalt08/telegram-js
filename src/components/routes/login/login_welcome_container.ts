@@ -4,13 +4,13 @@ import loginWelcome from './login_welcome';
 
 function loginMock(phone: string, remember: boolean, callback: (error: string | null) => void) {
   if (phone.length < 5) {
-    callback('Incorrect Phone Number');
+    callback('Invalid Phone Number');
     return;
   }
 
   setTimeout(() => {
     callback(null);
-  }, 2000);
+  }, 1000);
 }
 
 interface Props {

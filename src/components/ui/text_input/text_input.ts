@@ -2,7 +2,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { div, input, text } from 'core/html';
 import { listen } from 'core/dom';
-import { useObservable } from 'core/hooks';
+import { useInterface, useObservable } from 'core/hooks';
 import './text_input.scss';
 
 type Props = {
@@ -60,5 +60,9 @@ export default function textInput({ label = '', ref, autocomplete, name, error, 
 
   if (ref) ref(inputEl);
 
-  return element;
+  return useInterface(element, {
+    getValue() {
+      return inputEl.value;
+    },
+  });
 }
