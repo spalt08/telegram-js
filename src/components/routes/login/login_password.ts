@@ -21,6 +21,7 @@ export default function loginPassword({ isSubmitting, passwordError, onSubmit }:
 
   const passwordField = passwordInput({
     label: 'Password',
+    name: 'password',
     initiallyHidden: true,
     error: passwordFieldError,
     onChange() {

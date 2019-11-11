@@ -37,7 +37,6 @@ export default function loginWelcome({ isSubmitting, phoneError, onSubmit }: Pro
   const phoneFieldError = new BehaviorSubject<undefined | string>(undefined);
   const phoneField = phoneInput({
     label: 'Phone Number',
-    name: 'phone',
     prefix: country.pipe(pluck('phone')),
     formats: country.pipe(pluck('phoneFormats')),
     error: phoneFieldError,

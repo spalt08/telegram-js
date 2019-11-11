@@ -3,6 +3,7 @@ import LoginTransition from './transition';
 import loginWelcomeContainer from './login_welcome_container';
 import loginCodeContainer from './login_code_container';
 import loginPasswordContainer from './login_password_container';
+import loginProfileContainer from './login_profile_container';
 import './login.scss';
 
 /**
@@ -38,7 +39,15 @@ export default function login() {
   }
 
   function makeLoginPassword() {
-    return loginPasswordContainer();
+    return loginPasswordContainer({
+      redirectToProfile() {
+        controller.translateRight(makeLoginProfile);
+      },
+    });
+  }
+
+  function makeLoginProfile() {
+    return loginProfileContainer();
   }
 
   return controller.element;
