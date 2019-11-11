@@ -1,8 +1,8 @@
-import { Client, TypeLangauge } from 'mtproto-js';
+import { Client, TypeLanguage } from 'mtproto-js';
 import { API_ID, API_HASH, APP_VERSION } from 'const/api';
 import Layer105 from './layer105.json';
 
-const tl = new TypeLangauge(Layer105);
+const tl = new TypeLanguage(Layer105);
 const client = new Client(tl, {
   test: true,
   ssl: true,
