@@ -3,11 +3,15 @@ import { map } from 'rxjs/operators';
 import { div, input, text } from 'core/html';
 import { listen } from 'core/dom';
 import { useInterface, useObservable } from 'core/hooks';
+import { MaybeObservable } from 'core/types';
 import './text_input.scss';
 
 type Props = {
   label?: string,
-  name?: string,
+  type?: MaybeObservable<HTMLInputElement['type']>,
+  name?: MaybeObservable<HTMLInputElement['name'] | undefined>,
+  className?: string,
+  inputClassName?: string,
   autocomplete?: string,
   ref?: (ref: HTMLInputElement) => void,
   error?: Observable<string | undefined>,
@@ -20,11 +24,21 @@ type Props = {
  * @example
  * textInput({ label: 'Name' })
  */
-export default function textInput({ label = '', ref, autocomplete, name, error, onChange }: Props) {
+export default function textInput({
+  label = '',
+  ref,
+  autocomplete,
+  type = 'text',
+  name,
+  className = '',
+  inputClassName = '',
+  error,
+  onChange,
+}: Props) {
   const labelText = new BehaviorSubject(label);
-  const inputEl = input({ type: 'text', name, autocomplete });
+  const inputEl = input`${inputClassName}`({ type, name, autocomplete });
   const labelEl = div`.input__label`(text(labelText));
-  const element = div`.input`(inputEl, labelEl);
+  const element = div`.input ${className}`(inputEl, labelEl);
 
   let filled = false;
 

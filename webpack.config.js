@@ -14,13 +14,13 @@ const sourceDirectory = 'src';
 const destinationDirectory = 'dist';
 
 module.exports = (env, argv) => {
-  const { analyze, mode } = argv;
+  const { analyze, mode = 'development' } = argv;
   const isProduction = mode === 'production';
 
   return {
     entry: `./${sourceDirectory}/index`,
 
-    mode: isProduction ? 'production' : 'development',
+    mode,
 
     resolve: {
       modules: [sourceDirectory, 'node_modules'],

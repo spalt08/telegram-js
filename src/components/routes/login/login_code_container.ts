@@ -11,15 +11,16 @@ function codeSendMock(code: string, callback: (error: string | null) => void) {
 
   setTimeout(() => {
     callback(null);
-  }, 2000);
+  }, 1000);
 }
 
 interface Props {
   phone: string;
+  onRedirectToPassword(): void;
   onReturnToPhone(): void;
 }
 
-export default function loginCodeContainer({ phone, onReturnToPhone }: Props) {
+export default function loginCodeContainer({ phone, onRedirectToPassword, onReturnToPhone }: Props) {
   const isSubmitting = new BehaviorSubject(false);
   const codeError = new Subject<string>();
 
@@ -33,6 +34,8 @@ export default function loginCodeContainer({ phone, onReturnToPhone }: Props) {
         isSubmitting.next(false);
         if (error) {
           codeError.next(error);
+        } else {
+          onRedirectToPassword();
         }
       });
     },

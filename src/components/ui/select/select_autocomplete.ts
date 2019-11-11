@@ -42,6 +42,7 @@ export default function selectAutoComplete<T>({
       label,
       name,
       autocomplete: 'off',
+      inputClassName: 'select__input',
       ref: (el: HTMLInputElement) => { inputEl = el; },
     }),
     arrow,

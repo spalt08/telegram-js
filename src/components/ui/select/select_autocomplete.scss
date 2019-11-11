@@ -1,6 +1,10 @@
 .select {
   position: relative;
 
+  & &__input {
+    padding-right: 35px;
+  }
+
   &__arrow {
     position: absolute;
     top: 21px;
