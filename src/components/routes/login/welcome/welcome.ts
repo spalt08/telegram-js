@@ -6,7 +6,7 @@ import { phoneInput, selectAutoComplete, button, checkbox } from 'components/ui'
 import countries, { Country } from 'const/country';
 import { getInterface, useObservable } from 'core/hooks';
 import logo from './logo.svg';
-import './login.scss';
+import '../login.scss';
 
 const countryOptionRenderer = ({ phone, label: countryLabel, emoji }: Country) => (
   div`.logincountry`(
@@ -27,7 +27,7 @@ interface Props {
  *
  * @todo: Fix the upper cut on low screens
  */
-export default function loginWelcome({ isSubmitting, phoneError, onSubmit }: Props) {
+export default function welcomeForm({ isSubmitting, phoneError, onSubmit }: Props) {
   const country = new BehaviorSubject<Country>({
     code: '',
     emoji: '',

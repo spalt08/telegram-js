@@ -20,4 +20,7 @@ const client = new Client(tl, {
   langCode: 'en',
 });
 
+// Debug
+(window as Window & { client?: Client }).client = client;
+
 export default client;

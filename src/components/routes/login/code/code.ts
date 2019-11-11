@@ -5,8 +5,9 @@ import { State as MonkeyState } from 'components/ui/monkey/monkey';
 import { blurAll, listen } from 'core/dom';
 import { MaybeObservable } from 'core/types';
 import { getInterface, useObservable } from 'core/hooks';
+import { formatWithCountry } from 'helpers/phone_number';
 import * as icons from 'components/icons';
-import './login.scss';
+import '../login.scss';
 
 interface Props {
   phone: MaybeObservable<string>; // Formatted, please
@@ -19,7 +20,7 @@ interface Props {
 /**
  * Layout for entering SMS code for sign in
  */
-export default function loginCode({ phone, isSubmitting, codeError, onSubmit, onReturnToPhone }: Props) {
+export default function codeForm({ phone, isSubmitting, codeError, onSubmit, onReturnToPhone }: Props) {
   const codeFieldError = new BehaviorSubject<undefined | string>(undefined);
   const monkeyState = new BehaviorSubject<MonkeyState>('idle');
 
@@ -45,7 +46,7 @@ export default function loginCode({ phone, isSubmitting, codeError, onSubmit, on
         className: 'login__monkey',
       }),
       h1`.login__title`(
-        text(phone),
+        text(formatWithCountry(phone)),
         icons.edit({ class: 'login__title_icon', onClick: onReturnToPhone }),
       ),
       p`.login__description`(text('We have sent you an SMS with the code')),

@@ -29,6 +29,11 @@ export default class LoginTransition {
     }
   }
 
+  set(element: HTMLElement) {
+    this.mounted = element;
+    mount(this.element, this.mounted);
+  }
+
   translateRight(elementCreator: () => HTMLElement) {
     if (this.mounted) {
       this.mounted.classList.add('removed');

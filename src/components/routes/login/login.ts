@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import LoginTransition from './transition';
-import loginWelcomeContainer from './login_welcome_container';
-import loginCodeContainer from './login_code_container';
+import loginWelcomeContainer from './welcome/welcome_сontainer';
+import loginCodeContainer from './code/code_container';
 import loginPasswordContainer from './login_password_container';
 import './login.scss';
 
@@ -9,30 +9,27 @@ import './login.scss';
  * Handler for route /login
  */
 export default function login() {
-  // Not removed from memory to not reset the inputs
-  const loginWelcomeElement = makeLoginWelcome();
+  const transitionController = new LoginTransition({ className: 'login' });
 
-  const controller = new LoginTransition({ className: 'login' }, [
-    () => loginWelcomeElement,
-  ]);
+  const welcome = loginWelcomeContainer({
+    onCode(phone, phoneCodeHash) {
+      transitionController.translateRight(() => makeLoginCode(phone, phoneCodeHash));
+    },
+    onRegister(phone) {
+      console.log('register!', phone);
+    },
+  });
 
-  function makeLoginWelcome() {
-    return loginWelcomeContainer({
-      onRedirectToCode(phone) {
-        controller.translateRight(() => makeLoginCode(phone));
-      },
-    });
-  }
-
-  function makeLoginCode(phone: string) {
+  function makeLoginCode(phone: string, hash: string) {
     return loginCodeContainer({
       phone,
+      hash,
       onRedirectToPassword() {
-        controller.translateRight(makeLoginPassword);
+        transitionController.translateRight(makeLoginPassword);
       },
       onReturnToPhone() {
         // todo: Translate left
-        controller.translateRight(() => loginWelcomeElement);
+        transitionController.translateRight(() => welcome);
       },
     });
   }
@@ -41,5 +38,7 @@ export default function login() {
     return loginPasswordContainer();
   }
 
-  return controller.element;
+  transitionController.set(welcome);
+
+  return transitionController.element;
 }
