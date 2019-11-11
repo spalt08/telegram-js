@@ -27,7 +27,7 @@ export default function button({ label = '', disabled, loading }: Props) {
   useMaybeObservable(element, loading, (isLoading) => {
     if (isLoading && !spinner) {
       element.classList.add('loading');
-      spinner = materialSpinner({ class: 'button__spinner' });
+      spinner = materialSpinner({ class: 'button__spinner' }); // todo: Fix the missing animation in Edge
       mount(element, spinner);
     } else if (!isLoading && spinner) {
       element.classList.remove('loading');
