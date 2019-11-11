@@ -3,6 +3,7 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import { Country } from 'const/country';
 import { formatWithCountry, unformatWithCountry } from 'helpers/phone_number';
 import loginWelcome from './login_welcome';
+import client from 'client/client';
 
 function loginMock(phone: string, remember: boolean, callback: (error: string | null) => void) {
   console.log('Mock login', phone, remember);
@@ -24,6 +25,8 @@ interface Props {
 export default function loginWelcomeContainer({ onRedirectToCode }: Props) {
   const isSubmitting = new BehaviorSubject(false);
   const phoneError = new Subject<string>();
+
+  client.call('help.getNearestDc', {});
 
   return loginWelcome({
     isSubmitting,

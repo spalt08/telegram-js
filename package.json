@@ -26,7 +26,8 @@
   ],
   "homepage": "https://github.com/spalt08/telegram-js",
   "dependencies": {
-    "rxjs": "^6.5.3"
+    "rxjs": "^6.5.3",
+    "mtproto-js": "file:./packages/mtproto-js"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^2.6.1",
