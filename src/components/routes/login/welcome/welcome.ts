@@ -19,13 +19,11 @@ const countryOptionRenderer = ({ phone, label: countryLabel, emoji }: Country) =
 interface Props {
   isSubmitting?: Observable<boolean>;
   phoneError?: Observable<string>;
-  onSubmit(phoneCountry: Country, phoneNumber: string, remember: boolean): void;
+  onSubmit(country: Country, number: string, remember: boolean): void;
 }
 
 /**
  * Welcome form layout with phone number input to sign in / sign up
- *
- * @todo: Fix the upper cut on low screens
  */
 export default function welcomeForm({ isSubmitting, phoneError, onSubmit }: Props) {
   const country = new BehaviorSubject<Country>({

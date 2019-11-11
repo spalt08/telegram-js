@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
+import { div } from 'core/html';
 import LoginTransition from './transition';
 import loginWelcomeContainer from './welcome/welcome_сontainer';
 import loginCodeContainer from './code/code_container';
@@ -9,7 +10,7 @@ import './login.scss';
  * Handler for route /login
  */
 export default function login() {
-  const transitionController = new LoginTransition({ className: 'login' });
+  const transitionController = new LoginTransition();
 
   const welcome = loginWelcomeContainer({
     onCode(phone, phoneCodeHash) {
@@ -40,5 +41,7 @@ export default function login() {
 
   transitionController.set(welcome);
 
-  return transitionController.element;
+  return div`.login`(
+    transitionController.element,
+  );
 }

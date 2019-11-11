@@ -1,11 +1,15 @@
 .login {
-  width: 100%;
   height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: auto;
-  animation: appear .4s ease-out;
+  overflow-y: scroll;
+
+  &__transition {
+    width: 100%;
+    min-height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: appear .4s ease-out;
+  }
 
   &__form {
     width: 100%;

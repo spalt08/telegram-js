@@ -8,7 +8,7 @@ import { API_ID, API_HASH } from 'const/api';
 import welcomeForm from './welcome';
 
 interface Props {
-  onCode(phone: string): void;
+  onCode(phone: string, hash: string): void;
   onRegister(phone: string): void;
 }
 
