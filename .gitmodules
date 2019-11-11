@@ -1,3 +1,3 @@
 [submodule "packages/mtproto-js"]
 	path = packages/mtproto-js
-	url = https://github.com/spalt08/mtproto-js
+	url = git@github.com:spalt08/mtproto-js.git
