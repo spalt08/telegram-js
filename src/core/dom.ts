@@ -1,14 +1,12 @@
 /* eslint-disable no-param-reassign */
 // eslint-disable-next-line import/no-cycle
 import { isMountTriggered, triggerMount, triggerUnmount, useMaybeObservable } from './hooks';
-import { MaybeObservable } from './types';
+import { MaybeObservable, MaybeObservableMap, WritableStyles } from './types';
 
 /**
  * Methods for manipulating with DOM.
  * All DOM manipulations should be done with this module.
  */
-
-type WritableCSSProps = Exclude<keyof CSSStyleDeclaration, 'length' | 'parentRule'>;
 
 /**
  * Checks if the node is in the page document
@@ -162,14 +160,12 @@ export function setProperty<T extends Node, K extends keyof T>(element: T, prop:
 /**
  * Sets style to HTMLElement
  */
-export function setStyle(element: HTMLElement | SVGElement, style: Partial<Pick<CSSStyleDeclaration, WritableCSSProps>>) {
-  // To Do: Support of mutation
-  const props = Object.keys(style) as WritableCSSProps[];
-
-  for (let i = 0; i < props.length; i++) {
-    // To Do: Fix
-    element.style[props[i]] = style[props[i]];
-  }
+export function setStyle(element: HTMLElement | SVGElement, style: Partial<MaybeObservableMap<WritableStyles>>) {
+  (Object.keys(style) as Array<keyof WritableStyles>).forEach((prop) => {
+    useMaybeObservable(element, style[prop], (value) => {
+      element.style[prop] = value;
+    });
+  });
 }
 
 /**

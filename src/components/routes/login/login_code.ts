@@ -31,10 +31,7 @@ export default function loginCode({ phone, isSubmitting, codeError, onSubmit, on
         codeFieldError.next(undefined);
       }
 
-      const newMonkeyState = value ? 'tracking' : 'idle';
-      if (monkeyState.value !== newMonkeyState) {
-        monkeyState.next(newMonkeyState);
-      }
+      monkeyState.next(value ? 'tracking' : 'idle');
     },
   });
 

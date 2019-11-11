@@ -6,10 +6,10 @@ import { useInterface, useObservable } from 'core/hooks';
 import { MaybeObservable } from 'core/types';
 import './text_input.scss';
 
-type Props = {
+export type Props = {
   label?: string,
   type?: MaybeObservable<HTMLInputElement['type']>,
-  name?: MaybeObservable<HTMLInputElement['name'] | undefined>,
+  name?: MaybeObservable<string | undefined>,
   className?: string,
   inputClassName?: string,
   autocomplete?: string,
