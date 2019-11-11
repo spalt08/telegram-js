@@ -32,10 +32,7 @@ export default function codeForm({ phone, isSubmitting, codeError, onSubmit, onR
         codeFieldError.next(undefined);
       }
 
-      const newMonkeyState = value ? 'tracking' : 'idle';
-      if (monkeyState.value !== newMonkeyState) {
-        monkeyState.next(newMonkeyState);
-      }
+      monkeyState.next(value ? 'tracking' : 'idle');
     },
   });
 

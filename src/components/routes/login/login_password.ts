@@ -1,6 +1,6 @@
 import { BehaviorSubject, Observable } from 'rxjs';
 import { div, form, h1, p, text } from 'core/html';
-import { button, textInput, monkey } from 'components/ui';
+import { button, monkey, passwordInput } from 'components/ui';
 import { State as MonkeyState } from 'components/ui/monkey/monkey';
 import { blurAll, listen } from 'core/dom';
 import { getInterface, useObservable } from 'core/hooks';
@@ -15,18 +15,21 @@ interface Props {
 /**
  * Layout for entering SMS code for sign in
  */
-export default function loginCode({ isSubmitting, passwordError, onSubmit }: Props) {
+export default function loginPassword({ isSubmitting, passwordError, onSubmit }: Props) {
   const passwordFieldError = new BehaviorSubject<undefined | string>(undefined);
   const monkeyState = new BehaviorSubject<MonkeyState>('close');
 
-  const passwordField = textInput({
+  const passwordField = passwordInput({
     label: 'Password',
-    type: 'password',
+    initiallyHidden: true,
     error: passwordFieldError,
     onChange() {
       if (passwordFieldError.value !== undefined) {
         passwordFieldError.next(undefined);
       }
+    },
+    onHideToggle(isHidden) {
+      monkeyState.next(isHidden ? 'close' : 'closeAndPeek');
     },
   });
 
