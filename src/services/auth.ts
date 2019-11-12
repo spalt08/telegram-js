@@ -50,41 +50,42 @@ export default class AuthServie {
   sendCode(phoneNumber: string, cb: () => void) {
     this.phoneNumber.next(phoneNumber);
 
-    const payload = {
-      phone_number: phoneNumber,
-      api_id: API_ID,
-      api_hash: API_HASH,
-      settings: {},
-    };
+    this.state.next('code');
+    // const payload = {
+    //   phone_number: phoneNumber,
+    //   api_id: API_ID,
+    //   api_hash: API_HASH,
+    //   settings: {},
+    // };
 
-    client.call('auth.sendCode', payload, (err, res) => {
-      if (err && err.type === 'network') { cb(); return; }
+    // client.call('auth.sendCode', payload, (err, res) => {
+    //   if (err && err.type === 'network') { cb(); return; }
 
-      if (err) {
-        // Should use another DC
-        if (err.message && err.message.indexOf('PHONE_MIGRATE_') > -1) {
-          client.cfg.dc = +err.message.slice(-1);
-          this.sendCode(phoneNumber, cb);
+    //   if (err) {
+    //     // Should use another DC
+    //     if (err.message && err.message.indexOf('PHONE_MIGRATE_') > -1) {
+    //       client.cfg.dc = +err.message.slice(-1);
+    //       this.sendCode(phoneNumber, cb);
 
-        // Display error message
-        } else {
-          this.errPhone.next(err.message);
-          cb();
-        }
-        return;
-      }
+    //     // Display error message
+    //     } else {
+    //       this.errPhone.next(err.message);
+    //       cb();
+    //     }
+    //     return;
+    //   }
 
-      if (!res) return;
+    //   if (!res) return;
 
-      const result = res.json();
+    //   const result = res.json();
 
-      // Success
-      if (result._ === 'auth.sentCode') {
-        this.phoneHash = result.phone_code_hash;
-        this.codeType = result.type._;
-        this.state.next('code');
-      }
-    });
+    //   // Success
+    //   if (result._ === 'auth.sentCode') {
+    //     this.phoneHash = result.phone_code_hash;
+    //     this.codeType = result.type._;
+    //     this.state.next('code');
+    //   }
+    // });
   }
 
   /**
@@ -92,34 +93,35 @@ export default class AuthServie {
    * @mtproto auth.signIn
    */
   checkCode(code: string, cb: () => void) {
-    const payload = {
-      phone_number: this.phoneNumber.value,
-      phone_code_hash: this.phoneHash,
-      phone_code: code,
-    };
+    this.state.next('2fa');
+    // const payload = {
+    //   phone_number: this.phoneNumber.value,
+    //   phone_code_hash: this.phoneHash,
+    //   phone_code: code,
+    // };
 
-    client.call('auth.signIn', payload, (err, res) => {
-      if (err && err.type === 'network') { cb(); return; }
+    // client.call('auth.signIn', payload, (err, res) => {
+    //   if (err && err.type === 'network') { cb(); return; }
 
-      // Should use 2FA authorization
-      if (err && err.message === 'SESSION_PASSWORD_NEEDED') {
-        this.state.next('2fa');
+    //   // Should use 2FA authorization
+    //   if (err && err.message === 'SESSION_PASSWORD_NEEDED') {
+    //     this.state.next('2fa');
 
-        this.getPasswordAlgo();
-        return;
-      }
+    //     this.getPasswordAlgo();
+    //     return;
+    //   }
 
-      // Display error message
-      if (err && err.code === 400) {
-        this.errCode.next(err.message);
-        cb();
-        return;
-      }
+    //   // Display error message
+    //   if (err && err.code === 400) {
+    //     this.errCode.next(err.message);
+    //     cb();
+    //     return;
+    //   }
 
-      if (!res) return;
+    //   if (!res) return;
 
-      this.authorize(res.json());
-    });
+    //   this.authorize(res.json());
+    // });
   }
 
   /**
@@ -138,27 +140,28 @@ export default class AuthServie {
    * @mtproto auth.checkPassword
    */
   checkPassword(password: string, cb: () => void) {
+    this.state.next('signup');
     // Wait for pwd algo fetch
-    if (!this.passwordAlgo) {
-      setTimeout(() => this.checkPassword(password, cb), 100);
-      return;
-    }
+    // if (!this.passwordAlgo) {
+    //   setTimeout(() => this.checkPassword(password, cb), 100);
+    //   return;
+    // }
 
-    client.getPasswordKdfAsync(this.passwordAlgo, password, (ip) => {
-      client.call('auth.checkPassword', { password: ip }, (err, res) => {
-        if (err && err.type === 'network') { cb(); return; }
+    // client.getPasswordKdfAsync(this.passwordAlgo, password, (ip) => {
+    //   client.call('auth.checkPassword', { password: ip }, (err, res) => {
+    //     if (err && err.type === 'network') { cb(); return; }
 
-        // Display error message
-        if (err) {
-          this.errPassword.next(err.message);
-          return;
-        }
+    //     // Display error message
+    //     if (err) {
+    //       this.errPassword.next(err.message);
+    //       return;
+    //     }
 
-        if (!res) return;
+    //     if (!res) return;
 
-        this.authorize(res.json());
-      });
-    });
+    //     this.authorize(res.json());
+    //   });
+    // });
   }
 
   authorize(response: any) {

@@ -3,7 +3,6 @@ import { auth } from 'services';
 import LoginTransition from './transition';
 import formWelcome from './forms/welcome';
 import formCode from './forms/code';
-import formPassword from './forms/password';
 import formProfile from './forms/profile';
 import './login.scss';
 
@@ -20,7 +19,7 @@ export default function login() {
     currentView = view;
 
     if (prevView === '') {
-      transitionController.set(formProfile); // formWelcome);
+      transitionController.set(formWelcome);
       return;
     }
 
@@ -33,12 +32,8 @@ export default function login() {
       transitionController.translateLeft(formWelcome);
     }
 
-    if (view === '2fa') {
-      transitionController.translateLeft(formPassword);
-    }
-
     if (view === 'signup') {
-      transitionController.translateLeft(formProfile);
+      transitionController.translateRight(formProfile);
     }
   });
 

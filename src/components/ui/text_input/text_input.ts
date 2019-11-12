@@ -17,8 +17,8 @@ export type Props = {
   error?: Observable<string | undefined>,
   disabled?: MaybeObservable<boolean>,
   onChange?(value: string): void;
-  onFocus?(): void;
-  onBlur?(): void;
+  onFocus?(value?: string): void;
+  onBlur?(value?: string): void;
 };
 
 /**
@@ -50,12 +50,12 @@ export default function textInput({
 
   listen(inputEl, 'focus', () => {
     element.classList.add('focused');
-    if (onFocus) onFocus();
+    if (onFocus) onFocus(inputEl.value);
   });
 
   listen(inputEl, 'blur', () => {
     element.classList.remove('focused');
-    if (onBlur) onBlur();
+    if (onBlur) onBlur(inputEl.value);
   });
 
   listen(inputEl, 'input', (event: Event) => {

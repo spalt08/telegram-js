@@ -1,81 +1,55 @@
-import { BehaviorSubject } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { div, form, h1, p, text } from 'core/html';
-import { button, textInput, tgs } from 'components/ui';
-import { blurAll, listen } from 'core/dom';
+import { div } from 'core/html';
 import { getInterface } from 'core/hooks';
-import { formatWithCountry } from 'helpers/phone';
 import { auth } from 'services';
-import tracking from 'assets/monkey_tracking.tgs';
-import * as icons from 'components/icons';
+import LoginTransition from '../transition';
+import codeBasic from './code_basic';
+import code2fa from './code_2fa';
+import monkey from './monkey';
 import '../login.scss';
 
 /**
- * Layout for entering SMS code for sign in
+ * Layout for entering SMS code for sign in and 2fa with transitions
  */
 export default function formCode() {
-  const isProcessing = new BehaviorSubject<boolean>(false);
-  const err = auth.errCode;
+  const transitioner = new LoginTransition();
 
-  const monkey = tgs({ className: 'login__monkey', src: tracking });
+  const monkeyEl = monkey();
 
-  const inputCode = textInput({
-    label: 'Code',
-    error: err,
-    disabled: isProcessing,
-    onChange(val: string) {
-      if (err.value !== undefined) err.next(undefined);
-      const frame = 20 + Math.floor((val.length / 38) * 120);
-      getInterface(monkey).goTo(frame);
+  const basic = codeBasic({
+    onFocus(val) {
+      getInterface(monkeyEl).lookAtCode(val);
     },
-    onFocus() {
-      getInterface(monkey).goTo(20);
+    onBlur(val) {
+      getInterface(monkeyEl).idleCode(val);
     },
-    onBlur() {
-      getInterface(monkey).goTo(0);
+    onChange(val) {
+      getInterface(monkeyEl).followCode(val);
     },
   });
 
-  err.subscribe((val) => val && getInterface(monkey).goTo(20));
+  const c2fa = code2fa({
+    onHideToggle(val) {
+      if (val === true) getInterface(monkeyEl).unpeek();
+      else getInterface(monkeyEl).peek();
+    },
+  });
 
-  let codeMsg = 'We have sent you an SMS with the code.';
-  if (auth.codeType === 'auth.sentCodeTypeApp') codeMsg = 'We have sent you a message with the code at the telegram app.';
-  if (auth.codeType === 'auth.sentCodeTypeCall') {
-    codeMsg = 'You will receive an automatic call with a synthesized voice which tell you a verification code.';
-  }
+  // Manage transitions
+  auth.state.subscribe((view: string) => {
+    if (view === '2fa') {
+      transitioner.translateRight(() => c2fa);
+      getInterface(monkeyEl).closeEyes();
+    }
+
+    if (view === 'code') transitioner.set(() => basic);
+  });
 
   const element = (
-    form`.login__form`(
-      monkey,
-      h1`.login__title`(
-        text(formatWithCountry(auth.phoneCountry.value, auth.phoneNumber.value)),
-        icons.edit({ class: 'login__title_icon', onClick: () => auth.state.next('unathorized') }),
-      ),
-      p`.login__description`(text(codeMsg)),
-      div`.login__inputs`(
-        inputCode,
-        button({
-          label: isProcessing.pipe(map((prcs: boolean) => (prcs ? 'Please wait...' : 'Next'))),
-          disabled: isProcessing,
-          loading: isProcessing,
-        }),
-      ),
+    div`.login__form`(
+      monkeyEl,
+      transitioner.element,
     )
   );
-
-  listen(element, 'submit', (event: Event) => {
-    event.preventDefault();
-
-    blurAll(element);
-
-    if (!isProcessing.value) {
-      isProcessing.next(true);
-
-      const code = getInterface(inputCode).getValue();
-
-      auth.checkCode(code, () => isProcessing.next(false));
-    }
-  });
 
   return element;
 }

@@ -44,11 +44,13 @@ export default function tgs({ src, className, autoplay = false, loop = false }: 
   }
 
   return useInterface(container, {
-    goTo(value: number) {
+    goTo(value: number, animate: boolean = false) {
       if (animation.currentFrame === 0) {
         animation.playSegments([0, value + 1], true);
       } else if (value === 0) {
         animation.playSegments([animation.currentFrame, 0], true);
+      } else if (animate) {
+        animation.playSegments([animation.currentFrame, value], true);
       } else {
         animation.goToAndStop(value, true);
       }
