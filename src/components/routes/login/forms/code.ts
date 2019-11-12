@@ -21,6 +21,7 @@ export default function formCode() {
   const inputCode = textInput({
     label: 'Code',
     error: err,
+    disabled: isProcessing,
     onChange(val: string) {
       if (err.value !== undefined) err.next(undefined);
       const frame = 20 + Math.floor((val.length / 38) * 120);
@@ -36,6 +37,12 @@ export default function formCode() {
 
   err.subscribe((val) => val && getInterface(monkey).goTo(20));
 
+  let codeMsg = 'We have sent you an SMS with the code.';
+  if (auth.codeType === 'auth.sentCodeTypeApp') codeMsg = 'We have sent you a message with the code at the telegram app.';
+  if (auth.codeType === 'auth.sentCodeTypeCall') {
+    codeMsg = 'You will receive an automatic call with a synthesized voice which tell you a verification code.';
+  }
+
   const element = (
     form`.login__form`(
       monkey,
@@ -43,7 +50,7 @@ export default function formCode() {
         text(formatWithCountry(auth.phoneCountry.value, auth.phoneNumber.value)),
         icons.edit({ class: 'login__title_icon', onClick: () => auth.state.next('unathorized') }),
       ),
-      p`.login__description`(text('We have sent you an SMS with the code')),
+      p`.login__description`(text(codeMsg)),
       div`.login__inputs`(
         inputCode,
         button({
@@ -56,6 +63,8 @@ export default function formCode() {
   );
 
   listen(element, 'submit', (event: Event) => {
+    event.preventDefault();
+
     blurAll(element);
 
     if (!isProcessing.value) {
@@ -65,8 +74,6 @@ export default function formCode() {
 
       auth.checkCode(code, () => isProcessing.next(false));
     }
-
-    event.preventDefault();
   });
 
   return element;

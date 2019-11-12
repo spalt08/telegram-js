@@ -4,7 +4,7 @@ import client from 'client/client';
 import { API_HASH, API_ID } from 'const/api';
 
 /**
- * Service class for handling auth flow
+ * Singleton service class for handling auth flow
  */
 export default class AuthServie {
   /** Login state: welcome, code, password etc. */
@@ -27,12 +27,26 @@ export default class AuthServie {
   /** Code input error */
   errCode = new BehaviorSubject<undefined | string>(undefined);
 
+  /** Password input error */
+  errPassword = new BehaviorSubject<undefined | string>(undefined);
+
+  /** Phone hash for signIn request */
   phoneHash: string = '';
+
+  /** Received code type */
+  codeType: string = '';
+
+  /** Passwork KDF algo */
+  passwordAlgo?: any;
 
   constructor() {
     this.state = new BehaviorSubject('unathorized');
   }
 
+  /**
+   * Sends verification code for promted phone number
+   * @mtproto auth.sendCode
+   */
   sendCode(phoneNumber: string, cb: () => void) {
     this.phoneNumber.next(phoneNumber);
 
@@ -44,9 +58,19 @@ export default class AuthServie {
     };
 
     client.call('auth.sendCode', payload, (err, res) => {
-      if (err && err.code === 400) {
-        this.errPhone.next(err.message);
-        cb();
+      if (err && err.type === 'network') { cb(); return; }
+
+      if (err) {
+        // Should use another DC
+        if (err.message && err.message.indexOf('PHONE_MIGRATE_') > -1) {
+          client.cfg.dc = +err.message.slice(-1);
+          this.sendCode(phoneNumber, cb);
+
+        // Display error message
+        } else {
+          this.errPhone.next(err.message);
+          cb();
+        }
         return;
       }
 
@@ -54,13 +78,19 @@ export default class AuthServie {
 
       const result = res.json();
 
+      // Success
       if (result._ === 'auth.sentCode') {
         this.phoneHash = result.phone_code_hash;
+        this.codeType = result.type._;
         this.state.next('code');
       }
     });
   }
 
+  /**
+   * Tries to sign in without 2FA
+   * @mtproto auth.signIn
+   */
   checkCode(code: string, cb: () => void) {
     const payload = {
       phone_number: this.phoneNumber.value,
@@ -69,6 +99,17 @@ export default class AuthServie {
     };
 
     client.call('auth.signIn', payload, (err, res) => {
+      if (err && err.type === 'network') { cb(); return; }
+
+      // Should use 2FA authorization
+      if (err && err.message === 'SESSION_PASSWORD_NEEDED') {
+        this.state.next('2fa');
+
+        this.getPasswordAlgo();
+        return;
+      }
+
+      // Display error message
       if (err && err.code === 400) {
         this.errCode.next(err.message);
         cb();
@@ -77,7 +118,50 @@ export default class AuthServie {
 
       if (!res) return;
 
-      console.log(res.json());
+      this.authorize(res.json());
     });
+  }
+
+  /**
+   * Fetch password KDF algo from server
+   * @mtproto account.getPassword
+   */
+  getPasswordAlgo() {
+    client.call('account.getPassword', {}, (err, algo) => {
+      if (err || !algo) this.getPasswordAlgo();
+      else this.passwordAlgo = algo.json();
+    });
+  }
+
+  /**
+   * Tries to sign in with 2FA
+   * @mtproto auth.checkPassword
+   */
+  checkPassword(password: string, cb: () => void) {
+    // Wait for pwd algo fetch
+    if (!this.passwordAlgo) {
+      setTimeout(() => this.checkPassword(password, cb), 100);
+      return;
+    }
+
+    client.getPasswordKdfAsync(this.passwordAlgo, password, (ip) => {
+      client.call('auth.checkPassword', { password: ip }, (err, res) => {
+        if (err && err.type === 'network') { cb(); return; }
+
+        // Display error message
+        if (err) {
+          this.errPassword.next(err.message);
+          return;
+        }
+
+        if (!res) return;
+
+        this.authorize(res.json());
+      });
+    });
+  }
+
+  authorize(response: any) {
+    console.log(response);
   }
 }

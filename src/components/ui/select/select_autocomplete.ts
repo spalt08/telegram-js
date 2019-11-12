@@ -127,6 +127,8 @@ export default function selectAutoComplete<T>({
   });
 
   listen(arrow, 'click', () => {
+    if (disabled && (disabled === true || disabled.value === true)) return;
+
     if (query) {
       setValue(inputEl, '');
       inputEl.focus();
