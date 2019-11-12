@@ -1,4 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { div, form, h1, p, text } from 'core/html';
 import { button, tgs, passwordInput } from 'components/ui';
 import { blurAll, listen } from 'core/dom';
@@ -16,6 +17,7 @@ export default function formPassword() {
 
   const inputPassword = passwordInput({
     label: 'Password',
+    name: 'password',
     initiallyHidden: true,
     error: err,
     onChange: () => err.value !== undefined && err.next(undefined),
@@ -32,7 +34,7 @@ export default function formPassword() {
       div`.login__inputs`(
         inputPassword,
         button({
-          label: 'Next',
+          label: isProcessing.pipe(map((prcs: boolean) => (prcs ? 'Please wait...' : 'Next'))),
           disabled: isProcessing,
           loading: isProcessing,
         }),

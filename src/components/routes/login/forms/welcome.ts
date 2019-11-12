@@ -1,5 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
-import { pluck } from 'rxjs/operators';
+import { pluck, map } from 'rxjs/operators';
 import { div, form, img, h1, p, text, label } from 'core/html';
 import { blurAll, listen } from 'core/dom';
 import { phoneInput, selectAutoComplete, button, checkbox } from 'components/ui';
@@ -64,7 +64,7 @@ export default function formWelcome() {
           text('Keep me signed in'),
         ),
         button({
-          label: 'Next',
+          label: isProcessing.pipe(map((prcs: boolean) => (prcs ? 'Please wait...' : 'Next'))),
           disabled: isProcessing,
           loading: isProcessing,
         }),

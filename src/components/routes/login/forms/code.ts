@@ -1,4 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { div, form, h1, p, text } from 'core/html';
 import { button, textInput, tgs } from 'components/ui';
 import { blurAll, listen } from 'core/dom';
@@ -54,7 +55,7 @@ export default function formCode() {
       div`.login__inputs`(
         inputCode,
         button({
-          label: 'Next',
+          label: isProcessing.pipe(map((prcs: boolean) => (prcs ? 'Please wait...' : 'Next'))),
           disabled: isProcessing,
           loading: isProcessing,
         }),
