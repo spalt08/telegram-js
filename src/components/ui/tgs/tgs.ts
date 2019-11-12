@@ -1,6 +1,7 @@
 import { inflate } from 'pako';
-import lottiePlayer from 'lottie-web';
+import lottiePlayer, { AnimationItem } from 'lottie-web';
 import { div } from 'core/html';
+import { useInterface } from 'core/hooks';
 
 const load = (url: string, cb: (json: any) => void) => {
   const xhr = new XMLHttpRequest();
@@ -22,20 +23,35 @@ const load = (url: string, cb: (json: any) => void) => {
 interface Props {
   src: string,
   className?: string,
+  autoplay?: boolean,
+  loop?: boolean,
 }
 
-export default function tgs({ src, className }: Props) {
+export default function tgs({ src, className, autoplay = false, loop = false }: Props) {
+  let animation: AnimationItem & { currentFrame: number};
+
   const container = div({ className });
+
   if (typeof src === 'string') {
     load(src, (animationData: any) => {
-      lottiePlayer.loadAnimation({
+      animation = lottiePlayer.loadAnimation({
         container,
-        loop: true,
-        autoplay: true,
+        loop,
+        autoplay,
         animationData,
-      });
+      }) as AnimationItem & { currentFrame: number};
     });
   }
 
-  return container;
+  return useInterface(container, {
+    goTo(value: number) {
+      if (animation.currentFrame === 0) {
+        animation.playSegments([0, value + 1], true);
+      } else if (value === 0) {
+        animation.playSegments([animation.currentFrame, 0], true);
+      } else {
+        animation.goToAndStop(value, true);
+      }
+    },
+  });
 }

@@ -78,20 +78,9 @@
       margin-right: 32px;
     }
   }
-
-  &__transition {
-    & .removed {
-      position: absolute;
-      animation: fadeOutLeft .3s ease-in-out forwards;
-    }
-
-    & .appeared {
-      animation: fadeInRight .3s ease-in-out backwards;
-      animation-delay: .1s;
-    }
-  }
 }
-.monkey {
+
+.login__monkey {
   width: 170px;
   height: 170px;
   margin-bottom: 25px;
@@ -122,6 +111,29 @@
   }
 }
 
+
+.login__transition {
+  & .removed-left {
+    position: absolute;
+    animation: fadeOutLeft .3s ease-in-out forwards;
+  }
+
+  & .removed-right {
+    position: absolute;
+    animation: fadeOutRight .3s ease-in-out forwards;
+  }
+
+  & .appeared-right {
+    animation: fadeInRight .3s ease-in-out backwards;
+    animation-delay: .1s;
+  }
+
+  & .appeared-left {
+    animation: fadeInLeft .3s ease-in-out backwards;
+    animation-delay: .1s;
+  }
+}
+
 @keyframes appear {
   from {
     opacity: 0;
@@ -140,9 +152,23 @@
   }
 }
 
+@keyframes fadeOutRight {
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
 @keyframes fadeInRight {
   from {
     opacity: 0;
     transform: translateX(100%);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
   }
 }

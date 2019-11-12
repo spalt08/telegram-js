@@ -1,8 +1,8 @@
 import { div } from 'core/html';
+import { auth } from 'services';
 import LoginTransition from './transition';
-import loginWelcomeContainer from './welcome/welcome_сontainer';
-import loginCodeContainer from './code/code_container';
-import loginPasswordContainer from './login_password_container';
+import formWelcome from './forms/welcome';
+import formCode from './forms/code';
 import './login.scss';
 
 /**
@@ -10,35 +10,36 @@ import './login.scss';
  */
 export default function login() {
   const transitionController = new LoginTransition();
+  let currentView = '';
 
-  const welcome = loginWelcomeContainer({
-    onCode(phone, phoneCodeHash) {
-      transitionController.translateRight(() => makeLoginCode(phone, phoneCodeHash));
-    },
-    onRegister(phone) {
-      console.log('register!', phone);
-    },
+  const views: Record<string, () => HTMLElement> = {
+    unathorized: formWelcome,
+    code: formCode,
+  };
+
+
+  // Manage transitions
+  auth.state.subscribe((view: string) => {
+    const prevView = currentView;
+    currentView = view;
+
+    if (prevView === '') {
+      transitionController.set(views[view] || formWelcome);
+      return;
+    }
+
+    if (view === 'code') {
+      transitionController.translateRight(views[view]);
+      return;
+    }
+
+    if (view === 'unathorized') {
+      transitionController.translateLeft(views[view]);
+      return;
+    }
+
+    transitionController.translateRight(views[view]);
   });
-
-  function makeLoginCode(phone: string, hash: string) {
-    return loginCodeContainer({
-      phone,
-      hash,
-      onRedirectToPassword() {
-        transitionController.translateRight(makeLoginPassword);
-      },
-      onReturnToPhone() {
-        // todo: Translate left
-        transitionController.translateRight(() => welcome);
-      },
-    });
-  }
-
-  function makeLoginPassword() {
-    return loginPasswordContainer();
-  }
-
-  transitionController.set(makeLoginCode('123', '2123'));
 
   return div`.login`(
     transitionController.element,

@@ -45,8 +45,8 @@ export function unformat(str: string) {
   return str.replace(/[^\d]/g, '');
 }
 
-export function formatWithCountry(country: Country, number: string) {
-  return `${country.phone} ${country.phoneFormats ? format(country.phoneFormats, number) : number}`;
+export function formatWithCountry(country: Country, number?: string) {
+  return `${country.phone} ${country.phoneFormats ? format(country.phoneFormats, number || '') : number}`;
 }
 
 export function unformatWithCountry(country: Country, number: string) {

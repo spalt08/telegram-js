@@ -15,7 +15,10 @@ export type Props = {
   autocomplete?: string,
   ref?: (ref: HTMLInputElement) => void,
   error?: Observable<string | undefined>,
+  disabled?: MaybeObservable<boolean>,
   onChange?(value: string): void;
+  onFocus?(): void;
+  onBlur?(): void;
 };
 
 /**
@@ -33,10 +36,13 @@ export default function textInput({
   className = '',
   inputClassName = '',
   error,
+  disabled,
   onChange,
+  onFocus,
+  onBlur,
 }: Props) {
   const labelText = new BehaviorSubject(label);
-  const inputEl = input`${inputClassName}`({ type, name, autocomplete });
+  const inputEl = input`${inputClassName}`({ type, name, autocomplete, disabled });
   const labelEl = div`.input__label`(text(labelText));
   const element = div`.input ${className}`(inputEl, labelEl);
 
@@ -44,10 +50,12 @@ export default function textInput({
 
   listen(inputEl, 'focus', () => {
     element.classList.add('focused');
+    if (onFocus) onFocus();
   });
 
   listen(inputEl, 'blur', () => {
     element.classList.remove('focused');
+    if (onBlur) onBlur();
   });
 
   listen(inputEl, 'input', (event: Event) => {

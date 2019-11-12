@@ -2,6 +2,7 @@
 import { div, text as textNode } from 'core/html';
 import { mount, unmount, listen, dispatch, setValue, getAttribute } from 'core/dom';
 import { useInterface, useOutsideEvent } from 'core/hooks';
+import { MaybeObservable } from 'core/types';
 import { KEYBOARD } from 'const';
 import textInput from '../text_input/text_input';
 import './select_autocomplete.scss';
@@ -11,6 +12,7 @@ type Props<T> = {
   name?: string,
   selected: number,
   options?: T[],
+  disabled?: MaybeObservable<boolean>,
   optionRenderer?: (data: T) => Node,
   optionLabeler?: (data: T) => string,
   onChange?: (data: T) => void,
@@ -28,6 +30,7 @@ export default function selectAutoComplete<T>({
   name = '',
   selected,
   options = [],
+  disabled,
   optionRenderer = (text: T) => textNode(typeof text === 'string' ? text : ''),
   optionLabeler = (text: T) => (typeof text === 'string' ? text : ''),
   onChange,
@@ -42,6 +45,7 @@ export default function selectAutoComplete<T>({
       label,
       name,
       autocomplete: 'off',
+      disabled,
       inputClassName: 'select__input',
       ref: (el: HTMLInputElement) => { inputEl = el; },
     }),
