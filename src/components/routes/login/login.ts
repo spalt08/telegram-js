@@ -20,7 +20,7 @@ export default function login() {
     currentView = view;
 
     if (prevView === '') {
-      transitionController.set(formWelcome);
+      transitionController.set(formProfile); // formWelcome);
       return;
     }
 

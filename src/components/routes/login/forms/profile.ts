@@ -50,7 +50,7 @@ export default function formProfile() {
         inputFirstName,
         inputLastName,
         button({
-          label: isProcessing.pipe(map((prcs: boolean) => (prcs ? 'Please wait...' : 'Next'))),
+          label: isProcessing.pipe(map((prcs: boolean) => (prcs ? 'Please wait...' : 'Start Messaging'))),
           disabled: isProcessing,
           loading: isProcessing,
         }),
