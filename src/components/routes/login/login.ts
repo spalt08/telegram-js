@@ -4,6 +4,7 @@ import LoginTransition from './transition';
 import formWelcome from './forms/welcome';
 import formCode from './forms/code';
 import formPassword from './forms/password';
+import formProfile from './forms/profile';
 import './login.scss';
 
 /**
@@ -34,6 +35,10 @@ export default function login() {
 
     if (view === '2fa') {
       transitionController.translateLeft(formPassword);
+    }
+
+    if (view === 'signup') {
+      transitionController.translateLeft(formProfile);
     }
   });
 

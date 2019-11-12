@@ -9,7 +9,7 @@ import closePeek from 'assets/monkey_close.tgs';
 import '../login.scss';
 
 /**
- * Layout for entering SMS code for sign in
+ * Layout for 2FA password input
  */
 export default function formPassword() {
   const isProcessing = new BehaviorSubject<boolean>(false);
