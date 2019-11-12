@@ -74,7 +74,7 @@ module.exports = (env, argv) => {
               loader: 'raw-loader',
             },
             {
-              test: /\.(svg|png|jpe?g|gif|woff|woff2|otf|ttf|eot)$/,
+              test: /\.(svg|png|jpe?g|gif|woff|woff2|otf|ttf|eot|tgs)$/,
               loader: 'file-loader',
               options: {
                 name: 'assets/[contenthash].[ext]',

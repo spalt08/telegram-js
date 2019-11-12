@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
 import { div } from 'core/html';
 import LoginTransition from './transition';
 import loginWelcomeContainer from './welcome/welcome_сontainer';
@@ -39,7 +38,7 @@ export default function login() {
     return loginPasswordContainer();
   }
 
-  transitionController.set(welcome);
+  transitionController.set(makeLoginCode('123', '2123'));
 
   return div`.login`(
     transitionController.element,

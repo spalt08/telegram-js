@@ -26,10 +26,13 @@
   ],
   "homepage": "https://github.com/spalt08/telegram-js",
   "dependencies": {
+    "lottie-web": "^5.5.9",
     "mtproto-js": "file:./packages/mtproto-js",
+    "pako": "^1.0.10",
     "rxjs": "^6.5.3"
   },
   "devDependencies": {
+    "@types/pako": "^1.0.1",
     "@typescript-eslint/eslint-plugin": "^2.6.1",
     "@typescript-eslint/parser": "^2.6.1",
     "autoprefixer": "^9.7.1",

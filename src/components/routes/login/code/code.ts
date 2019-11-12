@@ -1,12 +1,13 @@
 import { BehaviorSubject, Observable } from 'rxjs';
 import { div, form, h1, p, text } from 'core/html';
-import { button, textInput, monkey } from 'components/ui';
+import { button, textInput } from 'components/ui';
 import { State as MonkeyState } from 'components/ui/monkey/monkey';
 import { blurAll, listen } from 'core/dom';
 import { MaybeObservable } from 'core/types';
 import { getInterface, useObservable } from 'core/hooks';
 import { formatWithCountry } from 'helpers/phone_number';
 import * as icons from 'components/icons';
+import monkey from '../monkey/monkey';
 import '../login.scss';
 
 interface Props {
@@ -38,10 +39,7 @@ export default function codeForm({ phone, isSubmitting, codeError, onSubmit, onR
 
   const element = (
     form`.login__form`(
-      monkey({
-        state: monkeyState,
-        className: 'login__monkey',
-      }),
+      monkey(),
       h1`.login__title`(
         text(formatWithCountry(phone)),
         icons.edit({ class: 'login__title_icon', onClick: onReturnToPhone }),
