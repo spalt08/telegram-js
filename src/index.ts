@@ -13,3 +13,4 @@ mount(document.body, router.element);
 
 // todo: Check in IE 11 and add required polyfills
 // todo: Fix SVGs in IE
+// todo: Add loading screen

@@ -1,4 +1,5 @@
 import { BehaviorSubject, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { div, form, h1, p, text } from 'core/html';
 import { button, textInput } from 'components/ui';
 import { blurAll, listen } from 'core/dom';
@@ -6,7 +7,7 @@ import { getInterface, useObservable } from 'core/hooks';
 import './login.scss';
 
 interface Props {
-  isSubmitting?: Observable<boolean>;
+  isSubmitting: Observable<boolean>;
   firstNameError?: Observable<string>;
   lastNameError?: Observable<string>;
   onSubmit(firstName: string, lastName: string): void;
@@ -40,6 +41,8 @@ export default function loginProfile({ isSubmitting, firstNameError, lastNameErr
     },
   });
 
+  // todo: Add photo uploader
+
   const element = (
     form`.login__form`(
       h1`.login__title`(text('Your Name')),
@@ -48,7 +51,7 @@ export default function loginProfile({ isSubmitting, firstNameError, lastNameErr
         firstNameField,
         lastNameField,
         button({
-          label: 'Next',
+          label: isSubmitting.pipe(map((submitting) => (submitting ? 'Please wait...' : 'Next'))),
           disabled: isSubmitting,
           loading: isSubmitting,
         }),

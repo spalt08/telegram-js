@@ -1,4 +1,5 @@
 import { BehaviorSubject, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { div, form, h1, p, text } from 'core/html';
 import { button, monkey, passwordInput } from 'components/ui';
 import { State as MonkeyState } from 'components/ui/monkey/monkey';
@@ -7,7 +8,7 @@ import { getInterface, useObservable } from 'core/hooks';
 import './login.scss';
 
 interface Props {
-  isSubmitting?: Observable<boolean>;
+  isSubmitting: Observable<boolean>;
   passwordError?: Observable<string>;
   onSubmit(code: string): void;
 }
@@ -45,7 +46,7 @@ export default function loginPassword({ isSubmitting, passwordError, onSubmit }:
       div`.login__inputs`(
         passwordField,
         button({
-          label: 'Next',
+          label: isSubmitting.pipe(map((submitting) => (submitting ? 'Please wait...' : 'Next'))),
           disabled: isSubmitting,
           loading: isSubmitting,
         }),
