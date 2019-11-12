@@ -1,8 +1,6 @@
 import { inflate } from 'pako';
 import lottiePlayer from 'lottie-web';
 import { div } from 'core/html';
-import tracking from './tracking.tgs';
-import './monkey.scss';
 
 const load = (url: string, cb: (json: any) => void) => {
   const xhr = new XMLHttpRequest();
@@ -21,17 +19,23 @@ const load = (url: string, cb: (json: any) => void) => {
   };
 };
 
-export default function monkey() {
-  const container = div`.monkey`();
+interface Props {
+  src: string,
+  className?: string,
+}
 
-  load(tracking, (animationData: any) => {
-    lottiePlayer.loadAnimation({
-      container,
-      loop: true,
-      autoplay: true,
-      animationData,
+export default function tgs({ src, className }: Props) {
+  const container = div({ className });
+  if (typeof src === 'string') {
+    load(src, (animationData: any) => {
+      lottiePlayer.loadAnimation({
+        container,
+        loop: true,
+        autoplay: true,
+        animationData,
+      });
     });
-  });
+  }
 
   return container;
 }
