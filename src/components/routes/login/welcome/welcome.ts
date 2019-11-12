@@ -1,5 +1,5 @@
 import { BehaviorSubject, Observable } from 'rxjs';
-import { pluck } from 'rxjs/operators';
+import { map, pluck } from 'rxjs/operators';
 import { div, form, img, h1, p, text, label } from 'core/html';
 import { blurAll, listen } from 'core/dom';
 import { phoneInput, selectAutoComplete, button, checkbox } from 'components/ui';
@@ -17,7 +17,7 @@ const countryOptionRenderer = ({ phone, label: countryLabel, emoji }: Country) =
 );
 
 interface Props {
-  isSubmitting?: Observable<boolean>;
+  isSubmitting: Observable<boolean>;
   phoneError?: Observable<string>;
   onSubmit(country: Country, number: string, remember: boolean): void;
 }
@@ -35,7 +35,6 @@ export default function welcomeForm({ isSubmitting, phoneError, onSubmit }: Prop
   const phoneFieldError = new BehaviorSubject<undefined | string>(undefined);
   const phoneField = phoneInput({
     label: 'Phone Number',
-    name: 'phone',
     prefix: country.pipe(pluck('phone')),
     formats: country.pipe(pluck('phoneFormats')),
     error: phoneFieldError,
@@ -73,7 +72,7 @@ export default function welcomeForm({ isSubmitting, phoneError, onSubmit }: Prop
           text('Keep me signed in'),
         ),
         button({
-          label: 'Next',
+          label: isSubmitting.pipe(map((submitting) => (submitting ? 'Please wait...' : 'Next'))),
           disabled: isSubmitting,
           loading: isSubmitting,
         }),

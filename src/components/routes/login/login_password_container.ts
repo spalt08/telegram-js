@@ -14,7 +14,11 @@ function passwordSendMock(password: string, callback: (error: string | null) => 
   }, 1000);
 }
 
-export default function loginPasswordContainer() {
+interface Props {
+  redirectToProfile(): void;
+}
+
+export default function loginPasswordContainer({ redirectToProfile }: Props) {
   const isSubmitting = new BehaviorSubject(false);
   const passwordError = new Subject<string>();
 
@@ -27,6 +31,8 @@ export default function loginPasswordContainer() {
         isSubmitting.next(false);
         if (error) {
           passwordError.next(error);
+        } else {
+          redirectToProfile();
         }
       });
     },

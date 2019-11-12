@@ -1,4 +1,5 @@
 import { BehaviorSubject, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { div, form, h1, p, text } from 'core/html';
 import { button, textInput, tgs } from 'components/ui';
 import { State as MonkeyState } from 'components/ui/monkey/monkey';
@@ -12,7 +13,7 @@ import '../login.scss';
 
 interface Props {
   phone: MaybeObservable<string>; // Formatted, please
-  isSubmitting?: Observable<boolean>;
+  isSubmitting: Observable<boolean>;
   codeError?: Observable<string>;
   onSubmit(code: string): void;
   onReturnToPhone(): void;
@@ -48,7 +49,7 @@ export default function codeForm({ phone, isSubmitting, codeError, onSubmit, onR
       div`.login__inputs`(
         codeField,
         button({
-          label: 'Next',
+          label: isSubmitting.pipe(map((submitting) => (submitting ? 'Please wait...' : 'Next'))),
           disabled: isSubmitting,
           loading: isSubmitting,
         }),
