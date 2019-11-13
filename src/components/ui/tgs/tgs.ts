@@ -1,4 +1,4 @@
-import { inflate } from 'pako';
+import { inflate } from 'pako/lib/inflate';
 import lottiePlayer, { AnimationItem } from 'lottie-web';
 import { div } from 'core/html';
 import { useInterface } from 'core/hooks';
