@@ -47,10 +47,13 @@ export default class AuthService {
   /** Passwork KDF algo */
   passwordAlgo?: any;
 
+  userID: number = 0;
+
   constructor() {
     const uid = sessionStorage.getItem('uid');
     if (uid && +uid > 0) {
       this.state = new BehaviorSubject('authorized');
+      this.userID = +uid;
     } else {
       this.state = new BehaviorSubject('unauthorized');
     }

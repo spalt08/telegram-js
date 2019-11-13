@@ -1,27 +1,28 @@
 import { div, text } from 'core/html';
-import { dialogs } from 'services';
+import { dialog } from 'services';
 import { mount } from 'core/dom';
 import { useObservable } from 'core/hooks';
 import dialogPreview from './dialog/dialog';
 import './home.scss';
+import messages from './messages';
 
 /**
  * Handler for route /
  */
 export default function home() {
   // fetch dialogs
-  dialogs.getDialogs();
+  dialog.getDialogs();
 
   const sidebar = div`.home__sidebar`();
   const element = div`.home`(
     sidebar,
     div`.home__content`(
-      text('Content'),
+      messages(),
     ),
   );
 
   // todo changable list
-  useObservable(element, dialogs.dialogs, (items) => {
+  useObservable(element, dialog.dialogs, (items) => {
     for (let i = 0; i < items.length; i += 1) {
       mount(sidebar, dialogPreview(items[i]));
     }

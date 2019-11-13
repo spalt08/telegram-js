@@ -10,6 +10,18 @@ export type Peer = {
 };
 
 /**
+ * Peer Reference
+ * Ref: https://core.telegram.org/type/InputPeer
+ */
+export type InputPeer = {
+  _: string,
+  user_id?: number,
+  channel_id?: number,
+  chat_id?: number,
+  access_hash?: string,
+};
+
+/**
  * Dialog data
  * Ref: https://core.telegram.org/type/dialog
  */

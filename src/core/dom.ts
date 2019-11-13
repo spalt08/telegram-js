@@ -124,6 +124,15 @@ export function unmount(element: Node) {
 }
 
 /**
+ * Unmounts all children of HTMLElement
+ */
+export function unmountChildren(element: Node) {
+  while (element.firstChild) {
+    unmount(element.firstChild);
+  }
+}
+
+/**
  * Sets any attribute to HTMLElement
  */
 export function setAttribute(element: Element, attr: string, value: MaybeObservable<string | undefined>) {

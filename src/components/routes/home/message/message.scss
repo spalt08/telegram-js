@@ -1,6 +1,8 @@
 .message {
   position: relative;
   font-size: 15px;
+  text-align: left;
+  margin-bottom: 5px;
 
   &__wrapper {
     background: #FFFFFF;
@@ -10,9 +12,10 @@
     box-shadow: 0px 1px 2px 0px rgba(16, 35, 47, 0.15);
     z-index: 1;
     width: auto;
-    float: left;
     max-width: 600px;
     overflow: hidden;
+    display: inline-block;
+    text-align: left;
   }
 
   &__content {
@@ -40,11 +43,14 @@
     padding: 0PX 5PX;
   }
 
+  &.out {
+    text-align: right;
+  }
+
   &.out &__wrapper {
     background: #EEFFDE;
     border-bottom-right-radius: 0;
     border-bottom-left-radius: 10px;
-    float: right;
   }
 
   &.out &__corner {
