@@ -1,0 +1,19 @@
+.home {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+
+  &__sidebar {
+    width: 26%;
+    max-width: 420px;
+    min-width: 320px;
+    border-right: 1PX solid #EDEEF0;
+    overflow-y: scroll;
+  }
+
+  &__content {
+    flex: 1 50%;
+    background: #E6EBEE;
+  }
+}

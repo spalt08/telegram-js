@@ -2,11 +2,13 @@ import { BehaviorSubject } from 'rxjs';
 import { Country } from 'const/country';
 import client from 'client/client';
 import { API_HASH, API_ID } from 'const/api';
+import { unformat } from 'helpers/phone';
+import { history } from 'router';
 
 /**
  * Singleton service class for handling auth flow
  */
-export default class AuthServie {
+export default class AuthService {
   /** Login state: welcome, code, password etc. */
   state: BehaviorSubject<string>;
 
@@ -62,7 +64,7 @@ export default class AuthServie {
     this.phoneNumber.next(phoneNumber);
 
     const payload = {
-      phone_number: phoneNumber,
+      phone_number: unformat(this.phoneCountry.value.phone) + phoneNumber,
       api_id: API_ID,
       api_hash: API_HASH,
       settings: {},
@@ -104,7 +106,7 @@ export default class AuthServie {
    */
   checkCode(code: string, cb: () => void) {
     const payload = {
-      phone_number: this.phoneNumber.value,
+      phone_number: unformat(this.phoneCountry.value.phone) + this.phoneNumber.value,
       phone_code_hash: this.phoneHash,
       phone_code: code,
     };
@@ -178,7 +180,7 @@ export default class AuthServie {
    */
   signUp(firstName: string, lastName: string, cb: () => void) {
     const payload = {
-      phone_number: this.phoneNumber.value,
+      phone_number: unformat(this.phoneCountry.value.phone) + this.phoneNumber.value,
       phone_code_hash: this.phoneHash,
       first_name: firstName,
       last_name: lastName,
@@ -212,8 +214,20 @@ export default class AuthServie {
     }
 
     if (response._ === 'auth.authorization') {
+      // todo: preload data
       this.state.next('authorized');
+
+      // temp
+      // todo: store auth info
       sessionStorage.setItem('uid', response.user.id);
+
+      // Create keys for other dcs
+      for (let i = 1; i <= 5; i += 1) {
+        if (i !== client.cfg.dc) client.authorize(i);
+      }
+
+      // redirect
+      history.push('/');
     }
   }
 }

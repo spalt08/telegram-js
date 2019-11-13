@@ -4,7 +4,7 @@ import Layer105 from './layer105.json';
 
 const tl = new TypeLanguage(Layer105);
 const client = new Client(tl, {
-  test: true,
+  test: false,
   ssl: true,
   dc: 2,
   protocol: 'intermediate',
@@ -21,6 +21,6 @@ const client = new Client(tl, {
 });
 
 // Debug
-(window as Window & { client?: Client }).client = client;
+(window as any).client = client;
 
 export default client;

@@ -1,0 +1,72 @@
+.dialog {
+  height: 80px;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  padding: 16px;
+
+  &__picture {
+    width: 55px;
+  }
+
+  &__content {
+    padding-left: 15px;
+    flex: 1 50%;
+    max-width: calc(100% - 55px),
+  }
+
+  &__header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start,
+  }
+
+  &__title {
+    color: #000000;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 180%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__date {
+    font-size: 12px;
+    font-weight: 300;
+    padding-left: 15px;
+    color: #5F6369;
+  }
+
+  &__preview {
+    color: #707579;
+    font-weight: 300;
+    font-size: 15px;
+    overflow: hidden;
+    height: 36px;
+    margin-bottom: 4px;
+    line-height: 18px;
+    position: relative;
+    flex: 0 '100%';
+    word-break: break-word;
+  
+    &:after {
+      position: absolute;
+      text-align: right;
+      content: '';
+      bottom: 0;
+      right: 0;
+      width: 15%;
+      height: 18px;
+      background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1) 50%);
+    }
+  }
+}
+
+.dialog__picempty {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  background: #4797E2;
+}

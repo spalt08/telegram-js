@@ -2,8 +2,11 @@ import { mount, unmount } from 'core/dom';
 import { useListenWhileMounted, useOnMount } from 'core/hooks'; // eslint-disable-line import/named
 import { div } from 'core/html';
 
+const hashRouter = true;
+
 export const history = {
-  push: (path: string) => window.history.pushState({ path }, 'Telegram Web', path),
+  push: (path: string) => window.history.pushState({ path }, 'Telegram Web', hashRouter ? `#${path}` : path),
+  state: (): string => hashRouter ? window.location.hash.slice(1) : window.location.pathname,
 };
 
 /**
@@ -20,6 +23,8 @@ export class Router {
 
   mounted: Node | undefined;
 
+  currentRoute: string | undefined;
+
   constructor(public routes: Record<string, () => Node>) {
     this.element = div`.main`();
     this.routes = routes;
@@ -33,16 +38,21 @@ export class Router {
   }
 
   fetchLocation() {
-    const routeHandler = this.routes[window.location.pathname] || this.routes.default;
+    let newRoute = window.location.pathname;
+    if (hashRouter) newRoute = window.location.hash.slice(1);
 
-    if (this.mounted) {
-      unmount(this.mounted);
-      this.mounted = undefined;
-    }
+    if (this.currentRoute !== newRoute) {
+      const routeHandler = this.routes[newRoute] || this.routes.default;
 
-    if (routeHandler) {
-      this.mounted = routeHandler();
-      if (this.mounted) mount(this.element, this.mounted);
+      if (this.mounted) {
+        unmount(this.mounted);
+        this.mounted = undefined;
+      }
+
+      if (routeHandler) {
+        this.mounted = routeHandler();
+        if (this.mounted) mount(this.element, this.mounted);
+      }
     }
   }
 }
