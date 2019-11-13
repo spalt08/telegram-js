@@ -18,6 +18,7 @@ if (auth.state.value !== 'authorized') {
 const router = new Router({
   '/': routes.home,
   '/login': routes.login,
+  '/sandbox': routes.sandbox,
   default: routes.login,
 });
 
