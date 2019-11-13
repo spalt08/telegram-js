@@ -1,0 +1,25 @@
+.list__appeared {
+  animation: listAppear .5s ease;
+}
+
+.list__removed {
+  position: absolute;
+  animation: listRemove .5s ease;
+}
+
+.list__flipping {
+  transition: transform .5s ease;
+  will-change: transform;
+}
+
+@keyframes listAppear {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes listRemove {
+  to {
+    opacity: 0;
+  }
+}
