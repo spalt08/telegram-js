@@ -44,7 +44,7 @@ export default function codeBasic({ onFocus, onBlur, onChange }: Props) {
     form`.login__subform`(
       h1`.login__title`(
         text(formatWithCountry(auth.phoneCountry.value, auth.phoneNumber.value)),
-        icons.edit({ class: 'login__title_icon', onClick: () => auth.state.next('unathorized') }),
+        icons.edit({ class: 'login__title_icon', onClick: () => auth.state.next('unauthorized') }),
       ),
       p`.login__description`(text(codeMsg)),
       div`.login__inputs`(

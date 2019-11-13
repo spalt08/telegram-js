@@ -1,4 +1,5 @@
 import { div } from 'core/html';
+import { useObservable } from 'core/hooks';
 import { auth } from 'services';
 import LoginTransition from './transition';
 import formWelcome from './forms/welcome';
@@ -14,8 +15,12 @@ export default function login() {
   const transitionController = new LoginTransition();
   let currentView = '';
 
+  const element = div`.login`(
+    transitionController.element,
+  );
+
   // Manage transitions
-  auth.state.subscribe((view: string) => {
+  useObservable(element, auth.state, (view) => {
     const prevView = currentView;
     currentView = view;
 
@@ -29,7 +34,7 @@ export default function login() {
       return;
     }
 
-    if (view === 'unathorized') {
+    if (view === 'unauthorized') {
       transitionController.translateLeft(formWelcome);
     }
 
@@ -42,7 +47,5 @@ export default function login() {
     }
   });
 
-  return div`.login`(
-    transitionController.element,
-  );
+  return element;
 }

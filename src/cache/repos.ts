@@ -2,6 +2,7 @@
  * More simple API to modify cache
  */
 
+// eslint-disable-next-line import/no-cycle
 import { setCacheRepoItem, extendCacheRepo, loadRepo, saveRepo, getCacheRepoItem } from './data';
 import { User, Chat, Message } from './types';
 

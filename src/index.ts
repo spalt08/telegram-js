@@ -24,7 +24,7 @@ const router = new Router({
 
 mount(document.body, router.element);
 
-
 // todo: Check in IE 11 and add required polyfills
 // todo: Fix SVGs in IE
 // todo: Add loading screen
+// todo: Fix the UI not responding when the backend is blocked (e.g. in Russia without a VPN)
