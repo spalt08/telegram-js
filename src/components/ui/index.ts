@@ -5,3 +5,5 @@ export { default as button } from './button/button';
 export { default as checkbox } from './checkbox/checkbox';
 export { default as tgs } from './tgs/tgs';
 export { default as passwordInput } from './password_input/password_input';
+export { default as datetime } from './datetime/datetime';
+export { default as ripple } from './ripple/ripple';
