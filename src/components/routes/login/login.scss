@@ -83,6 +83,19 @@
       margin-right: 32px;
     }
   }
+
+  &__loader {
+
+    &_spin {
+      $size: 45px;
+      width: $size;
+      height: $size;
+
+      circle {
+        stroke: #4797E2;
+      }
+    }
+  }
 }
 
 .logincountry {

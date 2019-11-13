@@ -30,6 +30,12 @@ export default class AuthServie {
   /** Password input error */
   errPassword = new BehaviorSubject<undefined | string>(undefined);
 
+  /** First name input error */
+  errFirstName = new BehaviorSubject<undefined | string>(undefined);
+
+  /** Last name input error */
+  errLastName = new BehaviorSubject<undefined | string>(undefined);
+
   /** Phone hash for signIn request */
   phoneHash: string = '';
 
@@ -40,7 +46,12 @@ export default class AuthServie {
   passwordAlgo?: any;
 
   constructor() {
-    this.state = new BehaviorSubject('unathorized');
+    const uid = sessionStorage.getItem('uid');
+    if (uid && +uid > 0) {
+      this.state = new BehaviorSubject('authorized');
+    } else {
+      this.state = new BehaviorSubject('unathorized');
+    }
   }
 
   /**
@@ -161,7 +172,48 @@ export default class AuthServie {
     });
   }
 
+  /**
+   * Tries to sign up
+   * @mtproto auth.signUp
+   */
+  signUp(firstName: string, lastName: string, cb: () => void) {
+    const payload = {
+      phone_number: this.phoneNumber.value,
+      phone_code_hash: this.phoneHash,
+      first_name: firstName,
+      last_name: lastName,
+    };
+
+    client.call('auth.signUp', payload, (err, res) => {
+      if (err && err.type === 'network') { cb(); return; }
+      // todo: handle PHONE_CODE_EXPIRED
+
+      if (err && err.message === 'FIRSTNAME_INVALID') {
+        this.errFirstName.next('Invalid First Name');
+        cb();
+        return;
+      }
+
+      if (err && err.message === 'LASTNAME_INVALID') {
+        this.errLastName.next('Invalid Last Name');
+        cb();
+        return;
+      }
+
+      if (!res) return;
+
+      this.authorize(res.json());
+    });
+  }
+
   authorize(response: any) {
-    console.log(response);
+    if (response._ === 'auth.authorizationSignUpRequired') {
+      this.state.next('signup');
+    }
+
+    if (response._ === 'auth.authorization') {
+      this.state.next('authorized');
+      sessionStorage.setItem('uid', response.user.id);
+    }
   }
 }
