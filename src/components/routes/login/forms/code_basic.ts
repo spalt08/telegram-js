@@ -35,7 +35,7 @@ export default function codeBasic({ onFocus, onBlur, onChange }: Props) {
   });
 
   let codeMsg = 'We have sent you an SMS with the code.';
-  if (auth.codeType === 'auth.sentCodeTypeApp') codeMsg = 'We have sent you a message with the code at the telegram app.';
+  if (auth.codeType === 'auth.sentCodeTypeApp') codeMsg = 'We have sent you a message with the code at the Telegram app.';
   if (auth.codeType === 'auth.sentCodeTypeCall') {
     codeMsg = 'You will receive an automatic call with a synthesized voice which tell you a verification code.';
   }

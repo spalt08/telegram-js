@@ -23,3 +23,10 @@ declare module '*?raw' {
   const text: string;
   export default text;
 }
+
+declare module 'pako/lib/deflate' {
+  export { deflate, Deflate, deflateRaw, gzip } from 'pako';
+}
+declare module 'pako/lib/inflate' {
+  export { inflate, Inflate, inflateRaw, ungzip } from 'pako';
+}

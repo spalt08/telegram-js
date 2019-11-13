@@ -6,7 +6,7 @@
  * Warning! These lifecycle hooks work only when you use `mount` and `unmount` functions instead of manual DOM attaching/detaching.
  */
 
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { listen, unlisten } from './dom'; // eslint-disable-line import/no-cycle
 import { MaybeObservable } from './types';
 
@@ -255,4 +255,26 @@ export function useOutsideEvent<P extends keyof HTMLElementEventMap>(base: HTMLE
       cb(event);
     }
   });
+}
+
+/**
+ * Converts a MaybeObservable value to BehaviorSubject (that stores the most recent emitted value).
+ * The value is updated when the element is mounted.
+ *
+ * @link https://stackoverflow.com/a/58834889/1118709 Explanation
+ */
+export function useMaybeObservableToBehaviorSubject<T>(base: unknown, observable: MaybeObservable<T>, initial: T): BehaviorSubject<T> {
+  if (observable instanceof BehaviorSubject) {
+    return observable;
+  }
+
+  if (observable instanceof Observable) {
+    const subject = new BehaviorSubject(initial);
+    useWhileMounted(base, () => {
+      const subscription = observable.subscribe(subject);
+      return () => subscription.unsubscribe();
+    });
+  }
+
+  return new BehaviorSubject(initial);
 }

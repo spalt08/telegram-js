@@ -1,10 +1,9 @@
 /* eslint-disable no-param-reassign */
 import { div, text as textNode } from 'core/html';
 import { mount, unmount, listen, dispatch, setValue, getAttribute } from 'core/dom';
-import { useInterface, useOutsideEvent } from 'core/hooks';
+import { useInterface, useMaybeObservableToBehaviorSubject, useOutsideEvent } from 'core/hooks';
 import { MaybeObservable } from 'core/types';
 import { KEYBOARD } from 'const';
-import { toBehaviorSubject } from 'helpers/rxjs';
 import textInput from '../text_input/text_input';
 import './select_autocomplete.scss';
 
@@ -39,7 +38,6 @@ export default function selectAutoComplete<T>({
   let query = '';
   let highlighted = -1;
   let inputEl: HTMLInputElement;
-  const disabledSubject = toBehaviorSubject(disabled, false);
 
   const arrow = div`.select__arrow`();
   const element = div`.select`(
@@ -47,7 +45,7 @@ export default function selectAutoComplete<T>({
       label,
       name,
       autocomplete: 'off',
-      disabled: disabledSubject,
+      disabled,
       inputClassName: 'select__input',
       ref: (el: HTMLInputElement) => { inputEl = el; },
     }),
@@ -61,6 +59,8 @@ export default function selectAutoComplete<T>({
       )
     )),
   );
+
+  const disabledSubject = useMaybeObservableToBehaviorSubject(element, disabled, false);
 
   const performBlur = () => {
     element.classList.remove('focused');
