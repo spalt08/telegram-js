@@ -71,6 +71,7 @@ export default class AuthService {
     };
 
     client.call('auth.sendCode', payload, (err, res) => {
+      // todo display network error
       if (err && err.type === 'network') { cb(); return; }
 
       if (err) {
