@@ -9,8 +9,8 @@ import { history } from 'router';
  * Singleton service class for handling auth flow
  */
 export default class AuthService {
-  /** Login state: welcome, code, password etc. */
-  state: BehaviorSubject<string>;
+  /** Login state */
+  state: BehaviorSubject<'welcome' | 'code' | 'password' | 'authorized' | 'unauthorized' | 'signup' | '2fa'>;
 
   /** Phone input error */
   phoneNumber = new BehaviorSubject<undefined | string>(undefined);
@@ -52,7 +52,7 @@ export default class AuthService {
     if (uid && +uid > 0) {
       this.state = new BehaviorSubject('authorized');
     } else {
-      this.state = new BehaviorSubject('unathorized');
+      this.state = new BehaviorSubject('unauthorized');
     }
   }
 

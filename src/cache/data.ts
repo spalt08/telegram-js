@@ -87,10 +87,10 @@ export function extendCacheRepo<T>(repo: string, data: Record<string | number, T
   }
 }
 
-export async function loadRepo<T>(repo: string, cb: () => void) {
+export async function loadRepo<T>(repo: string, cb?: () => void) {
   cacheLocal.load<T>(repo, (repoData) => {
     cacheMemo[repo] = repoData;
-    cb();
+    if (cb) cb();
   });
 }
 

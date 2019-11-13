@@ -4,6 +4,7 @@ import { mount, unmount, listen, dispatch, setValue, getAttribute } from 'core/d
 import { useInterface, useOutsideEvent } from 'core/hooks';
 import { MaybeObservable } from 'core/types';
 import { KEYBOARD } from 'const';
+import { toBehaviorSubject } from 'helpers/rxjs';
 import textInput from '../text_input/text_input';
 import './select_autocomplete.scss';
 
@@ -30,7 +31,7 @@ export default function selectAutoComplete<T>({
   name = '',
   selected,
   options = [],
-  disabled,
+  disabled = false,
   optionRenderer = (text: T) => textNode(typeof text === 'string' ? text : ''),
   optionLabeler = (text: T) => (typeof text === 'string' ? text : ''),
   onChange,
@@ -38,6 +39,7 @@ export default function selectAutoComplete<T>({
   let query = '';
   let highlighted = -1;
   let inputEl: HTMLInputElement;
+  const disabledSubject = toBehaviorSubject(disabled, false);
 
   const arrow = div`.select__arrow`();
   const element = div`.select`(
@@ -45,7 +47,7 @@ export default function selectAutoComplete<T>({
       label,
       name,
       autocomplete: 'off',
-      disabled,
+      disabled: disabledSubject,
       inputClassName: 'select__input',
       ref: (el: HTMLInputElement) => { inputEl = el; },
     }),
@@ -127,7 +129,7 @@ export default function selectAutoComplete<T>({
   });
 
   listen(arrow, 'click', () => {
-    if (disabled && (disabled === true || disabled.value === true)) return;
+    if (disabledSubject.value) return;
 
     if (query) {
       setValue(inputEl, '');

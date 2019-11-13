@@ -1,5 +1,5 @@
 import { div } from 'core/html';
-import { getInterface } from 'core/hooks';
+import { getInterface, useObservable } from 'core/hooks';
 import { auth } from 'services';
 import LoginTransition from '../transition';
 import codeBasic from './code_basic';
@@ -34,8 +34,15 @@ export default function formCode() {
     },
   });
 
+  const element = (
+    div`.login__form`(
+      monkeyEl,
+      transitioner.element,
+    )
+  );
+
   // Manage transitions
-  auth.state.subscribe((view: string) => {
+  useObservable(element, auth.state, (view) => {
     if (view === '2fa') {
       transitioner.translateRight(() => c2fa);
       getInterface(monkeyEl).closeEyes();
@@ -43,13 +50,6 @@ export default function formCode() {
 
     if (view === 'code') transitioner.set(() => basic);
   });
-
-  const element = (
-    div`.login__form`(
-      monkeyEl,
-      transitioner.element,
-    )
-  );
 
   return element;
 }

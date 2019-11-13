@@ -236,7 +236,7 @@ export function useObservable<T>(base: unknown, observable: Observable<T>, onCha
 }
 
 /**
- * Listens to the MaybeBehaviorSubject value change during the element is mounted
+ * Listens to the MaybeObservable value change during the element is mounted
  */
 export function useMaybeObservable<T>(base: unknown, value: MaybeObservable<T>, onChange: (newValue: T) => void) {
   if (value instanceof Observable) {
