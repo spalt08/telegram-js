@@ -9,7 +9,7 @@ import 'styles/global.scss';
 initCache();
 
 // todo: check user login and redirect him
-if (auth.state.value !== 'authorized') {
+if (auth.state.value !== 'authorized' && history.state() !== 'sandbox') {
   history.push('/login');
 } else if (history.state() === '/login') {
   history.push('/');

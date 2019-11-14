@@ -59,6 +59,9 @@ export default function list({ tag, className, items, renderer, key = (i) => `${
 
       if (nextKeys.indexOf(mounted[i]) === -1) {
         const toBeRemoved = rendered[mounted[i]];
+        const pos = toBeRemoved.getBoundingClientRect();
+
+        toBeRemoved.style.transform = `translate(${flipFrom[mounted[i]].left - pos.left}px, ${flipFrom[mounted[i]].top - pos.top}px)`;
         toBeRemoved.classList.add('list__removed');
 
         listenOnce(toBeRemoved, 'animationend', () => unmount(toBeRemoved));
@@ -81,10 +84,10 @@ export default function list({ tag, className, items, renderer, key = (i) => `${
       if (iTop === 0 && iLeft === 0) {
         delete flipFrom[akey];
         continue;
+      } else {
+        rendered[akey].style.transformOrigin = 'top left';
+        rendered[akey].style.transform = `translate(${iLeft}px, ${iTop}px)`;
       }
-
-      rendered[akey].style.transformOrigin = 'top left';
-      rendered[akey].style.transform = `translate(${iLeft}px, ${iTop}px)`;
     }
 
     animated = Object.keys(flipFrom);

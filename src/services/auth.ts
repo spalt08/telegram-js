@@ -168,6 +168,7 @@ export default class AuthService {
         // Display error message
         if (err) {
           this.errPassword.next(err.message);
+          cb();
           return;
         }
 
