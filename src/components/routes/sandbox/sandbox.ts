@@ -26,8 +26,8 @@ export default function sandbox() {
 
   for (let i = 0; i < 1000; i += 1) {
     dialogsAll.push(`user${i}`);
-    dialogsAll.push(`chat${i}`);
-    dialogsAll.push(`channel${i}`);
+    // dialogsAll.push(`chat${i}`);
+    // dialogsAll.push(`channel${i}`);
   }
   const items = new BehaviorSubject(dialogsAll);
   // const items = new BehaviorSubject(['user123', 'chat3232', 'channel122312321']);
@@ -41,16 +41,16 @@ export default function sandbox() {
   //   items.next([items.value[rnd], ...b]);
   // }, 5000);
 
-  setInterval(() => {
-    items.next(shuffle(items.value));
-  }, 2000);
+  // setInterval(() => {
+  //   items.next(shuffle(items.value));
+  // }, 2000);
 
   return div`.sandbox`(
     // dialogs(items),
-    // list({
-    //   items,
-    //   renderer: (item: string) => div`.test`(text(item)),
-    // }),
+    list({
+      items,
+      renderer: (item: string) => div`.test`(text(item)),
+    }),
     scroll(
       ...items.value.map((item: string) => div`.test`(text(item))),
     ),

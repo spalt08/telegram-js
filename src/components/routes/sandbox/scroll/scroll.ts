@@ -1,12 +1,14 @@
-import { el, mount, unmount, listenOnce, listen } from 'core/dom';
-import { useObservable, useOnMount, useWhileMounted, useListenWhileMounted } from 'core/hooks';
+import { mount, unmount, listen } from 'core/dom';
+import { useOnMount, useListenWhileMounted } from 'core/hooks';
 import { div } from 'core/html';
 import '../list/list.scss';
 
 
 export default function scroll(...children: Element[]) {
   const container = div`.list`();
-  const threshold = 300;
+  const threshold = 1000;
+
+  const batch = 5;
 
   let viewport = container.getBoundingClientRect();
   let offset = 0;
@@ -29,11 +31,13 @@ export default function scroll(...children: Element[]) {
     }
 
     if (last < children.length - 1 && viewport.height + threshold > lastRect.top - viewport.top + lastRect.height) {
-      last += 1;
-      mount(container, children[last]);
-      lastRect = children[last].getBoundingClientRect();
+      const num = Math.min(batch, children.length - last - 1);
 
-      if (first === -1) first = last;
+      for (let i = 0; i < num; i += 1) {
+        last += 1;
+        mount(container, children[last]);
+        lastRect = children[last].getBoundingClientRect();
+      }
     }
   };
 
@@ -41,10 +45,15 @@ export default function scroll(...children: Element[]) {
     let firstRect = children[first].getBoundingClientRect();
 
     if (first > 1 && offset < threshold) {
-      first -= 1;
-      mount(container, children[first], children[first + 1]);
-      firstRect = children[last].getBoundingClientRect();
-      offset += firstRect.height;
+      const num = Math.min(batch, first);
+
+      for (let i = 0; i < num; i += 1) {
+        first -= 1;
+        mount(container, children[first], children[first + 1]);
+        firstRect = children[last].getBoundingClientRect();
+        offset += firstRect.height;
+      }
+
       container.scrollTop = offset;
     }
   };
@@ -52,27 +61,37 @@ export default function scroll(...children: Element[]) {
   const cleanTop = () => {
     let firstRect = first > -1 ? children[first].getBoundingClientRect() : { top: 0, height: 0 };
 
-    while (first < children.length - 1 && offset > threshold) {
-      if (first > -1) {
+    if (first < children.length - 1 && offset > threshold) {
+      const num = Math.min(batch, last);
+
+      for (let i = 0; i < num; i += 1) {
         unmount(children[first]);
         offset -= firstRect.height;
-        container.scrollTop = offset;
+
+        first += 1;
+        firstRect = children[first].getBoundingClientRect();
       }
 
-      first += 1;
-      firstRect = children[first].getBoundingClientRect();
+      container.scrollTop = offset;
     }
   };
 
   const cleanBottom = () => {
     let lastRect = children[last].getBoundingClientRect();
 
-    while (last > 1 && viewport.height + threshold < lastRect.top - viewport.top + lastRect.height) {
-      unmount(children[last]);
-      last -= 1;
-      lastRect = children[last].getBoundingClientRect();
+    if (last > 1 && viewport.height + threshold < lastRect.top - viewport.top + lastRect.height) {
+      const num = Math.min(batch, last);
+
+      console.log(num);
+      for (let i = 0; i < num; i += 1) {
+        unmount(children[last]);
+        last -= 1;
+        lastRect = children[last].getBoundingClientRect();
+      }
     }
   };
+
+  // let debounce: ReturnType<typeof setTimeout> | undefined;
 
   listen(container, 'scroll', () => {
     if (container.scrollTop === offset) return;
@@ -86,7 +105,7 @@ export default function scroll(...children: Element[]) {
       fillTop();
       cleanBottom();
     }
-  });
+  }, { capture: true, passive: true });
 
   useOnMount(container, () => {
     viewport = container.getBoundingClientRect();
