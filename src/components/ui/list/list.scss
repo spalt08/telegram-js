@@ -1,26 +1,26 @@
 .list {
   overflow: hidden;
-  position: relative;
 
   .list__container {
     height: 300px;
     overflow: scroll;
+    position: relative;
   }
 }
 
 .list {
   &__appeared {
-    animation: listAppear .5s ease;
+    animation: listAppear .3s ease;
     z-index: 1;
   }
 
   &__removed {
     position: absolute;
-    animation: listRemove .5s ease;
+    animation: listRemove .3s ease;
   }
 
   &__flipping {
-    transition: transform .5s ease;
+    transition: transform .3s ease;
     will-change: transform;
     z-index: 1;
   }

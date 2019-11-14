@@ -1,4 +1,4 @@
-import { el, mount, unmount, listenOnce, listen } from 'core/dom';
+import { el, mount, unmount, listenOnce } from 'core/dom';
 import { Observable } from 'rxjs';
 import { useObservable } from 'core/hooks';
 import './list.scss';

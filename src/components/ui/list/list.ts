@@ -156,9 +156,10 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
     flipping = true;
 
     const nextVisibleLast = next.length > last ? last : next.length - 1;
-    nextVisibleFirst = Math.min(0, nextVisibleLast - visible.length + 1);
+    nextVisibleFirst = Math.max(0, nextVisibleLast - visible.length + 1);
     const nextVisible = [];
 
+    console.log(first, last, container.scrollTop);
     const flipFrom: Record<string, ClientRect> = {};
     const flipTo: Record<string, ClientRect> = {};
 
@@ -173,7 +174,7 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
       const ekey = key(next[i]);
 
       // add
-      if (current.indexOf(next[i]) === -1) {
+      if (visible.indexOf(next[i]) === -1) {
         const element = mountChild(next[i]);
 
         element.classList.add('list__appeared');
@@ -199,20 +200,24 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
       element.classList.remove('list__flipping');
 
       if (nextVisible.indexOf(visible[i]) === -1) {
-        const pos = element.getBoundingClientRect();
+        // const pos = element.getBoundingClientRect();
 
-        element.style.transform = `translate(${flipFrom[key(visible[i])].left - pos.left}px, ${flipFrom[key(visible[i])].top - pos.top}px)`;
-        element.classList.add('list__removed');
+        // element.style.transform = `translate(${flipFrom[key(visible[i])].left - pos.left}px, ${flipFrom[key(visible[i])].top - pos.top}px)`;
+        // element.classList.add('list__removed');
 
-        listenOnce(element, 'animationend', () => {
-          element.classList.remove('list__removed');
-          element.style.transform = '';
-          unmount(element);
-        });
+        // listenOnce(element, 'animationend', () => {
+        //   element.classList.remove('list__removed');
+        //   element.style.transform = '';
+        //   unmount(element);
+        // });
+
+        unmount(element);
 
         delete flipFrom[key(visible[i])];
       }
     }
+
+    container.scrollTop = offset;
 
     // animate
     let animated = Object.keys(flipFrom);
@@ -254,8 +259,8 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
     first = nextVisibleFirst;
     last = nextVisibleLast;
 
-    container.scrollTop = offset;
     flipping = false;
+    container.scrollTop = offset;
   });
 
   listen(container, 'scroll', () => {

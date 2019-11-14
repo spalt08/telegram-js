@@ -7,7 +7,7 @@ type Props = {
   threshold?: number,
   batch?: number,
   className?: string,
-}
+};
 
 export default function scroll({ threshold = 400, batch = 5, className }: Props, ...children: Element[]) {
   const container = div({ className });

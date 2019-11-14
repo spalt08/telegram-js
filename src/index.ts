@@ -18,7 +18,7 @@ if (auth.state.value !== 'authorized' && history.state() !== 'sandbox') {
 const router = new Router({
   '/': routes.home,
   '/login': routes.login,
-  '/sandbox': routes.sandbox,
+  // '/sandbox': routes.sandbox,
   default: routes.login,
 });
 
