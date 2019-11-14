@@ -59,6 +59,11 @@ export type Dialog = {
   unread_count: number,
   unread_mark: boolean,
   unread_mentions_count: number,
+  notify_settings: {
+    _: 'peerNotifySettings',
+    silent: boolean,
+    mute_until: number,
+  }
 };
 
 /**
@@ -93,7 +98,7 @@ export type Chat = {
   id: number,
   title: string,
   access_hash: string,
-  photo: Object,
+  photo: ChatPhoto,
 };
 
 /**
@@ -118,6 +123,24 @@ export type Channel = WithMin<{
   photo: ChatPhoto,
 }>;
 
+export type MessageMedia = {
+  _: 'messageMediaEmpty',
+} | {
+  _: 'messageMediaPhoto',
+} | {
+  _: 'messageMediaGeo',
+} | {
+  _: 'messageMediaContact',
+} | {
+  _: 'messageMediaDocument',
+} | {
+  _: 'messageMediaWebPage',
+} | {
+  _: 'messageMediaGeoLive',
+} | {
+  _: 'messageMediaPoll',
+};
+
 /**
  * Message object
  * Ref: https://core.telegram.org/constructor/message
@@ -128,6 +151,7 @@ export type Message = {
   message: string,
   date: number,
   to_id: Peer,
+  media: MessageMedia,
 };
 
 /**

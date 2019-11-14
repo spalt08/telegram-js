@@ -3,7 +3,6 @@ import { useObservable } from 'core/hooks';
 import { unmountChildren, mount } from 'core/dom';
 import { message as service } from 'services';
 import message from './message/message';
-import './messages.scss';
 
 export default function messages() {
   const content = div`.messages__history`();

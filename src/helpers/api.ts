@@ -2,7 +2,6 @@ import { InputPeer, Message, Peer } from 'cache/types';
 import { chatCache, userCache } from 'cache/repos';
 
 // Convert Peer to InputPeer
-// eslint-disable-next-line import/prefer-default-export
 export function inputPeer(peer: Peer, reference?: { peer: InputPeer, message: Message }): InputPeer {
   switch (peer._) {
     case 'peerUser': {
@@ -26,5 +25,15 @@ export function inputPeer(peer: Peer, reference?: { peer: InputPeer, message: Me
 
     default:
       return { _: 'inputPeerEmpty' };
+  }
+}
+
+// Conver Peer to unique key
+export function peerToKey(peer: Peer): string {
+  switch (peer._) {
+    case 'peerUser': return `user${peer.user_id}`;
+    case 'peerChannel': return `channel${peer.channel_id}`;
+    case 'peerChat': return `chat${peer.chat_id}`;
+    default: throw new Error('Unknown peer');
   }
 }

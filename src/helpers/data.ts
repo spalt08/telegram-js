@@ -10,3 +10,18 @@ export function arrayToMap<K extends keyof any, T extends { [key in K]: keyof an
   }
   return map;
 }
+
+/**
+ * Swaps elements in array
+ */
+export function arrayMove(arr: any[], from: number, to: number) {
+  const copy = arr.slice(0);
+  if (to >= copy.length) {
+    let k = to - copy.length + 1;
+    while (k--) {
+      copy.push(undefined);
+    }
+  }
+  copy.splice(to, 0, copy.splice(from, 1)[0]);
+  return copy;
+}

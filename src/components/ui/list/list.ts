@@ -24,7 +24,7 @@ type Props = {
  * })
  */
 export default function list({ tag, className, threshold = 400, batch = 5, items, renderer, key = (i) => `${i}` }: Props) {
-  const container = el(tag || 'div', { className: `list__container ${className}` });
+  const container = el(tag || 'div', { className: 'list__container' });
   const elements: Record<string, HTMLElement> = {};
   let current: any[] = [];
 
@@ -142,6 +142,10 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
   // On data changed
   useObservable(container, items, (next: any[]) => {
     if (!inited) return;
+    if (inited && current.length === 0 && next.length > 0) {
+      init();
+      return;
+    }
 
     const visible = current.slice(first, last + 1);
     let nextVisibleFirst = next.indexOf(visible[0]);
@@ -159,7 +163,6 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
     nextVisibleFirst = Math.max(0, nextVisibleLast - visible.length + 1);
     const nextVisible = [];
 
-    console.log(first, last, container.scrollTop);
     const flipFrom: Record<string, ClientRect> = {};
     const flipTo: Record<string, ClientRect> = {};
 
@@ -284,5 +287,5 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
     viewport = container.getBoundingClientRect();
   });
 
-  return div`.list`(container);
+  return div`.list${className}`(container);
 }

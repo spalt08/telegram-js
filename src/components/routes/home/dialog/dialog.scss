@@ -1,14 +1,20 @@
 .dialog {
-  height: 76px;
   width: 100%;
   padding: 0px 8px;
+  margin-bottom: 2px;
 
   &:last-child {
     margin-bottom: 0;
   }
 
+  &.pinned + &:not(.pinned) {
+    border-top: 1px solid #EDEEF0;
+    padding-top: 8px;
+    margin-top: 7px;
+  }
+
   &__clickable {
-    padding: 8px;
+    padding: 9PX;
     border-radius: 10px;
     cursor: pointer;
     width: 100%;
@@ -32,6 +38,11 @@
     height: 54px;
     border-radius: 50%;
     overflow: hidden;
+    border: 1px solid #EDEEF0;
+
+    img {
+      width: 100%;
+    }
   }
 
   &__content {
@@ -50,7 +61,7 @@
   &__title {
     color: #000000;
     font-weight: 500;
-    font-size: 16px;
+    font-size: 15px;
     line-height: 190%;
     white-space: nowrap;
     overflow: hidden;
@@ -75,10 +86,10 @@
   &__message {
     color: #707579;
     font-weight: 300;
-    font-size: 16px;
+    font-size: 15px;
     overflow: hidden;
     margin-bottom: 4px;
-    line-height: 20px;
+    line-height: 150%;
     position: relative;
     flex: 1 50%;
     word-break: break-word;
@@ -98,8 +109,25 @@
     font-weight: 500;
     border-radius: 11PX;
     text-align: center;
-    margin-top: -2px;
     margin-left: 10px;
+
+    &.muted {
+      background-color: #C4C9CC;
+    }
+  }
+
+  &__pin {
+    background-color: #C4C9CC;
+    height: 22PX;
+    width: 22PX;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+
+    & .icon path {
+      fill: #FFFFFF;
+    }
   }
 }
 
