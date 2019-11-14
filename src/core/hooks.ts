@@ -263,7 +263,7 @@ export function useOutsideEvent<P extends keyof HTMLElementEventMap>(base: HTMLE
  *
  * @link https://stackoverflow.com/a/58834889/1118709 Explanation
  */
-export function useMaybeObservableToBehaviorSubject<T>(base: unknown, observable: MaybeObservable<T>, initial: T): BehaviorSubject<T> {
+export function useToBehaviorSubject<T>(base: unknown, observable: MaybeObservable<T>, initial: T): BehaviorSubject<T> {
   if (observable instanceof BehaviorSubject) {
     return observable;
   }
