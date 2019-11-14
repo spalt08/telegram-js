@@ -1,13 +1,19 @@
-import { InputPeer, Peer } from 'cache/types';
+import { InputPeer, Message, Peer } from 'cache/types';
 import { chatCache, userCache } from 'cache/repos';
 
 // Convert Peer to InputPeer
 // eslint-disable-next-line import/prefer-default-export
-export function inputPeer(peer: Peer): InputPeer {
+export function inputPeer(peer: Peer, reference?: { peer: InputPeer, message: Message }): InputPeer {
   switch (peer._) {
     case 'peerUser': {
       const user = userCache.get(peer.user_id);
-      return { _: 'inputPeerUser', user_id: peer.user_id, access_hash: user.access_hash };
+      if (user.access_hash) {
+        return { _: 'inputPeerUser', user_id: peer.user_id, access_hash: user.access_hash };
+      }
+      if (reference) {
+        return { _: 'inputUserFromMessage', peer: reference.peer, msg_id: reference.message.id, user_id: peer.user_id };
+      }
+      throw new Error('A reference is required to convert this Peer to InputPeer');
     }
 
     case 'peerChannel': {

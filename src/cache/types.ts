@@ -1,4 +1,10 @@
 /**
+ * Transform a type with required fields to type with `min` property with the corresponding meaning
+ * Ref: https://core.telegram.org/api/min
+ */
+type WithMin<T> = { id: number } & ({ min: false } & T | { min: true } & Partial<T>);
+
+/**
  * Peer Reference
  * Ref: https://core.telegram.org/type/Peer
  */
@@ -30,6 +36,16 @@ export type InputPeer = {
 } | {
   _: 'inputPeerChat',
   chat_id: number,
+} | {
+  _: 'inputUserFromMessage',
+  peer: InputPeer,
+  msg_id: number,
+  user_id: number,
+} | {
+  _: 'inputChannelFromMessage',
+  peer: InputPeer,
+  msg_id: number,
+  channel_id: number,
 };
 
 /**
@@ -49,13 +65,12 @@ export type Dialog = {
  * User object
  * Ref: https://core.telegram.org/constructor/user
  */
-export type User = {
-  id: number,
+export type User = WithMin<{
   first_name: string,
   last_name: string,
   access_hash: string,
   photo: UserProfilePhoto,
-};
+}>;
 
 /**
  * User photo object
@@ -82,7 +97,7 @@ export type Chat = {
 };
 
 /**
- * Chat photo
+ * Chat photo object
  * Ref: https://core.telegram.org/type/ChatPhoto
  */
 export type ChatPhoto = {
@@ -95,6 +110,15 @@ export type ChatPhoto = {
 };
 
 /**
+ * Channel object
+ * Ref: https://core.telegram.org/constructor/channel
+ */
+export type Channel = WithMin<{
+  title: string,
+  photo: ChatPhoto,
+}>;
+
+/**
  * Message object
  * Ref: https://core.telegram.org/constructor/message
  */
@@ -103,6 +127,7 @@ export type Message = {
   from_id: number,
   message: string,
   date: number,
+  to_id: Peer,
 };
 
 /**
