@@ -3,10 +3,14 @@
  * Ref: https://core.telegram.org/type/Peer
  */
 export type Peer = {
-  _: string,
+  _: 'peerUser',
   user_id: number,
-  channel_id: number,
+} | {
+  _: 'peerChat',
   chat_id: number,
+} | {
+  _: 'peerChannel',
+  channel_id: number,
 };
 
 /**
@@ -14,11 +18,18 @@ export type Peer = {
  * Ref: https://core.telegram.org/type/InputPeer
  */
 export type InputPeer = {
-  _: string,
-  user_id?: number,
-  channel_id?: number,
-  chat_id?: number,
-  access_hash?: string,
+  _: 'inputPeerEmpty',
+} | {
+  _: 'inputPeerUser',
+  user_id: number,
+  access_hash: string,
+} | {
+  _: 'inputPeerChannel',
+  channel_id: number,
+  access_hash: string,
+} | {
+  _: 'inputPeerChat',
+  chat_id: number,
 };
 
 /**
@@ -43,7 +54,20 @@ export type User = {
   first_name: string,
   last_name: string,
   access_hash: string,
-  photo: Object,
+  photo: UserProfilePhoto,
+};
+
+/**
+ * User photo object
+ * Ref: https://core.telegram.org/type/UserProfilePhoto
+ */
+export type UserProfilePhoto = {
+  _: 'userProfilePhotoEmpty',
+} | {
+  _: 'userProfilePhoto',
+  photo_small: FileLocation,
+  photo_big: FileLocation,
+  dc_id: number,
 };
 
 /**
@@ -58,6 +82,19 @@ export type Chat = {
 };
 
 /**
+ * Chat photo
+ * Ref: https://core.telegram.org/type/ChatPhoto
+ */
+export type ChatPhoto = {
+  _: 'chatPhotoEmpty',
+} | {
+  _: 'chatPhoto',
+  photo_small: FileLocation,
+  photo_big: FileLocation,
+  dc_id: number,
+};
+
+/**
  * Message object
  * Ref: https://core.telegram.org/constructor/message
  */
@@ -66,4 +103,13 @@ export type Message = {
   from_id: number,
   message: string,
   date: number,
+};
+
+/**
+ * File location object
+ * Ref: https://core.telegram.org/type/FileLocation
+ */
+export type FileLocation = {
+  volume_id: number,
+  local_id: number,
 };

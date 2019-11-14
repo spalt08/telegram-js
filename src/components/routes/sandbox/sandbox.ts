@@ -26,7 +26,7 @@ export default function sandbox() {
     items.next(shuffle(items.value));
   }, 3000);
 
-  window.i = items;
+  (window as any).i = items;
 
   const renderer = (v: number) => div`.test`(text(v.toString()));
 
