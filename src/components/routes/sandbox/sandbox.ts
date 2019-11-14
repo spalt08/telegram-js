@@ -1,7 +1,9 @@
 import { BehaviorSubject } from 'rxjs';
-import { div } from 'core/html';
+import { div, text } from 'core/html';
 import './sandbox.scss';
 import dialogs from './dialogs/dialogs';
+import list from './list/list';
+import scroll from './scroll/scroll';
 
 /**
  * Shuffles array in place.
@@ -20,8 +22,14 @@ function shuffle(a: any[]): any[] {
 }
 
 export default function sandbox() {
-  const extra = ['132123124', 'dsfsdf', '1412412', '3413514'];
-  const items = new BehaviorSubject(['user123', 'chat3232', 'channel122312321', 'user94473', 'user32112421', 'channel5123123']);
+  const dialogsAll = [];
+
+  for (let i = 0; i < 1000; i += 1) {
+    dialogsAll.push(`user${i}`);
+    dialogsAll.push(`chat${i}`);
+    dialogsAll.push(`channel${i}`);
+  }
+  const items = new BehaviorSubject(dialogsAll);
   // const items = new BehaviorSubject(['user123', 'chat3232', 'channel122312321']);
 
   // simulate update
@@ -32,16 +40,18 @@ export default function sandbox() {
 
   //   items.next([items.value[rnd], ...b]);
   // }, 5000);
-  let i = 0;
 
-  setInterval(() => {
-    if (i % 2 === 1) items.next(shuffle(items.value.slice(1)));
-    else if (i % 2 === 0 && extra.length > 0) items.next([extra.pop(), ...items.value])
-    else items.next(shuffle(items.value));
-    i += 1;
-  }, 2000);
+  // setInterval(() => {
+  //   items.next(shuffle(items.value));
+  // }, 2000);
 
   return div`.sandbox`(
-    dialogs(items),
+    // list({
+    //   items,
+    //   renderer: (item: string) => div`.test`(text(item)),
+    // }),
+    scroll(
+      ...items.value.map((item: string) => div`.test`(text(item))),
+    ),
   );
 }

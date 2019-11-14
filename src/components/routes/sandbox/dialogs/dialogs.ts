@@ -41,6 +41,7 @@ export default function dialogs(list: BehaviorSubject<string[]>) {
     for (let i = 0; i < prev.length; i += 1) {
       const id = prev[i];
 
+      elements[id].getBoundingClientRect();
       elements[id].style.transformOrigin = '';
       elements[id].classList.remove('dialog__flipping');
 
@@ -64,7 +65,6 @@ export default function dialogs(list: BehaviorSubject<string[]>) {
       const id = next[nextPos];
       const prevPos = prev.indexOf(id);
 
-      elements[id].getBoundingClientRect();
       elements[id].getBoundingClientRect();
 
       if (prevPos > -1) {

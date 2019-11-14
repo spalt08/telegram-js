@@ -1,4 +1,4 @@
-import { el, mount, unmount, listenOnce } from 'core/dom';
+import { el, mount, unmount, listenOnce, listen } from 'core/dom';
 import { Observable } from 'rxjs';
 import { useObservable } from 'core/hooks';
 import './list.scss';
@@ -12,10 +12,11 @@ type Props = {
 };
 
 export default function list({ tag, className, items, renderer, key = (i) => `${i}` }: Props) {
-  const container = el(tag || 'div', { className });
+  const container = el(tag || 'div', { className: `list ${className}` });
 
   const rendered: Record<string, HTMLElement> = {};
 
+  // Rerendering
   useObservable(container, items, (next: any[]) => {
     const flipFrom: Record<string, ClientRect> = {};
     const flipTo: Record<string, ClientRect> = {};
