@@ -7,7 +7,7 @@
 
 import { User, Chat, Message } from './types';
 import CacheEventEmitter, { Receiver } from './emitter';
-import { LocalStorageProvider } from './local';
+import { LocalStorageProvider } from './persistentStorages';
 import { userCache, messageCache, chatCache } from './repos';
 
 type Cache = {

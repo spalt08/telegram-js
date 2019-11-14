@@ -1,10 +1,10 @@
-import { div, text } from 'core/html';
+import { div } from 'core/html';
 import { dialog } from 'services';
 import { mount } from 'core/dom';
 import { useObservable } from 'core/hooks';
 import dialogPreview from './dialog/dialog';
-import './home.scss';
 import messages from './messages';
+import './home.scss';
 
 /**
  * Handler for route /

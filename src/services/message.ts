@@ -1,7 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import { TLConstructor, ClientError, TLAbstract } from 'mtproto-js';
 import client from 'client/client';
-import { inputPeer } from 'helpers/data';
+import { inputPeer } from 'helpers/api';
 import { Peer } from 'cache/types';
 import { messageCache } from 'cache/repos';
 
