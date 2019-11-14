@@ -41,11 +41,12 @@ export default function sandbox() {
   //   items.next([items.value[rnd], ...b]);
   // }, 5000);
 
-  // setInterval(() => {
-  //   items.next(shuffle(items.value));
-  // }, 2000);
+  setInterval(() => {
+    items.next(shuffle(items.value));
+  }, 2000);
 
   return div`.sandbox`(
+    // dialogs(items),
     // list({
     //   items,
     //   renderer: (item: string) => div`.test`(text(item)),
