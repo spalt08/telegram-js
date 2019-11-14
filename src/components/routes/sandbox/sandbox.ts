@@ -3,6 +3,7 @@ import { div, text } from 'core/html';
 import './sandbox.scss';
 import dialogs from './dialogs/dialogs';
 import list from './list/list';
+import { default as list2 } from './list_v2/list';
 import scroll from './scroll/scroll';
 
 /**
@@ -24,7 +25,7 @@ function shuffle(a: any[]): any[] {
 export default function sandbox() {
   const dialogsAll = [];
 
-  for (let i = 0; i < 1000; i += 1) {
+  for (let i = 0; i < 150; i += 1) {
     dialogsAll.push(`user${i}`);
     // dialogsAll.push(`chat${i}`);
     // dialogsAll.push(`channel${i}`);
@@ -41,18 +42,23 @@ export default function sandbox() {
   //   items.next([items.value[rnd], ...b]);
   // }, 5000);
 
-  // setInterval(() => {
-  //   items.next(shuffle(items.value));
-  // }, 2000);
+  setInterval(() => {
+    items.next(shuffle(items.value));
+  }, 2000);
 
   return div`.sandbox`(
     // dialogs(items),
-    list({
+    // list({
+    //   items,
+    //   renderer: (item: string) => div`.test`(text(item)),
+    // }),
+    // scroll({ className: 'list' },
+    //   ...items.value.map((item: string) => div`.test`(text(item))),
+    // ),
+    list2({
+      className: 'dialogs',
       items,
       renderer: (item: string) => div`.test`(text(item)),
     }),
-    scroll(
-      ...items.value.map((item: string) => div`.test`(text(item))),
-    ),
   );
 }

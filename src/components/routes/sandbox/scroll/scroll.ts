@@ -3,12 +3,14 @@ import { useOnMount, useListenWhileMounted } from 'core/hooks';
 import { div } from 'core/html';
 import '../list/list.scss';
 
+type Props = {
+  threshold?: number,
+  batch?: number,
+  className?: string,
+}
 
-export default function scroll(...children: Element[]) {
-  const container = div`.list`();
-  const threshold = 1000;
-
-  const batch = 5;
+export default function scroll({ threshold = 400, batch = 5, className }: Props, ...children: Element[]) {
+  const container = div({ className });
 
   let viewport = container.getBoundingClientRect();
   let offset = 0;
@@ -82,7 +84,6 @@ export default function scroll(...children: Element[]) {
     if (last > 1 && viewport.height + threshold < lastRect.top - viewport.top + lastRect.height) {
       const num = Math.min(batch, last);
 
-      console.log(num);
       for (let i = 0; i < num; i += 1) {
         unmount(children[last]);
         last -= 1;
@@ -90,8 +91,6 @@ export default function scroll(...children: Element[]) {
       }
     }
   };
-
-  // let debounce: ReturnType<typeof setTimeout> | undefined;
 
   listen(container, 'scroll', () => {
     if (container.scrollTop === offset) return;
