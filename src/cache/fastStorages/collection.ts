@@ -1,51 +1,52 @@
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { mapObject } from 'helpers/data';
 import Dictionary, { ItemWatcher } from './dictionary';
 
 export type GetId<TItem, TId extends keyof any> = (item: Readonly<TItem>) => TId;
 
-type IndicesConstructors<TItem, TIndices extends Record<keyof any, any>, TId extends keyof any> = {
-  [K in keyof TIndices]: (collection: Collection<TItem, TIndices, TId>) => TIndices[K];
+type IndexFactory<TItem, TId extends keyof any, TIndex> = (collection: Collection<TItem, any, TId>) => TIndex;
+
+type IndicesFactories<TItem, TId extends keyof any> = Record<keyof any, IndexFactory<TItem, TId, any>>;
+
+type IndicesFromFactories<T extends IndicesFactories<any, any>> = {
+  [K in keyof T]: T[K] extends IndexFactory<any, any, infer TIndex> ? TIndex : never;
 };
 
-interface Options<TItem, TIndices extends Record<keyof any, any>, TId extends keyof any> {
+interface Options<TItem, TIndices, TId extends keyof any> {
   getId: GetId<TItem, TId>;
   considerMin?: boolean;
-  indices?: IndicesConstructors<TItem, TIndices, TId>;
+  indices?: TIndices;
   data?: Readonly<TItem>[];
 }
 
-export function makeGetKeyFromProp<
+export function makeGetIdFromProp<
   TIdProp extends keyof any,
   TItem extends Record<TIdProp, keyof any>
 >(prop: TIdProp): GetId<TItem, TItem[TIdProp]> {
   return (item) => item[prop];
 }
 
-export default class Collection<TItem, TIndices extends Record<keyof any, any>, TId extends keyof any = keyof any> {
+export default class Collection<TItem, TIndices extends IndicesFactories<any, any>, TId extends keyof any = keyof any> {
   public getId: GetId<TItem, TId>;
 
   public readonly changes: Observable<['add' | 'update' | 'remove', Readonly<TItem>]>;
 
-  public readonly indices = {} as TIndices;
+  public readonly indices: IndicesFromFactories<TIndices>;
 
   protected readonly storage: Dictionary<keyof any, TItem>;
 
   constructor({
     getId,
     considerMin,
-    indices = {} as IndicesConstructors<TItem, TIndices, TId>,
+    indices = {} as TIndices,
     data = [],
   }: Options<TItem, TIndices, TId>) {
     this.storage = new Dictionary(considerMin);
     this.getId = getId;
     this.put(data);
     this.changes = this.storage.changeSubject.pipe(map(([action, _key, item]) => [action, item]));
-
-    // Attach indices
-    (Object.keys(indices) as Array<keyof TIndices>).forEach((key) => {
-      this.indices[key] = indices[key](this);
-    });
+    this.indices = mapObject(indices, (indexFactory) => indexFactory(this)) as IndicesFromFactories<TIndices>;
   }
 
   public has(id: TId) {

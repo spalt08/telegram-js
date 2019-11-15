@@ -8,7 +8,7 @@ import Collection from '../collection';
 export type CompareFunction<T> = (item1: Readonly<T>, item2: Readonly<T>) => number;
 
 export default function orderBy<TItem>(compare: CompareFunction<TItem>) {
-  return function orderByIndex<TId extends keyof any = keyof any>(collection: Collection<TItem, any, TId>) {
+  return function orderIndex<TId extends keyof any = keyof any>(collection: Collection<TItem, any, TId>) {
     const orderCache: TId[] = [];
     const changeSubject = new Subject<['add', number] | ['move', number, number] | ['remove', number]>();
 
@@ -67,8 +67,15 @@ export default function orderBy<TItem>(compare: CompareFunction<TItem>) {
           ? orderCache
           : orderCache.slice(start, end);
       },
-      getItems(start?: number, end?: number): Array<Readonly<TItem> | undefined> {
-        return this.getIds(start, end).map((id) => collection.get(id));
+      getItems(start?: number, end?: number) {
+        const items: Readonly<TItem>[] = [];
+        this.getIds(start, end).forEach((id) => {
+          const item = collection.get(id);
+          if (item !== undefined) {
+            items.push(item);
+          }
+        });
+        return items;
       },
     };
   };

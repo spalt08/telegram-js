@@ -1,12 +1,9 @@
 import './polyfills';
 import * as routes from 'components/routes';
 import { mount } from 'core/dom';
-import { initCache } from 'cache/data';
 import { auth } from 'services';
 import { Router, history } from './router';
 import 'styles/global.scss';
-
-initCache();
 
 // todo: check user login and redirect him
 if (auth.state.value !== 'authorized') {

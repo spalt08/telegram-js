@@ -60,7 +60,7 @@ export default function selectAutoComplete<T>({
     )),
   );
 
-  const disabledSubject = useToBehaviorSubject(element, disabled, false);
+  const [disabledSubject] = useToBehaviorSubject(element, disabled, false);
 
   const performBlur = () => {
     element.classList.remove('focused');

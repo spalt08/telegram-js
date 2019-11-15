@@ -1,17 +1,21 @@
 import { BehaviorSubject } from 'rxjs';
 import { TLConstructor } from 'mtproto-js';
 import client from 'client/client';
-import { Dialog } from 'cache/types';
-import { userCache, chatCache, messageCache } from 'cache/repos';
-import { arrayToMap } from 'helpers/data';
+import { userCache, chatCache, messageCache, dialogCache } from 'cache';
 
 /**
  * Singleton service class for handling auth flow
  */
 export default class DialogsService {
-  dialogs = new BehaviorSubject<Dialog[]>([]);
+  dialogs = new BehaviorSubject(dialogCache.indices.order.getItems());
 
-  getDialogs() {
+  constructor() {
+    dialogCache.changes.subscribe(() => {
+      this.dialogs.next(dialogCache.indices.order.getItems());
+    });
+  }
+
+  updateDialogs() {
     const payload = {
       offset_date: 0,
       offset_id: 0,
@@ -24,11 +28,10 @@ export default class DialogsService {
       if (res instanceof TLConstructor && (res._ === 'messages.dialogs' || res._ === 'messages.dialogsSlice')) {
         const data = res.json();
 
-        userCache.extend(arrayToMap(data.users, 'id'));
-        chatCache.extend(arrayToMap(data.chats, 'id'));
-        messageCache.extend(arrayToMap(data.messages, 'id'));
-
-        this.dialogs.next(data.dialogs as Dialog[]);
+        userCache.put(data.users);
+        chatCache.put(data.chats);
+        messageCache.put(data.messages);
+        dialogCache.replaceAll(data.dialogs);
       }
     });
   }

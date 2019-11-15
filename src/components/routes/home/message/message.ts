@@ -1,6 +1,6 @@
 import { div, text } from 'core/html';
 import { svgCodeToComponent } from 'core/factory';
-import { useMessage } from 'cache/hooks';
+import { messageCache } from 'cache';
 import { auth } from 'services';
 import corner from './message-corner.svg?raw';
 import cornerShadow from './message-corner-shadow.svg?raw';
@@ -10,16 +10,14 @@ const cornerSvg = svgCodeToComponent(corner);
 const cornerShadowSvg = svgCodeToComponent(cornerShadow);
 
 export default function message(id: number) {
-  const msg = useMessage(id);
+  const messageText = text('');
 
-  if (!msg) return div();
-
-  return (
-    div`.message${msg.from_id === auth.userID ? 'out' : ''}`(
+  const element = (
+    div`.message`(
       div`.message__wrapper`(
         div`.message__content`(
           div`.message__text`(
-            text(msg.message || ''),
+            messageText,
           ),
         ),
       ),
@@ -27,4 +25,11 @@ export default function message(id: number) {
       cornerShadowSvg({ className: 'message__corner-shadow' }),
     )
   );
+
+  messageCache.useWatchItem(element, id, true, (msg) => {
+    element.classList[msg && msg.from_id === auth.userID ? 'add' : 'remove']('out');
+    messageText.textContent = (msg && msg.message) || '';
+  });
+
+  return element;
 }
