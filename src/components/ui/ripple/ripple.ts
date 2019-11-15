@@ -1,5 +1,6 @@
 import { div } from 'core/html';
 import { mount, el, unmount, listen } from 'core/dom';
+import { useInterface } from 'core/hooks';
 import './ripple.scss';
 
 interface Props extends Record<string, any> {
@@ -9,12 +10,9 @@ interface Props extends Record<string, any> {
 /**
  * Any HTML element with click ripple animation
  */
-export default function ripple({ tag = 'div', className = '', ...props }: Props, children: Node[]) {
-  const element = el(tag, { className: `ripple ${className}`, ...props }, [
-    div`.ripple__content`(
-      ...children,
-    ),
-  ]);
+export default function ripple({ tag = 'div', className = '', ...props }: Props, children: Node[] = []) {
+  const contentEl = div`.ripple__content`(...children);
+  const element = el(tag, { className: `ripple ${className}`, ...props }, [contentEl]);
 
   listen(element, 'click', (event) => {
     const rect = element.getBoundingClientRect();
@@ -29,5 +27,9 @@ export default function ripple({ tag = 'div', className = '', ...props }: Props,
     mount(element, effect);
   });
 
-  return element;
+  return useInterface(element, {
+    mountChild(...moreChildren: Node[]) {
+      moreChildren.forEach((child) => mount(contentEl, child));
+    },
+  });
 }

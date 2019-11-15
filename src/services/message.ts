@@ -1,9 +1,9 @@
 import { BehaviorSubject } from 'rxjs';
 import { TLConstructor, ClientError, TLAbstract } from 'mtproto-js';
 import client from 'client/client';
-import { inputPeer } from 'helpers/api';
 import { Peer } from 'cache/types';
-import { messageCache, userCache } from 'cache/repos';
+import { messageCache, userCache } from 'cache';
+import { peerToInputPeer } from 'cache/accessors';
 
 /**
  * Singleton service class for handling messages stuff
@@ -21,7 +21,7 @@ export default class MessagesService {
     this.isLoading.next(true);
 
     const payload = {
-      peer: inputPeer(peer),
+      peer: peerToInputPeer(peer),
       offset_id: 0,
       offset_date: Math.floor(Date.now() / 1000),
       add_offset: 0,
@@ -34,11 +34,11 @@ export default class MessagesService {
     client.call('messages.getHistory', payload, (_err: ClientError, res: TLAbstract) => {
       if (res instanceof TLConstructor) {
         const data = res.json();
+        messageCache.put(data.messages);
 
-        for (let i = 0; i < data.users.length; i += 1) userCache.add(data.users[i].id, data.users[i]);
+        for (let i = 0; i < data.users.length; i += 1) userCache.put(data.users);
 
         for (let i = data.messages.length - 1; i >= 0; i -= 1) {
-          messageCache.add(data.messages[i].id, data.messages[i]);
           this.history.push(data.messages[i].id);
         }
 

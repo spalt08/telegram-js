@@ -1,10 +1,10 @@
 import { div, text } from 'core/html';
 import { listen, mount, unmountChildren } from 'core/dom';
-import { useMessage } from 'cache/hooks';
 import { useObservable } from 'core/hooks';
 import { Dialog } from 'cache/types';
+import { dialogCache, messageCache } from 'cache';
 import { datetime, ripple } from 'components/ui';
-import { message, dialog as service } from 'services';
+import { message } from 'services';
 import { pinnedchat } from 'components/icons';
 import peerTitle from './peer_title';
 import dialogMessage from './dialog_message';
@@ -12,9 +12,11 @@ import dialogPicture from './dialog_picture';
 import './dialog.scss';
 
 export default function dialogPreview(id: string) {
-  const dialog = service.storage[id];
+  const container = div`.dialog`();
 
-  const { unread_count, peer, pinned } = dialog.value;
+  const dialog = dialogCache.useItemBehaviorSubject(container, id);
+
+  const { unread_count, peer } = dialog.value!;
 
   const preview = div`.dialog__preview`();
   const date = div`.dialog__date`();
@@ -47,17 +49,17 @@ export default function dialogPreview(id: string) {
     mount(preview, dialogMessage(next.top_message));
     if (badge) mount(preview, badge);
 
-    const msg = useMessage(next.top_message);
+    const msg = messageCache.get(next.top_message);
 
     unmountChildren(date);
-    mount(date, datetime({ timestamp: msg ? msg.date : 0 }));
+
+    if (msg && msg._ !== 'messageEmpty') {
+      mount(date, datetime({ timestamp: msg.date }));
+    }
   });
 
   listen(clickable, 'click', () => message.selectPeer(peer));
 
-  return (
-    div`.dialog.${pinned ? 'pinned' : ''}`(
-      clickable,
-    )
-  );
+  mount(container, clickable);
+  return container;
 }

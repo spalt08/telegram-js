@@ -1,8 +1,9 @@
 import { span, text } from 'core/html';
-import { useOnUnmount } from 'core/hooks';
+import { useMaybeObservable, useOnMount, useOnUnmount } from 'core/hooks';
+import { MaybeObservable } from 'core/types';
 
 type Props = {
-  timestamp: number,
+  timestamp: MaybeObservable<number>,
   className?: string,
 };
 
@@ -23,23 +24,49 @@ function format(date: Date): string {
 }
 
 export default function datetime({ timestamp, className }: Props) {
-  if (timestamp === 0) return span();
-
-  const date = new Date(timestamp * 1000);
-  const node = text(format(date));
-
-  let timer: ReturnType<typeof setTimeout>;
-
-  const update = () => {
-    node.textContent = format(date);
-    timer = setTimeout(update, 1000 * 60);
-  };
-
-  timer = setTimeout(update, 1000 * (60 - (new Date()).getSeconds()));
-
+  const node = text('');
   const element = span({ className }, node);
+  let lastTimestamp = 0;
+  let timer: ReturnType<typeof setTimeout> | undefined;
 
-  useOnUnmount(element, () => clearTimeout(timer));
+  function stop() {
+    if (timer !== undefined) {
+      clearTimeout(timer);
+      timer = undefined;
+    }
+  }
+
+  function start() {
+    stop();
+
+    if (lastTimestamp === 0) {
+      node.textContent = '';
+      return;
+    }
+
+    const date = new Date(lastTimestamp * 1000);
+    node.textContent = format(date);
+
+    function print() {
+      node.textContent = format(date);
+    }
+
+    function update() {
+      print();
+      timer = setTimeout(update, 1000 * 60);
+    }
+
+    print();
+    timer = setTimeout(update, 1000 * (60 - (new Date()).getSeconds()));
+  }
+
+  useMaybeObservable(element, timestamp, (ts) => {
+    lastTimestamp = ts;
+    start();
+  });
+
+  useOnMount(element, start);
+  useOnUnmount(element, stop);
 
   return element;
 }

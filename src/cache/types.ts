@@ -200,6 +200,7 @@ export type MessageService = {
   action: MessageAction,
   id: number,
   from_id: number,
+  date: number,
 };
 
 /**

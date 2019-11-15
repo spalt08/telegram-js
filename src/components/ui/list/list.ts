@@ -7,7 +7,7 @@ import { div } from 'core/html';
 type Props = {
   tag?: keyof HTMLElementTagNameMap,
   className?: string,
-  items: BehaviorSubject<any[]>,
+  items: BehaviorSubject<readonly any[]>,
   threshold?: number,
   batch?: number,
   renderer: (item: any) => HTMLElement,

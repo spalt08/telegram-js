@@ -4,11 +4,11 @@ import dialog from './dialog/dialog';
 
 export default function dialogs() {
   // fetch dialogs
-  service.getDialogs();
+  service.updateDialogs();
 
   return list({
     className: 'dialogs',
-    items: service.sequence,
+    items: service.dialogs,
     renderer: (id: string) => dialog(id),
   });
 }

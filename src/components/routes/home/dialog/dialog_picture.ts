@@ -1,17 +1,17 @@
 import { div, img } from 'core/html';
 import { Peer } from 'cache/types';
-import { inputPeer } from 'helpers/api';
-import { userCache, chatCache } from 'cache/repos';
 import client from 'client/client';
 import { hex } from 'mtproto-js';
 import { unmountChildren, mount } from 'core/dom';
+import { peerToInputPeer } from 'cache/accessors';
+import { userCache, chatCache } from 'cache';
 
 const mimeTypes = {
   'storage.fileJpeg': 'image/jpeg',
 } as Record<string, string>;
 
 const resolve = (peerRef: Peer) => {
-  const peer = inputPeer(peerRef);
+  const peer = peerToInputPeer(peerRef);
 
   switch (peerRef._) {
     case 'peerUser': {

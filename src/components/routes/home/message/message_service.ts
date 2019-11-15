@@ -1,11 +1,10 @@
 import { MessageService } from 'cache/types';
 import { div, strong, text } from 'core/html';
-import { useUser } from 'cache/hooks';
+import { userCache } from 'cache';
 
 export default function serviceMessage(msg: MessageService) {
-
   if (msg.action._ === 'messageActionChatCreate') {
-    const user = useUser(msg.from_id);
+    const user = userCache.get(msg.from_id);
 
     return (
       div`.msgsvc`(
@@ -17,7 +16,7 @@ export default function serviceMessage(msg: MessageService) {
   }
 
   if (msg.action._ === 'messageActionChatEditPhoto') {
-    const user = useUser(msg.from_id);
+    const user = userCache.get(msg.from_id);
 
     return (
       div`.msgsvc`(
@@ -27,8 +26,6 @@ export default function serviceMessage(msg: MessageService) {
       // todo display photo
     );
   }
-
-  console.log(msg);
 
   // todo null element
   return text('');

@@ -1,8 +1,8 @@
 import { div, text } from 'core/html';
-import { useMessage } from 'cache/hooks';
+import { messageCache } from 'cache';
 
 export default function dialogMessage(id: number) {
-  const msg = useMessage(id);
+  const msg = messageCache.get(id);
 
   if (!msg) return div`.dialog__message`();
 

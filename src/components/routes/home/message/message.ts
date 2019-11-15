@@ -1,9 +1,9 @@
 import { div, text } from 'core/html';
 import { svgCodeToComponent } from 'core/factory';
-import { useMessage, useUser } from 'cache/hooks';
 import { unmount } from 'core/dom';
 import { useOnMount } from 'core/hooks';
 import { Peer } from 'cache/types';
+import { messageCache, userCache } from 'cache';
 import { datetime } from 'components/ui';
 import { auth } from 'services';
 import corner from './message-corner.svg?raw';
@@ -16,7 +16,7 @@ const cornerSvg = svgCodeToComponent(corner);
 const cornerShadowSvg = svgCodeToComponent(cornerShadow);
 
 export default function message(id: number, chatPeer?: Peer) {
-  const msg = useMessage(id);
+  const msg = messageCache.get(id);
 
   if (!msg || msg._ === 'messageEmpty') return div();
 
@@ -30,7 +30,7 @@ export default function message(id: number, chatPeer?: Peer) {
   let media: Node = text('');
 
   if (!out && chatPeer && chatPeer._ !== 'peerUser') {
-    const user = useUser(msg.from_id);
+    const user = userCache.get(msg.from_id);
 
     picture = div`.message__picture`(
       div`.message__picture-empty`(),
