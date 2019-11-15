@@ -42,7 +42,9 @@ export const dialogCache = new Collection({
         return (dialog2.pinned ? 1 : 0) - (dialog1.pinned ? 1 : 0);
       }
       // If both are (not) pinned, with most recent message first
-      return dialog2.top_message - dialog1.top_message;
+      const message1 = messageCache.get(dialog1.top_message);
+      const message2 = messageCache.get(dialog2.top_message);
+      return (message2 ? message2.date : 0) - (message1 ? message1.date : 0);
     }),
   },
 });
