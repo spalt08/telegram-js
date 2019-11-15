@@ -1,3 +1,5 @@
+import { BigInteger } from 'big-integer';
+
 /**
  * Transform a type with required fields to type with `min` property with the corresponding meaning
  * Ref: https://core.telegram.org/api/min
@@ -127,6 +129,7 @@ export type MessageMedia = {
   _: 'messageMediaEmpty',
 } | {
   _: 'messageMediaPhoto',
+  photo: Photo,
 } | {
   _: 'messageMediaGeo',
 } | {
@@ -142,16 +145,71 @@ export type MessageMedia = {
 };
 
 /**
+ * Photo object
+ * Ref: https://core.telegram.org/type/Photo
+ */
+export type Photo = {
+  _: 'photo',
+  has_stickers: boolean,
+  access_hash: BigInteger,
+  file_reference: string,
+  dc_id: number,
+  sizes: PhotoSize[],
+} | {
+  _: 'photoEmpty',
+};
+
+/**
+ * PhotoSize object
+ * Ref: https://core.telegram.org/type/PhotoSize
+ */
+export type PhotoSize = {
+  _: 'photoSizeEmpty',
+} | {
+  _: 'photoSize',
+  type: string,
+  location: FileLocation,
+  w: number,
+  h: number,
+  size: number,
+} | {
+  _: 'photoStrippedSize',
+  type: string,
+  bytes: string,
+};
+
+/**
  * Message object
- * Ref: https://core.telegram.org/constructor/message
+ * Ref: https://core.telegram.org/type/Message
  */
 export type Message = {
+  _: 'message',
   id: number,
   from_id: number,
   message: string,
   date: number,
   to_id: Peer,
   media: MessageMedia,
+} | {
+  _: 'messageEmpty',
+  id: number,
+} | MessageService;
+
+export type MessageService = {
+  _: 'messageService',
+  action: MessageAction,
+  id: number,
+  from_id: number,
+};
+
+/**
+ * Message action
+ * Ref: https://core.telegram.org/type/MessageAction
+ */
+export type MessageAction = {
+  _: 'messageActionChatCreate',
+  title: string,
+  users: number[],
 };
 
 /**

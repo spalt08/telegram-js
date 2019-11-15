@@ -17,7 +17,7 @@ export default function messages() {
       console.log('loaded', service.history.length);
 
       for (let i = 0; i < service.history.length; i += 1) {
-        mount(content, message(service.history[i]));
+        mount(content, message(service.history[i], service.activePeer.value || undefined));
       }
     }
   });

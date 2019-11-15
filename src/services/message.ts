@@ -3,7 +3,7 @@ import { TLConstructor, ClientError, TLAbstract } from 'mtproto-js';
 import client from 'client/client';
 import { inputPeer } from 'helpers/api';
 import { Peer } from 'cache/types';
-import { messageCache } from 'cache/repos';
+import { messageCache, userCache } from 'cache/repos';
 
 /**
  * Singleton service class for handling messages stuff
@@ -34,6 +34,8 @@ export default class MessagesService {
     client.call('messages.getHistory', payload, (_err: ClientError, res: TLAbstract) => {
       if (res instanceof TLConstructor) {
         const data = res.json();
+
+        for (let i = 0; i < data.users.length; i += 1) userCache.add(data.users[i].id, data.users[i]);
 
         for (let i = data.messages.length - 1; i >= 0; i -= 1) {
           messageCache.add(data.messages[i].id, data.messages[i]);
