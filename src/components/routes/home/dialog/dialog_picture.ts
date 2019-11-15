@@ -75,12 +75,12 @@ export default function dialogPicture(peer: Peer) {
   const fileLocation = resolve(peer);
   const container = div`.dialog__picture`(div`.dialog__picempty`());
 
-  if (fileLocation) {
-    fetch(fileLocation, (url) => {
-      unmountChildren(container);
-      mount(container, img({ src: url }));
-    });
-  }
+  // if (fileLocation) {
+  //   fetch(fileLocation, (url) => {
+  //     unmountChildren(container);
+  //     mount(container, img({ src: url }));
+  //   });
+  // }
 
   return container;
 }

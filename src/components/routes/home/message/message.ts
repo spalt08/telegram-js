@@ -5,6 +5,7 @@ import { useOnMount } from 'core/hooks';
 import { Peer } from 'cache/types';
 import { messageCache, userCache } from 'cache';
 import { datetime } from 'components/ui';
+import { peerMessageToId } from 'helpers/api';
 import { auth } from 'services';
 import corner from './message-corner.svg?raw';
 import cornerShadow from './message-corner-shadow.svg?raw';
@@ -15,8 +16,8 @@ import './message.scss';
 const cornerSvg = svgCodeToComponent(corner);
 const cornerShadowSvg = svgCodeToComponent(cornerShadow);
 
-export default function message(id: number, chatPeer?: Peer) {
-  const msg = messageCache.get(id);
+export default function message(id: number, peer: Peer) {
+  const msg = messageCache.get(peerMessageToId(peer, id));
 
   if (!msg || msg._ === 'messageEmpty') return div();
 
@@ -29,7 +30,7 @@ export default function message(id: number, chatPeer?: Peer) {
   let withpic = '';
   let media: Node = text('');
 
-  if (!out && chatPeer && chatPeer._ !== 'peerUser') {
+  if (!out && peer && peer._ !== 'peerUser') {
     const user = userCache.get(msg.from_id);
 
     picture = div`.message__picture`(
@@ -45,9 +46,7 @@ export default function message(id: number, chatPeer?: Peer) {
     media = messageMedia(msg.media) || media;
   }
 
-  const attrs = chatPeer && msg.from_id ? { 'data-uid': msg.from_id } : {};
-
-  console.log(msg.message, msg.message.length);
+  const attrs = peer && msg.from_id ? { 'data-uid': msg.from_id } : {};
 
   const element = (
     div`.message last${out}${withpic}`(attrs,

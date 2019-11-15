@@ -1,0 +1,12 @@
+.avatar {
+  min-width: 30px;
+  min-height: 30px;
+  border-radius: 50%;
+  overflow: hidden;
+
+  &__empty {
+    background: #4797E2;
+    width: 30px;
+    height: 30px;
+  }
+}

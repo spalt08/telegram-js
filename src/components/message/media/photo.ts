@@ -1,14 +1,11 @@
-import { hex } from 'mtproto-js';
 import { Photo } from 'cache/types';
-import { text, div, img } from 'core/html';
+import { div, img } from 'core/html';
 import { materialSpinner } from 'components/icons';
 import { mount } from 'core/dom';
 import { strippedToBlob } from 'helpers/photo';
 import { blobToUrl } from 'helpers/files';
 
-export default function messageMediaPhoto(photo: Photo) {
-  (photo);
-
+export default function mediaPhoto(photo: Photo) {
   if (photo._ === 'photo') {
     const container = div`.media`(
       materialSpinner({ className: 'media__loader' }),
@@ -29,5 +26,6 @@ export default function messageMediaPhoto(photo: Photo) {
 
     return container;
   }
-  return text('');
+
+  return null;
 }

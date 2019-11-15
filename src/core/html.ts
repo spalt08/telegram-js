@@ -33,3 +33,5 @@ export function text(value: MaybeObservable<{ toString(): string; }>) {
   });
   return node;
 }
+
+export const nothing = text('');

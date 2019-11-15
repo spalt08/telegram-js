@@ -1,10 +1,12 @@
 import { div, text } from 'core/html';
 import { messageCache } from 'cache';
+import { peerMessageToId } from 'helpers/api';
+import { Dialog } from 'cache/types';
 
-export default function dialogMessage(id: number) {
-  const msg = messageCache.get(id);
+export default function dialogMessage(dialog: Dialog) {
+  const msg = messageCache.get(peerMessageToId(dialog.peer, dialog.top_message));
 
-  if (!msg) return div`.dialog__message`();
+  if (!msg || msg._ === 'messageEmpty') return div`.dialog__message`();
 
   let content = msg.message || '';
 

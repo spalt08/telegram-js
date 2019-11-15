@@ -34,6 +34,7 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
   let first = -1;
   let inited = false;
   let flipping = false;
+  let bottomFreeSpace = false;
 
   const mountChild = (data: any, before?: any): Element => {
     const id = key(data);
@@ -71,6 +72,8 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
 
       if (first === -1) first = 0;
     }
+
+    if (last === current.length - 1) bottomFreeSpace = true;
 
     inited = true;
   };
@@ -152,14 +155,13 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
 
     // No need to rerender
     if (nextVisibleFirst > -1 && next.slice(nextVisibleFirst, visible.length) === visible) {
-      console.log('nothing changed');
       current = next;
       return;
     }
 
     flipping = true;
 
-    const nextVisibleLast = next.length > last ? last : next.length - 1;
+    let nextVisibleLast = next.length > last ? last : next.length - 1;
     nextVisibleFirst = Math.max(0, nextVisibleLast - visible.length + 1);
     const nextVisible = [];
 
@@ -173,7 +175,7 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
 
     let nextEl = container.firstChild;
 
-    for (let i = nextVisibleFirst; i <= nextVisibleLast; i += 1) {
+    for (let i = nextVisibleFirst; i < next.length && (i <= nextVisibleLast || bottomFreeSpace); i += 1) {
       const ekey = key(next[i]);
 
       // add
@@ -184,6 +186,11 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
 
         listenOnce(element, 'animationend', () => element.classList.remove('list__appeared'));
 
+        if (bottomFreeSpace) {
+          const elRect = element.getBoundingClientRect();
+          nextVisibleLast += 1;
+          if (viewport.height + threshold < elRect.top - viewport.top + elRect.height) bottomFreeSpace = false;
+        }
       // swap
       } else if (elements[ekey] !== nextEl) {
         unMountChild(next[i]);

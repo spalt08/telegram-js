@@ -1,4 +1,4 @@
-import { dialogToId } from 'helpers/api';
+import { dialogToId, messageToId, peerMessageToId } from 'helpers/api';
 import Collection, { makeGetIdFromProp } from './fastStorages/collection';
 import { Chat, Dialog, Message, User } from './types';
 import { orderBy } from './fastStorages/indices';
@@ -25,8 +25,8 @@ export const chatCache = new Collection<Chat, {}, number>({
  * Message repo
  * Ref: https://core.telegram.org/constructor/message
  */
-export const messageCache = new Collection<Message, {}, number>({
-  getId: makeGetIdFromProp('id'),
+export const messageCache = new Collection<Message, {}, string>({
+  getId: messageToId,
 });
 
 /**
@@ -34,6 +34,7 @@ export const messageCache = new Collection<Message, {}, number>({
  * Ref: https://core.telegram.org/type/dialog
  */
 export const dialogCache = new Collection({
+  considerMin: false,
   getId: dialogToId,
   indices: {
     order: orderBy((dialog1: Dialog, dialog2: Dialog) => {
@@ -42,9 +43,13 @@ export const dialogCache = new Collection({
         return (dialog2.pinned ? 1 : 0) - (dialog1.pinned ? 1 : 0);
       }
       // If both are (not) pinned, with most recent message first
-      const message1 = messageCache.get(dialog1.top_message);
-      const message2 = messageCache.get(dialog2.top_message);
-      return (message2 ? message2.date : 0) - (message1 ? message1.date : 0);
+      const message1 = messageCache.get(peerMessageToId(dialog1.peer, dialog1.top_message));
+      const message2 = messageCache.get(peerMessageToId(dialog2.peer, dialog2.top_message));
+      return (message2 && message2._ !== 'messageEmpty' ? message2.date : 0) - (message1 && message1._ !== 'messageEmpty' ? message1.date : 0);
     }),
   },
 });
+
+
+// todo remove debug
+(window as any).mcache = messageCache;

@@ -5,3 +5,6 @@ import MessageService from './message';
 export const auth = new AuthService();
 export const dialog = new DialogService();
 export const message = new MessageService();
+
+// todo remove debug
+(window as any).dialog = dialog;

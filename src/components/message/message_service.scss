@@ -1,0 +1,17 @@
+.msgservice {
+  display: inline-block;
+  margin: 0 auto;
+  width: auto;
+  max-width: 70%;
+  color: #FFFFFF;
+  background: #B3B8BB; // rgba(0, 0, 0, 0.08);
+  height: 26px;
+  border-radius: 13px;
+  line-height: 20px;
+  padding: 3px 10px;
+  margin-bottom: 10px;
+
+  strong {
+    font-weight: 500;
+  }
+}

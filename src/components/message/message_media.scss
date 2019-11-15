@@ -1,0 +1,29 @@
+.media {
+  position: relative;
+
+  &__loader {
+    position: absolute;
+    left: auto;
+    right: auto;
+    top: auto;
+    height: auto;
+    width: 30px;
+    height: 30px;
+    margin: 0 auto;
+  }
+
+  &__thumbnail {
+    background: #FFFFFF;
+    overflow: hidden;
+
+    &.i {
+      width: 100%;
+      min-width: 300px;
+    }
+
+    img {
+      width: 100%;
+      filter: blur(8px);
+    }
+  }
+}

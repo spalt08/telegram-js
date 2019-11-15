@@ -70,6 +70,13 @@ export function getInterface<TBase extends WithInterfaceHook<any>>(base: TBase)
 }
 
 /**
+ * Checks attached interface
+ */
+export function hasInterface(base: Element): boolean {
+  return (base as any).__hooks && (base as any).__hooks.interface;
+}
+
+/**
  * Attaches a mount event listener to an element.
  * It should be triggered manually.
  *
@@ -136,7 +143,6 @@ export function useOnUnmount(base: unknown, onUnmount: () => void): () => void {
  */
 export function triggerMount(base: unknown) {
   if (isWithHooks(base) && base.__hooks.lifecycle && base.__hooks.lifecycle.mount && !base.__hooks.lifecycle.isMountTriggered) {
-    console.log('[hook] Mount', base); // todo: For test, remove later
     base.__hooks.lifecycle.isMountTriggered = true;
     [...base.__hooks.lifecycle.mount].forEach((onMount) => onMount());
   }
@@ -147,7 +153,6 @@ export function triggerMount(base: unknown) {
  */
 export function triggerUnmount(base: unknown) {
   if (isWithHooks(base) && base.__hooks.lifecycle && base.__hooks.lifecycle.unmount && base.__hooks.lifecycle.isMountTriggered) {
-    console.log('[hook] Unmount', base); // todo: For test, remove later
     base.__hooks.lifecycle.isMountTriggered = false;
     [...base.__hooks.lifecycle.unmount].forEach((onUnmount) => onUnmount());
   }

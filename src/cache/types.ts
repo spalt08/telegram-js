@@ -1,5 +1,3 @@
-import { BigInteger } from 'big-integer';
-
 /**
  * Transform a type with required fields to type with `min` property with the corresponding meaning
  * Ref: https://core.telegram.org/api/min
@@ -151,7 +149,7 @@ export type MessageMedia = {
 export type Photo = {
   _: 'photo',
   has_stickers: boolean,
-  access_hash: BigInteger,
+  access_hash: any,
   file_reference: string,
   dc_id: number,
   sizes: PhotoSize[],
@@ -182,25 +180,44 @@ export type PhotoSize = {
  * Message object
  * Ref: https://core.telegram.org/type/Message
  */
-export type Message = {
+export type Message = MessageCommon | MessageService | {
+  _: 'messageEmpty',
+  id: number,
+};
+
+export type MessageCommon = {
   _: 'message',
+  out: boolean,
   id: number,
   from_id: number,
   message: string,
   date: number,
   to_id: Peer,
   media: MessageMedia,
-} | {
-  _: 'messageEmpty',
-  id: number,
-} | MessageService;
+};
 
 export type MessageService = {
   _: 'messageService',
   action: MessageAction,
+  out: boolean,
   id: number,
   from_id: number,
   date: number,
+  to_id: Peer,
+};
+
+/**
+ * Short messages
+ * Refs:
+ * - https://core.telegram.org/constructor/updateShortMessage
+ */
+export type AnyShortMessage = {
+  _: 'updateShortMessage', // -> MessageCommon { peerUser }
+  user_id: number,
+  message: string
+  date: number,
+  id: number,
+  out: boolean,
 };
 
 /**
@@ -211,6 +228,41 @@ export type MessageAction = {
   _: 'messageActionChatCreate',
   title: string,
   users: number[],
+} | {
+  _: 'messageActionChatEditTitle',
+  title: string,
+} | {
+  _: 'messageActionChatEditPhoto',
+  photo: Photo,
+} | {
+  _: 'messageActionChatDeletePhoto',
+} | {
+  _: 'messageActionChatAddUser',
+  users: number[],
+} | {
+  _: 'messageActionChatDeleteUser',
+  user_id: number,
+} | {
+  _: 'messageActionChatJoinedByLink',
+  inviter_id: number,
+} | {
+  _: 'messageActionChannelCreate',
+  title: string,
+} | {
+  _: 'messageActionChatMigrateTo',
+} | {
+  _: 'messageActionChannelMigrateFrom',
+  title: string,
+  chat_id: number,
+} | {
+  _: 'messageActionPinMessage',
+} | {
+  _: 'messageActionPhoneCall',
+} | {
+  _: 'messageActionCustomAction',
+  message: string,
+} | {
+  _: 'messageActionScreenshotTaken',
 };
 
 /**

@@ -6,6 +6,7 @@ import { dialogCache, messageCache } from 'cache';
 import { datetime, ripple } from 'components/ui';
 import { message } from 'services';
 import { pinnedchat } from 'components/icons';
+import { peerMessageToId } from 'helpers/api';
 import peerTitle from './peer_title';
 import dialogMessage from './dialog_message';
 import dialogPicture from './dialog_picture';
@@ -16,7 +17,9 @@ export default function dialogPreview(id: string) {
 
   const dialog = dialogCache.useItemBehaviorSubject(container, id);
 
-  const { unread_count, peer } = dialog.value!;
+  const { unread_count, peer, pinned } = dialog.value!;
+
+  if (pinned) container.classList.add('pinned');
 
   const preview = div`.dialog__preview`();
   const date = div`.dialog__date`();
@@ -37,8 +40,6 @@ export default function dialogPreview(id: string) {
   useObservable(clickable, dialog, (next: Dialog) => {
     let badge: HTMLElement | undefined;
 
-    console.log('dialog', next);
-
     if (next.unread_count > 0) badge = div`.dialog__badge`(text(next.unread_count));
     if (next.unread_mark === true && unread_count === 0) badge = div`.dialog__badge`();
     if (next.unread_mentions_count > 0) badge = div`.dialog__badge`(text('@'));
@@ -46,10 +47,10 @@ export default function dialogPreview(id: string) {
     if (!badge && next.pinned === true) badge = div`.dialog__pin`(pinnedchat({ className: 'icon' }));
 
     unmountChildren(preview);
-    mount(preview, dialogMessage(next.top_message));
+    mount(preview, dialogMessage(next));
     if (badge) mount(preview, badge);
 
-    const msg = messageCache.get(next.top_message);
+    const msg = messageCache.get(peerMessageToId(next.peer, next.top_message));
 
     unmountChildren(date);
 
