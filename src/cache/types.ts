@@ -2,7 +2,7 @@
  * Transform a type with required fields to type with `min` property with the corresponding meaning
  * Ref: https://core.telegram.org/api/min
  */
-type WithMin<T> = { id: number } & ({ min: false } & T | { min: true } & Partial<T>);
+export type WithMin<T> = { id: number } & ({ min: false } & T | { min: true } & Partial<T>);
 
 /**
  * Peer Reference

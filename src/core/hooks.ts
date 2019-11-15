@@ -75,20 +75,29 @@ export function getInterface<TBase extends WithInterfaceHook<any>>(base: TBase)
  *
  * @example
  * let intervalId = 0;
- * useOnMount(element, () => {
+ * const unsubscribe = useOnMount(element, () => {
  *   intervalId = setInterval(() => console.log('tick'), 1000);
  * });
  *
  * // In the real app this function is called by the `mount` and `unmount` functions
  * triggerMount(element);
  */
-export function useOnMount<TBase>(base: TBase, onMount: () => void) {
+export function useOnMount(base: unknown, onMount: () => void): () => void {
   const enhanced = ensureWithHooks(base);
   const lifecycle = enhanced.__hooks.lifecycle || {};
   enhanced.__hooks.lifecycle = lifecycle;
   lifecycle.mount = lifecycle.mount || [];
   lifecycle.mount.push(onMount);
-  return enhanced as TBase & WithLifecycleHook;
+
+  return () => {
+    const mounts = enhanced.__hooks.lifecycle && enhanced.__hooks.lifecycle.unmount;
+    if (mounts) {
+      const listenerIndex = mounts.indexOf(onMount);
+      if (listenerIndex > -1) {
+        mounts.splice(listenerIndex, 1);
+      }
+    }
+  };
 }
 
 /**
@@ -97,46 +106,29 @@ export function useOnMount<TBase>(base: TBase, onMount: () => void) {
  *
  * @example
  * // ...
- * useOnMount(element, () => {
+ * const unsubscribe = useOnMount(element, () => {
  *   clearInterval(intervalId);
  * });
  *
  * // In the real app this function is called by the `unmount` functions
  * triggerUnmount(element);
  */
-export function useOnUnmount<TBase>(base: TBase, onUnmount: () => void) {
+export function useOnUnmount(base: unknown, onUnmount: () => void): () => void {
   const enhanced = ensureWithHooks(base);
   const lifecycle = enhanced.__hooks.lifecycle || {};
   enhanced.__hooks.lifecycle = lifecycle;
   lifecycle.unmount = lifecycle.unmount || [];
   lifecycle.unmount.push(onUnmount);
-  return enhanced as TBase & WithLifecycleHook;
-}
 
-/**
- * Removes the listener added by useOnMount
- */
-export function unuseOnMount(base: unknown, onMount: () => void) {
-  const mounts = isWithHooks(base) && base.__hooks.lifecycle && base.__hooks.lifecycle.unmount;
-  if (mounts) {
-    const listenerIndex = mounts.indexOf(onMount);
-    if (listenerIndex > -1) {
-      mounts.splice(listenerIndex, 1);
+  return () => {
+    const unmounts = enhanced.__hooks.lifecycle && enhanced.__hooks.lifecycle.unmount;
+    if (unmounts) {
+      const listenerIndex = unmounts.indexOf(onUnmount);
+      if (listenerIndex > -1) {
+        unmounts.splice(listenerIndex, 1);
+      }
     }
-  }
-}
-
-/**
- * Removes the listener added by useOnUnmount
- */
-export function unuseOnOnmount(base: unknown, onUnmount: () => void) {
-  const unmounts = isWithHooks(base) && base.__hooks.lifecycle && base.__hooks.lifecycle.unmount;
-  if (unmounts) {
-    const listenerIndex = unmounts.indexOf(onUnmount);
-    if (listenerIndex > -1) {
-      unmounts.splice(listenerIndex, 1);
-    }
-  }
+  };
 }
 
 /**
@@ -175,44 +167,54 @@ export function isMountTriggered(base: unknown): boolean | undefined {
 /**
  * Calls the function when the element is mounted and the other function when unmounted.
  * In contrast to useOnMount, also calls the function during hooking if the element is mounted.
+ * Call `unsubscribe` to trigger the unmount handler immediately (if the element is mounted) and stop watching for mounting.
  *
  * @example
- * useWhileMounted(element, () => {
+ * const stop = useWhileMounted(element, () => {
  *   const intervalId = setInterval(() => console.log('tick'), 1000);
  *   return () => clearInterval(intervalId); // Return an unmount listener
  * });
  */
-export function useWhileMounted<TBase>(base: TBase, onMount: () => () => void) {
-  const handleMount = () => {
-    const onUnmount = onMount();
-    const handleUnmount = () => {
-      unuseOnOnmount(base, handleUnmount);
+export function useWhileMounted(base: unknown, onMount: () => () => void): () => void {
+  let onUnmount: (() => void) | undefined;
+
+  function handleMount() {
+    onUnmount = onMount();
+  }
+
+  function handleUnmount() {
+    if (onUnmount) {
       onUnmount();
-    };
-    useOnUnmount(base, handleUnmount);
-  };
+      onUnmount = undefined;
+    }
+  }
+
+  const stopWatchMount = useOnMount(base, handleMount);
+  const stopWatchUnmount = useOnUnmount(base, handleUnmount);
 
   if (isMountTriggered(base)) {
     handleMount();
   }
 
-  return useOnMount(base, handleMount);
+  return () => {
+    stopWatchMount();
+    stopWatchUnmount();
+    handleUnmount();
+  };
 }
 
 /**
  * Attaches an event listener during the element is mounted.
  * Use it to attach event listener to an object outside the element.
  *
- * Call it before the element is mounted.
- *
  * @example
- * useListenWhileMounted(element, window, 'resize', () => {
+ * const stop = useListenWhileMounted(element, window, 'resize', () => {
  *   console.log('Window resized');
  * });
  */
-export function useListenWhileMounted<T, K extends keyof HTMLElementEventMap>(base: T, target: HTMLElement, event: K, cb: (event: HTMLElementEventMap[K]) => void): T & WithLifecycleHook; // eslint-disable-line max-len
-export function useListenWhileMounted<T, K extends keyof SVGElementEventMap>(base: T, target: SVGElement, event: K, cb: (event: SVGElementEventMap[K]) => void): T & WithLifecycleHook; // eslint-disable-line max-len
-export function useListenWhileMounted<T>(base: T, target: EventTarget, event: string, cb: (event: Event) => void): T & WithLifecycleHook;
+export function useListenWhileMounted<K extends keyof HTMLElementEventMap>(base: unknown, target: HTMLElement, event: K, cb: (event: HTMLElementEventMap[K]) => void): () => void; // eslint-disable-line max-len
+export function useListenWhileMounted<K extends keyof SVGElementEventMap>(base: unknown, target: SVGElement, event: K, cb: (event: SVGElementEventMap[K]) => void): () => void; // eslint-disable-line max-len
+export function useListenWhileMounted(base: unknown, target: EventTarget, event: string, cb: (event: Event) => void): () => void;
 export function useListenWhileMounted(base: unknown, target: EventTarget, event: string, cb: (event: Event) => void) {
   return useWhileMounted(base, () => {
     listen(target, event, cb);
@@ -221,10 +223,11 @@ export function useListenWhileMounted(base: unknown, target: EventTarget, event:
 }
 
 /**
- * Listens to the Observable data change during the element is mounted
+ * Listens to the Observable data change during the element is mounted.
+ * Call `stop` to unsubscribe from the observable immediately and stop watching the mount events.
  *
  * @example
- * useSubscribable(element, observable, (event) => {
+ * const stop = useObservable(element, observable, (event) => {
  *   element.foo = event;
  * });
  */
@@ -238,12 +241,13 @@ export function useObservable<T>(base: unknown, observable: Observable<T>, onCha
 /**
  * Listens to the MaybeObservable value change during the element is mounted
  */
-export function useMaybeObservable<T>(base: unknown, value: MaybeObservable<T>, onChange: (newValue: T) => void) {
+export function useMaybeObservable<T>(base: unknown, value: MaybeObservable<T>, onChange: (newValue: T) => void): () => void {
   if (value instanceof Observable) {
     return useObservable(base, value, onChange);
   }
 
-  return onChange(value);
+  onChange(value);
+  return () => {};
 }
 
 /**
@@ -259,22 +263,23 @@ export function useOutsideEvent<P extends keyof HTMLElementEventMap>(base: HTMLE
 
 /**
  * Converts a MaybeObservable value to BehaviorSubject (that stores the most recent emitted value).
- * The value is updated when the element is mounted.
+ * The value is updated while the element is mounted.
  *
  * @link https://stackoverflow.com/a/58834889/1118709 Explanation
  */
-export function useMaybeObservableToBehaviorSubject<T>(base: unknown, observable: MaybeObservable<T>, initial: T): BehaviorSubject<T> {
+export function useToBehaviorSubject<T>(base: unknown, observable: MaybeObservable<T>, initial: T): [BehaviorSubject<T>, () => void] {
   if (observable instanceof BehaviorSubject) {
-    return observable;
+    return [observable, () => {}];
   }
 
   if (observable instanceof Observable) {
     const subject = new BehaviorSubject(initial);
-    useWhileMounted(base, () => {
+    const stop = useWhileMounted(base, () => {
       const subscription = observable.subscribe(subject);
       return () => subscription.unsubscribe();
     });
+    return [subject, stop];
   }
 
-  return new BehaviorSubject(initial);
+  return [new BehaviorSubject(initial), () => {}];
 }

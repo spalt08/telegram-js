@@ -8,7 +8,8 @@
     "build:noprogress": "webpack --mode=production",
     "start": "webpack-dev-server --progress",
     "analyze:prod": "npm run build -- --analyze",
-    "analyze:dev": "npm start -- --analyze"
+    "analyze:dev": "npm start -- --analyze",
+    "link:mtproto": "rm -rf node_modules/mtproto-js && ln -s ../packages/mtproto-js node_modules/mtproto-js"
   },
   "private": true,
   "repository": {
@@ -26,6 +27,7 @@
   ],
   "homepage": "https://github.com/spalt08/telegram-js",
   "dependencies": {
+    "binary-search": "^1.3.6",
     "lottie-web": "^5.5.9",
     "mtproto-js": "file:./packages/mtproto-js",
     "pako": "^1.0.10",

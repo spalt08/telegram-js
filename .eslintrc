@@ -5,6 +5,7 @@
   },
   "extends": [
     "airbnb-typescript",
+    "plugin:@typescript-eslint/eslint-recommended",
     "plugin:compat/recommended"
   ],
   "globals": {
@@ -36,6 +37,9 @@
   "settings": {
     "import/resolver": {
       "webpack": {}
-    }
+    },
+    "polyfills": [
+      "Object.values"
+    ]
   }
 }
