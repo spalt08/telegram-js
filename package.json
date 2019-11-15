@@ -8,7 +8,8 @@
     "build:noprogress": "webpack --mode=production",
     "start": "webpack-dev-server --progress",
     "analyze:prod": "npm run build -- --analyze",
-    "analyze:dev": "npm start -- --analyze"
+    "analyze:dev": "npm start -- --analyze",
+    "link:mtproto": "rm -rf node_modules/mtproto-js && ln -s ../packages/mtproto-js node_modules/mtproto-js"
   },
   "private": true,
   "repository": {

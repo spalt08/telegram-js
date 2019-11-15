@@ -2,37 +2,28 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import Dictionary, { ItemWatcher } from './dictionary';
 
-export type GetId<TItem, TId> = (item: Readonly<TItem>) => Readonly<TId>;
+export type GetId<TItem, TId extends keyof any> = (item: Readonly<TItem>) => TId;
 
-export type SerializeId<TId> = (id: Readonly<TId>) => keyof any;
-
-type IndicesConstructors<TItem, TId, TIndices extends Record<keyof any, any>> = {
-  [K in keyof TIndices]: (collection: Collection<TItem, TId, TIndices>) => TIndices[K];
+type IndicesConstructors<TItem, TIndices extends Record<keyof any, any>, TId extends keyof any> = {
+  [K in keyof TIndices]: (collection: Collection<TItem, TIndices, TId>) => TIndices[K];
 };
 
-interface Options<TItem, TId, TIndices extends Record<keyof any, any>> {
+interface Options<TItem, TIndices extends Record<keyof any, any>, TId extends keyof any> {
   getId: GetId<TItem, TId>;
-  serializeId: SerializeId<TId>;
   considerMin?: boolean;
-  indices?: IndicesConstructors<TItem, TId, TIndices>;
+  indices?: IndicesConstructors<TItem, TIndices, TId>;
   data?: Readonly<TItem>[];
 }
 
-export function makeGetIdFromProp<
+export function makeGetKeyFromProp<
   TIdProp extends keyof any,
   TItem extends Record<TIdProp, keyof any>
 >(prop: TIdProp): GetId<TItem, TItem[TIdProp]> {
   return (item) => item[prop];
 }
 
-export function idAsIs<T extends keyof any>(id: T): T {
-  return id;
-}
-
-export default class Collection<TItem, TId, TIndices extends Record<keyof any, any>> {
+export default class Collection<TItem, TIndices extends Record<keyof any, any>, TId extends keyof any = keyof any> {
   public getId: GetId<TItem, TId>;
-
-  protected serializeId: SerializeId<TId>;
 
   public readonly changes: Observable<['add' | 'update' | 'remove', Readonly<TItem>]>;
 
@@ -42,14 +33,12 @@ export default class Collection<TItem, TId, TIndices extends Record<keyof any, a
 
   constructor({
     getId,
-    serializeId,
     considerMin,
-    indices = {} as IndicesConstructors<TItem, TId, TIndices>,
+    indices = {} as IndicesConstructors<TItem, TIndices, TId>,
     data = [],
-  }: Options<TItem, TId, TIndices>) {
+  }: Options<TItem, TIndices, TId>) {
     this.storage = new Dictionary(considerMin);
     this.getId = getId;
-    this.serializeId = serializeId;
     this.put(data);
     this.changes = this.storage.changeSubject.pipe(map(([action, _key, item]) => [action, item]));
 
@@ -60,11 +49,11 @@ export default class Collection<TItem, TId, TIndices extends Record<keyof any, a
   }
 
   public has(id: TId) {
-    return this.storage.has(this.serializeId(id));
+    return this.storage.has(id);
   }
 
   public get(id: TId) {
-    return this.storage.get(this.serializeId(id));
+    return this.storage.get(id);
   }
 
   public getAll(): Readonly<TItem>[] {
@@ -77,35 +66,35 @@ export default class Collection<TItem, TId, TIndices extends Record<keyof any, a
 
   public put(items: Readonly<TItem> | Readonly<TItem>[]) {
     if (Array.isArray(items)) {
-      items.forEach((item) => this.storage.put(this.serializeId(this.getId(item)), item));
+      items.forEach((item) => this.storage.put(this.getId(item), item));
     } else {
-      this.storage.put(this.serializeId(this.getId(items)), items);
+      this.storage.put(this.getId(items), items);
     }
   }
 
   public remove(id: TId) {
-    this.storage.remove(this.serializeId(id));
+    this.storage.remove(id);
   }
 
   public replaceAll(items: Readonly<TItem>[]) {
     const itemsObject = {} as Record<keyof any, Readonly<TItem>>;
 
     items.forEach((item) => {
-      itemsObject[this.serializeId(this.getId(item)) as any] = item;
+      itemsObject[this.getId(item)] = item;
     });
 
     this.storage.replaceAll(itemsObject);
   }
 
   public watchItem(id: TId, onChange: ItemWatcher<TItem>) {
-    return this.storage.watchItem(this.serializeId(id), onChange);
+    return this.storage.watchItem(id, onChange);
   }
 
   public useWatchItem(base: unknown, id: TId, notifyOnStartWatching: boolean, onChange: ItemWatcher<TItem>) {
-    return this.storage.useWatchItem(base, this.serializeId(id), notifyOnStartWatching, onChange);
+    return this.storage.useWatchItem(base, id, notifyOnStartWatching, onChange);
   }
 
   public useItemBehaviorSubject(base: unknown, id: TId) {
-    return this.storage.useItemBehaviorSubject(base, this.serializeId(id));
+    return this.storage.useItemBehaviorSubject(base, id);
   }
 }
