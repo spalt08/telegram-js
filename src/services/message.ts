@@ -2,7 +2,7 @@ import { BehaviorSubject } from 'rxjs';
 import { TLConstructor, ClientError, TLAbstract } from 'mtproto-js';
 import client from 'client/client';
 import { Peer } from 'cache/types';
-import { messageCache } from 'cache';
+import { messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 
 /**
@@ -35,6 +35,8 @@ export default class MessagesService {
       if (res instanceof TLConstructor) {
         const data = res.json();
         messageCache.put(data.messages);
+
+        for (let i = 0; i < data.users.length; i += 1) userCache.put(data.users);
 
         for (let i = data.messages.length - 1; i >= 0; i -= 1) {
           this.history.push(data.messages[i].id);

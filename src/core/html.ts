@@ -21,6 +21,7 @@ export const h1 = ElementFactory('h1');
 export const p = ElementFactory('p');
 export const input = ElementFactory('input');
 export const label = ElementFactory('label');
+export const strong = ElementFactory('strong');
 
 /**
  * Wrapper for any text children
@@ -32,3 +33,5 @@ export function text(value: MaybeObservable<{ toString(): string; }>) {
   });
   return node;
 }
+
+export const nothing = text('');

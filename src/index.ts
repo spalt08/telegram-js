@@ -6,7 +6,7 @@ import { Router, history } from './router';
 import 'styles/global.scss';
 
 // todo: check user login and redirect him
-if (auth.state.value !== 'authorized') {
+if (auth.state.value !== 'authorized' && history.state() !== 'sandbox') {
   history.push('/login');
 } else if (history.state() === '/login') {
   history.push('/');
@@ -15,7 +15,7 @@ if (auth.state.value !== 'authorized') {
 const router = new Router({
   '/': routes.home,
   '/login': routes.login,
-  '/sandbox': routes.sandbox,
+  // '/sandbox': routes.sandbox,
   default: routes.login,
 });
 

@@ -7,3 +7,4 @@ export { default as tgs } from './tgs/tgs';
 export { default as passwordInput } from './password_input/password_input';
 export { default as datetime } from './datetime/datetime';
 export { default as ripple } from './ripple/ripple';
+export { default as list } from './list/list';

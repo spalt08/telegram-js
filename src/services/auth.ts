@@ -167,7 +167,10 @@ export default class AuthService {
 
         // Display error message
         if (err) {
+          this.passwordAlgo = undefined;
+          this.getPasswordAlgo();
           this.errPassword.next(err.message);
+          cb();
           return;
         }
 

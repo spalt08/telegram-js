@@ -1,0 +1,42 @@
+.list {
+  overflow: hidden;
+
+  .list__container {
+    overflow: scroll;
+    position: relative;
+  }
+}
+
+.list {
+  &__appeared {
+    animation: listAppear .3s ease;
+    z-index: 1;
+  }
+
+  &__removed {
+    position: absolute;
+    animation: listRemove .3s ease;
+  }
+
+  &__flipping {
+    transition: transform .3s ease;
+    will-change: transform;
+    z-index: 1;
+  }
+}
+
+.test {
+  background: #FFF;
+}
+
+@keyframes listAppear {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes listRemove {
+  to {
+    opacity: 0;
+  }
+}

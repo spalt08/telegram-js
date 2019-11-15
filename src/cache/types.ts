@@ -59,6 +59,11 @@ export type Dialog = {
   unread_count: number,
   unread_mark: boolean,
   unread_mentions_count: number,
+  notify_settings: {
+    _: 'peerNotifySettings',
+    silent: boolean,
+    mute_until: number,
+  }
 };
 
 /**
@@ -93,7 +98,7 @@ export type Chat = {
   id: number,
   title: string,
   access_hash: string,
-  photo: Object,
+  photo: ChatPhoto,
 };
 
 /**
@@ -118,16 +123,146 @@ export type Channel = WithMin<{
   photo: ChatPhoto,
 }>;
 
+export type MessageMedia = {
+  _: 'messageMediaEmpty',
+} | {
+  _: 'messageMediaPhoto',
+  photo: Photo,
+} | {
+  _: 'messageMediaGeo',
+} | {
+  _: 'messageMediaContact',
+} | {
+  _: 'messageMediaDocument',
+} | {
+  _: 'messageMediaWebPage',
+} | {
+  _: 'messageMediaGeoLive',
+} | {
+  _: 'messageMediaPoll',
+};
+
+/**
+ * Photo object
+ * Ref: https://core.telegram.org/type/Photo
+ */
+export type Photo = {
+  _: 'photo',
+  has_stickers: boolean,
+  access_hash: any,
+  file_reference: string,
+  dc_id: number,
+  sizes: PhotoSize[],
+} | {
+  _: 'photoEmpty',
+};
+
+/**
+ * PhotoSize object
+ * Ref: https://core.telegram.org/type/PhotoSize
+ */
+export type PhotoSize = {
+  _: 'photoSizeEmpty',
+} | {
+  _: 'photoSize',
+  type: string,
+  location: FileLocation,
+  w: number,
+  h: number,
+  size: number,
+} | {
+  _: 'photoStrippedSize',
+  type: string,
+  bytes: string,
+};
+
 /**
  * Message object
- * Ref: https://core.telegram.org/constructor/message
+ * Ref: https://core.telegram.org/type/Message
  */
-export type Message = {
+export type Message = MessageCommon | MessageService | {
+  _: 'messageEmpty',
+  id: number,
+};
+
+export type MessageCommon = {
+  _: 'message',
+  out: boolean,
   id: number,
   from_id: number,
   message: string,
   date: number,
   to_id: Peer,
+  media: MessageMedia,
+};
+
+export type MessageService = {
+  _: 'messageService',
+  action: MessageAction,
+  out: boolean,
+  id: number,
+  from_id: number,
+  date: number,
+  to_id: Peer,
+};
+
+/**
+ * Short messages
+ * Refs:
+ * - https://core.telegram.org/constructor/updateShortMessage
+ */
+export type AnyShortMessage = {
+  _: 'updateShortMessage', // -> MessageCommon { peerUser }
+  user_id: number,
+  message: string
+  date: number,
+  id: number,
+  out: boolean,
+};
+
+/**
+ * Message action
+ * Ref: https://core.telegram.org/type/MessageAction
+ */
+export type MessageAction = {
+  _: 'messageActionChatCreate',
+  title: string,
+  users: number[],
+} | {
+  _: 'messageActionChatEditTitle',
+  title: string,
+} | {
+  _: 'messageActionChatEditPhoto',
+  photo: Photo,
+} | {
+  _: 'messageActionChatDeletePhoto',
+} | {
+  _: 'messageActionChatAddUser',
+  users: number[],
+} | {
+  _: 'messageActionChatDeleteUser',
+  user_id: number,
+} | {
+  _: 'messageActionChatJoinedByLink',
+  inviter_id: number,
+} | {
+  _: 'messageActionChannelCreate',
+  title: string,
+} | {
+  _: 'messageActionChatMigrateTo',
+} | {
+  _: 'messageActionChannelMigrateFrom',
+  title: string,
+  chat_id: number,
+} | {
+  _: 'messageActionPinMessage',
+} | {
+  _: 'messageActionPhoneCall',
+} | {
+  _: 'messageActionCustomAction',
+  message: string,
+} | {
+  _: 'messageActionScreenshotTaken',
 };
 
 /**

@@ -1,0 +1,24 @@
+.dialog__appeared {
+  animation: dialogAppear 1s ease;
+}
+
+.dialog__removed {
+  position: absolute;
+  animation: dialogRemove 1s ease;
+}
+
+.dialog__flipping {
+  transition: transform 1s ease;
+}
+
+@keyframes dialogAppear {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes dialogRemove {
+  to {
+    opacity: 0;
+  }
+}

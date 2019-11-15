@@ -1,0 +1,35 @@
+.menu {
+  height: 62px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+
+  &__burger {
+    padding: 6PX;
+    cursor: pointer;
+    margin-right: 16px;
+    display: flex;
+    justify-content: left;
+    align-items: center;
+
+    & .icon {
+      width: 24PX;
+
+      & path {
+        fill: #707579;
+      }
+    }
+  }
+
+  &__search {
+    flex: 1 50%;
+    height: 44px;
+    padding-left: 42px;
+    background-color: #F4F4F5;
+    color: #8D969C;
+    line-height: 44px;
+    border-radius: 22px;
+  }
+}

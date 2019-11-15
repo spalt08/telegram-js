@@ -52,11 +52,11 @@ function triggerUnmountRecursive(element: Node) {
 /**
  * Attach event listener to element
  */
-export function listen<K extends keyof HTMLElementEventMap>(element: HTMLElement, event: K, cb: (event: HTMLElementEventMap[K]) => void): void;
+export function listen<K extends keyof HTMLElementEventMap>(element: HTMLElement, event: K, cb: (event: HTMLElementEventMap[K]) => void, options?: any): void;
 export function listen<K extends keyof SVGElementEventMap>(element: SVGElement, event: K, cb: (event: SVGElementEventMap[K]) => void): void;
 export function listen(element: EventTarget, event: string, cb: (event: Event) => void): void;
-export function listen(element: EventTarget, event: string, cb: (event: Event) => void) {
-  element.addEventListener(event, cb);
+export function listen(element: EventTarget, event: string, cb: (event: Event) => void, options?: any) {
+  element.addEventListener(event, cb, options);
 }
 
 /**
