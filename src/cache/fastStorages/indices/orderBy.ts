@@ -61,12 +61,20 @@ export default function orderBy<TItem>(compare: CompareFunction<TItem>) {
     });
 
     return {
+      /**
+       * Some events:
+       * ['add', to] - item was added to the `to` order position
+       * ['remove', from] - item was removed from the `from` order position
+       * ['move', from, to] - item was moved from the `from` to the `to` order position
+       */
       changeSubject,
+
       getIds(start?: number, end?: number): Readonly<TId[]> {
         return start === undefined && end === undefined
           ? orderCache
           : orderCache.slice(start, end);
       },
+
       getItems(start?: number, end?: number) {
         const items: Readonly<TItem>[] = [];
         this.getIds(start, end).forEach((id) => {
