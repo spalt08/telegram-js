@@ -72,8 +72,8 @@ export function getInterface<TBase extends WithInterfaceHook<any>>(base: TBase)
 /**
  * Checks attached interface
  */
-export function hasInterface(base: Element): boolean {
-  return (base as any).__hooks && (base as any).__hooks.interface;
+export function hasInterface<T = unknown>(base: unknown): base is WithInterfaceHook<T> {
+  return isWithHooks(base) && !!base.__hooks.interface;
 }
 
 /**
