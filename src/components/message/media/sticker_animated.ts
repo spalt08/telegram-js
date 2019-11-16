@@ -26,7 +26,7 @@ export default function mediaAnimatedSticker(document: Document) {
   file.getFile(location, (src: string) => {
     const animated = tgs({ src, className: 'sticker__tgs' });
     mount(container, animated);
-  }, document.dc_id);
+  }, document.dc_id, document.mime_type);
 
   return container;
 }

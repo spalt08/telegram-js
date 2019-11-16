@@ -2,11 +2,21 @@ import { InputFileLocation, UploadFile } from 'cache/types';
 import client from 'client/client';
 import { typeToMime, hexToBlob, blobToUrl } from 'helpers/files';
 
+const MAX_CHUNK_SIZE = 512 * 1024;
+
 /**
  * Singleton service class for handling files
  */
 export default class FileService {
-  getFile(location: InputFileLocation, cb: (url: string) => void, dc: number = client.cfg.dc, offset: number = 0, limit: number = 1024 * 1024) {
+  getFile(
+    location: InputFileLocation,
+    cb: (url: string) => void,
+    dc: number = client.cfg.dc,
+    mime: string = '',
+    offset: number = 0,
+    limit: number = MAX_CHUNK_SIZE,
+    parts: string = '',
+  ) {
     // todo cache lookup
 
     client.call('upload.getFile', { location, offset, limit }, { dc }, (err, result) => {
@@ -23,21 +33,35 @@ export default class FileService {
       }
 
       if (!err && result) {
-        this.processFile(result.json(), offset, limit, cb);
+        this.processFile(location, result.json(), mime, dc, offset, limit, parts, cb);
       }
     });
   }
 
-  processFile(file: UploadFile, offset: number, limit: number, cb: (url: string) => void) {
+  processFile(
+    location: InputFileLocation,
+    file: UploadFile,
+    imime: string,
+    dc: number,
+    offset: number,
+    limit: number,
+    parts: string,
+    cb: (url: string) => void,
+  ) {
     // todo load parts
-    if (file.type._ === 'storage.filePartial') {
-      console.log('partial', file);
+    if (file.type._ === 'storage.filePartial') { // file.bytes.length / 2 === limit) {
+      console.log(file.bytes.length / 2);
+      console.log('part', offset, parts.length / 2, file.bytes.length / 2);
+      this.getFile(location, cb, dc, imime, offset + 4096, limit, parts + file.bytes.slice(0, 4096 * 2));
       return;
     }
 
-    const mime = typeToMime(file.type);
+    const mime = imime || typeToMime(file.type);
     const blob = hexToBlob(file.bytes, mime);
+
     const url = blobToUrl(blob);
+
+    console.log(file.type, mime, url);
 
     cb(url);
   }
