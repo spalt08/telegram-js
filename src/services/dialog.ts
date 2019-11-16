@@ -61,7 +61,6 @@ export default class DialogsService {
       if (res instanceof TLConstructor && (res._ === 'messages.dialogs' || res._ === 'messages.dialogsSlice')) {
         const data = res.json();
 
-        console.log(data);
         userCache.put(data.users);
         chatCache.put(data.chats);
         messageCache.put(data.messages);

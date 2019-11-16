@@ -1,6 +1,6 @@
 .login {
   height: 100%;
-  overflow-y: scroll;
+  overflow-y: auto;
   animation: appear .4s ease-out;
 
   &__transition {

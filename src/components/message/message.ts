@@ -29,7 +29,7 @@ export default function message(id: number, peer: Peer) {
   const msg = subject.value;
 
   // todo return null
-  if (!msg || msg._ === 'messageEmpty') return text('');
+  if (!msg || msg._ === 'messageEmpty') return div();
   if (msg._ === 'messageService') return serviceMessage(msg);
 
   const out = msg.from_id === auth.userID ? 'out' : '';

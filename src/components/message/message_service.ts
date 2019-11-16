@@ -124,6 +124,6 @@ export default function serviceMessage(msg: MessageService) {
     }
 
     default:
-      return text('');
+      return div();
   }
 }

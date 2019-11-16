@@ -70,8 +70,8 @@
     z-index: 3;
     max-height: 240px;
     animation: appear .2s;
-    overflow: scroll;
-    overflow-y: scroll;
+    overflow: auto;
+    overflow-y: auto;
     overflow-x: hidden;
   }
 
