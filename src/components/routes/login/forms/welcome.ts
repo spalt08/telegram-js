@@ -49,6 +49,8 @@ export default function formWelcome() {
     },
   });
 
+  // todo: Disable during login
+  // todo: Make the storage consider this option
   const inputRemember = checkbox({ checked: true });
 
   const element = (

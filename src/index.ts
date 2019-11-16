@@ -25,3 +25,4 @@ mount(document.body, router.element);
 // todo: Fix SVGs in IE
 // todo: Add loading screen
 // todo: Fix the UI not responding when the backend is blocked (e.g. in Russia without a VPN)
+// todo: Check that the app works from a subdirectory

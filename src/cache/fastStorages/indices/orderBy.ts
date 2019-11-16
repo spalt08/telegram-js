@@ -24,7 +24,7 @@ export default function orderBy<TItem>(compare: CompareFunction<TItem>) {
           ? 1
           : compare(item1, item2);
       });
-      return rawValue >= 0 ? rawValue + 1 : 1 - rawValue;
+      return rawValue >= 0 ? (rawValue + 1) : (-rawValue - 1);
     }
 
     collection.changes.subscribe(([action, item]) => {

@@ -6,6 +6,10 @@ export default function dialogs() {
   // fetch dialogs
   service.updateDialogs();
 
+  // todo: Add loading placeholder
+  // todo: Add offline status badge
+  // todo: Hide archived dialogs
+
   return list({
     className: 'dialogs',
     items: service.dialogs,
