@@ -293,8 +293,7 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
   listen(container, 'scroll', () => {
     if (container.scrollTop < 0) return;
     if (container.scrollTop === offset || locked) return;
-
-    console.log('next', container.scrollTop);
+    if (container.scrollTop + viewport.height >= container.scrollHeight) return;
 
     if (container.scrollTop > offset) {
       offset = container.scrollTop;

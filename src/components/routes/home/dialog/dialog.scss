@@ -1,20 +1,26 @@
 .dialog {
   width: 100%;
   padding: 0px 8px;
-  margin-bottom: 2px;
+  background: #FFFFFF;
+  padding-bottom: 2px;
+  border-bottom: 1px solid transparent;
+
 
   &__wrapper {
-    height: 72px;
+    height: 75px;
   }
 
-  &:last-child {
-    margin-bottom: 0;
+  &__wrapper.lastpin {
+    height: 81px;
   }
 
-  &.pinned + &:not(.pinned) {
-    border-top: 1px solid #EDEEF0;
-    padding-top: 8px;
-    margin-top: 7px;
+  &__wrapper.lastpin .dialog {
+    border-bottom-color: #EDEEF0;
+    padding-bottom: 4px;
+  }
+
+  &__wrapper:last-child .dialog {
+    padding-bottom: 0px;
   }
 
   &__clickable {
