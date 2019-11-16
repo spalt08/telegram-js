@@ -7,10 +7,12 @@ import Collection from '../collection';
  */
 export type CompareFunction<T> = (item1: Readonly<T>, item2: Readonly<T>) => number;
 
+export type ChangeEvent = ['add', number] | ['move', number, number] | ['remove', number];
+
 export default function orderBy<TItem>(compare: CompareFunction<TItem>) {
   return function orderIndex<TId extends keyof any = keyof any>(collection: Collection<TItem, any, TId>) {
     const orderCache: TId[] = [];
-    const changeSubject = new Subject<['add', number] | ['move', number, number] | ['remove', number]>();
+    const changeSubject = new Subject<ChangeEvent[]>();
 
     function getIdCurrentPosition(id: TId) {
       const rawValue = orderCache.indexOf(id);
@@ -27,37 +29,45 @@ export default function orderBy<TItem>(compare: CompareFunction<TItem>) {
       return rawValue >= 0 ? (rawValue + 1) : (-rawValue - 1);
     }
 
-    collection.changes.subscribe(([action, item]) => {
-      const id = collection.getId(item);
+    collection.changes.subscribe((collectionEvents) => {
+      const indexEvents: ChangeEvent[] = [];
 
-      switch (action) {
-        case 'add': {
-          const position = getItemPositionToInsert(item);
-          orderCache.splice(position, 0, id);
-          changeSubject.next(['add', position]);
-          break;
-        }
-        case 'update': {
-          const oldPosition = getIdCurrentPosition(id);
-          if (oldPosition !== undefined) {
-            orderCache.splice(oldPosition, 1); // Must remove it now to keep the list ordered to make the next line work correctly
-            const newPosition = getItemPositionToInsert(item);
-            orderCache.splice(newPosition, 0, id);
-            if (oldPosition !== newPosition) {
-              changeSubject.next(['move', oldPosition, newPosition]);
+      collectionEvents.forEach(([action, item]) => {
+        const id = collection.getId(item);
+
+        switch (action) {
+          case 'add': {
+            const position = getItemPositionToInsert(item);
+            orderCache.splice(position, 0, id);
+            indexEvents.push(['add', position]);
+            break;
+          }
+          case 'update': {
+            const oldPosition = getIdCurrentPosition(id);
+            if (oldPosition !== undefined) {
+              orderCache.splice(oldPosition, 1); // Must remove it now to keep the list ordered to make the next line work correctly
+              const newPosition = getItemPositionToInsert(item);
+              orderCache.splice(newPosition, 0, id);
+              if (oldPosition !== newPosition) {
+                indexEvents.push(['move', oldPosition, newPosition]);
+              }
             }
+            break;
           }
-          break;
-        }
-        case 'remove': {
-          const position = getIdCurrentPosition(id);
-          if (position !== undefined) {
-            orderCache.splice(position, 1);
-            changeSubject.next(['remove', position]);
+          case 'remove': {
+            const position = getIdCurrentPosition(id);
+            if (position !== undefined) {
+              orderCache.splice(position, 1);
+              indexEvents.push(['remove', position]);
+            }
+            break;
           }
-          break;
+          default:
         }
-        default:
+      });
+
+      if (indexEvents.length) {
+        changeSubject.next(indexEvents);
       }
     });
 
@@ -68,12 +78,20 @@ export default function orderBy<TItem>(compare: CompareFunction<TItem>) {
        * ['remove', from] - item was removed from the `from` order position
        * ['move', from, to] - item was moved from the `from` to the `to` order position
        */
-      changeSubject,
+      changes: changeSubject,
+
+      getIdAt(index: number): TId {
+        return orderCache[index];
+      },
 
       getIds(start?: number, end?: number): Readonly<TId[]> {
         return start === undefined && end === undefined
           ? orderCache
           : orderCache.slice(start, end);
+      },
+
+      getItemAt(index: number) {
+        return collection.get(this.getIdAt(index));
       },
 
       getItems(start?: number, end?: number) {

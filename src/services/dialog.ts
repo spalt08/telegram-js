@@ -29,7 +29,7 @@ export default class DialogsService {
       this.updateTopMessage(update.message);
     });
 
-    dialogCache.indices.order.changeSubject.subscribe(() => {
+    dialogCache.indices.order.changes.subscribe(() => {
       this.dialogs.next(dialogCache.indices.order.getIds());
     });
 
