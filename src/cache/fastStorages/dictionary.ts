@@ -1,5 +1,6 @@
 import { BehaviorSubject, Subject } from 'rxjs';
 import { useWhileMounted } from 'core/hooks';
+import BatchActions from 'helpers/batchActions';
 import { WithMin } from '../types';
 
 export type ItemWatcher<TItem> = (item: Readonly<TItem> | undefined) => void;
@@ -10,12 +11,18 @@ export type ChangeEvent<TItem, TKey> = ['add' | 'update' | 'remove', TKey, Reado
  * A simple storage for key-value pairs. Allows to subscribe to changes.
  */
 export default class Dictionary<TKey extends keyof any, TItem> {
-  protected data: Record<TKey, Readonly<TItem>>;
-
   /**
    * Notifies about all changes of the dictionary. Don't use it if you need to watch a single item.
    */
-  public readonly changeSubject = new Subject<ChangeEvent<TItem, TKey>>();
+  public readonly changeSubject = new Subject<ChangeEvent<TItem, TKey>[]>();
+
+  protected data: Record<TKey, Readonly<TItem>>;
+
+  protected changesBatch = new BatchActions((events: ChangeEvent<TItem, TKey>[]) => {
+    if (this.changeSubject.observers.length > 0) {
+      this.changeSubject.next(events);
+    }
+  });
 
   protected itemsWatchers = {} as Record<TKey, ItemWatcher<TItem>[]>;
 
@@ -63,7 +70,9 @@ export default class Dictionary<TKey extends keyof any, TItem> {
 
   public put(arg1: any, arg2?: any) {
     if (arg2 === undefined) {
-      (Object.keys(arg1) as TKey[]).forEach((key) => this.putOne(key, arg1[key]));
+      this.changesBatch.batch(() => {
+        (Object.keys(arg1) as TKey[]).forEach((key) => this.putOne(key, arg1[key]));
+      });
     } else {
       this.putOne(arg1, arg2);
     }
@@ -92,8 +101,10 @@ export default class Dictionary<TKey extends keyof any, TItem> {
       }
     });
 
-    toRemove.forEach((key) => this.remove(key));
-    this.put(items);
+    this.changesBatch.batch(() => {
+      toRemove.forEach((key) => this.remove(key));
+      this.put(items);
+    });
   }
 
   /**
@@ -153,9 +164,7 @@ export default class Dictionary<TKey extends keyof any, TItem> {
   }
 
   protected notify(action: 'add' | 'update' | 'remove', key: TKey, item: Readonly<TItem>) {
-    if (this.changeSubject.observers.length > 0) {
-      this.changeSubject.next([action, key, item]);
-    }
+    this.changesBatch.act([action, key, item]);
 
     if (this.itemsWatchers[key]) {
       this.itemsWatchers[key].forEach((listener) => {

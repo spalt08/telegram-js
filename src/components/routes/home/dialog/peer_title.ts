@@ -4,6 +4,7 @@ import { chatCache, userCache } from 'cache';
 import { MaybeObservable } from 'core/types';
 import { span, text } from 'core/html';
 import { mount } from 'core/dom';
+import { auth } from 'services';
 
 export default function peerTitle(peer: Peer) {
   const element = span();
@@ -12,7 +13,15 @@ export default function peerTitle(peer: Peer) {
   switch (peer._) {
     case 'peerUser': {
       const userSubject = userCache.useItemBehaviorSubject(element, peer.user_id);
-      content = userSubject.pipe(map((user) => user ? `${user.first_name} ${user.last_name}` : 'Unknown'));
+      content = userSubject.pipe(map((user) => {
+        if (!user) {
+          return 'Unknown';
+        }
+        if (user.id === auth.userID) {
+          return 'Saved Messages';
+        }
+        return `${user.first_name} ${user.last_name}`;
+      }));
       break;
     }
 
