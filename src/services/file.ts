@@ -20,6 +20,7 @@ export default class FileService {
     // todo cache lookup
 
     client.call('upload.getFile', { location, offset, limit }, { dc }, (err, result) => {
+
       // redirect to another dc
       if (err && err.message && err.message.indexOf('FILE_MIGRATE_') > -1) {
         this.getFile(location, cb, +err.message.slice(-1), mime, offset, limit, parts);
@@ -50,7 +51,6 @@ export default class FileService {
   ) {
     // todo load parts
     if (file.bytes.length / 2 === limit) {
-      console.log('part', offset, parts.length / 2, file.bytes.length / 2);
       this.getFile(location, cb, dc, imime, offset + 4096, limit, parts + file.bytes.slice(0, 4096 * 2));
       return;
     }

@@ -304,7 +304,13 @@ export type InputFileLocation = {
   access_hash: any,
   file_reference: string,
   thumb_size: string,
+} | {
+  _: 'inputPeerPhotoFileLocation',
+  peer: InputPeer,
+  volume_id: number,
+  local_id: number,
 };
+
 /**
  * Ref: https://core.telegram.org/type/storage.FileType
  */

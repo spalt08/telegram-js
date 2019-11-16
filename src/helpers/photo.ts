@@ -1,6 +1,7 @@
 /* eslint-disable prefer-destructuring, prefer-template, max-len */
 import { hex, Bytes } from 'mtproto-js';
-import { PhotoSize, InputFileLocation, PhotoNotEmpty } from 'cache/types';
+import { PhotoSize, InputFileLocation, PhotoNotEmpty, Peer, Message } from 'cache/types';
+import { peerToInputPeer, getPeerPhotoLocation } from 'cache/accessors';
 import { blobToUrl, hexToBlob } from './files';
 
 /**
@@ -128,5 +129,19 @@ export function getPhotoLocation(photo: PhotoNotEmpty, type?: string): InputFile
     access_hash: photo.access_hash,
     file_reference: photo.file_reference,
     thumb_size: type || getDefaultSizeType(photo),
+  };
+}
+
+export function getPeerPhotoInputLocation(peer: Peer, message?: Message): InputFileLocation | null {
+  const location = getPeerPhotoLocation(peer);
+
+  if (!location) return null;
+  const { volume_id, local_id } = location;
+
+  return {
+    _: 'inputPeerPhotoFileLocation',
+    peer: peerToInputPeer(peer), // , message && message._ !== 'messageEmpty' ? { peer: peerToInputPeer(message.to_id), message } : undefined),
+    volume_id,
+    local_id,
   };
 }

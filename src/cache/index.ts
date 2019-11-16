@@ -60,3 +60,4 @@ export const dialogCache = new Collection({
 
 // todo remove debug
 (window as any).mcache = messageCache;
+(window as any).ccache = chatCache;

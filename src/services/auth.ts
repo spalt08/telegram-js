@@ -82,6 +82,8 @@ export default class AuthService {
         if (err.message && err.message.indexOf('PHONE_MIGRATE_') > -1) {
           client.cfg.dc = +err.message.slice(-1);
           this.sendCode(phoneNumber, cb);
+          // todo store dc
+          localStorage.setItem('dc', +err.message.slice(-1));
 
         // Display error message
         } else {

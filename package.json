@@ -29,7 +29,7 @@
   "dependencies": {
     "binary-search": "^1.3.6",
     "lottie-web": "^5.5.9",
-    "mtproto-js": "file:./packages/mtproto-js/",
+    "mtproto-js": "file:./packages/mtproto-js",
     "pako": "^1.0.10",
     "rxjs": "^6.5.3"
   },

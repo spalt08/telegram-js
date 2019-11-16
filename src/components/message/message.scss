@@ -24,6 +24,14 @@
     vertical-align: bottom;
   }
 
+  & .avatar {
+    width: 30px;
+    height: 30px;
+  }
+
+  & .avatar__standart {
+    font-size: 12px;
+  }
   &.with-media &__baloon, &.with-media .photo {
     width: 320px !important;
   }

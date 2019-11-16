@@ -50,8 +50,9 @@ export default class DialogsService {
     };
 
     client.call('messages.getDialogs', payload, (err, res) => {
-      console.log(err);
       if (err && err.message && err.message.indexOf('USER_MIGRATE_') > -1) {
+        // todo store dc
+        localStorage.setItem('dc', err.message.slice(-1));
         client.cfg.dc = +err.message.slice(-1);
         this.updateDialogs();
         return;
