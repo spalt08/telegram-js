@@ -10,6 +10,7 @@ export default [
   { code: 'ru', label: 'Russian Federation', emoji: '🇷🇺', phone: '+7', phoneFormats: [10, 'ddd ddd dd-dd'] },
   { code: 'us', label: 'United States', emoji: '🇱🇷', phone: '+1', phoneFormats: [10, 'ddd-ddd-dddd'] },
   { code: 'uk', label: 'United Kingdom', emoji: '🇬🇧', phone: '+44', phoneFormats: [9, 'dddd ddddd', 10, 'ddd ddd dddd'] },
+  { code: 'cn', label: 'China', emoji: '🇨🇳', phone: '+86', phoneFormats: [11, 'ddd dddd dddd'] },
   { code: 'test', label: 'Test', emoji: '🤔', phone: '+', phoneFormats: [10, 'ddd ddd dd-dd'] },
   // { code: 'AF', phone: '+93' },
   // { code: 'AX', phone: '+358' },

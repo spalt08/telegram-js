@@ -73,40 +73,46 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
       if (first === -1) first = 0;
     }
 
+    const numb = Math.min(batch, current.length - last - 1);
+    for (let i = 0; i < numb; i += 1) {
+      last += 1;
+      mountChild(current[last]);
+    }
+
     if (last === current.length - 1) bottomFreeSpace = true;
 
     inited = true;
   };
+
+  let locked = false;
 
   // Scroll Down
   const scrollDown = () => {
     if (current.length === 0) return;
 
     const lastRect = elements[key(current[last])].getBoundingClientRect();
-
     // Add elements from bottom
-    if (viewport.height + threshold > lastRect.top - viewport.top + lastRect.height) {
-      const num = Math.min(batch, current.length - last - 1);
+    if (!locked && viewport.height + threshold > lastRect.top - viewport.top + lastRect.height) {
+      const prevScroll = container.scrollTop;
+      const numb = Math.min(batch, current.length - last - 1);
 
-      for (let i = 0; i < num; i += 1) {
+      // locked = true;
+
+      console.log('scroll add down', numb, 'was', last - first);
+      for (let i = 0; i < numb; i += 1) {
         last += 1;
         mountChild(current[last]);
       }
-    }
 
-    // Remove elements from top
-    if (offset > threshold) {
-      const num = Math.min(batch, last);
-
-      for (let i = 0; i < num; i += 1) {
-        const id = key(current[first]);
-        offset -= elements[id].getBoundingClientRect().height;
+      for (let i = 0; i < numb; i += 1) {
+        // const height = elements[current[first]].getBoundingClientRect().height;
         unMountChild(current[first]);
-
         first += 1;
       }
 
-      container.scrollTop = offset;
+      // locked = false;
+      // container.scrollTop = prevScroll + numb * 72;
+      // offset = container.scrollTop;
     }
   };
 
@@ -114,31 +120,25 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
   const scrollUp = () => {
     if (current.length === 0) return;
 
-    const lastRect = elements[key(current[last])].getBoundingClientRect();
-
     // Add elements from top
-    if (offset < threshold) {
+    if (!locked && offset < threshold) {
       const num = Math.min(batch, first);
+
+      // locked = true;
+      console.log('scroll add top', num, 'was', last - first);
 
       for (let i = 0; i < num; i += 1) {
         first -= 1;
-        const id = key(current[first]);
-        // to do replace
         mountChild(current[first], current[first + 1]);
-        offset += elements[id].getBoundingClientRect().height;
       }
-
-      container.scrollTop = offset;
-    }
-
-    // Remove elements from bottom
-    if (viewport.height + threshold < lastRect.top - viewport.top + lastRect.height) {
-      const num = Math.min(batch, last);
 
       for (let i = 0; i < num; i += 1) {
         unMountChild(current[last]);
         last -= 1;
       }
+
+      // locked = false;
+      // offset = container.scrollTop;
     }
   };
 
@@ -149,6 +149,8 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
       init();
       return;
     }
+
+    return;
 
     const visible = current.slice(first, last + 1);
     let nextVisibleFirst = next.indexOf(visible[0]);
@@ -168,6 +170,7 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
     const flipFrom: Record<string, ClientRect> = {};
     const flipTo: Record<string, ClientRect> = {};
 
+    console.log('updating', nextVisibleLast, nextVisibleFirst);
     // Keep start position for flip
     for (let i = 0; i < visible.length; i += 1) {
       flipFrom[key(visible[i])] = elements[key(visible[i])].getBoundingClientRect();
@@ -270,11 +273,17 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
     last = nextVisibleLast;
 
     flipping = false;
-    container.scrollTop = offset;
   });
 
+  // let throttle = Date.now();
   listen(container, 'scroll', () => {
+    // const now = Date.now();
+    // if (now - throttle < 100) return;
+    // throttle = now;
+
+    if (container.scrollTop < 0) return;
     if (container.scrollTop === offset || flipping) return;
+
 
     if (container.scrollTop > offset) {
       offset = container.scrollTop;
