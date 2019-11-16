@@ -1,13 +1,14 @@
 import { Photo } from 'cache/types';
 import { div, img } from 'core/html';
-import { materialSpinner, back } from 'components/icons';
+import { materialSpinner } from 'components/icons';
 import { mount, unmount } from 'core/dom';
-import { getOrientation, getThumbnail, checkDimensions, getPhotoLocation } from 'helpers/photo';
+import { getOrientation, getThumbnail, checkDimensions, getPhotoLocation, getSizeType } from 'helpers/photo';
 import { file } from 'services';
 import './photo.scss';
 
 const PHOTO_W_DIM = 100 / 320;
 const PHOTO_H_DIM = 48 / 320;
+const PHOTO_THUMBNAIL_MAX = 320;
 
 export default function mediaPhoto(photo: Photo) {
   if (photo._ !== 'photo') return null;
@@ -37,7 +38,9 @@ export default function mediaPhoto(photo: Photo) {
 
   mount(container, loader);
 
-  const location = getPhotoLocation(photo);
+  const type = getSizeType(photo.sizes, PHOTO_THUMBNAIL_MAX);
+  const location = getPhotoLocation(photo, type);
+
   file.getFile(location, (src) => {
     if (background) background.style.backgroundImage = `url(${src})`;
     if (thumbnail) unmount(thumbnail);

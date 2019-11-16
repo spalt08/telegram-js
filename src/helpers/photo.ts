@@ -43,6 +43,32 @@ export function getOrientation(sizes: PhotoSize[]): string {
   return 'landscape';
 }
 
+export function getSizeType(sizes: PhotoSize[], max: number): string {
+  let diff: number | undefined;
+  let type: string | undefined;
+
+  for (let i = 0; i <= sizes.length; i += 1) {
+    const csize = sizes[i];
+
+    if (csize._ === 'photoSize') {
+      const landscape = csize.w > csize.h;
+
+      if (!diff) {
+        diff = Math.abs(max - (landscape ? csize.w : csize.h));
+        type = csize.type;
+      } else {
+        const nextDiff = Math.abs(max - (landscape ? csize.w : csize.h));
+        if (nextDiff < diff) {
+          diff = nextDiff;
+          type = csize.type;
+        }
+      }
+    }
+  }
+
+  return type || 'm';
+}
+
 export function getDefaultSizeType(photo: PhotoNotEmpty): string {
   for (let i = photo.sizes.length - 1; i >= 0; i -= 1) {
     const size = photo.sizes[i];
