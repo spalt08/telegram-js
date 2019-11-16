@@ -47,7 +47,7 @@ export function getSizeType(sizes: PhotoSize[], max: number): string {
   let diff: number | undefined;
   let type: string | undefined;
 
-  for (let i = 0; i <= sizes.length; i += 1) {
+  for (let i = 0; i < sizes.length; i += 1) {
     const csize = sizes[i];
 
     if (csize._ === 'photoSize') {
