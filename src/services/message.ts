@@ -53,7 +53,7 @@ export default class MessagesService {
       offset_id: olderThanId,
       offset_date: Math.floor(Date.now() / 1000),
       add_offset: 0,
-      limit: 40,
+      limit: 100,
       max_id: 0,
       min_id: 0,
       hash: 0,

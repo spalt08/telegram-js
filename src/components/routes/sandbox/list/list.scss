@@ -1,6 +1,6 @@
 .list {
   height: 300px;
-  overflow: scroll;
+  overflow: auto;
 }
 .list__appeared {
   animation: listAppear .5s ease;

@@ -2,12 +2,17 @@
   overflow: hidden;
 
   .list__container {
-    overflow: scroll;
+    height: 100%;
+    overflow: auto;
     position: relative;
-  }
-}
+    display: flex;
+    flex-direction: column;
 
-.list {
+    > * {
+      flex: none;
+    }
+  }
+
   &__appeared {
     animation: listAppear .3s ease;
     z-index: 1;
