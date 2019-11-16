@@ -2,7 +2,7 @@ import { InputFileLocation, UploadFile } from 'cache/types';
 import client from 'client/client';
 import { typeToMime, hexToBlob, blobToUrl } from 'helpers/files';
 
-const MAX_CHUNK_SIZE = 512 * 1024;
+const MAX_CHUNK_SIZE = 1024 * 1024;
 
 /**
  * Singleton service class for handling files
@@ -22,7 +22,7 @@ export default class FileService {
     client.call('upload.getFile', { location, offset, limit }, { dc }, (err, result) => {
       // redirect to another dc
       if (err && err.message && err.message.indexOf('FILE_MIGRATE_') > -1) {
-        this.getFile(location, cb, +err.message.slice(-1), offset, limit);
+        this.getFile(location, cb, +err.message.slice(-1), mime, offset, limit, parts);
         return;
       }
 
@@ -49,8 +49,7 @@ export default class FileService {
     cb: (url: string) => void,
   ) {
     // todo load parts
-    if (file.type._ === 'storage.filePartial') { // file.bytes.length / 2 === limit) {
-      console.log(file.bytes.length / 2);
+    if (file.bytes.length / 2 === limit) {
       console.log('part', offset, parts.length / 2, file.bytes.length / 2);
       this.getFile(location, cb, dc, imime, offset + 4096, limit, parts + file.bytes.slice(0, 4096 * 2));
       return;
@@ -60,8 +59,6 @@ export default class FileService {
     const blob = hexToBlob(file.bytes, mime);
 
     const url = blobToUrl(blob);
-
-    console.log(file.type, mime, url);
 
     cb(url);
   }

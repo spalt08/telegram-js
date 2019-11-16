@@ -3,11 +3,10 @@ import { Document } from 'cache/types';
 import { img, div } from 'core/html';
 import { mount, listenOnce, unmount } from 'core/dom';
 import { getDocumentLocation } from 'helpers/files';
-import './sticker.scss';
 import { file } from 'services';
-import { tgs } from 'components/ui';
+import './sticker.scss';
 
-export default function mediaAnimatedSticker(document: Document) {
+export default function mediaSticker(document: Document) {
   const container = div`.sticker`();
   const thumbnailUrl = getThumbnail(document.thumbs);
 
@@ -24,8 +23,8 @@ export default function mediaAnimatedSticker(document: Document) {
   const location = getDocumentLocation(document);
 
   file.getFile(location, (src: string) => {
-    const animated = tgs({ src, className: 'sticker__tgs', autoplay: true, loop: true });
-    mount(container, animated);
+    const sticker = img({ src, className: 'sticker__image' });
+    mount(container, sticker);
 
     if (thumbnail) {
       thumbnail.classList.add('removed');

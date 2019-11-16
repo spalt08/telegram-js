@@ -151,6 +151,7 @@ export type Document = {
   mime_type: string,
   thumbs: PhotoSize[],
   dc_id: number,
+  attributes: DocumentAttribute[],
 };
 
 /**
@@ -321,4 +322,17 @@ export type UploadFile = {
   type: StorageFileType,
   mtime: number,
   bytes: string,
+};
+
+/**
+ * Ref: https://core.telegram.org/type/DocumentAttribute
+ */
+export type DocumentAttribute = DocumentAttributeSticker;
+
+/**
+ * Ref: https://core.telegram.org/constructor/documentAttributeSticker
+ */
+export type DocumentAttributeSticker = {
+  _: 'documentAttributeSticker',
+  alt: string,
 };
