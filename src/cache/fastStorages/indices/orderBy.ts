@@ -39,12 +39,13 @@ export default function orderBy<TItem>(compare: CompareFunction<TItem>) {
         }
         case 'update': {
           const oldPosition = getIdCurrentPosition(id);
-          let newPosition = getItemPositionToInsert(item);
-          if (oldPosition !== newPosition && oldPosition !== undefined) {
-            if (newPosition > oldPosition) newPosition -= 1;
-            orderCache.splice(oldPosition, 1);
+          if (oldPosition !== undefined) {
+            orderCache.splice(oldPosition, 1); // Must remove it now to keep the list ordered to make the next line work correctly
+            const newPosition = getItemPositionToInsert(item);
             orderCache.splice(newPosition, 0, id);
-            changeSubject.next(['move', oldPosition, newPosition]);
+            if (oldPosition !== newPosition) {
+              changeSubject.next(['move', oldPosition, newPosition]);
+            }
           }
           break;
         }
