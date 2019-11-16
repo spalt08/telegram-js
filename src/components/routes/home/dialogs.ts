@@ -14,8 +14,8 @@ export default function dialogs() {
   return list({
     className: 'dialogs',
     items: service.dialogs,
-    threshold: 300,
-    batch: 10,
+    threshold: 400,
+    batch: 20,
     renderer: (id: string) => dialog(id),
   });
 }
