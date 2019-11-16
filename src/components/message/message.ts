@@ -96,8 +96,9 @@ export default function message(id: number, peer: Peer) {
   // cleanup prev messages from same sender
   useOnMount(container, () => {
     const prev = container.previousElementSibling;
-
-    if (prev && hasInterface<MessageHooks>(prev) && msg.from_id === getInterface(prev).getFromID()) {
+    const pinterface = prev && hasInterface<MessageHooks>(prev) ? getInterface(prev) : null;
+  
+    if (prev && pinterface && pinterface.getFromID && msg.from_id === pinterface.getFromID()) {
       prev.classList.remove('last');
 
       const svgs = prev!.getElementsByTagName('svg');
