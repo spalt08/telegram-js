@@ -8,7 +8,7 @@ export default function dialogMessage(dialog: Dialog) {
 
   if (!msg || msg._ === 'messageEmpty') return div`.dialog__message`();
 
-  let content = msg.message.slice(0, 300) || '';
+  let content = (msg.message || '').slice(0, 300);
 
   if (msg.media) {
     if (msg.media._ === 'messageMediaPhoto') content = content ? `🖼${content}` : '🖼 Photo';
