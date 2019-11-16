@@ -20,7 +20,7 @@ export default function orderBy<TItem>(compare: CompareFunction<TItem>) {
     }
 
     function getItemPositionToInsert(item: TItem) {
-      const rawValue = binarySearch(orderCache, item, (id1: TId, item2: TItem) => {
+      const rawValue = binarySearch(orderCache, item, (id1, item2) => {
         const item1 = collection.get(id1);
         return item1 === undefined
           ? 1
@@ -29,17 +29,17 @@ export default function orderBy<TItem>(compare: CompareFunction<TItem>) {
       return rawValue >= 0 ? (rawValue + 1) : (-rawValue - 1);
     }
 
-    collection.changes.subscribe((collectionEvents) => {
-      const indexEvents: ChangeEvent[] = [];
+    collection.changes.subscribe((collectionChanges) => {
+      const indexChanges: ChangeEvent[] = [];
 
-      collectionEvents.forEach(([action, item]) => {
+      collectionChanges.forEach(([action, item]) => {
         const id = collection.getId(item);
 
         switch (action) {
           case 'add': {
             const position = getItemPositionToInsert(item);
             orderCache.splice(position, 0, id);
-            indexEvents.push(['add', position]);
+            indexChanges.push(['add', position]);
             break;
           }
           case 'update': {
@@ -49,7 +49,7 @@ export default function orderBy<TItem>(compare: CompareFunction<TItem>) {
               const newPosition = getItemPositionToInsert(item);
               orderCache.splice(newPosition, 0, id);
               if (oldPosition !== newPosition) {
-                indexEvents.push(['move', oldPosition, newPosition]);
+                indexChanges.push(['move', oldPosition, newPosition]);
               }
             }
             break;
@@ -58,7 +58,7 @@ export default function orderBy<TItem>(compare: CompareFunction<TItem>) {
             const position = getIdCurrentPosition(id);
             if (position !== undefined) {
               orderCache.splice(position, 1);
-              indexEvents.push(['remove', position]);
+              indexChanges.push(['remove', position]);
             }
             break;
           }
@@ -66,8 +66,8 @@ export default function orderBy<TItem>(compare: CompareFunction<TItem>) {
         }
       });
 
-      if (indexEvents.length) {
-        changeSubject.next(indexEvents);
+      if (indexChanges.length) {
+        changeSubject.next(indexChanges);
       }
     });
 

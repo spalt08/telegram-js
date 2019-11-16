@@ -10,15 +10,10 @@ export default function messages() {
 
   // todo: Add loading placeholder
 
-  useObservable(content, service.activePeer, () => {
+  useObservable(content, service.history, () => {
     unmountChildren(content);
-  });
-
-  useObservable(content, service.isLoading, (isLoading: boolean) => {
-    if (isLoading === false) {
-      for (let i = 0; i < service.history.length; i += 1) {
-        mount(content, message(service.history[i], service.activePeer.value!));
-      }
+    for (let i = service.history.value.length - 1; i >= 0; i -= 1) {
+      mount(content, message(service.history.value[i], service.activePeer.value!));
     }
   });
 

@@ -9,6 +9,7 @@ export default function dialogs() {
   // todo: Add loading placeholder
   // todo: Add offline status badge
   // todo: Hide archived dialogs
+  // todo: Highlight the selected dialog
 
   return list({
     className: 'dialogs',

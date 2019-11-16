@@ -36,7 +36,7 @@ export default class Collection<TItem, TIndices extends IndicesFactories<any, an
 
   public readonly indices: IndicesFromFactories<TIndices>;
 
-  protected readonly storage: Dictionary<keyof any, TItem>;
+  protected readonly storage: Dictionary<TId, TItem>;
 
   constructor({
     getId,
@@ -46,13 +46,13 @@ export default class Collection<TItem, TIndices extends IndicesFactories<any, an
   }: Options<TItem, TIndices, TId>) {
     this.storage = new Dictionary(considerMin);
     this.getId = getId;
-    this.put(data);
-    this.changes = this.storage.changeSubject.pipe(map(
+    this.changes = this.storage.changes.pipe(map(
       (events) => events.map(
         ([action, _key, item]) => [action, item],
       ),
     ));
     this.indices = mapObject(indices, (indexFactory) => indexFactory(this)) as IndicesFromFactories<TIndices>;
+    this.put(data);
   }
 
   public has(id: TId) {
@@ -73,7 +73,9 @@ export default class Collection<TItem, TIndices extends IndicesFactories<any, an
 
   public put(items: Readonly<TItem> | Readonly<TItem>[]) {
     if (Array.isArray(items)) {
-      items.forEach((item) => this.storage.put(this.getId(item), item));
+      this.storage.batchChanges(() => {
+        items.forEach((item) => this.storage.put(this.getId(item), item));
+      });
     } else {
       this.storage.put(this.getId(items), items);
     }
@@ -84,24 +86,28 @@ export default class Collection<TItem, TIndices extends IndicesFactories<any, an
   }
 
   public replaceAll(items: Readonly<TItem>[]) {
-    const itemsObject = {} as Record<keyof any, Readonly<TItem>>;
-
-    items.forEach((item) => {
-      itemsObject[this.getId(item)] = item;
-    });
-
-    this.storage.replaceAll(itemsObject);
+    this.storage.replaceAll(this.itemsToObject(items));
   }
 
   public watchItem(id: TId, onChange: ItemWatcher<TItem>) {
     return this.storage.watchItem(id, onChange);
   }
 
-  public useWatchItem(base: unknown, id: TId, notifyOnStartWatching: boolean, onChange: ItemWatcher<TItem>) {
-    return this.storage.useWatchItem(base, id, notifyOnStartWatching, onChange);
-  }
-
   public useItemBehaviorSubject(base: unknown, id: TId) {
     return this.storage.useItemBehaviorSubject(base, id);
+  }
+
+  public batchChanges(run: () => void) {
+    this.storage.batchChanges(run);
+  }
+
+  protected itemsToObject(items: Readonly<TItem>[]) {
+    const itemsObject = {} as Record<TId, Readonly<TItem>>;
+
+    items.forEach((item) => {
+      itemsObject[this.getId(item)] = item;
+    });
+
+    return itemsObject;
   }
 }

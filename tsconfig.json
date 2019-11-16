@@ -10,7 +10,8 @@
     "baseUrl": "./src",
     "module": "esnext",
     "moduleResolution": "node",
-    "sourceMap": true
+    "sourceMap": true,
+    "allowSyntheticDefaultImports": true
   },
   "include": [
     "src/**/*"

@@ -14,13 +14,13 @@ export default class Dictionary<TKey extends keyof any, TItem> {
   /**
    * Notifies about all changes of the dictionary. Don't use it if you need to watch a single item.
    */
-  public readonly changeSubject = new Subject<ChangeEvent<TItem, TKey>[]>();
+  public readonly changes = new Subject<ChangeEvent<TItem, TKey>[]>();
 
   protected data: Record<TKey, Readonly<TItem>>;
 
   protected changesBatch = new BatchActions((events: ChangeEvent<TItem, TKey>[]) => {
-    if (this.changeSubject.observers.length > 0) {
-      this.changeSubject.next(events);
+    if (this.changes.observers.length > 0) {
+      this.changes.next(events);
     }
   });
 
@@ -70,7 +70,7 @@ export default class Dictionary<TKey extends keyof any, TItem> {
 
   public put(arg1: any, arg2?: any) {
     if (arg2 === undefined) {
-      this.changesBatch.batch(() => {
+      this.batchChanges(() => {
         (Object.keys(arg1) as TKey[]).forEach((key) => this.putOne(key, arg1[key]));
       });
     } else {
@@ -101,7 +101,7 @@ export default class Dictionary<TKey extends keyof any, TItem> {
       }
     });
 
-    this.changesBatch.batch(() => {
+    this.batchChanges(() => {
       toRemove.forEach((key) => this.remove(key));
       this.put(items);
     });
@@ -121,31 +121,23 @@ export default class Dictionary<TKey extends keyof any, TItem> {
   }
 
   /**
-   * A DOM hook to listen to an item change while the element is mounted
-   */
-  public useWatchItem(base: unknown, key: TKey, notifyOnStartWatching: boolean, onChange: ItemWatcher<TItem>) {
-    return useWhileMounted(base, () => {
-      if (notifyOnStartWatching) {
-        onChange(this.get(key));
-      }
-      return this.watchItem(key, onChange);
-    });
-  }
-
-  /**
-   * Makes a behavior subject that is updated only while the element is mounted.
+   * Makes a behavior subject that is updated only while the element is mounted for an item with the given key.
    * This subject can be subscribed on directly without memory leaks concerns.
    */
   public useItemBehaviorSubject(base: unknown, key: TKey): BehaviorSubject<Readonly<TItem> | undefined> {
-    let lastNotifiedItem = this.get(key);
-    const subject = new BehaviorSubject(lastNotifiedItem);
-    this.useWatchItem(base, key, true, (item) => {
-      if (item !== lastNotifiedItem) {
-        lastNotifiedItem = item;
-        subject.next(item);
-      }
+    const subject = new BehaviorSubject(this.get(key));
+    useWhileMounted(base, () => {
+      subject.next(this.get(key));
+      return this.watchItem(key, (item) => subject.next(item));
     });
     return subject;
+  }
+
+  /**
+   * Batches all the changes made on this dictionary so that the dictionary triggers only 1 event in changeSubject
+   */
+  public batchChanges(run: () => void) {
+    this.changesBatch.batch(run);
   }
 
   protected putOne(key: TKey, item: Readonly<TItem>) {
