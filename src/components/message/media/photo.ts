@@ -1,8 +1,9 @@
 import { Photo } from 'cache/types';
 import { div, img } from 'core/html';
-import { materialSpinner } from 'components/icons';
-import { mount } from 'core/dom';
-import { getOrientation, getThumbnail, checkDimensions } from 'helpers/photo';
+import { materialSpinner, back } from 'components/icons';
+import { mount, unmount } from 'core/dom';
+import { getOrientation, getThumbnail, checkDimensions, getPhotoLocation } from 'helpers/photo';
+import { file } from 'services';
 import './photo.scss';
 
 const PHOTO_W_DIM = 100 / 320;
@@ -16,21 +17,39 @@ export default function mediaPhoto(photo: Photo) {
   const loader = div`.photo__loader`(materialSpinner());
   const thumbnailUrl = getThumbnail(photo.sizes);
 
+  let thumbnail: HTMLElement | undefined;
+  let background: HTMLElement | undefined;
+  let preview: HTMLElement | undefined;
+
   const hasBackground = checkDimensions(photo.sizes, PHOTO_W_DIM, PHOTO_H_DIM);
 
   if (thumbnailUrl) {
-    const thumbnail = div`.photo__thumbnail`(
+    thumbnail = div`.photo__thumbnail`(
       img({ src: thumbnailUrl, alt: 'Message photo' }),
     );
     mount(container, thumbnail);
 
     if (hasBackground) {
-      const background = div({ className: 'photo__background', style: { backgroundImage: `url(${thumbnailUrl}` } });
+      background = div({ className: 'photo__background', style: { backgroundImage: `url(${thumbnailUrl}` } });
       mount(container, background);
     }
   }
 
   mount(container, loader);
+
+  const location = getPhotoLocation(photo);
+  file.getFile(location, (src) => {
+    if (background) background.style.backgroundImage = `url(${src})`;
+    if (thumbnail) unmount(thumbnail);
+    if (preview) unmount(preview);
+    unmount(loader);
+
+    preview = div`.photo__preview`(
+      img({ src, alt: 'Message Photo' }),
+    );
+
+    mount(container, preview);
+  });
 
   return container;
 }

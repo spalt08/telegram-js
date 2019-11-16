@@ -146,15 +146,15 @@ export type MessageMedia = {
  * Photo object
  * Ref: https://core.telegram.org/type/Photo
  */
-export type Photo = {
+export type Photo = PhotoNotEmpty | { _: 'photoEmpty' };
+export type PhotoNotEmpty = {
   _: 'photo',
+  id: any,
   has_stickers: boolean,
   access_hash: any,
   file_reference: string,
   dc_id: number,
   sizes: PhotoSize[],
-} | {
-  _: 'photoEmpty',
 };
 
 /**
@@ -272,4 +272,36 @@ export type MessageAction = {
 export type FileLocation = {
   volume_id: number,
   local_id: number,
+};
+
+/**
+ * Input File location object
+ * Ref: https://core.telegram.org/type/InputFileLocation
+ */
+export type InputFileLocation = {
+  _: 'inputPhotoFileLocation',
+  id: any,
+  access_hash: any,
+  file_reference: string,
+  thumb_size: string,
+};
+/**
+ * Ref: https://core.telegram.org/type/storage.FileType
+ */
+export type StorageFileType = {
+  _: 'storage.filePartial',
+} | {
+  _: 'storage.fileJpeg',
+} | {
+  _: 'storage.filePng',
+};
+
+/**
+ * Ref: https://core.telegram.org/constructor/upload.file
+ */
+export type UploadFile = {
+  _: 'upload.file',
+  type: StorageFileType,
+  mtime: number,
+  bytes: string,
 };

@@ -68,4 +68,9 @@
       filter: blur(12px);
     }
   }
+
+  &__preview {
+    cursor: pointer;
+    overflow: hidden;
+  }
 }
