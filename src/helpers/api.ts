@@ -1,6 +1,6 @@
-import { Dialog, Peer, Message, AnyShortMessage } from 'cache/types';
+import { Dialog, Peer, Message, AnyShortMessage, MessageEmpty } from 'cache/types';
 
-export function peerToId(peer: Peer) {
+export function peerToId(peer: Peer): string {
   switch (peer._) {
     case 'peerChannel': return `channel_${peer.channel_id}`;
     case 'peerChat': return `chat_${peer.chat_id}`;
@@ -9,18 +9,30 @@ export function peerToId(peer: Peer) {
   }
 }
 
-export function dialogToId(dialog: Dialog) {
+export function dialogToId(dialog: Dialog): string {
   return peerToId(dialog.peer);
 }
 
-export function peerMessageToId(peer: Peer, id: number) {
-  return `${peerToId(peer)}_${id}`;
+export function peerMessageToId(peer: Peer, messageId: number): string {
+  if (peer._ === 'peerUser') {
+    // All the dialogs with user share a single messages counter
+    return `users_${messageId}`;
+  }
+  return `${peerToId(peer)}_${messageId}`;
 }
 
-export function messageToId(message: Message) {
+export function messageToDialogPeer(message: Readonly<Exclude<Message, MessageEmpty>>): Peer;
+export function messageToDialogPeer(message: Readonly<MessageEmpty>): undefined;
+export function messageToDialogPeer(message: Readonly<Message>): Peer | undefined;
+export function messageToDialogPeer(message: Readonly<Message>): Peer | undefined {
+  if (message._ === 'messageEmpty') return undefined;
+  if (message.to_id._ === 'peerUser' && !message.out) return { _: 'peerUser', user_id: message.from_id };
+  return message.to_id;
+}
+
+export function messageToId(message: Readonly<Message>): string {
   if (message._ === 'messageEmpty') return `deleted_${message.id}`;
-  if (message.to_id._ === 'peerUser' && message.out === false) return `user_${message.from_id}_${message.id}`;
-  return peerMessageToId(message.to_id, message.id);
+  return peerMessageToId(messageToDialogPeer(message), message.id);
 }
 
 export function userIdToPeer(id: number): Peer {

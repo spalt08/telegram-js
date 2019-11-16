@@ -80,6 +80,10 @@ export default function orderBy<TItem>(compare: CompareFunction<TItem>) {
        */
       changes: changeSubject,
 
+      getLength() {
+        return orderCache.length;
+      },
+
       getIdAt(index: number): TId {
         return orderCache[index];
       },
