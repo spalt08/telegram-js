@@ -121,29 +121,14 @@ export default class Dictionary<TKey extends keyof any, TItem> {
   }
 
   /**
-   * A DOM hook to listen to an item change while the element is mounted
-   */
-  public useWatchItem(base: unknown, key: TKey, notifyOnStartWatching: boolean, onChange: ItemWatcher<TItem>) {
-    return useWhileMounted(base, () => {
-      if (notifyOnStartWatching) {
-        onChange(this.get(key));
-      }
-      return this.watchItem(key, onChange);
-    });
-  }
-
-  /**
-   * Makes a behavior subject that is updated only while the element is mounted.
+   * Makes a behavior subject that is updated only while the element is mounted for an item with the given key.
    * This subject can be subscribed on directly without memory leaks concerns.
    */
   public useItemBehaviorSubject(base: unknown, key: TKey): BehaviorSubject<Readonly<TItem> | undefined> {
-    let lastNotifiedItem = this.get(key);
-    const subject = new BehaviorSubject(lastNotifiedItem);
-    this.useWatchItem(base, key, true, (item) => {
-      if (item !== lastNotifiedItem) {
-        lastNotifiedItem = item;
-        subject.next(item);
-      }
+    const subject = new BehaviorSubject(this.get(key));
+    useWhileMounted(base, () => {
+      subject.next(this.get(key));
+      return this.watchItem(key, (item) => subject.next(item));
     });
     return subject;
   }

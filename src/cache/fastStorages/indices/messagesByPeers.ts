@@ -1,7 +1,11 @@
+import { BehaviorSubject } from 'rxjs';
 import binarySearch from 'binary-search';
 import { messageToDialogPeer, peerToId } from 'helpers/api';
+import { useWhileMounted } from 'core/hooks';
 import { Message, Peer } from '../../types';
 import Collection from '../collection';
+
+type HistoryWatcher = (ids: Readonly<number[]>) => void;
 
 // integer means the exact position, float means the position between positions floor(n) and ceil(n)
 function findIdInOrderedList(ids: number[], id: number): number {
@@ -22,8 +26,10 @@ class PeerIndex {
    */
   public vagrantIds = new Set<number>();
 
+  public historyWatchers: HistoryWatcher[] = [];
+
   public isEmpty() {
-    return this.historyIds.length > 0 && this.vagrantIds.size > 0;
+    return this.historyWatchers.length > 0 && this.historyIds.length > 0 && this.vagrantIds.size > 0;
   }
 
   // ids are in descending order
@@ -63,6 +69,7 @@ class PeerIndex {
     }
 
     this.historyIds.splice(startIndex, endIndex - startIndex, ...idsIntersection);
+    this.notifyHistoryWatchers();
   }
 
   public putVagrantId(messageId: number) {
@@ -75,6 +82,7 @@ class PeerIndex {
     const index = this.getHistoryIdIndex(messageId);
     if (index !== undefined) {
       this.historyIds.splice(index, 1);
+      this.notifyHistoryWatchers();
     }
   }
 
@@ -87,10 +95,14 @@ class PeerIndex {
     const isIdFound = index % 1 === 0;
     return isIdFound ? index : undefined;
   }
+
+  protected notifyHistoryWatchers() {
+    this.historyWatchers.forEach((watcher) => watcher(this.historyIds));
+  }
 }
 
 /**
- * Indexes messages by peers. Also keeps the history order.
+ * Indexes messages by peers. Also keeps the history order (in the descending order (new first)).
  */
 export default function messagesByPeers(collection: Collection<Message, any>) {
   const peers = {} as Record<string, PeerIndex>;
@@ -103,18 +115,24 @@ export default function messagesByPeers(collection: Collection<Message, any>) {
     return peers[peerId];
   }
 
+  function removePeerIfEmpty(peerId: string) {
+    if (peers[peerId] && peers[peerId].isEmpty()) {
+      delete peers[peerId];
+    }
+  }
+
   collection.changes.subscribe((collectionChanges) => {
     if (isUpdatingByThisIndex) {
       return;
     }
 
     collectionChanges.forEach(([action, message]) => {
-      const peerObject = messageToDialogPeer(message);
-      if (!peerObject) {
+      const peer = messageToDialogPeer(message);
+      if (!peer) {
         return;
       }
 
-      const peerId = peerToId(peerObject);
+      const peerId = peerToId(peer);
 
       switch (action) {
         case 'add': {
@@ -125,9 +143,7 @@ export default function messagesByPeers(collection: Collection<Message, any>) {
           if (peers[peerId]) {
             peers[peerId].removeHistoryId(message.id);
             peers[peerId].removeVagrantId(message.id);
-            if (peers[peerId].isEmpty()) {
-              delete peers[peerId];
-            }
+            removePeerIfEmpty(peerId);
           }
           break;
         }
@@ -152,46 +168,77 @@ export default function messagesByPeers(collection: Collection<Message, any>) {
         return;
       }
 
-      const peerObject = messageToDialogPeer(messages[0]);
-      if (!peerObject) {
+      const peer = messageToDialogPeer(messages[0]);
+      if (!peer) {
         return;
       }
 
-      const peer = getOrCreatePeer(peerToId(peerObject));
+      const peerIndex = getOrCreatePeer(peerToId(peer));
 
       try {
         isUpdatingByThisIndex = true;
         collection.put(messages);
-        peer.putHistoryIds(messages.map((message) => message.id));
+        peerIndex.putHistoryIds(messages.map((message) => message.id));
       } finally {
         isUpdatingByThisIndex = false;
       }
     },
 
     /**
-     * The returned ids are in descending order (like the server returns)
+     * The returned ids are in descending order (like the server returns).
+     * ⚠️ Here and everywhere else the history is mutated by reference.
      */
-    getHistoryIds(peerObject: Peer, start?: number, end?: number): number[] {
-      const peerId = peerToId(peerObject);
-      const peer = peers[peerId];
-      if (!peer) {
+    getHistory(peer: Peer, start?: number, end?: number): Readonly<number[]> {
+      const peerId = peerToId(peer);
+      const peerIndex = peers[peerId];
+      if (!peerIndex) {
         return [];
       }
       return start === undefined && end === undefined
-        ? peer.historyIds
-        : peer.historyIds.slice(start, end);
+        ? peerIndex.historyIds
+        : peerIndex.historyIds.slice(start, end);
     },
 
-    getVagrantIds(peerObject: Peer): number[] {
-      const peerId = peerToId(peerObject);
-      const peer = peers[peerId];
-      if (!peer) {
+    getVagrant(peer: Peer): Readonly<number[]> {
+      const peerId = peerToId(peer);
+      const peerIndex = peers[peerId];
+      if (!peerIndex) {
         return [];
       }
 
       const ids: number[] = [];
-      peer.vagrantIds.forEach((id) => ids.push(id));
+      peerIndex.vagrantIds.forEach((id) => ids.push(id));
       return ids;
+    },
+
+    watchHistory(peer: Peer, onChange: HistoryWatcher): () => void {
+      const peerId = peerToId(peer);
+      let peerIndex = getOrCreatePeer(peerId);
+      peerIndex.historyWatchers.push(onChange);
+
+      return () => {
+        peerIndex = peers[peerId];
+        if (peerIndex) {
+          const index = peerIndex.historyWatchers.indexOf(onChange);
+          if (index >= 0) {
+            peerIndex.historyWatchers.splice(index, 1);
+            removePeerIfEmpty(peerId);
+          }
+        }
+      };
+    },
+
+    /**
+     * Makes a behavior subject that is updated only while the element is mounted for a history the given peer.
+     * This subject can be subscribed on directly without memory leaks concerns.
+     */
+    useHistoryBehaviorSubject(base: unknown, peer: Peer): BehaviorSubject<Readonly<number[]>> {
+      const subject = new BehaviorSubject(this.getHistory(peer));
+      useWhileMounted(base, () => {
+        subject.next(this.getHistory(peer));
+        return this.watchHistory(peer, (history) => subject.next(history));
+      });
+      return subject;
     },
   };
 }
