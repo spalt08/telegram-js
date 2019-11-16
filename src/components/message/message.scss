@@ -24,6 +24,41 @@
     vertical-align: bottom;
   }
 
+  &__sticker {
+    & ~ svg {
+      display: none;
+    }
+  }
+
+  &__sticker &__date, &.out &__sticker &__date {
+    background: rgba(0, 0, 0, 0.2);
+    color: #FFFFFF;
+    border-radius: 11px;
+    padding: 2PX 6PX;
+  }
+
+  &__emoji {
+    line-height: 110%;
+    padding-bottom: 10px;
+    user-select: none;
+  }
+
+  &__emoji.e3 {
+    font-size: 50px;
+  }
+
+  &__emoji.e2 {
+    font-size: 60px;
+  }
+
+  &__emoji.e1 {
+    font-size: 80px;
+  }
+
+  &.with-media &__baloon {
+    width: 320px;
+  }
+
   &__content {
     padding: 5PX;
   }

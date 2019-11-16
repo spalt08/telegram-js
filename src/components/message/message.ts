@@ -7,6 +7,7 @@ import { messageCache } from 'cache';
 import { datetime } from 'components/ui';
 import { profileAvatar, profileTitle } from 'components/profile';
 import { peerMessageToId, userIdToPeer } from 'helpers/api';
+import { isEmoji } from 'helpers/message';
 import { auth } from 'services';
 import corner from 'assets/message_corner.svg?raw';
 import cornerShadow from 'assets/message_corner-shadow.svg?raw';
@@ -16,6 +17,10 @@ import './message.scss';
 
 const cornerSvg = svgCodeToComponent(corner);
 const cornerShadowSvg = svgCodeToComponent(cornerShadow);
+
+interface MessageHooks {
+  getFromID(): number;
+};
 
 export default function message(id: number, peer: Peer) {
   const container = div`.message.last`();
@@ -56,7 +61,14 @@ export default function message(id: number, peer: Peer) {
       wrapper = div`.message__baloon`(media);
     }
 
-    if (next.message) {
+    if (!media && next.message.length <= 6 && isEmoji(next.message)) {
+      wrapper = div`.message__sticker`(
+        div`.message__emoji${`e${next.message.length/2}`}`(text(next.message)),
+        div`.message__date`(
+          datetime({ timestamp: msg.date }),
+        ),
+      );
+    } else if (next.message) {
       wrapper = div`.message__baloon`(
         media || nothing,
         div`.message__content`(
@@ -69,6 +81,8 @@ export default function message(id: number, peer: Peer) {
           datetime({ timestamp: msg.date }),
         ),
       );
+
+      if (media) container.classList.add('with-media');
     }
 
     unmountChildren(container);
@@ -83,7 +97,7 @@ export default function message(id: number, peer: Peer) {
   useOnMount(container, () => {
     const prev = container.previousElementSibling;
 
-    if (prev && hasInterface(prev) && msg.from_id === getInterface(prev).getFromID()) {
+    if (prev && hasInterface<MessageHooks>(prev) && msg.from_id === getInterface(prev).getFromID()) {
       prev.classList.remove('last');
 
       const svgs = prev!.getElementsByTagName('svg');
