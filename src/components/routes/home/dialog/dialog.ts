@@ -17,9 +17,7 @@ export default function dialogPreview(id: string) {
 
   const dialog = dialogCache.useItemBehaviorSubject(container, id);
 
-  const { unread_count, peer, pinned } = dialog.value!;
-
-  if (pinned) container.classList.add('pinned');
+  const { peer, pinned } = dialog.value!;
 
   const preview = div`.dialog__preview`();
   const date = div`.dialog__date`();
@@ -37,11 +35,12 @@ export default function dialogPreview(id: string) {
     ])
   );
 
+  // on update
   useObservable(clickable, dialog, (next: Dialog) => {
     let badge: HTMLElement | undefined;
 
     if (next.unread_count > 0) badge = div`.dialog__badge`(text(next.unread_count));
-    if (next.unread_mark === true && unread_count === 0) badge = div`.dialog__badge`();
+    if (next.unread_mark === true && next.unread_count === 0) badge = div`.dialog__badge`();
     if (next.unread_mentions_count > 0) badge = div`.dialog__badge`(text('@'));
     if (badge && next.notify_settings && next.notify_settings.mute_until > 0) badge.classList.add('muted');
     if (!badge && next.pinned === true) badge = div`.dialog__pin`(pinnedchat({ className: 'icon' }));
@@ -57,10 +56,21 @@ export default function dialogPreview(id: string) {
     if (msg && msg._ !== 'messageEmpty') {
       mount(date, datetime({ timestamp: msg.date }));
     }
+
+    if (pinned && container.parentElement && container.parentElement.previousSibling instanceof HTMLElement) {
+      const prev = container.parentElement.previousSibling;
+      if (prev.classList.contains('lastpin')) prev.classList.remove('lastpin');
+      if (!container.parentElement.classList.contains('lastpin')) container.parentElement.classList.add('lastpin');
+    }
+
+    if (!pinned && container.parentElement && container.parentElement.classList.contains('lastpin')) {
+      container.parentElement.classList.remove('lastpin');
+    }
   });
 
   listen(clickable, 'click', () => message.selectPeer(peer));
 
   mount(container, clickable);
-  return div`.dialog__wrapper`(container);
+
+  return div`.dialog__wrapper${pinned ? 'lastpin' : ''}`(container);
 }
