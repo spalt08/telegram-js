@@ -1,8 +1,8 @@
 import { Photo } from 'cache/types';
 import { div, img } from 'core/html';
 import { materialSpinner } from 'components/icons';
-import { mount, unmount } from 'core/dom';
-import { getOrientation, getThumbnail, checkDimensions, getPhotoLocation, getSizeType } from 'helpers/photo';
+import { mount, unmount, listenOnce } from 'core/dom';
+import { getOrientation, getThumbnail, checkDimensions, getPhotoLocation, getSizeType, getSize } from 'helpers/photo';
 import { file } from 'services';
 import './photo.scss';
 
@@ -36,16 +36,24 @@ export default function mediaPhoto(photo: Photo) {
     }
   }
 
+  const box = getSize(photo.sizes, PHOTO_THUMBNAIL_MAX);
+  container.style.width = `${box.width}px`;
+  container.style.height = `${box.height}px`;
+
   mount(container, loader);
 
   const type = getSizeType(photo.sizes, PHOTO_THUMBNAIL_MAX);
   const location = getPhotoLocation(photo, type);
 
   file.getFile(location, (src) => {
-    if (background) background.style.backgroundImage = `url(${src})`;
-    if (thumbnail) unmount(thumbnail);
+    // if (background) background.style.backgroundImage = `url(${src})`;
     if (preview) unmount(preview);
     unmount(loader);
+
+    if (thumbnail) {
+      thumbnail.classList.add('removed');
+      listenOnce(thumbnail, 'animationend', () => thumbnail && unmount(thumbnail));
+    }
 
     preview = div`.photo__preview`(
       img({ src, alt: 'Message Photo' }),

@@ -1,6 +1,6 @@
 /* eslint-disable prefer-destructuring, prefer-template, max-len */
 import { hex, Bytes } from 'mtproto-js';
-import { PhotoSize, InputFileLocation, PhotoNotEmpty } from 'cache/types';
+import { PhotoSize, InputFileLocation, PhotoNotEmpty, Photo } from 'cache/types';
 import { blobToUrl } from './files';
 
 /**
@@ -41,6 +41,30 @@ export function getOrientation(sizes: PhotoSize[]): string {
   }
 
   return 'landscape';
+}
+
+export function getSize(sizes: PhotoSize[], dim: number) {
+  for (let i = 0; i < sizes.length; i += 1) {
+    const csize = sizes[i];
+
+    if (csize._ === 'photoSize') {
+      const landscape = csize.w > csize.h;
+
+      if (landscape) {
+        return {
+          width: dim,
+          height: (csize.h / csize.w) * dim,
+        };
+      }
+
+      return {
+        height: dim,
+        width: (csize.w / csize.h) * dim,
+      };
+    }
+  }
+
+  return { width: 0, height: 0 };
 }
 
 export function getSizeType(sizes: PhotoSize[], max: number): string {

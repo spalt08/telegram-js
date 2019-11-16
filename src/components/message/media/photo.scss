@@ -67,10 +67,28 @@
     img {
       filter: blur(12px);
     }
+
+    &.removed {
+      position: absolute;
+      animation: thumbRemoved .4s ease;
+    }
   }
 
   &__preview {
     cursor: pointer;
     overflow: hidden;
+    animation: previewAppear .4s ease;
+  }
+}
+
+@keyframes previewAppear {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes thumbRemoved {
+  to {
+    opacity: 0;
   }
 }
