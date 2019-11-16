@@ -27,13 +27,14 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
   const container = el(tag || 'div', { className: 'list__container' });
   const elements: Record<string, HTMLElement> = {};
   let current: any[] = [];
+  let pending: any[] = [];
 
   let viewport = container.getBoundingClientRect();
   let offset = 0;
   let last = -1;
   let first = -1;
   let inited = false;
-  let flipping = false;
+  let locked = false;
   let bottomFreeSpace = false;
 
   const mountChild = (data: any, before?: any): Element => {
@@ -84,73 +85,13 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
     inited = true;
   };
 
-  let locked = false;
-
-  // Scroll Down
-  const scrollDown = () => {
-    if (current.length === 0) return;
-
-    const lastRect = elements[key(current[last])].getBoundingClientRect();
-    // Add elements from bottom
-    if (!locked && viewport.height + threshold > lastRect.top - viewport.top + lastRect.height) {
-      const prevScroll = container.scrollTop;
-      const numb = Math.min(batch, current.length - last - 1);
-
-      // locked = true;
-
-      console.log('scroll add down', numb, 'was', last - first);
-      for (let i = 0; i < numb; i += 1) {
-        last += 1;
-        mountChild(current[last]);
-      }
-
-      for (let i = 0; i < numb; i += 1) {
-        // const height = elements[current[first]].getBoundingClientRect().height;
-        unMountChild(current[first]);
-        first += 1;
-      }
-
-      // locked = false;
-      // container.scrollTop = prevScroll + numb * 72;
-      // offset = container.scrollTop;
-    }
-  };
-
-  // Scroll Up
-  const scrollUp = () => {
-    if (current.length === 0) return;
-
-    // Add elements from top
-    if (!locked && offset < threshold) {
-      const num = Math.min(batch, first);
-
-      // locked = true;
-      console.log('scroll add top', num, 'was', last - first);
-
-      for (let i = 0; i < num; i += 1) {
-        first -= 1;
-        mountChild(current[first], current[first + 1]);
-      }
-
-      for (let i = 0; i < num; i += 1) {
-        unMountChild(current[last]);
-        last -= 1;
-      }
-
-      // locked = false;
-      // offset = container.scrollTop;
-    }
-  };
-
-  // On data changed
-  useObservable(container, items, (next: any[]) => {
+  // animation FLIP
+  const flip = (next: any[]) => {
     if (!inited) return;
     if (inited && current.length === 0 && next.length > 0) {
       init();
       return;
     }
-
-    return;
 
     const visible = current.slice(first, last + 1);
     let nextVisibleFirst = next.indexOf(visible[0]);
@@ -161,7 +102,7 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
       return;
     }
 
-    flipping = true;
+    locked = true;
 
     let nextVisibleLast = next.length > last ? last : next.length - 1;
     nextVisibleFirst = Math.max(0, nextVisibleLast - visible.length + 1);
@@ -170,7 +111,6 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
     const flipFrom: Record<string, ClientRect> = {};
     const flipTo: Record<string, ClientRect> = {};
 
-    console.log('updating', nextVisibleLast, nextVisibleFirst);
     // Keep start position for flip
     for (let i = 0; i < visible.length; i += 1) {
       flipFrom[key(visible[i])] = elements[key(visible[i])].getBoundingClientRect();
@@ -272,18 +212,89 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
     first = nextVisibleFirst;
     last = nextVisibleLast;
 
-    flipping = false;
+    locked = false;
+  };
+
+  const lock = () => { locked = true; };
+  const unlock = () => {
+    locked = false;
+    if (pending.length > 0) {
+      flip(pending);
+      pending = [];
+    }
+  };
+
+  // Scroll Down
+  const scrollDown = () => {
+    if (current.length === 0) return;
+
+    const lastRect = elements[key(current[last])].getBoundingClientRect();
+    // Add elements from bottom
+    if (!locked && viewport.height + threshold > lastRect.top - viewport.top + lastRect.height) {
+      let prevScroll = container.scrollTop;
+      const numb = Math.min(batch, current.length - last - 1);
+
+      lock();
+
+      for (let i = 0; i < numb; i += 1) {
+        last += 1;
+        mountChild(current[last]);
+      }
+
+      for (let i = 0; i < numb; i += 1) {
+        prevScroll -= elements[current[first]].getBoundingClientRect().height;
+        unMountChild(current[first]);
+        first += 1;
+      }
+
+      offset = prevScroll;
+      container.scrollTop = prevScroll;
+      // offset = container.scrollTop;
+
+      unlock();
+    }
+  };
+
+  // Scroll Up
+  const scrollUp = () => {
+    if (current.length === 0) return;
+
+    // Add elements from top
+    if (!locked && offset < threshold) {
+      let prevScroll = container.scrollTop;
+      const num = Math.min(batch, first);
+
+      lock();
+
+      for (let i = 0; i < num; i += 1) {
+        first -= 1;
+        mountChild(current[first], current[first + 1]);
+        prevScroll += elements[current[first]].getBoundingClientRect().height;
+      }
+
+      for (let i = 0; i < num; i += 1) {
+        unMountChild(current[last]);
+        last -= 1;
+      }
+
+      offset = prevScroll;
+      container.scrollTop = prevScroll;
+
+      unlock();
+    }
+  };
+
+  // On data changed
+  useObservable(container, items, (next: any) => {
+    if (locked) pending = next;
+    else flip(next);
   });
 
-  // let throttle = Date.now();
   listen(container, 'scroll', () => {
-    // const now = Date.now();
-    // if (now - throttle < 100) return;
-    // throttle = now;
-
     if (container.scrollTop < 0) return;
-    if (container.scrollTop === offset || flipping) return;
+    if (container.scrollTop === offset || locked) return;
 
+    console.log('next', container.scrollTop);
 
     if (container.scrollTop > offset) {
       offset = container.scrollTop;

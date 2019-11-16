@@ -62,5 +62,5 @@ export default function dialogPreview(id: string) {
   listen(clickable, 'click', () => message.selectPeer(peer));
 
   mount(container, clickable);
-  return container;
+  return div`.dialog__wrapper`(container);
 }
