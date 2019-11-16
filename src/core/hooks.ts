@@ -62,11 +62,10 @@ export function useInterface<TBase, TInterface>(base: TBase, object: TInterface)
 }
 
 /**
- * Gets the attached object (see useInterface)
+ * Gets the attached object (see useInterface). If not attached, returns undefined.
  */
-export function getInterface<TBase extends WithInterfaceHook<any>>(base: TBase)
-  : TBase extends WithInterfaceHook<infer TInterface> ? TInterface : never {
-  return base.__hooks.interface;
+export function getInterface<TBase>(base: TBase): TBase extends WithInterfaceHook<infer TInterface> ? TInterface : undefined {
+  return isWithHooks(base) ? base.__hooks.interface as any : undefined;
 }
 
 /**
