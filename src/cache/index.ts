@@ -32,6 +32,7 @@ export const messageCache = new Collection<Message, {}, string>({
 /**
  * Dialog repo
  * Ref: https://core.telegram.org/type/dialog
+ * @todo Leave the manual sort (fetched from the server) for the pinned dialogs
  */
 export const dialogCache = new Collection({
   considerMin: false,

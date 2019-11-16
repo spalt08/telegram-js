@@ -197,10 +197,7 @@ export type PhotoSize = {
  * Message object
  * Ref: https://core.telegram.org/type/Message
  */
-export type Message = MessageCommon | MessageService | {
-  _: 'messageEmpty',
-  id: number,
-};
+export type Message = MessageCommon | MessageService | MessageEmpty;
 
 export type MessageCommon = {
   _: 'message',
@@ -221,6 +218,11 @@ export type MessageService = {
   from_id: number,
   date: number,
   to_id: Peer,
+};
+
+export type MessageEmpty = {
+  _: 'messageEmpty',
+  id: number,
 };
 
 /**
