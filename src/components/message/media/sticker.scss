@@ -1,0 +1,20 @@
+.sticker {
+  width: 200px;
+  height: 200px;
+  position: relative;
+  user-select: none;
+
+  &__thumb {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+
+    img {
+      filter: blur(5px);
+      width: 100%;
+      height: 100%;
+    }
+  }
+}

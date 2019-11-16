@@ -60,7 +60,7 @@ export default function mediaPhoto(photo: Photo) {
     );
 
     mount(container, preview);
-  });
+  }, photo.dc_id);
 
   return container;
 }

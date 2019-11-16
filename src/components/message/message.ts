@@ -14,13 +14,14 @@ import cornerShadow from 'assets/message_corner-shadow.svg?raw';
 import serviceMessage from './message_service';
 import messageMedia from './message_media';
 import './message.scss';
+import emojiMessage from './message_emoji';
 
 const cornerSvg = svgCodeToComponent(corner);
 const cornerShadowSvg = svgCodeToComponent(cornerShadow);
 
 interface MessageHooks {
   getFromID(): number;
-};
+}
 
 export default function message(id: number, peer: Peer) {
   const container = div`.message.last`();
@@ -41,7 +42,7 @@ export default function message(id: number, peer: Peer) {
 
     let picture = null;
     let title = null;
-    let media = null;
+    let media: Node | null = null;
     let wrapper = null;
 
     if (!out && peer._ !== 'peerUser') {
@@ -58,17 +59,19 @@ export default function message(id: number, peer: Peer) {
 
     if (!next.message && media) {
       container.classList.add('media');
-      wrapper = div`.message__baloon`(media);
+
+      if (media instanceof HTMLElement && media.classList.contains('sticker')) {
+        wrapper = media;
+      } else {
+        wrapper = div`.message__baloon`(media);
+      }
     }
 
     if (!media && next.message.length <= 6 && isEmoji(next.message)) {
-      wrapper = div`.message__sticker`(
-        div`.message__emoji${`e${next.message.length/2}`}`(text(next.message)),
-        div`.message__date`(
-          datetime({ timestamp: msg.date }),
-        ),
-      );
-    } else if (next.message) {
+      wrapper = emojiMessage(next.message, next.date);
+    }
+
+    if (!wrapper && next.message) {
       wrapper = div`.message__baloon`(
         media || nothing,
         div`.message__content`(
@@ -97,7 +100,7 @@ export default function message(id: number, peer: Peer) {
   useOnMount(container, () => {
     const prev = container.previousElementSibling;
     const pinterface = prev && hasInterface<MessageHooks>(prev) ? getInterface(prev) : null;
-  
+
     if (prev && pinterface && pinterface.getFromID && msg.from_id === pinterface.getFromID()) {
       prev.classList.remove('last');
 

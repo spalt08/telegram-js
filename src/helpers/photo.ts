@@ -1,7 +1,7 @@
 /* eslint-disable prefer-destructuring, prefer-template, max-len */
 import { hex, Bytes } from 'mtproto-js';
-import { PhotoSize, InputFileLocation, PhotoNotEmpty, Photo } from 'cache/types';
-import { blobToUrl } from './files';
+import { PhotoSize, InputFileLocation, PhotoNotEmpty } from 'cache/types';
+import { blobToUrl, hexToBlob } from './files';
 
 /**
  * Ref: https://github.com/telegramdesktop/tdesktop/blob/bec39d89e19670eb436dc794a8f20b657cb87c71/Telegram/SourceFiles/ui/image/image.cpp#L225
@@ -24,6 +24,11 @@ export function getThumbnail(sizes: PhotoSize[]) {
 
     if (size._ === 'photoStrippedSize') {
       const blob = strippedToBlob(size.bytes);
+      return blobToUrl(blob);
+    }
+
+    if (size._ === 'photoCachedSize') {
+      const blob = hexToBlob(size.bytes, 'image/jpeg');
       return blobToUrl(blob);
     }
   }

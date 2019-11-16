@@ -134,12 +134,23 @@ export type MessageMedia = {
   _: 'messageMediaContact',
 } | {
   _: 'messageMediaDocument',
+  document: Document,
 } | {
   _: 'messageMediaWebPage',
 } | {
   _: 'messageMediaGeoLive',
 } | {
   _: 'messageMediaPoll',
+};
+
+export type Document = {
+  _: 'document',
+  id: any,
+  access_hash: any,
+  file_reference: string,
+  mime_type: string,
+  thumbs: PhotoSize[],
+  dc_id: number,
 };
 
 /**
@@ -174,6 +185,12 @@ export type PhotoSize = {
   _: 'photoStrippedSize',
   type: string,
   bytes: string,
+} | {
+  _: 'photoCachedSize',
+  type: string,
+  bytes: string,
+  w: number,
+  h: number,
 };
 
 /**
@@ -279,7 +296,7 @@ export type FileLocation = {
  * Ref: https://core.telegram.org/type/InputFileLocation
  */
 export type InputFileLocation = {
-  _: 'inputPhotoFileLocation',
+  _: 'inputPhotoFileLocation' | 'inputDocumentFileLocation',
   id: any,
   access_hash: any,
   file_reference: string,

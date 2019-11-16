@@ -9,7 +9,7 @@ export default class FileService {
   getFile(location: InputFileLocation, cb: (url: string) => void, dc: number = client.cfg.dc, offset: number = 0, limit: number = 1024 * 1024) {
     // todo cache lookup
 
-    client.call('upload.getFile', { location, offset, limit }, (err, result) => {
+    client.call('upload.getFile', { location, offset, limit }, { dc }, (err, result) => {
       // redirect to another dc
       if (err && err.message && err.message.indexOf('FILE_MIGRATE_') > -1) {
         this.getFile(location, cb, +err.message.slice(-1), offset, limit);
@@ -25,7 +25,7 @@ export default class FileService {
       if (!err && result) {
         this.processFile(result.json(), offset, limit, cb);
       }
-    })
+    });
   }
 
   processFile(file: UploadFile, offset: number, limit: number, cb: (url: string) => void) {
