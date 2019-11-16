@@ -2,6 +2,7 @@ import { dialogToId, messageToId, peerMessageToId } from 'helpers/api';
 import Collection, { makeGetIdFromProp } from './fastStorages/collection';
 import { Chat, Dialog, Message, User } from './types';
 import { orderBy } from './fastStorages/indices';
+import messagesByPeers from './fastStorages/indices/messagesByPeers';
 
 // todo: Save the main part of the cache to a persistent storage
 
@@ -21,12 +22,17 @@ export const chatCache = new Collection<Chat, {}, number>({
   getId: makeGetIdFromProp('id'),
 });
 
+const messageCacheIndices = {
+  peers: messagesByPeers,
+};
+
 /**
  * Message repo
  * Ref: https://core.telegram.org/constructor/message
  */
-export const messageCache = new Collection<Message, {}, string>({
+export const messageCache = new Collection<Message, typeof messageCacheIndices, string>({
   getId: messageToId,
+  indices: messageCacheIndices,
 });
 
 /**

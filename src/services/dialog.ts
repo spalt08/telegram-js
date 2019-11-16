@@ -61,13 +61,18 @@ export default class DialogsService {
     });
   }
 
-  updateTopMessage(message: Message) {
-    messageCache.put(message);
-
+  updateTopMessage(message: Readonly<Message>) {
     if (message._ === 'messageEmpty') {
       // todo fetch previous top_message
       return;
     }
+
+    if (message._ === 'messageService') {
+      // todo handle message update
+      return;
+    }
+
+    messageCache.put(message);
 
     const dialog = dialogCache.get(peerToId(message.to_id));
 

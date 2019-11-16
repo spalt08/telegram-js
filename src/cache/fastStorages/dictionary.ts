@@ -14,13 +14,13 @@ export default class Dictionary<TKey extends keyof any, TItem> {
   /**
    * Notifies about all changes of the dictionary. Don't use it if you need to watch a single item.
    */
-  public readonly changeSubject = new Subject<ChangeEvent<TItem, TKey>[]>();
+  public readonly changes = new Subject<ChangeEvent<TItem, TKey>[]>();
 
   protected data: Record<TKey, Readonly<TItem>>;
 
   protected changesBatch = new BatchActions((events: ChangeEvent<TItem, TKey>[]) => {
-    if (this.changeSubject.observers.length > 0) {
-      this.changeSubject.next(events);
+    if (this.changes.observers.length > 0) {
+      this.changes.next(events);
     }
   });
 
@@ -70,7 +70,7 @@ export default class Dictionary<TKey extends keyof any, TItem> {
 
   public put(arg1: any, arg2?: any) {
     if (arg2 === undefined) {
-      this.changesBatch.batch(() => {
+      this.batchChanges(() => {
         (Object.keys(arg1) as TKey[]).forEach((key) => this.putOne(key, arg1[key]));
       });
     } else {
@@ -101,7 +101,7 @@ export default class Dictionary<TKey extends keyof any, TItem> {
       }
     });
 
-    this.changesBatch.batch(() => {
+    this.batchChanges(() => {
       toRemove.forEach((key) => this.remove(key));
       this.put(items);
     });
@@ -146,6 +146,13 @@ export default class Dictionary<TKey extends keyof any, TItem> {
       }
     });
     return subject;
+  }
+
+  /**
+   * Batches all the changes made on this dictionary so that the dictionary triggers only 1 event in changeSubject
+   */
+  public batchChanges(run: () => void) {
+    this.changesBatch.batch(run);
   }
 
   protected putOne(key: TKey, item: Readonly<TItem>) {

@@ -13,11 +13,17 @@ export default class MessagesService {
 
   isLoading = new BehaviorSubject<boolean>(false);
 
-  history: number[] = [];
+  // todo: Watch the cache
+  history = new BehaviorSubject<number[]>([]);
 
   selectPeer(peer: Peer) {
-    this.history = [];
     this.activePeer.next(peer);
+    this.history.next(messageCache.indices.peers.getHistoryIds(peer));
+
+    if (this.history.value.length > 0) {
+      return; // todo: Load older on scroll
+    }
+
     this.isLoading.next(true);
 
     const payload = {
@@ -32,18 +38,19 @@ export default class MessagesService {
     };
 
     client.call('messages.getHistory', payload, (_err: ClientError, res: TLAbstract) => {
-      if (res instanceof TLConstructor) {
-        const data = res.json();
-        messageCache.put(data.messages);
-
-        for (let i = 0; i < data.users.length; i += 1) userCache.put(data.users);
-
-        for (let i = data.messages.length - 1; i >= 0; i -= 1) {
-          this.history.push(data.messages[i].id);
+      try {
+        if (res instanceof TLConstructor) {
+          const data = res.json();
+          userCache.put(data.users);
+          messageCache.indices.peers.putHistoryMessages(data.messages);
+          this.history.next(messageCache.indices.peers.getHistoryIds(peer));
         }
-
+      } finally {
         this.isLoading.next(false);
       }
     });
   }
+
+  // todo: Watch new messages and put them to the thread of the active peer:
+  // messagesCache.indices.peers.putHistoryMessages([message]);
 }
