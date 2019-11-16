@@ -8,6 +8,8 @@ export default function messages() {
   const content = div`.messages__history`();
   const container = div`.messages`(content);
 
+  // todo: Add loading placeholder
+
   useObservable(content, service.activePeer, () => {
     unmountChildren(content);
   });
