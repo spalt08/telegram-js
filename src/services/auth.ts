@@ -88,7 +88,7 @@ export default class AuthService {
     client.call('auth.sendCode', payload, (err, res) => {
       if (err && err.type === 'network') {
         console.log(err);
-        if (err.message && err.message.indexOf('400')) {
+        if (err.message && (err.message.indexOf('400') || err.code === 1006)) {
           client.svc.meta = {};
         }
 
