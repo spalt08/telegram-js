@@ -1,6 +1,5 @@
 import { Dialog, Peer, Message, AnyShortMessage, MessageEmpty } from 'cache/types';
 import { ARCHIVE_FOLDER_ID } from 'const/api';
-import { chatCache } from 'cache';
 
 export function peerToId(peer: Peer): string {
   switch (peer._) {
@@ -60,15 +59,15 @@ export function shortMessageToMessage(self: number, message: AnyShortMessage): M
 }
 
 export function shortChatMessageToMessage(message: any): Message {
-  const chat = chatCache.get(message.chat_id);
-  console.log(chat);
+  const peer: Peer = {
+    _: 'peerChat',
+    chat_id: message.chat_id,
+  };
+
   return {
     ...message,
     _: 'message',
-    to_id: {
-      _: 'peerChat',
-      chat_id: message.chat_id,
-    },
+    to_id: peer,
     media: { _: 'messageMediaEmpty' },
   };
 }
