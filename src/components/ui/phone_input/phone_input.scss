@@ -39,6 +39,8 @@
 
   &__prefix {
     line-height: 135%;
+    flex: none;
+    max-width: 40%;
   }
 
   &.focused,
@@ -59,7 +61,7 @@
     color: #ea615d;
   }
 
-  & input {
+  input {
     appearance: none;
     outline: none;
     background: transparent;

@@ -119,12 +119,17 @@
   &__label {
     flex: 0 100%;
     font-size: 1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   &__phone {
     text-align: right;
     font-size: 0.9rem;
     color: #707579;
+    flex: none;
+    margin-left: 10px;
+    max-width: 35%;
   }
 }
 
