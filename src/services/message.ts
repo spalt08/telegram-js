@@ -35,10 +35,14 @@ export default class MessagesService {
 
     client.updates.on('updateShortChatMessage', (res: TLConstructor) => {
       const update = res.json();
-      console.log(update);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(update);
+      }
       const message = shortChatMessageToMessage(update);
-      console.log(update);
-      console.log(message);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(update);
+        console.log(message);
+      }
       // this.handleMessagePush(message);
     });
 
