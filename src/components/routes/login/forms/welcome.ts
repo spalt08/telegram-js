@@ -79,7 +79,7 @@ export default function formWelcome() {
   listen(element, 'submit', (event: Event) => {
     blurAll(element);
 
-    if (isProcessing.value === false) {
+    if (!isProcessing.value) {
       isProcessing.next(true);
       const phoneNumber = getInterface(inputPhone).getValue();
 
