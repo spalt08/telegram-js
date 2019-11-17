@@ -7,7 +7,7 @@ const dc = local ? +local : 2;
 
 const tl = new TypeLanguage(Layer105);
 const client = new Client(tl, {
-  test: false,
+  test: true,
   ssl: true,
   dc,
   protocol: 'intermediate',
