@@ -18,7 +18,31 @@
     @include respond-to(small) {
       width: 100%;
       max-width: 100%;
-    } 
+    }
+  }
+
+  &__menu {
+    flex: none;
+  }
+
+  &__dialogs {
+    flex: auto;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+
+    .dialogs {
+      flex: auto;
+      display: flex;
+      flex-direction: column;
+
+      &__spinner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+    }
   }
 
   &__content {
@@ -27,29 +51,19 @@
     
     @include respond-to(small) {
       display: none;
-    } 
-  }
-}
+    }
 
-.messages {
-  width: 100%;
-  height: 100%;
-  // background-image: url(~assets/bg.jpg); // Removed to smooth the scroll in Safari
-  background-size: 500px auto;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+    .messages {
+      width: 100%;
+      height: 100%;
+      // background-image: url(~assets/bg.jpg); // Removed to smooth the scroll in Safari
+      background-size: 500px auto;
+      display: flex;
+      flex-direction: column;
 
-  &__history {
-    flex: 1 50%;
-  }
-}
-
-.dialogs {
-  height: 100%;
-  flex: 1 50%;
-
-  & .list__container {
-    height: 100%;
+      &__history {
+        flex: 1 50%;
+      }
+    }
   }
 }

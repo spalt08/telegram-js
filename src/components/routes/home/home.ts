@@ -11,8 +11,8 @@ export default function home() {
   return (
     div`.home`(
       div`.home__sidebar`(
-        menu(),
-        dialogs(),
+        menu({ className: 'home__menu' }),
+        dialogs({ className: 'home__dialogs' }),
       ),
       div`.home__content`(
         messages(),

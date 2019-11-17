@@ -8,3 +8,4 @@ export { default as passwordInput } from './password_input/password_input';
 export { default as datetime } from './datetime/datetime';
 export { default as ripple } from './ripple/ripple';
 export { default as list } from './list/list';
+export { default as sectionSpinner } from './section_spinner/section_spinner';

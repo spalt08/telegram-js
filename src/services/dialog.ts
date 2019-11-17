@@ -11,9 +11,9 @@ import { Message } from 'cache/types';
 export default class DialogsService {
   dialogs = new BehaviorSubject(dialogCache.indices.order.getIds());
 
-  total = 0;
+  loading = new BehaviorSubject(false);
 
-  loading = false;
+  protected isComplete = false;
 
   constructor() {
     client.updates.on('updateNewChannelMessage', (res: TLConstructor) => {
@@ -45,44 +45,15 @@ export default class DialogsService {
   }
 
   updateDialogs(offsetDate = 0) {
-    if (this.loading) return;
-
-    this.loading = true;
-
-    const payload = {
-      offset_date: offsetDate,
-      offset_id: 0,
-      offset_peer: { _: 'inputPeerEmpty' },
-      limit: 60,
-      hash: 0,
-    };
-
-    client.call('messages.getDialogs', payload, (err, res) => {
-      if (err && err.message && err.message.indexOf('USER_MIGRATE_') > -1) {
-        // todo store dc
-        localStorage.setItem('dc', err.message.slice(-1));
-        client.cfg.dc = +err.message.slice(-1);
-        this.updateDialogs();
-        return;
-      }
-
-      if (res instanceof TLConstructor && (res._ === 'messages.dialogs' || res._ === 'messages.dialogsSlice')) {
-        const data = res.json();
-
-        this.total = res._ === 'messages.dialogs' ? data.dialogs.length : data.count;
-
-        userCache.put(data.users);
-        chatCache.put(data.chats);
-        messageCache.put(data.messages);
-        dialogCache.put(data.dialogs);
-      }
-
-      this.loading = false;
+    if (this.loading.value) return;
+    this.loading.next(true);
+    this.doUpdateDialogs(offsetDate, () => {
+      this.loading.next(false);
     });
   }
 
   loadMoreDialogs() {
-    if (this.dialogs.value.length > 0 && this.dialogs.value.length < this.total) {
+    if (!this.isComplete) {
       const last = dialogCache.get(this.dialogs.value[this.dialogs.value.length - 1]);
       if (last) {
         const msg = messageCache.get(peerMessageToId(last.peer, last.top_message));
@@ -91,7 +62,7 @@ export default class DialogsService {
     }
   }
 
-  updateTopMessage(message: Readonly<Message>) {
+  protected updateTopMessage(message: Readonly<Message>) {
     if (message._ === 'messageEmpty') {
       // todo fetch previous top_message
       return;
@@ -112,5 +83,43 @@ export default class DialogsService {
     }
 
     dialogCache.put({ ...dialog, top_message: message.id });
+  }
+
+  protected doUpdateDialogs(offsetDate = 0, cb?: () => void) {
+    const chunk = 60;
+    const payload = {
+      offset_date: offsetDate,
+      offset_id: 0,
+      offset_peer: { _: 'inputPeerEmpty' },
+      limit: chunk,
+      hash: 0,
+    };
+
+    client.call('messages.getDialogs', payload, (err, res) => {
+      if (err && err.message && err.message.indexOf('USER_MIGRATE_') > -1) {
+        // todo store dc
+        localStorage.setItem('dc', err.message.slice(-1));
+        client.cfg.dc = +err.message.slice(-1);
+        this.doUpdateDialogs();
+        return;
+      }
+
+      try {
+        if (res instanceof TLConstructor && (res._ === 'messages.dialogs' || res._ === 'messages.dialogsSlice')) {
+          const data = res.json();
+
+          if (data.dialogs.length < chunk - 10) { // -10 just in case
+            this.isComplete = true;
+          }
+
+          userCache.put(data.users);
+          chatCache.put(data.chats);
+          messageCache.put(data.messages);
+          dialogCache.put(data.dialogs);
+        }
+      } finally {
+        if (cb) cb();
+      }
+    });
   }
 }
