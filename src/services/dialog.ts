@@ -114,7 +114,7 @@ export default class DialogsService {
 
           userCache.put(data.users);
           chatCache.put(data.chats);
-          messageCache.put(data.messages);
+          data.messages.forEach((message: Message) => messageCache.indices.peers.putHistoryMessages([message]));
           dialogCache.put(data.dialogs);
         }
       } finally {

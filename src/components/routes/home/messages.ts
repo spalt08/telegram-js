@@ -27,7 +27,7 @@ export default function messages() {
 
   const itemsSubject = new BehaviorSubject<number[]>([]);
   const showSpinnerObservable = combineLatest([service.history, service.isLoading]).pipe(
-    map(([messagesList, isLoading]) => messagesList.length === 0 && isLoading),
+    map(([messagesList, isLoading]) => messagesList.length < 3 && isLoading),
   );
 
   mount(element, list({
