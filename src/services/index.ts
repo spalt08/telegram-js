@@ -6,7 +6,7 @@ import FileService from './file';
 export const auth = new AuthService();
 export const file = new FileService();
 export const message = new MessageService();
-export const dialog = new DialogService();
+export const dialog = new DialogService(message);
 
 
 // todo remove debug

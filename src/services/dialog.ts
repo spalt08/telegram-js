@@ -19,6 +19,27 @@ export default class DialogsService {
     dialogCache.indices.order.changes.subscribe(() => {
       this.dialogs.next(dialogCache.indices.order.getIds());
     });
+
+    messageCache.indices.peers.historyChanges.subscribe(([peerId, messageIds]) => {
+      const topMessageNumId = messageIds[0];
+      if (!topMessageNumId) {
+        return;
+      }
+
+      const dialog = dialogCache.get(peerId);
+      if (!dialog) {
+        return;
+      }
+
+      if (dialog.top_message === topMessageNumId) {
+        return;
+      }
+
+      dialogCache.put({
+        ...dialog,
+        top_message: topMessageNumId,
+      });
+    });
   }
 
   updateDialogs(offsetDate = 0) {
@@ -68,7 +89,8 @@ export default class DialogsService {
 
           userCache.put(data.users);
           chatCache.put(data.chats);
-          data.messages.forEach((message: Message) => messageCache.indices.peers.putHistoryMessages([message]));
+          messageCache.put(data.messages);
+          // data.messages.forEach((message: Message) => messageCache.indices.peers.putHistoryMessages([message])); Not used because other components can't handle it properly
           dialogCache.put(data.dialogs);
         }
       } finally {

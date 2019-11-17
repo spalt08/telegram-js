@@ -1,4 +1,4 @@
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import binarySearch from 'binary-search';
 import { messageToDialogPeer, peerToId } from 'helpers/api';
 import { useWhileMounted } from 'core/hooks';
@@ -36,7 +36,7 @@ class PeerIndex {
   public historyWatchers: HistoryWatcher[] = [];
 
   public isEmpty() {
-    return this.historyWatchers.length > 0 && this.historyIds.length > 0 && this.vagrantIds.size > 0;
+    return this.historyIds.length > 0 && this.vagrantIds.size > 0;
   }
 
   // ids are in descending order
@@ -113,17 +113,20 @@ class PeerIndex {
  */
 export default function messagesByPeers(collection: Collection<Message, any>) {
   const peers = {} as Record<string, PeerIndex>;
+  const globalChangeSubject = new Subject<[string, Readonly<number[]>]>();
   let isUpdatingByThisIndex = false;
 
   function getOrCreatePeer(peerId: string) {
     if (!peers[peerId]) {
       peers[peerId] = new PeerIndex();
+      peers[peerId].historyWatchers.push((ids) => globalChangeSubject.next([peerId, ids]));
     }
     return peers[peerId];
   }
 
   function removePeerIfEmpty(peerId: string) {
-    if (peers[peerId] && peers[peerId].isEmpty()) {
+    // 1 historyWatcher is the global watcher
+    if (peers[peerId] && peers[peerId].isEmpty() && peers[peerId].historyWatchers.length === 1) {
       delete peers[peerId];
     }
   }
@@ -163,6 +166,12 @@ export default function messagesByPeers(collection: Collection<Message, any>) {
   return {
     // todo remove debug
     peers,
+
+    /**
+     * Notifies about all peers histories changes.
+     * The events are arrays [peerId, messageNumIds (descending)]
+     */
+    historyChanges: globalChangeSubject,
 
     /**
      * Puts messages to the dialog messages history. Don't use it to put vagrant messages (e.g. replied to message).
