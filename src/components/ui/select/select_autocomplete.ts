@@ -28,7 +28,7 @@ type Props<T> = {
 export default function selectAutoComplete<T>({
   label = '',
   name = '',
-  selected,
+  selected: _selected,
   options = [],
   disabled = false,
   optionRenderer = (text: T) => textNode(typeof text === 'string' ? text : ''),
@@ -36,6 +36,7 @@ export default function selectAutoComplete<T>({
   onChange,
 }: Props<T>) {
   let query = '';
+  let selected = _selected;
   let highlighted = -1;
   let inputEl: HTMLInputElement;
 
@@ -63,6 +64,7 @@ export default function selectAutoComplete<T>({
   const [disabledSubject] = useToBehaviorSubject(element, disabled, false);
 
   const performBlur = () => {
+    setValue(inputEl, optionLabeler(options[selected]));
     element.classList.remove('focused');
     unmount(optionsEl);
     inputEl.blur();
@@ -103,7 +105,6 @@ export default function selectAutoComplete<T>({
 
   const setSelected = (key: number) => {
     selected = key === -1 ? 0 : key;
-    setValue(inputEl, optionLabeler(options[selected]));
     performBlur();
 
     if (onChange) onChange(options[selected]);
@@ -120,6 +121,7 @@ export default function selectAutoComplete<T>({
   });
 
   listen(inputEl!, 'focus', () => {
+    setValue(inputEl, '');
     element.classList.add('focused');
     if (optionsEl.parentNode !== element) {
       mount(element, optionsEl);

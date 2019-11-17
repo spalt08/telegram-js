@@ -1,43 +1,92 @@
 .checkbox {
+  $color-off: #707579;
+  $color-on: #4EA4F5;
+  $checkmark-width: 14px;
+  $checkmark-height: 10px;
+  $transition-duration: 0.3s;
+  $ripple-size: 44px;
+
   display: inline-block;
   vertical-align: middle;
   cursor: pointer;
+  padding: 3px;
   width: 24px;
   height: 24px;
-  position: relative;
 
   &__input {
     display: none;
   }
 
-  &__on,
-  &__off {
-    transform: translate3d(0, 0, 0); // To make the icons not jump in Safari during the transition
-    position: absolute;
-    top: 0;
-    left: 0;
+  &__box {
+    display: block;
     width: 100%;
     height: 100%;
-    transition: .2s ease;
+    position: relative;
+    border-radius: 3px;
+    border: 2px solid $color-off;
+    transition: $transition-duration ease;
+    box-sizing: border-box;
+  }
 
-    path {
-      fill: #4EA4F5;
-      transition: .2s ease;
-    }
+  &__checkmark {
+    position: absolute;
+    left: calc(50% - #{$checkmark-width / 2});
+    top: calc(50% - #{$checkmark-height / 2});
+    width: 0;
+    height: $checkmark-height;
+    overflow: hidden;
+    transition: $transition-duration ease;
+    pointer-events: none;
 
-    :hover > &,
-    :focus > & {
+    &_image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: $checkmark-width;
+      height: $checkmark-height;
+
       path {
-        fill: #4797E2;
+        fill: #fff;
       }
     }
   }
 
-  &__on {
-    opacity: 0;
+  &__input:checked + &__box {
+    border-color: $color-on;
+    background: $color-on;
   }
 
-  &__input:checked + &__on {
-    opacity: 1;
+  &__input:checked + &__box &__checkmark {
+    width: $checkmark-width;
   }
+
+  &__input:disabled + &__box {
+    opacity: 0.8;
+    cursor: not-allowed;
+  }
+
+  &__ripple {
+    border-radius: 100%;
+    width: $ripple-size;
+    height: $ripple-size;
+    position: absolute;
+    top: calc(50% - #{$ripple-size / 2});
+    left: calc(50% - #{$ripple-size / 2});
+    pointer-events: none;
+    animation: checkbox-ripple ($transition-duration * 1.4) ease-out forwards;
+
+    &.-on {
+      background: $color-on;
+    }
+
+    &.-off {
+      background: $color-off;
+    }
+  }
+}
+
+@keyframes checkbox-ripple {
+  0%   { transform: scale(0.2); opacity: 0; }
+  60%  { transform: scale(1); opacity: 0.2;  }
+  100% { transform: scale(1); opacity: 0; }
 }

@@ -14,12 +14,12 @@
     position: absolute;
     transform: translateX(-50%) translateY(-50%);
     border-radius: 50%;
-    animation: click .9s ease-out forwards;
+    animation: ripple-effect .9s ease-out forwards;
     z-index: 1;
   }
 }
 
-@keyframes click {
+@keyframes ripple-effect {
 	0%   { transform: translate(-50%, -50%); }
 	80%  { transform: translate(-50%, -50%) scale(25);  }
 	100% { transform: translate(-50%, -50%) scale(25); opacity: 0; }

@@ -7,6 +7,7 @@ import { getInterface } from 'core/hooks';
 import { formatWithCountry } from 'helpers/phone';
 import { auth } from 'services';
 import * as icons from 'components/icons';
+import { humanizeErrorOperator } from 'helpers/humanizeError';
 import '../login.scss';
 
 interface Props {
@@ -24,7 +25,7 @@ export default function codeBasic({ onFocus, onBlur, onChange }: Props) {
 
   const inputCode = textInput({
     label: 'Code',
-    error: err,
+    error: err.pipe(humanizeErrorOperator()),
     disabled: isProcessing,
     onChange(val: string) {
       if (err.value !== undefined) err.next(undefined);

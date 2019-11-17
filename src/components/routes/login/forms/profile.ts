@@ -5,6 +5,7 @@ import { button, textInput } from 'components/ui';
 import { blurAll, listen } from 'core/dom';
 import { getInterface } from 'core/hooks';
 import { auth } from 'services';
+import { humanizeErrorOperator } from 'helpers/humanizeError';
 import '../login.scss';
 
 /**
@@ -17,7 +18,7 @@ export default function formProfile() {
   const inputFirstName = textInput({
     label: 'Name',
     autocomplete: 'given-name',
-    error: errFirstName,
+    error: errFirstName.pipe(humanizeErrorOperator()),
     disabled: isProcessing,
     onChange: () => errFirstName.value !== undefined && errFirstName.next(undefined),
   });
@@ -25,7 +26,7 @@ export default function formProfile() {
   const inputLastName = textInput({
     label: 'Last Name (optional)',
     autocomplete: 'family-name',
-    error: errLastName,
+    error: errLastName.pipe(humanizeErrorOperator()),
     disabled: isProcessing,
     onChange: () => errLastName.value !== undefined && errLastName.next(undefined),
   });

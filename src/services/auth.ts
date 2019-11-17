@@ -74,8 +74,11 @@ export default class AuthService {
     };
 
     client.call('auth.sendCode', payload, (err, res) => {
-      // todo display network error
-      if (err && err.type === 'network') { cb(); return; }
+      if (err && err.type === 'network') {
+        this.errPhone.next('NETWORK_ERROR');
+        cb();
+        return;
+      }
 
       if (err) {
         // Should use another DC
@@ -118,7 +121,11 @@ export default class AuthService {
     };
 
     client.call('auth.signIn', payload, (err, res) => {
-      if (err && err.type === 'network') { cb(); return; }
+      if (err && err.type === 'network') {
+        this.errCode.next('NETWORK_ERROR');
+        cb();
+        return;
+      }
 
       // Should use 2FA authorization
       if (err && err.message === 'SESSION_PASSWORD_NEEDED') {
@@ -165,7 +172,11 @@ export default class AuthService {
 
     client.getPasswordKdfAsync(this.passwordAlgo, password, (ip) => {
       client.call('auth.checkPassword', { password: ip }, (err, res) => {
-        if (err && err.type === 'network') { cb(); return; }
+        if (err && err.type === 'network') {
+          this.errPassword.next('NETWORK_ERROR');
+          cb();
+          return;
+        }
 
         // Display error message
         if (err) {
@@ -196,7 +207,11 @@ export default class AuthService {
     };
 
     client.call('auth.signUp', payload, (err, res) => {
-      if (err && err.type === 'network') { cb(); return; }
+      if (err && err.type === 'network') {
+        this.errFirstName.next('NETWORK_ERROR');
+        cb();
+        return;
+      }
       // todo: handle PHONE_CODE_EXPIRED
 
       if (err && err.message === 'FIRSTNAME_INVALID') {
