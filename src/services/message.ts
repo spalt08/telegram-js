@@ -18,8 +18,6 @@ export default class MessagesService {
 
   peerHistoryUnsubscribe: (() => void) | undefined;
 
-  total = 0;
-
   selectPeer(peer: Peer) {
     if (this.activePeer.value && peerToId(peer) === peerToId(this.activePeer.value)) {
       return;
@@ -39,7 +37,7 @@ export default class MessagesService {
   }
 
   protected loadMessages(peer: Peer, olderThanId = 0) {
-    if (this.isLoading.value === true) return;
+    if (this.isLoading.value) return;
 
     this.isLoading.next(true);
 
@@ -55,21 +53,17 @@ export default class MessagesService {
       hash: 0,
     };
 
-    console.log(payload);
-
     client.call('messages.getHistory', payload, (_err: ClientError, res: TLAbstract) => {
-
-      console.log(_err, res);
-
       try {
         if (res instanceof TLConstructor) {
           const data = res.json();
 
-          this.total = res._ === 'messages.messages' ? data.dialogs.length : data.count;
-
           userCache.put(data.users);
           chatCache.put(data.chats);
           messageCache.indices.peers.putHistoryMessages(data.messages);
+          if (data.messages.length < chunk - 10) { // -10 just in case
+            messageCache.indices.peers.pubHistoryComplete(peer);
+          }
         }
       } finally {
         this.isLoading.next(false);
@@ -78,7 +72,7 @@ export default class MessagesService {
   }
 
   loadMoreHistory() {
-    if (this.history.value.length > 0 && this.history.value.length < this.total && this.activePeer.value) {
+    if (this.activePeer.value && !messageCache.indices.peers.isHistoryComplete(this.activePeer.value)) {
       const offset_id = this.history.value[this.history.value.length - 1];
       this.loadMessages(this.activePeer.value, offset_id);
     }
