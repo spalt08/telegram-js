@@ -7,6 +7,7 @@ import countries, { Country } from 'const/country';
 import { getInterface } from 'core/hooks';
 import { auth } from 'services';
 import logo from 'assets/logo.svg';
+import { humanizeErrorOperator } from 'helpers/humanizeError';
 import '../login.scss';
 
 const countryOptionRenderer = ({ phone, label: countryLabel, emoji }: Country) => (
@@ -32,7 +33,7 @@ export default function formWelcome() {
     prefix: phonePrefix,
     formats: phoneFormats,
     disabled: isProcessing,
-    error: err,
+    error: err.pipe(humanizeErrorOperator()),
     onChange: () => err.value !== undefined && err.next(undefined),
   });
 

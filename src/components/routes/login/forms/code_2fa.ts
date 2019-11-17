@@ -5,6 +5,7 @@ import { button, passwordInput } from 'components/ui';
 import { blurAll, listen } from 'core/dom';
 import { getInterface } from 'core/hooks';
 import { auth } from 'services';
+import { humanizeErrorOperator } from 'helpers/humanizeError';
 import '../login.scss';
 
 interface Props {
@@ -21,7 +22,7 @@ export default function code2fa({ onHideToggle }: Props) {
     label: 'Password',
     name: 'password',
     initiallyHidden: true,
-    error: err,
+    error: err.pipe(humanizeErrorOperator()),
     onChange: () => err.value !== undefined && err.next(undefined),
     onHideToggle,
   });
