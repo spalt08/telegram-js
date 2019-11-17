@@ -36,7 +36,6 @@ export class Router {
 
     useListenWhileMounted(this.element, window, 'popstate', (event: PopStateEvent) => {
       event.preventDefault();
-      console.log('popstate');
       this.fetchLocation();
     });
 
@@ -47,7 +46,6 @@ export class Router {
     let newRoute = window.location.pathname;
     if (hashRouter) newRoute = window.location.hash.slice(1);
 
-    console.log('fetch', newRoute, this.currentRoute, this.routes[newRoute] || this.routes.default);
     if (this.currentRoute !== newRoute) {
       const routeHandler = this.routes[newRoute] || this.routes.default;
 

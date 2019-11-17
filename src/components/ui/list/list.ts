@@ -50,7 +50,6 @@ export default function list({ tag, className, threshold = 400, reversed = false
   let first = -1;
   let locked = false;
   let bottomFreeSpace = false;
-  let topFreeSpace = false;
 
   const mountChild = (data: any, before?: any): Element => {
     const id = key(data);
@@ -119,15 +118,13 @@ export default function list({ tag, className, threshold = 400, reversed = false
       }
 
       container.scrollTop = container.scrollHeight - viewport.height;
-
-      if (first === 0) topFreeSpace = true;
     }
   };
 
   // animation FLIP
   const flip = (next: any[]) => {
     if (current.length === 0 && next.length === 0) return;
-    if ((current.length === 0 && next.length > 0) || topFreeSpace) {
+    if (current.length === 0 && next.length > 0) {
       init();
       return;
     }
