@@ -36,7 +36,10 @@ export default function message(id: number, peer: Peer) {
 
   if (out) container.classList.add('out');
   // Rerender on change
-  useObservable(container, subject, (next) => {
+  // useObservable(container,
+  // subject.subscribe((next) => {
+    const next = subject.value;
+    console.log('message next', next);
     if (!next || next._ === 'messageEmpty') return;
     if (next._ === 'messageService') return;
 
@@ -94,7 +97,7 @@ export default function message(id: number, peer: Peer) {
     if (wrapper) mount(container, wrapper);
     mount(container, cornerSvg({ className: 'message__corner' }));
     mount(container, cornerShadowSvg({ className: 'message__corner-shadow' }));
-  });
+  // });
 
   // cleanup prev messages from same sender
   useOnMount(container, () => {
