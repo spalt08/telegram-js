@@ -74,7 +74,9 @@ export default class FileService {
     const uploaded = partSize * part;
     const remaining = Math.min(partSize * (part + 1), file.length - uploaded);
 
-    console.log(part, file.slice(uploaded, uploaded + remaining).length, uploaded, remaining);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(part, file.slice(uploaded, uploaded + remaining).length, uploaded, remaining);
+    }
     const payload = {
       file_id: id.uint,
       file_part: part,

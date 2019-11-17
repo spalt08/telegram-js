@@ -4,7 +4,7 @@ export function humanizeError(message: string): string {
   // Known API errors
   switch (message) {
     case 'PASSWORD_HASH_INVALID': return 'Password Invalid';
-    case 'AUTH_RESTART': return 'Reload The Page';
+    case 'AUTH_RESTART': return 'Please Reload the Page';
     default:
   }
 

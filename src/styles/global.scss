@@ -55,4 +55,9 @@ select {
       box-shadow: 0 0 0px 1000px #FFFFFF inset;
     }
   }
+
+  &::-ms-clear,
+  &::-ms-reveal {
+    display: none;
+  }
 }
