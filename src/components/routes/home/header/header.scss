@@ -28,7 +28,7 @@
   }
 
   &__info {
-    padding-left: 16px;
+    padding-left: 12px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -37,6 +37,7 @@
 
   &__title {
     font-weight: 500;
+    font-size: 15px;
   }
 
   &__status {

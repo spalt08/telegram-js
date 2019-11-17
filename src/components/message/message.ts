@@ -6,12 +6,14 @@ import { messageCache } from 'cache';
 import { datetime } from 'components/ui';
 import { profileAvatar, profileTitle } from 'components/profile';
 import { peerMessageToId, userIdToPeer } from 'helpers/api';
+import { idToColorCode } from 'cache/accessors';
 import { isEmoji } from 'helpers/message';
 import { auth } from 'services';
 import serviceMessage from './message_service';
 import messageMedia from './message_media';
 import './message.scss';
 import emojiMessage from './message_emoji';
+import messageReply from './message_reply';
 
 interface MessageHooks {
   getFromID(): number;
@@ -35,6 +37,7 @@ export default function message(id: number, peer: Peer) {
   let picture: HTMLElement | undefined;
   let title: HTMLElement | undefined;
   let media: HTMLElement | null | undefined;
+  let reply: HTMLElement | null;
 
   // Rerender on change
   const rerender = (next: Message) => {
@@ -48,7 +51,7 @@ export default function message(id: number, peer: Peer) {
     if ((!picture || !prev) && !out && peer._ !== 'peerUser') {
       const fromPeer = userIdToPeer(msg.from_id);
       picture = profileAvatar(fromPeer, next);
-      title = div`.message__title`(profileTitle(fromPeer));
+      title = div`.message__title${`color-${idToColorCode(next.from_id)}`}`(profileTitle(fromPeer));
 
       container.classList.add('chat');
 
@@ -83,11 +86,16 @@ export default function message(id: number, peer: Peer) {
       }
 
       // Display only emoji
-      if (shouldRerender && !media && next.message.length <= 6 && isEmoji(next.message)) {
+      if (!media && next.message.length <= 6 && isEmoji(next.message)) {
         wrapper = emojiMessage(next.message, next.date);
         container.classList.add('as-emoji');
       } else {
         container.classList.remove('as-emoji');
+      }
+
+      // Display reply
+      if (next.reply_to_msg_id) {
+        reply = messageReply(peer, next.reply_to_msg_id);
       }
 
       // Common message
@@ -97,6 +105,7 @@ export default function message(id: number, peer: Peer) {
           div`.message__content`(
             div`.message__text`(
               title || nothing,
+              reply || nothing,
               text(next.message),
             ),
           ),
@@ -107,6 +116,21 @@ export default function message(id: number, peer: Peer) {
 
         if (media) container.classList.add('with-media');
         else container.classList.remove('with-media');
+      }
+
+      // Fallback
+      if (!wrapper && !next.message) {
+        wrapper = div`.message__baloon`(
+          div`.message__content`(
+            div`.message__text.fallback`(
+              title || nothing,
+              text('This type of message is not implemented yet'),
+            ),
+          ),
+          div`.message__date`(
+            datetime({ timestamp: msg.date, date: false }),
+          ),
+        );
       }
 
       unmountChildren(inner);

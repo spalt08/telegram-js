@@ -1,3 +1,5 @@
+@import '~styles/variables.scss';
+
 .message {
   position: relative;
   font-size: 15px;
@@ -78,7 +80,14 @@
     &:after {
       content: '';
       display: inline-block;
-      width: 24px;
+      width: 30px;
+    }
+
+    &.fallback {
+      font-size: 14px;
+      font-style: italic;
+      color: #707579;
+      line-height: 180%;
     }
   }
 
@@ -121,11 +130,17 @@
   }
 
   &__title {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
     color: #1DA1F1;
     line-height: 150%;
     display: none;
+
+    @each $i, $color in $user-bg-colors {
+      &.color-#{$i} {
+        color: $color;
+      }
+    }
   }
 
   &.first &__title, &:first-child &__title {

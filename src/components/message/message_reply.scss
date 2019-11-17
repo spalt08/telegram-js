@@ -1,0 +1,37 @@
+.reply {
+  padding: 4px 0 6px;
+
+  &__content {
+    border-left: 2px solid #4EA4F5;
+    padding-left: 6px;
+  }
+
+  &__title {
+    color: #4EA4F5;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__message {
+    font-size: 14px;;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #707579;
+
+    &.media {
+      color: #707579;
+    }
+  }
+}
+
+.message.out .reply__content {
+  border-left-color: #4FAE4F;
+}
+
+.message.out .reply__title {
+  color: #4FAE4F;
+}
