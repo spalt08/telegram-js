@@ -59,9 +59,17 @@
       background-size: 500px auto;
       display: flex;
       flex-direction: column;
+      position: relative;
 
       &__history {
         flex: 1 50%;
+      }
+
+      &__spinner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
       }
     }
   }

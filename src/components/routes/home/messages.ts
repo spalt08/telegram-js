@@ -1,10 +1,11 @@
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, combineLatest } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { div } from 'core/html';
-import { mount } from 'core/dom';
+import { mount, unmount } from 'core/dom';
 import { useObservable } from 'core/hooks';
 import { message as service } from 'services';
 import message from 'components/message/message';
-import { list } from 'components/ui';
+import { list, sectionSpinner } from 'components/ui';
 import messageInput from 'components/message/input/message_input';
 import header from './header/header';
 
@@ -18,14 +19,16 @@ function reverseIdsList<T>(ids: Readonly<T[]>): T[] {
 }
 
 export default function messages() {
-  // todo: Add loading placeholder
   const element = div`.messages`(
     header(),
+    messageInput(),
   );
-  const itemsSubject = new BehaviorSubject<number[]>([]);
+  let spinner: Node | undefined;
 
-  useObservable(element, service.activePeer, () => itemsSubject.next([]));
-  useObservable(element, service.history, (history) => itemsSubject.next(reverseIdsList(history)));
+  const itemsSubject = new BehaviorSubject<number[]>([]);
+  const showSpinnerObservable = combineLatest([service.history, service.isLoading]).pipe(
+    map(([messagesList, isLoading]) => messagesList.length === 0 && isLoading),
+  );
 
   mount(element, list({
     className: 'messages__history',
@@ -35,11 +38,21 @@ export default function messages() {
     batch: 30,
     renderer: (id: number) => message(id, service.activePeer.value!),
     onReachEnd: () => service.loadMoreHistory(),
-  }));
+  }), element.lastElementChild!);
 
-  const input = messageInput();
+  // Make the list scroll to bottom on an active peer change
+  useObservable(element, service.activePeer, () => itemsSubject.next([]));
 
-  mount(element, input);
+  useObservable(element, service.history, (history) => itemsSubject.next(reverseIdsList(history)));
+
+  useObservable(element, showSpinnerObservable, (show) => {
+    if (show && !spinner) {
+      mount(element, spinner = sectionSpinner({ className: 'messages__spinner' }));
+    } else if (!show && spinner) {
+      unmount(spinner);
+      spinner = undefined;
+    }
+  });
 
   return element;
 }
