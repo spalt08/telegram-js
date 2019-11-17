@@ -81,5 +81,9 @@
     &:focus {
       outline: none;
     }
+
+    &:disabled {
+      color: #5c5c5c;
+    }
   }
 }
