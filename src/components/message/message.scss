@@ -4,7 +4,6 @@
   width: 100%;
   max-width: 700px;
   margin: 0 auto;
-  position: relative;
 
   &__inner {
     padding-bottom: 4PX;
@@ -28,7 +27,6 @@
     display: inline-block;
     text-align: left;
     vertical-align: bottom;
-    z-index: 1;
   }
 
   & .avatar {
@@ -57,7 +55,6 @@
     content: '';
     background-image: url(~assets/message_corner.svg);
     background-size: 100%;
-    z-index: 2;
   }
 
   &.last:before, &:last-child:before {
@@ -75,6 +72,7 @@
   &__text {
     padding: 0PX 5PX;
     font-size: 15px;
+    white-space: pre-wrap;
 
     &:after {
       content: '';
