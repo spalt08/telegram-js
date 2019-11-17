@@ -228,7 +228,7 @@ export type MessageCommon = {
   date: number,
   to_id: Peer,
   media: MessageMedia,
-  reply_to_msg_id: number,
+  reply_to_msg_id?: number,
 };
 
 export type MessageService = {

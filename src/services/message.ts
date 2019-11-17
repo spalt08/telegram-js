@@ -1,10 +1,10 @@
 import { BehaviorSubject } from 'rxjs';
 import { TLConstructor, ClientError, TLAbstract } from 'mtproto-js';
 import client from 'client/client';
-import { Peer } from 'cache/types';
+import { Message, Peer } from 'cache/types';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
-import { peerToId } from '../helpers/api';
+import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage } from 'helpers/api';
 
 /**
  * Singleton service class for handling messages stuff
@@ -17,6 +17,42 @@ export default class MessagesService {
   history = new BehaviorSubject<Readonly<number[]>>([]);
 
   peerHistoryUnsubscribe: (() => void) | undefined;
+
+  constructor() {
+    client.updates.on('updateNewMessage', (res: TLConstructor) => {
+      const update = res.json();
+      // console.log('updateNewMessage', update);
+      this.handleMessagePush(update.message);
+    });
+
+    client.updates.on('updateShortMessage', (res: TLConstructor) => {
+      const update = res.json();
+      // todo store userid
+      // console.log('updateShortMessage', update);
+      const message = shortMessageToMessage(client.svc.meta[client.cfg.dc].userID as number, update);
+      this.handleMessagePush(message);
+    });
+
+    client.updates.on('updateNewChannelMessage', (res: TLConstructor) => {
+      const update = res.json();
+      // console.log('updateNewChannelMessage', update);
+      this.handleMessagePush(update.message);
+    });
+
+    client.updates.on('updateDeleteMessages', (res: TLConstructor) => {
+      const update = res.json();
+      // console.log('updateDeleteMessage', update);
+      update.messages.forEach((messageId: number) => messageCache.remove(getUserMessageId(messageId)));
+    });
+
+    client.updates.on('updateDeleteChannelMessages', (res: TLConstructor) => {
+      const update = res.json();
+      // console.log('updateDeleteChannelMessages', update);
+      update.messages.forEach((messageId: number) => messageCache.remove(
+        peerMessageToId({ _: 'peerChannel', channel_id: update.channel_id }, messageId),
+      ));
+    });
+  }
 
   selectPeer(peer: Peer) {
     if (this.activePeer.value && peerToId(peer) === peerToId(this.activePeer.value)) {
@@ -78,6 +114,11 @@ export default class MessagesService {
     }
   }
 
-  // todo: Watch new messages and put them to the thread of the active peer:
-  // messagesCache.indices.peers.putHistoryMessages([message]);
+  protected handleMessagePush(message: Message) {
+    if (message._ === 'messageEmpty') {
+      return;
+    }
+
+    messageCache.indices.peers.putHistoryMessages([message]);
+  }
 }

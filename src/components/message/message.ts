@@ -5,7 +5,7 @@ import { Peer, MessageCommon, Message } from 'cache/types';
 import { messageCache } from 'cache';
 import { datetime } from 'components/ui';
 import { profileAvatar, profileTitle } from 'components/profile';
-import { peerMessageToId, userIdToPeer } from 'helpers/api';
+import { userIdToPeer } from 'helpers/api';
 import { idToColorCode } from 'cache/accessors';
 import { isEmoji } from 'helpers/message';
 import { auth } from 'services';
@@ -19,10 +19,10 @@ interface MessageHooks {
   getFromID(): number;
 }
 
-export default function message(id: number, peer: Peer) {
+export default function message(uniqueId: string, peer: Peer) {
   const inner = div`.message__inner`();
   const container = div`.message`(inner);
-  const subject = messageCache.useItemBehaviorSubject(container, peerMessageToId(peer, id));
+  const subject = messageCache.useItemBehaviorSubject(container, uniqueId);
   const msg = subject.value;
 
   // todo return null
