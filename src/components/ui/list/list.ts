@@ -262,6 +262,7 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
     // Add elements from top
     if (!locked && offset < threshold) {
       let prevScroll = container.scrollTop;
+      const prevFirst = first;
       const num = Math.min(batch, first);
 
       lock();
@@ -269,12 +270,15 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
       for (let i = 0; i < num; i += 1) {
         first -= 1;
         mountChild(current[first], current[first + 1]);
-        prevScroll += elements[current[first]].getBoundingClientRect().height;
       }
 
       for (let i = 0; i < num; i += 1) {
         unMountChild(current[last]);
         last -= 1;
+      }
+
+      for (let i = 0; i < num; i += 1) {
+        prevScroll += elements[current[prevFirst - i - 1]].getBoundingClientRect().height;
       }
 
       offset = prevScroll;
