@@ -8,14 +8,13 @@ import 'styles/global.scss';
 // todo: check user login and redirect him
 if (auth.state.value !== 'authorized' && history.state() !== 'sandbox') {
   history.push('/login');
-} else if (history.state() === '/login') {
-  // history.push('/');
+} else {
+  history.push('/');
 }
 
 const router = new Router({
   '/': routes.home,
   '/login': routes.login,
-  // '/sandbox': routes.sandbox,
   default: routes.login,
 });
 

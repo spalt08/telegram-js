@@ -261,7 +261,6 @@ export default class AuthService {
         if (i !== client.cfg.dc) client.authorize(i);
       }
 
-      // redirect
       history.push('/');
     }
   }
