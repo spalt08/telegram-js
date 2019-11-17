@@ -21,6 +21,11 @@ class PeerIndex {
   public historyIds: number[] = [];
 
   /**
+   * Whether the history ids list is filled up to the oldest id
+   */
+  public historyComplete = false;
+
+  /**
    * The messages got from other sources (e.g. replied to messages). Their positions in the history is unknown.
    * An id may be only in one of the lists (preferable in `historyIds`).
    */
@@ -185,6 +190,16 @@ export default function messagesByPeers(collection: Collection<Message, any>) {
     },
 
     /**
+     * Marks that the history of the given peer is loaded up to the end (the oldest message).
+     * You can get this value later though isHistoryEnded.
+     */
+    pubHistoryComplete(peer: Peer, completed = true) {
+      const peerId = peerToId(peer);
+      const peerIndex = getOrCreatePeer(peerId);
+      peerIndex.historyComplete = completed;
+    },
+
+    /**
      * The returned ids are in descending order (like the server returns).
      * ⚠️ Here and everywhere else the history is mutated by reference.
      */
@@ -209,6 +224,12 @@ export default function messagesByPeers(collection: Collection<Message, any>) {
       const ids: number[] = [];
       peerIndex.vagrantIds.forEach((id) => ids.push(id));
       return ids;
+    },
+
+    isHistoryComplete(peer: Peer) {
+      const peerId = peerToId(peer);
+      const peerIndex = peers[peerId];
+      return peerIndex ? peerIndex.historyComplete : false;
     },
 
     watchHistory(peer: Peer, onChange: HistoryWatcher): () => void {
