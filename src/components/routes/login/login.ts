@@ -5,7 +5,7 @@ import LoginTransition from './transition';
 import formWelcome from './forms/welcome';
 import formCode from './forms/code';
 import formProfile from './forms/profile';
-import loader from './forms/loader';
+import loading from './forms/loading';
 import './login.scss';
 
 /**
@@ -25,7 +25,7 @@ export default function login() {
     currentView = view;
 
     if (prevView === '') {
-      transitionController.set(view === 'authorized' ? loader : formWelcome);
+      transitionController.set(view === 'authorized' ? loading : formWelcome);
       return;
     }
 
@@ -43,7 +43,7 @@ export default function login() {
     }
 
     if (view === 'authorized') {
-      transitionController.translateRight(loader);
+      transitionController.translateRight(loading);
     }
   });
 

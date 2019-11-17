@@ -109,7 +109,7 @@ export function svgCodeToComponent(code: string) {
   }
 
   return (props?: Record<string, unknown>) => {
-    // todo: Check if calling svgFromCode every time is faster than cloning an SVG
+    // Cloning node is 2 times faster that creating from SVG code
     const svgCopy = getOrCreateTemplate().cloneNode(true) as SVGSVGElement;
     if (props) {
       setElementProps(svgCopy, props);

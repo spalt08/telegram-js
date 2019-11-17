@@ -26,7 +26,7 @@ body {
 }
 
 body, input, select, textarea, button {
-  font-family: 'Roboto', sans-serif; // todo: Check ₽ printing on iOS 13. If it's rectangle, add -apple-system
+  font-family: 'Roboto', sans-serif, -apple-system;
 }
 
 .main {
