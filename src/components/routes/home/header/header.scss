@@ -1,0 +1,50 @@
+.header {
+  background: #FFFFFF;
+  height: 62px;
+  border-bottom: 1px solid #EDEEF0;
+  padding: 5px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+
+  &.hidden {
+    display: none;
+  }
+
+  &__profile {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+
+    & .avatar {
+      width: 46px;
+      height: 46px;
+
+      &__standart {
+        font-size: 16px;
+      }
+    }
+  }
+
+  &__info {
+    padding-left: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  &__title {
+    font-weight: 500;
+  }
+
+  &__status {
+    font-size: 14px;
+    color: #707579;
+
+    &.online {
+      color: #1DA1F1;
+    }
+  }
+}

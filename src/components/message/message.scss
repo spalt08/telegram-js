@@ -3,7 +3,7 @@
   font-size: 15px;
   width: 100%;
   max-width: 700px;
-  margin: 2.5px auto;
+  margin: 0 auto;
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
@@ -24,6 +24,7 @@
     display: inline-block;
     text-align: left;
     vertical-align: bottom;
+    z-index: 1;
   }
 
   & .avatar {
@@ -42,21 +43,28 @@
     padding: 5PX;
   }
 
-  &__corner {
+  &.last:after {
     position: absolute;
     left: -9PX;
     width: 11PX;
     bottom: -1PX;
     height: 20PX; 
     z-index: 2;
+    content: '';
+    background-image: url(~assets/message_corner.svg);
+    background-size: 100%;
+    z-index: 2;
+  }
 
-    &-shadow {
-      position: absolute;
-      left: -9PX;
-      width: 11PX;
-      bottom: -3PX;
-      z-index: 0;
-    }
+  &.last:before {
+    position: absolute;
+    left: -9PX;
+    width: 11PX;
+    bottom: -3PX;
+    content: '';
+    background-image: url(~assets/message_corner-shadow.svg);
+    background-size: 100%;
+    z-index: 0;
   }
 
   &__text {
@@ -79,12 +87,12 @@
     bottom: 1PX;
   }
 
-  &.chat &__corner {
+  &.chat.last:after {
     left: 25.5PX;
+  }
 
-    &-shadow {
-      left: 25.5PX;
-    }
+  &.chat.last:before {
+    left: 25.5PX;
   }
 
   &.chat {
@@ -137,19 +145,16 @@
     border-top-left-radius: 10px;
   }
 
-  &.out &__corner {
+  &.last.out:after {
     transform: scaleX(-1);
     left: auto;
     right: -9PX;
-    &-shadow {
-      transform: scaleX(-1);
-      left: auto;
-      right: -9PX;
-    }
+  }
 
-    & #corner-fill {
-      fill: #EEFFDE;
-    }
+  &.last.out:before {
+    transform: scaleX(-1);
+    left: auto;
+    right: -9PX;
   }
 
   &.out &__date {
@@ -177,11 +182,11 @@
     border-bottom-right-radius: 10px;
   }
 
-  &.last.media &__corner {
+  &.last.media:after, &.last.as-emoji:after {
     display: none;
+  }
 
-    &-shadow {
-      display: none;
-    }
+  &.last.media:before, &.last.as-emoji:before {
+    display: none;
   }
 }

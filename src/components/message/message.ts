@@ -1,30 +1,24 @@
 import { div, text, nothing } from 'core/html';
-import { svgCodeToComponent } from 'core/factory';
-import { unmount, mount, unmountChildren } from 'core/dom';
+import { mount, unmountChildren } from 'core/dom';
 import { useOnMount, useObservable, useInterface, getInterface, hasInterface } from 'core/hooks';
-import { Peer } from 'cache/types';
+import { Peer, MessageCommon, Message } from 'cache/types';
 import { messageCache } from 'cache';
 import { datetime } from 'components/ui';
 import { profileAvatar, profileTitle } from 'components/profile';
 import { peerMessageToId, userIdToPeer } from 'helpers/api';
 import { isEmoji } from 'helpers/message';
 import { auth } from 'services';
-import corner from 'assets/message_corner.svg?raw';
-import cornerShadow from 'assets/message_corner-shadow.svg?raw';
 import serviceMessage from './message_service';
 import messageMedia from './message_media';
 import './message.scss';
 import emojiMessage from './message_emoji';
-
-const cornerSvg = svgCodeToComponent(corner);
-const cornerShadowSvg = svgCodeToComponent(cornerShadow);
 
 interface MessageHooks {
   getFromID(): number;
 }
 
 export default function message(id: number, peer: Peer) {
-  const container = div`.message.last`();
+  const container = div`.message`();
   const subject = messageCache.useItemBehaviorSubject(container, peerMessageToId(peer, id));
   const msg = subject.value;
 
@@ -35,82 +29,104 @@ export default function message(id: number, peer: Peer) {
   const out = msg.from_id === auth.userID ? 'out' : '';
 
   if (out) container.classList.add('out');
+
+  let prev: MessageCommon | undefined;
+  let picture: HTMLElement | undefined;
+  let title: HTMLElement | undefined;
+  let media: HTMLElement | null | undefined;
+
   // Rerender on change
-  // useObservable(container,
-  // subject.subscribe((next) => {
-    const next = subject.value;
-    console.log('message next', next);
+  const rerender = (next: Message) => {
     if (!next || next._ === 'messageEmpty') return;
     if (next._ === 'messageService') return;
 
-    let picture = null;
-    let title = null;
-    let media: Node | null = null;
     let wrapper = null;
+    let shouldRerender = false;
 
-    if (!out && peer._ !== 'peerUser') {
+    // mount picture if it is first call
+    if ((!picture || !prev) && !out && peer._ !== 'peerUser') {
       const fromPeer = userIdToPeer(msg.from_id);
       picture = profileAvatar(fromPeer, next);
       title = div`.message__title`(profileTitle(fromPeer));
 
       container.classList.add('chat');
+
+      shouldRerender = true;
     }
 
-    if (msg.media && msg.media._ !== 'messageMediaEmpty') {
-      media = messageMedia(msg.media);
-    }
+    if (!prev || prev.media !== next.media) {
+      shouldRerender = true;
 
-    if (!next.message && media) {
-      container.classList.add('media');
-
-      if (media instanceof HTMLElement && media.classList.contains('sticker')) {
-        wrapper = media;
+      if (msg.media && msg.media._ !== 'messageMediaEmpty') {
+        media = messageMedia(msg.media);
       } else {
-        wrapper = div`.message__baloon`(media);
+        media = null;
       }
     }
 
-    if (!media && next.message.length <= 6 && isEmoji(next.message)) {
-      wrapper = emojiMessage(next.message, next.date);
-    }
+    // Rerender if message text changed
+    if (!prev || prev.message !== next.message) shouldRerender = true;
 
-    if (!wrapper && next.message) {
-      wrapper = div`.message__baloon`(
-        media || nothing,
-        div`.message__content`(
-          div`.message__text`(
-            title || nothing,
-            text(next.message),
+    if (shouldRerender) {
+      // Render only media, without message text
+      if (!next.message && media) {
+        container.classList.add('media');
+
+        if (media.classList.contains('sticker')) {
+          wrapper = media;
+        } else {
+          wrapper = div`.message__baloon`(media);
+        }
+      } else {
+        container.classList.remove('media');
+      }
+
+      // Display only emoji
+      if (shouldRerender && !media && next.message.length <= 6 && isEmoji(next.message)) {
+        wrapper = emojiMessage(next.message, next.date);
+        container.classList.add('as-emoji');
+      } else {
+        container.classList.remove('as-emoji');
+      }
+
+      // Common message
+      if (!wrapper && next.message) {
+        wrapper = div`.message__baloon`(
+          media || nothing,
+          div`.message__content`(
+            div`.message__text`(
+              title || nothing,
+              text(next.message),
+            ),
           ),
-        ),
-        div`.message__date`(
-          datetime({ timestamp: msg.date }),
-        ),
-      );
+          div`.message__date`(
+            datetime({ timestamp: msg.date }),
+          ),
+        );
 
-      if (media) container.classList.add('with-media');
+        if (media) container.classList.add('with-media');
+        else container.classList.remove('with-media');
+      }
+
+      unmountChildren(container);
+      if (picture) mount(container, picture);
+      if (wrapper) mount(container, wrapper);
     }
 
-    unmountChildren(container);
+    prev = next;
+  };
 
-    if (picture) mount(container, picture);
-    if (wrapper) mount(container, wrapper);
-    mount(container, cornerSvg({ className: 'message__corner' }));
-    mount(container, cornerShadowSvg({ className: 'message__corner-shadow' }));
-  // });
+  rerender(msg);
 
-  // cleanup prev messages from same sender
+  useObservable(container, subject, (next) => next && rerender(next));
+
   useOnMount(container, () => {
-    const prev = container.previousElementSibling;
-    const pinterface = prev && hasInterface<MessageHooks>(prev) ? getInterface(prev) : null;
+    const prevEl = container.previousElementSibling;
+    const pinterface = prevEl && hasInterface<MessageHooks>(prevEl) ? getInterface(prevEl) : null;
 
-    if (prev && pinterface && pinterface.getFromID && msg.from_id === pinterface.getFromID()) {
-      prev.classList.remove('last');
-
-      const svgs = prev!.getElementsByTagName('svg');
-
-      for (let i = svgs.length - 1; i >= 0; i -= 1) unmount(svgs[i]);
-    } else if (prev) {
+    if (!prevEl) container.classList.add('first');
+    if (prevEl && pinterface && pinterface.getFromID && msg.from_id !== pinterface.getFromID()) {
+      prevEl.classList.add('last');
       container.classList.add('first');
     }
   });

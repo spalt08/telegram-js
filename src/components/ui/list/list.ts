@@ -9,6 +9,7 @@ type Props = {
   className?: string,
   items: BehaviorSubject<readonly any[]>,
   threshold?: number,
+  reversed?: boolean,
   batch?: number,
   renderer: (item: any) => HTMLElement,
   key?: (item: any) => string,
@@ -23,7 +24,7 @@ type Props = {
  *  renderer: (data) => div`.css`(text(data))
  * })
  */
-export default function list({ tag, className, threshold = 400, batch = 5, items, renderer, key = (i) => `${i}` }: Props) {
+export default function list({ tag, className, threshold = 400, reversed = false, batch = 5, items, renderer, key = (i) => `${i}` }: Props) {
   const container = el(tag || 'div', { className: 'list__container' });
   const elements: Record<string, HTMLElement> = {};
   let current: any[] = [];
@@ -298,6 +299,7 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
   });
 
   listen(container, 'scroll', () => {
+    console.log(container.scrollTop);
     if (container.scrollTop < 0) return;
     if (container.scrollTop + viewport.height > container.scrollHeight) return;
     if (container.scrollTop === offset || locked) return;
