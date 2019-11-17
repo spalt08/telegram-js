@@ -124,6 +124,7 @@ export default function list({ tag, className, threshold = 400, reversed = false
 
   // animation FLIP
   const flip = (next: any[]) => {
+    if (current.length === 0 && next.length === 0) return;
     if (current.length === 0 && next.length > 0) {
       init();
       return;
@@ -145,9 +146,6 @@ export default function list({ tag, className, threshold = 400, reversed = false
       nextVisibleFirst = nextVisibleLast - (last - first);
       if (nextVisibleFirst < 0) nextVisibleFirst = 0;
     }
-
-    console.log('current', first, last, current.length);
-    console.log('next', nextVisibleFirst, nextVisibleLast, next.length);
 
     // No need to rerender
     if (nextVisibleFirst > -1 && next.slice(nextVisibleFirst, visible.length) === visible) {
@@ -287,8 +285,15 @@ export default function list({ tag, className, threshold = 400, reversed = false
 
       lock();
 
-      for (let i = 0; i < numb; i += 1) {
-        prevScroll -= elements[current[first + i + 1]].getBoundingClientRect().height;
+      let numd = 0;
+      let removeHeight = 0;
+      const spaceTop = container.scrollTop;
+
+      while (removeHeight < spaceTop - threshold && numd < numb) {
+        const { height } = elements[current[first + numd]].getBoundingClientRect();
+        removeHeight += height;
+        prevScroll -= height;
+        numd += 1;
       }
 
       for (let i = 0; i < numb; i += 1) {
@@ -296,7 +301,7 @@ export default function list({ tag, className, threshold = 400, reversed = false
         mountChild(current[last]);
       }
 
-      for (let i = 0; i < numb; i += 1) {
+      for (let i = 0; i < Math.min(numb, numd); i += 1) {
         unMountChild(current[first]);
         first += 1;
       }
@@ -321,12 +326,21 @@ export default function list({ tag, className, threshold = 400, reversed = false
 
       lock();
 
+      let numd = 0;
+      let removeHeight = 0;
+      const spaceBottom = container.scrollHeight - (container.scrollTop + viewport.height);
+
+      while (removeHeight < spaceBottom - threshold && numd < num) {
+        removeHeight += elements[current[last - numd]].getBoundingClientRect().height;
+        numd += 1;
+      }
+
       for (let i = 0; i < num; i += 1) {
         first -= 1;
         mountChild(current[first], current[first + 1]);
       }
 
-      for (let i = 0; i < num; i += 1) {
+      for (let i = 0; i < Math.min(num, numd); i += 1) {
         unMountChild(current[last]);
         last -= 1;
       }

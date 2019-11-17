@@ -2,7 +2,7 @@ import { BehaviorSubject } from 'rxjs';
 import { div } from 'core/html';
 import { mount } from 'core/dom';
 import { useObservable } from 'core/hooks';
-import { message as service } from 'services';
+import { message as service, dialog } from 'services';
 import message from 'components/message/message';
 import { list } from 'components/ui';
 import header from './header/header';
@@ -23,6 +23,7 @@ export default function messages() {
   );
   const itemsSubject = new BehaviorSubject<number[]>([]);
 
+  useObservable(element, service.activePeer, () => itemsSubject.next([]));
   useObservable(element, service.history, (history) => itemsSubject.next(reverseIdsList(history)));
 
   mount(element, list({
