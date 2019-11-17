@@ -8,7 +8,6 @@ export default function dialogs() {
 
   // todo: Add loading placeholder
   // todo: Add offline status badge
-  // todo: Hide archived dialogs
   // todo: Hide migrated dialogs. There is a migrated_to property in migrated chats (not dialogs).
   // todo: Highlight the selected dialog
 

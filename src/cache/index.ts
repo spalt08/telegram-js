@@ -1,4 +1,4 @@
-import { dialogToId, messageToId, peerMessageToId } from 'helpers/api';
+import { dialogToId, isDialogArchived, messageToId, peerMessageToId } from 'helpers/api';
 import Collection, { makeGetIdFromProp } from './fastStorages/collection';
 import { Chat, Dialog, Message, User } from './types';
 import { orderBy } from './fastStorages/indices';
@@ -44,16 +44,19 @@ export const dialogCache = new Collection({
   considerMin: false,
   getId: dialogToId,
   indices: {
-    order: orderBy((dialog1: Dialog, dialog2: Dialog) => {
-      // Pinned first
-      if (dialog1.pinned !== dialog2.pinned) {
-        return (dialog2.pinned ? 1 : 0) - (dialog1.pinned ? 1 : 0);
-      }
-      // If both are (not) pinned, with most recent message first
-      const message1 = messageCache.get(peerMessageToId(dialog1.peer, dialog1.top_message));
-      const message2 = messageCache.get(peerMessageToId(dialog2.peer, dialog2.top_message));
-      return (message2 && message2._ !== 'messageEmpty' ? message2.date : 0) - (message1 && message1._ !== 'messageEmpty' ? message1.date : 0);
-    }),
+    order: orderBy(
+      (dialog1: Dialog, dialog2: Dialog) => {
+        // Pinned first
+        if (dialog1.pinned !== dialog2.pinned) {
+          return (dialog2.pinned ? 1 : 0) - (dialog1.pinned ? 1 : 0);
+        }
+        // If both are (not) pinned, with most recent message first
+        const message1 = messageCache.get(peerMessageToId(dialog1.peer, dialog1.top_message));
+        const message2 = messageCache.get(peerMessageToId(dialog2.peer, dialog2.top_message));
+        return (message2 && message2._ !== 'messageEmpty' ? message2.date : 0) - (message1 && message1._ !== 'messageEmpty' ? message1.date : 0);
+      },
+      (dialog: Dialog) => !isDialogArchived(dialog),
+    ),
   },
 });
 
@@ -61,3 +64,5 @@ export const dialogCache = new Collection({
 // todo remove debug
 (window as any).mcache = messageCache;
 (window as any).ccache = chatCache;
+(window as any).dcache = dialogCache;
+(window as any).ucache = userCache;

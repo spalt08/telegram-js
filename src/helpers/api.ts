@@ -51,3 +51,7 @@ export function shortMessageToMessage(self: number, message: AnyShortMessage): M
     media: { _: 'messageMediaEmpty' },
   };
 }
+
+export function isDialogArchived(dialog: Dialog) {
+  return dialog.folder_id === ARCHIVE_FOLDER_ID;
+}

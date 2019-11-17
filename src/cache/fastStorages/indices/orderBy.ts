@@ -7,9 +7,15 @@ import Collection from '../collection';
  */
 export type CompareFunction<T> = (item1: Readonly<T>, item2: Readonly<T>) => number;
 
+export type FilterFunction<T> = (item: Readonly<T>) => boolean;
+
 export type ChangeEvent = ['add', number] | ['move', number, number] | ['remove', number];
 
-export default function orderBy<TItem>(compare: CompareFunction<TItem>) {
+function allIn() {
+  return true;
+}
+
+export default function orderBy<TItem>(compare: CompareFunction<TItem>, filter: FilterFunction<TItem> = allIn) {
   return function orderIndex<TId extends keyof any = keyof any>(collection: Collection<TItem, any, TId>) {
     const orderCache: TId[] = [];
     const changeSubject = new Subject<ChangeEvent[]>();
@@ -37,14 +43,28 @@ export default function orderBy<TItem>(compare: CompareFunction<TItem>) {
 
         switch (action) {
           case 'add': {
-            const position = getItemPositionToInsert(item);
-            orderCache.splice(position, 0, id);
-            indexChanges.push(['add', position]);
+            if (filter(item)) {
+              const position = getItemPositionToInsert(item);
+              orderCache.splice(position, 0, id);
+              indexChanges.push(['add', position]);
+            }
             break;
           }
           case 'update': {
             const oldPosition = getIdCurrentPosition(id);
-            if (oldPosition !== undefined) {
+            const mustBeInOrderCache = filter(item);
+
+            if (!mustBeInOrderCache && oldPosition !== undefined) {
+              // The item turned its filter value from true to false — remove
+              orderCache.splice(oldPosition, 1);
+              indexChanges.push(['remove', oldPosition]);
+            } else if (mustBeInOrderCache && oldPosition === undefined) {
+              // The item turned its filter value from false to true — add
+              const newPosition = getItemPositionToInsert(item);
+              orderCache.splice(newPosition, 0, id);
+              indexChanges.push(['add', newPosition]);
+            } else if (mustBeInOrderCache && oldPosition !== undefined) {
+              // The item filter value was and is true — move
               orderCache.splice(oldPosition, 1); // Must remove it now to keep the list ordered to make the next line work correctly
               const newPosition = getItemPositionToInsert(item);
               orderCache.splice(newPosition, 0, id);
@@ -72,6 +92,9 @@ export default function orderBy<TItem>(compare: CompareFunction<TItem>) {
     });
 
     return {
+      // todo remove debug
+      orderCache,
+
       /**
        * Some events:
        * ['add', to] - item was added to the `to` order position
