@@ -147,7 +147,7 @@ export default class AuthService {
       }
 
       // Display error message
-      if (err && err.code === 400) {
+      if (err) {
         this.errCode.next(err.message);
         cb();
         return;
