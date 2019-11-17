@@ -9,7 +9,7 @@ import 'styles/global.scss';
 if (auth.state.value !== 'authorized' && history.state() !== 'sandbox') {
   history.push('/login');
 } else if (history.state() === '/login') {
-  history.push('/');
+  // history.push('/');
 }
 
 const router = new Router({

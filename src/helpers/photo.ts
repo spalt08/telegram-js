@@ -140,7 +140,7 @@ export function getPeerPhotoInputLocation(peer: Peer, message?: Message): InputF
 
   return {
     _: 'inputPeerPhotoFileLocation',
-    peer: peerToInputPeer(peer), // , message && message._ !== 'messageEmpty' ? { peer: peerToInputPeer(message.to_id), message } : undefined),
+    peer: peerToInputPeer(peer, message && message._ !== 'messageEmpty' ? { peer: peerToInputPeer(message.to_id), message } : undefined),
     volume_id,
     local_id,
   };

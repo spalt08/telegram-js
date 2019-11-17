@@ -4,6 +4,9 @@ import client from 'client/client';
 import { API_HASH, API_ID } from 'const/api';
 import { unformat } from 'helpers/phone';
 import { history } from 'router';
+import { Bytes } from 'mtproto-js';
+// eslint-disable-next-line
+import { file } from 'services';
 
 /**
  * Singleton service class for handling auth flow
@@ -47,6 +50,8 @@ export default class AuthService {
   /** Passwork KDF algo */
   passwordAlgo?: any;
 
+  profilePhoto?: Bytes;
+
   userID: number = 0;
 
   constructor() {
@@ -86,7 +91,7 @@ export default class AuthService {
           client.cfg.dc = +err.message.slice(-1);
           this.sendCode(phoneNumber, cb);
           // todo store dc
-          localStorage.setItem('dc', +err.message.slice(-1));
+          localStorage.setItem('dc', err.message.slice(-1));
 
         // Display error message
         } else {
@@ -253,5 +258,27 @@ export default class AuthService {
       // redirect
       history.push('/');
     }
+  }
+
+  setProfilePhoto(cb: () => void) {
+    if (!this.profilePhoto) {
+      cb();
+      return;
+    }
+
+    console.log(this.profilePhoto);
+
+    file.uploadFile(this.profilePhoto, (id, parts) => {
+      if (parts === 0) {
+        cb();
+        return;
+      }
+
+      const inputFile = { _: 'inputFile', id: id.uint, parts, name: 'favicon.png', md5_checksum: '' };
+
+      client.call('photos.uploadProfilePhoto', { file: inputFile }, (err, res) => {
+        console.log(err, res);
+      });
+    });
   }
 }

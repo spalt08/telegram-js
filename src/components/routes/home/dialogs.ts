@@ -12,7 +12,7 @@ export default function dialogs() {
   return list({
     className: 'dialogs',
     items: service.dialogs,
-    threshold: 400,
+    threshold: 600,
     batch: 20,
     renderer: (id: string) => dialog(id),
     onReachEnd: () => service.loadMoreDialogs(),

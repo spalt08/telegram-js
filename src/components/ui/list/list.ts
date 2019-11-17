@@ -117,8 +117,6 @@ export default function list({ tag, className, threshold = 400, reversed = false
         mountChild(current[first], current[first + 1]);
       }
 
-      if (first === 0) topFreeSpace = true;
-
       container.scrollTop = container.scrollHeight - viewport.height;
     }
   };

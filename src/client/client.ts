@@ -2,11 +2,12 @@ import { Client, TypeLanguage } from 'mtproto-js';
 import { API_ID, API_HASH, APP_VERSION } from 'const/api';
 import Layer105 from './layer105.json';
 
-const dc = +localStorage.getItem('dc') || 2;
+const local = localStorage.getItem('dc');
+const dc = local ? +local : 2;
 
 const tl = new TypeLanguage(Layer105);
 const client = new Client(tl, {
-  test: false,
+  test: true,
   ssl: true,
   dc,
   protocol: 'intermediate',

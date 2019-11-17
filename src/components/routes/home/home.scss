@@ -5,6 +5,13 @@
   height: 100%;
   display: flex;
   flex-direction: row;
+    
+  @include respond-to(widescreen) {
+    width: 1680px;
+    border-left: 1px solid #EDEEF0;
+    border-right: 1px solid #EDEEF0;
+    margin: 0 auto;
+  } 
 
   &__sidebar {
     width: 26%;
