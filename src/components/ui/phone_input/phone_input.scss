@@ -2,6 +2,7 @@
   border: 1px solid transparent;
   border-radius: 11px;
   transition: border-color .2s ease;
+  font-size: 15PX;
 
   &__container {
     position: relative;
@@ -43,6 +44,10 @@
     max-width: 40%;
   }
 
+  &.disabled &__prefix {
+    color: #5c5c5c;
+  }
+
   &.focused,
   &.focused &__container {
     border-color: #4EA4F5;
@@ -71,7 +76,7 @@
     flex: 0 100%;
     line-height: 135%;
     letter-spacing: 0.5px;
-    font-size: 1rem;
+    font-size: inherit;
 
     &:focus {
       outline: none;

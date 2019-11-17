@@ -47,6 +47,10 @@ export default function phoneInput({ label = '', prefix = '', formats = [], onCh
     setValue(getValue());
   });
 
+  useMaybeObservable(element, disabled, (isDisabled) => {
+    element.classList[isDisabled ? 'add' : 'remove']('disabled');
+  });
+
   if (error) {
     const hasError = error.pipe(map((message) => message !== undefined));
     useObservable(element, hasError, (isError) => { element.classList[isError ? 'add' : 'remove']('error'); });
