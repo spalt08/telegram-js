@@ -281,8 +281,7 @@ export default function list({ tag, className, threshold = 400, reversed = false
 
     const lastRect = elements[key(current[last])].getBoundingClientRect();
     // Add elements from bottom
-    if ((!locked && viewport.height + threshold > lastRect.top - viewport.top + lastRect.height)
-      || container.scrollTop + viewport.height >= container.scrollHeight - 10) {
+    if ((!locked && viewport.height + threshold > lastRect.top - viewport.top + lastRect.height)) {
       let prevScroll = container.scrollTop;
       const numb = Math.min(batch, current.length - last - 1);
 
@@ -372,7 +371,7 @@ export default function list({ tag, className, threshold = 400, reversed = false
 
   listen(container, 'scroll', () => {
     if (container.scrollTop < 0) return;
-    if (container.scrollTop + viewport.height > container.scrollHeight) return;
+    if (container.scrollTop + viewport.height > container.scrollHeight - 5) return;
     if (container.scrollTop === offset || locked) return;
 
     if (container.scrollTop > offset) {

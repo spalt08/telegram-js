@@ -257,7 +257,7 @@ export default class AuthService {
       useStorage.setItem('uid', response.user.id);
 
       // Create keys for other dcs
-      for (let i = 1; i <= 5; i += 1) {
+      for (let i = 1; i <= (client.cfg.test ? 3 : 5); i += 1) {
         if (i !== client.cfg.dc) client.authorize(i);
       }
 

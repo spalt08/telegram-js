@@ -4,7 +4,7 @@ import client from 'client/client';
 import { Message, Peer } from 'cache/types';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
-import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage } from 'helpers/api';
+import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage, shortChatMessageToMessage } from 'helpers/api';
 
 /**
  * Singleton service class for handling messages stuff
@@ -31,6 +31,15 @@ export default class MessagesService {
       // console.log('updateShortMessage', update);
       const message = shortMessageToMessage(client.svc.meta[client.cfg.dc].userID as number, update);
       this.handleMessagePush(message);
+    });
+
+    client.updates.on('updateShortChatMessage', (res: TLConstructor) => {
+      const update = res.json();
+      console.log(update);
+      const message = shortChatMessageToMessage(update);
+      console.log(update);
+      console.log(message);
+      // this.handleMessagePush(message);
     });
 
     client.updates.on('updateNewChannelMessage', (res: TLConstructor) => {
