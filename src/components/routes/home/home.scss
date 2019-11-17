@@ -26,15 +26,14 @@
   }
 
   &__dialogs {
-    flex: auto;
+    flex: 1 50%;
     display: flex;
     flex-direction: column;
     position: relative;
 
     .dialogs {
-      flex: auto;
-      display: flex;
-      flex-direction: column;
+      height: 100%;
+      flex: 1 50%;
 
       &__spinner {
         position: absolute;
