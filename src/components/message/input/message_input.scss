@@ -1,0 +1,94 @@
+.msginput {
+  cursor: not-allowed;
+  padding: 0 20px;
+
+  &.hidden {
+    display: none;
+  }
+
+  &__container {
+    margin: 0 auto;
+    padding: 5px 0px 18px;
+    max-width: 700px;
+    border-top: 1px solid #DADCE0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  &__bubble_wrap {
+    position: relative;
+    flex: 1 50%;
+
+    &:after {
+      position: absolute;
+      right: -8.5PX;
+      width: 11PX;
+      bottom: -1PX;
+      height: 20PX; 
+      z-index: 2;
+      content: '';
+      background-image: url(~assets/message_corner.svg);
+      background-size: 100%;
+      transform: scaleX(-1);
+    }
+  
+    &:before {
+      position: absolute;
+      right: -9.5PX;
+      width: 11PX;
+      height: 20PX; 
+      bottom: -2PX;
+      content: '';
+      background-image: url(~assets/message_corner-shadow.svg);
+      background-size: 100%;
+      transform: scaleX(-1);
+      z-index: 0;
+    }
+  }
+
+  &__bubble {
+    background: #FFFFFF;
+    border-radius: 10px;
+    border-bottom-right-radius: 0px;
+    box-shadow: 0px 1px 2px 0px rgba(16, 35, 47, 0.15);
+    width: 100%;
+    height: 54px;
+    z-index: 1;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 8px 16px;
+    outline: none;
+    position: relative;
+
+    input {
+      appearance: none;
+      border: none;
+      font-family: 'Roboto';
+      font-size: 16px;
+      cursor: not-allowed;
+    }
+
+    &__icon_emoji {
+      width: 28px;
+      height: 28px;
+      background: url(~components/icons/smile.svg);
+      background-repeat: no-repeat;
+      background-position: center;
+      margin-right: 16px;
+    }
+  }
+
+  &__btn {
+    background-color: #4EA4F5;
+    background-image: url(~components/icons/microphone.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 50%;
+    width: 54px;
+    height: 54px;
+    box-shadow: 0px 1px 2px 0px rgba(16, 35, 47, 0.15);
+    margin-left: 8px;
+  }
+}

@@ -6,6 +6,7 @@ import { message as service } from 'services';
 import message from 'components/message/message';
 import { list } from 'components/ui';
 import header from './header/header';
+import messageInput from 'components/message/input/message_input';
 
 function reverseIdsList<T>(ids: Readonly<T[]>): T[] {
   const { length } = ids;
@@ -35,6 +36,10 @@ export default function messages() {
     renderer: (id: number) => message(id, service.activePeer.value!),
     onReachEnd: () => service.loadMoreHistory(),
   }));
+
+  const input = messageInput();
+
+  mount(element, input);
 
   return element;
 }

@@ -2,8 +2,9 @@
   position: relative;
   font-size: 15px;
   width: 100%;
-  max-width: 700px;
+  max-width: 740px;
   margin: 0 auto;
+  padding: 0 20PX;
 
   &__inner {
     padding-bottom: 4PX;
@@ -47,7 +48,7 @@
 
   &.last:after, &:last-child:after {
     position: absolute;
-    left: -9PX;
+    left: 11PX;
     width: 11PX;
     bottom: 3PX;
     height: 20PX; 
@@ -59,7 +60,7 @@
 
   &.last:before, &:last-child:before {
     position: absolute;
-    left: -9PX;
+    left: 11PX;
     width: 11PX;
     height: 20PX; 
     bottom: 1PX;
@@ -91,19 +92,19 @@
   }
 
   &.chat.last:after, &.chat:last-child:after {
-    left: 25.5PX;
+    left: 45.5PX;
   }
 
   &.chat.last:before, &.chat:last-child:before {
-    left: 25.5PX;
+    left: 45.5PX;
   }
 
   &.chat {
-    padding-left: 34px;
+    padding-left: 54PX;
   }
 
   &.chat &__baloon {
-    max-width: 570px;
+    max-width: 80%;
   }
 
   & .avatar {
@@ -112,7 +113,7 @@
   }
 
   &.last, &:last-child {
-    padding-left: 0;
+    padding-left: 20PX;
 
     & .avatar {
       display: block;
@@ -150,13 +151,13 @@
   &.last.out:after, &.out:last-child:after {
     background-image: url(~assets/message_corner-out.svg);
     left: auto;
-    right: -9PX;
+    right: 11PX;
   }
 
   &.last.out:before, &.out:last-child:before {
     background-image: url(~assets/message_corner-out-shadow.svg);
     left: auto;
-    right: -9PX;
+    right: 11PX;
   }
 
   &.out &__date {
