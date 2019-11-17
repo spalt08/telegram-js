@@ -13,7 +13,7 @@ export default function profileAvatar(peer: Peer, message?: Message) {
   );
   const container = div`.avatar`(standart);
 
-  const location = null; // getPeerPhotoInputLocation(peer, message);
+  const location = getPeerPhotoInputLocation(peer, message);
 
   if (location) {
     file.getFile(location, (src) => {
