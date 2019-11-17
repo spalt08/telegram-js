@@ -8,6 +8,8 @@ import { Bytes } from 'mtproto-js';
 // eslint-disable-next-line
 import { file } from 'services';
 
+let useStorage = window.localStorage;
+
 /**
  * Singleton service class for handling auth flow
  */
@@ -55,7 +57,7 @@ export default class AuthService {
   userID: number = 0;
 
   constructor() {
-    const uid = sessionStorage.getItem('uid');
+    const uid = useStorage.getItem('uid');
     if (uid && +uid > 0) {
       this.state = new BehaviorSubject('authorized');
       this.userID = +uid;
@@ -68,8 +70,13 @@ export default class AuthService {
    * Sends verification code for promted phone number
    * @mtproto auth.sendCode
    */
-  sendCode(phoneNumber: string, cb: () => void) {
+  sendCode(phoneNumber: string, remember: boolean, cb: () => void) {
     this.phoneNumber.next(phoneNumber);
+
+    if (!remember) {
+      client.svc.storage = window.sessionStorage;
+      useStorage = window.sessionStorage;
+    }
 
     const payload = {
       phone_number: unformat(this.phoneCountry.value.phone) + phoneNumber,
@@ -89,9 +96,8 @@ export default class AuthService {
         // Should use another DC
         if (err.message && err.message.indexOf('PHONE_MIGRATE_') > -1) {
           client.cfg.dc = +err.message.slice(-1);
-          this.sendCode(phoneNumber, cb);
-          // todo store dc
-          localStorage.setItem('dc', err.message.slice(-1));
+          this.sendCode(phoneNumber, remember, cb);
+          useStorage.setItem('dc', err.message.slice(-1));
 
         // Display error message
         } else {
@@ -233,6 +239,7 @@ export default class AuthService {
 
       if (!res) return;
 
+      if (this.profilePhoto) this.setProfilePhoto();
       this.authorize(res.json());
     });
   }
@@ -247,8 +254,7 @@ export default class AuthService {
       this.state.next('authorized');
 
       // temp
-      // todo: store auth info
-      sessionStorage.setItem('uid', response.user.id);
+      useStorage.setItem('uid', response.user.id);
 
       // Create keys for other dcs
       for (let i = 1; i <= 5; i += 1) {
@@ -260,24 +266,16 @@ export default class AuthService {
     }
   }
 
-  setProfilePhoto(cb: () => void) {
-    if (!this.profilePhoto) {
-      cb();
-      return;
-    }
-
-    console.log(this.profilePhoto);
+  setProfilePhoto() {
+    if (!this.profilePhoto) return;
 
     file.uploadFile(this.profilePhoto, (id, parts) => {
-      if (parts === 0) {
-        cb();
-        return;
-      }
+      if (parts === 0) return;
 
       const inputFile = { _: 'inputFile', id: id.uint, parts, name: 'favicon.png', md5_checksum: '' };
 
-      client.call('photos.uploadProfilePhoto', { file: inputFile }, (err, res) => {
-        console.log(err, res);
+      client.call('photos.uploadProfilePhoto', { file: inputFile }, (_err, _res) => {
+        // console.log(err, res);
       });
     });
   }

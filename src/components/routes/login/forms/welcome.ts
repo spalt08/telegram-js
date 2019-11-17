@@ -83,8 +83,9 @@ export default function formWelcome() {
     if (!isProcessing.value) {
       isProcessing.next(true);
       const phoneNumber = getInterface(inputPhone).getValue();
+      const remember = getInterface(inputRemember).getChecked();
 
-      auth.sendCode(phoneNumber, () => isProcessing.next(false));
+      auth.sendCode(phoneNumber, remember, () => isProcessing.next(false));
     }
 
     event.preventDefault();

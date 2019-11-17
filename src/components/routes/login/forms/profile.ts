@@ -1,5 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { Bytes } from 'mtproto-js';
 import { div, form, h1, p, text, input, img } from 'core/html';
 import { button, textInput } from 'components/ui';
 import { blurAll, listen } from 'core/dom';
@@ -7,7 +8,6 @@ import { getInterface, useListenWhileMounted } from 'core/hooks';
 import { auth } from 'services';
 import { humanizeErrorOperator } from 'helpers/humanizeError';
 import '../login.scss';
-import { Bytes } from 'mtproto-js';
 
 /**
  * Layout for Sign UP
