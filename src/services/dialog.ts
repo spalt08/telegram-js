@@ -2,7 +2,7 @@ import { BehaviorSubject } from 'rxjs';
 import { TLConstructor } from 'mtproto-js';
 import client from 'client/client';
 import { userCache, chatCache, messageCache, dialogCache } from 'cache';
-import { peerToId, shortMessageToMessage, peerMessageToId } from 'helpers/api';
+import { peerMessageToId } from 'helpers/api';
 import { Message } from 'cache/types';
 
 /**
@@ -16,31 +16,8 @@ export default class DialogsService {
   protected isComplete = false;
 
   constructor() {
-    client.updates.on('updateNewChannelMessage', (res: TLConstructor) => {
-      const update = res.json();
-      this.updateTopMessage(update.message);
-    });
-
-    client.updates.on('updateShortMessage', (res: TLConstructor) => {
-      const update = res.json();
-      // todo store userid
-      const message = shortMessageToMessage(client.svc.meta[client.cfg.dc].userID as number, update);
-      this.updateTopMessage(message);
-    });
-
-    client.updates.on('updateNewMessage', (res: TLConstructor) => {
-      const update = res.json();
-      this.updateTopMessage(update.message);
-    });
-
     dialogCache.indices.order.changes.subscribe(() => {
       this.dialogs.next(dialogCache.indices.order.getIds());
-    });
-
-    client.updates.on('updateDeleteMessages', (res: TLConstructor) => {
-      const update = res.json();
-      // todo update deleted messages
-      console.log(update);
     });
   }
 
@@ -60,29 +37,6 @@ export default class DialogsService {
         if (msg && msg._ !== 'messageEmpty') this.updateDialogs(msg.date);
       }
     }
-  }
-
-  protected updateTopMessage(message: Readonly<Message>) {
-    if (message._ === 'messageEmpty') {
-      // todo fetch previous top_message
-      return;
-    }
-
-    if (message._ === 'messageService') {
-      // todo handle message update
-      return;
-    }
-
-    messageCache.put(message);
-
-    const dialog = dialogCache.get(peerToId(message.to_id));
-
-    if (!dialog) {
-      // todo fetch dialog
-      return;
-    }
-
-    dialogCache.put({ ...dialog, top_message: message.id });
   }
 
   protected doUpdateDialogs(offsetDate = 0, cb?: () => void) {

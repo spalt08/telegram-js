@@ -14,10 +14,15 @@ export function dialogToId(dialog: Dialog): string {
   return peerToId(dialog.peer);
 }
 
+// Use it to convert a user message id to the message cache key
+export function getUserMessageId(messageId: number): string {
+  return `users_${messageId}`;
+}
+
 export function peerMessageToId(peer: Peer, messageId: number): string {
   if (peer._ === 'peerUser') {
     // All the dialogs with user share a single messages counter
-    return `users_${messageId}`;
+    return getUserMessageId(messageId);
   }
   return `${peerToId(peer)}_${messageId}`;
 }
