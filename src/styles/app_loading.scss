@@ -1,0 +1,30 @@
+.appLoading {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+
+  &__content {
+    margin: auto 0;
+    padding: 20px 15px 15px;
+    text-align: center;
+
+    > img {
+      width: 162px;
+      max-width: 90%;
+      animation: appLoading__swing cubic-bezier(0.445, 0.05, 0.55, 0.95) 1s infinite alternate; // https://easings.net/en#easeInOutSine
+    }
+
+    > div {
+      font-size: 22px;
+      font-weight: 500;
+      margin-top: 25px;
+    }
+  }
+}
+
+@keyframes appLoading__swing {
+  0% { transform: translateY(-10PX); }
+  100% { transform: translateY(10PX); }
+}

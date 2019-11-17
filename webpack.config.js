@@ -126,9 +126,9 @@ module.exports = (env, argv) => {
 
     plugins: [
       new CleanWebpackPlugin(),
-      new HtmlWebpackPlugin({ template: 'template.ejs' }),
+      new HtmlWebpackPlugin({ template: 'src/index.ejs' }),
       new FaviconsWebpackPlugin({
-        logo: path.join(__dirname, './favicon.png'), // image from which favicons will be generated
+        logo: path.join(__dirname, './src/assets/favicon.png'), // image from which favicons will be generated
         background: '#ffffff', // theme color for mobile browsers
         // type of favicons to generate, WARNING: dramaticly decreases build speed, use wisely
         icons: {
