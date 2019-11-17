@@ -237,12 +237,15 @@ export default function list({ tag, className, threshold = 400, batch = 5, items
       lock();
 
       for (let i = 0; i < numb; i += 1) {
+        prevScroll -= elements[current[first + i + 1]].getBoundingClientRect().height;
+      }
+
+      for (let i = 0; i < numb; i += 1) {
         last += 1;
         mountChild(current[last]);
       }
 
       for (let i = 0; i < numb; i += 1) {
-        prevScroll -= elements[current[first]].getBoundingClientRect().height;
         unMountChild(current[first]);
         first += 1;
       }
