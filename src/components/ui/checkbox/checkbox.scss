@@ -60,6 +60,11 @@
     width: $checkmark-width;
   }
 
+  &__input:disabled + &__box {
+    opacity: 0.8;
+    cursor: not-allowed;
+  }
+
   &__ripple {
     border-radius: 100%;
     width: $ripple-size;
