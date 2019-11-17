@@ -10,7 +10,7 @@ export function peerToInputPeer(peer: Peer, reference?: { peer: InputPeer, messa
         return { _: 'inputPeerUser', user_id: peer.user_id, access_hash: user.access_hash };
       }
       if (reference) {
-        return { _: 'inputUserFromMessage', peer: reference.peer, msg_id: reference.message.id, user_id: peer.user_id };
+        return { _: 'inputPeerUserFromMessage', peer: reference.peer, msg_id: reference.message.id, user_id: peer.user_id };
       }
       throw new Error('A reference is required to convert this Peer to InputPeer');
     }
@@ -21,7 +21,7 @@ export function peerToInputPeer(peer: Peer, reference?: { peer: InputPeer, messa
         return { _: 'inputPeerChannel', channel_id: peer.channel_id, access_hash: channel.access_hash };
       }
       if (reference) {
-        return { _: 'inputChannelFromMessage', peer: reference.peer, msg_id: reference.message.id, channel_id: peer.channel_id };
+        return { _: 'inputPeerChannelFromMessage', peer: reference.peer, msg_id: reference.message.id, channel_id: peer.channel_id };
       }
       throw new Error('A reference is required to convert this Peer to InputPeer');
     }

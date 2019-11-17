@@ -37,10 +37,27 @@ export type InputPeer = {
   _: 'inputPeerChat',
   chat_id: number,
 } | {
-  _: 'inputUserFromMessage',
+  _: 'inputPeerUserFromMessage',
   peer: InputPeer,
   msg_id: number,
   user_id: number,
+} | {
+  _: 'inputPeerChannelFromMessage',
+  peer: InputPeer,
+  msg_id: number,
+  channel_id: number,
+};
+
+/**
+ * Input channel data
+ * Ref: https://core.telegram.org/type/InputChannel
+ */
+export type InputChannel = {
+  _: 'inputChannel',
+  channel_id: number,
+  access_hash: string,
+} | {
+  _: 'inputChannelEmpty',
 } | {
   _: 'inputChannelFromMessage',
   peer: InputPeer,
@@ -63,7 +80,8 @@ export type Dialog = {
     _: 'peerNotifySettings',
     silent: boolean,
     mute_until: number,
-  }
+  },
+  folder_id: number,
 };
 
 /**
@@ -99,6 +117,7 @@ export type Chat = {
   title: string,
   access_hash: string,
   photo: ChatPhoto,
+  migrated_to?: InputChannel,
 };
 
 /**

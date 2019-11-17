@@ -7,6 +7,8 @@ import Collection from '../collection';
 
 type HistoryWatcher = (ids: Readonly<number[]>) => void;
 
+// todo: Add messages from migrated chats to the corresponding groups. Migrated chats are marked with migrated_to attribute.
+
 // integer means the exact position, float means the position between positions floor(n) and ceil(n)
 function findIdInOrderedList(ids: number[], id: number): number {
   const rawValue = binarySearch(ids, id, (id1, id2) => id2 - id1);

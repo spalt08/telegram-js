@@ -55,7 +55,18 @@ export const dialogCache = new Collection({
         const message2 = messageCache.get(peerMessageToId(dialog2.peer, dialog2.top_message));
         return (message2 && message2._ !== 'messageEmpty' ? message2.date : 0) - (message1 && message1._ !== 'messageEmpty' ? message1.date : 0);
       },
-      (dialog: Dialog) => !isDialogArchived(dialog),
+      (dialog: Dialog) => {
+        if (isDialogArchived(dialog)) {
+          return false;
+        }
+        if (dialog.peer._ === 'peerChat') {
+          const chat = chatCache.get(dialog.peer.chat_id);
+          if (chat && chat.migrated_to) {
+            return false;
+          }
+        }
+        return true;
+      },
     ),
   },
 });

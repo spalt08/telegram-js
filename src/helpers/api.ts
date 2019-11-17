@@ -1,4 +1,5 @@
 import { Dialog, Peer, Message, AnyShortMessage, MessageEmpty } from 'cache/types';
+import { ARCHIVE_FOLDER_ID } from 'const/api';
 
 export function peerToId(peer: Peer): string {
   switch (peer._) {
