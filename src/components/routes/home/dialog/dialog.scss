@@ -121,6 +121,11 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+
+    &_title {
+      font-weight: 400;
+      color: #000000;
+    }
   }
   
   &__badge {

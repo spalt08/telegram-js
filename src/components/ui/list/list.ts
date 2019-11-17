@@ -50,7 +50,6 @@ export default function list({ tag, className, threshold = 400, reversed = false
   let first = -1;
   let locked = false;
   let bottomFreeSpace = false;
-  let topFreeSpace = false;
 
   const mountChild = (data: any, before?: any): Element => {
     const id = key(data);
