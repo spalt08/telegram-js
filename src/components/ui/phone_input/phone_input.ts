@@ -27,8 +27,6 @@ type Props = {
 export default function phoneInput({ label = '', prefix = '', formats = [], onChange, ref, name, error, disabled }: Props) {
   const labelText = new BehaviorSubject(label);
 
-  // todo: Remove the native show password button in Edge and IE
-
   const inputEl = input({ type: 'tel', name, disabled, autocomplete: 'tel' });
 
   const element = div`.phoneinput`(
