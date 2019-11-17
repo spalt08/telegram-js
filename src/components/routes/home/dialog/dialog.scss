@@ -31,7 +31,7 @@
     background-color: #FFFFFF;
     transition: background-color .2s ease;
 
-    &:hover {
+    &:hover, &.-selected {
       background-color: #F1F3F4;
     }
 

@@ -1,3 +1,4 @@
+import { distinctUntilChanged, map } from 'rxjs/operators';
 import { div, text } from 'core/html';
 import { listen, mount, unmountChildren } from 'core/dom';
 import { useObservable } from 'core/hooks';
@@ -6,7 +7,7 @@ import { dialogCache, messageCache } from 'cache';
 import { datetime, ripple } from 'components/ui';
 import { message } from 'services';
 import { pinnedchat } from 'components/icons';
-import { peerMessageToId } from 'helpers/api';
+import { peerMessageToId, peerToId } from 'helpers/api';
 import peerTitle from './peer_title';
 import dialogMessage from './dialog_message';
 import dialogPicture from './dialog_picture';
@@ -33,6 +34,11 @@ export default function dialogPreview(id: string) {
         preview,
       ),
     ])
+  );
+
+  const isSelectedObservable = message.activePeer.pipe(
+    map((activePeer) => !!(activePeer && peerToId(activePeer) === id)),
+    distinctUntilChanged(),
   );
 
   // on update
@@ -66,6 +72,10 @@ export default function dialogPreview(id: string) {
     if (!pinned && container.parentElement && container.parentElement.classList.contains('lastpin')) {
       container.parentElement.classList.remove('lastpin');
     }
+  });
+
+  useObservable(clickable, isSelectedObservable, (isSelected) => {
+    clickable.classList[isSelected ? 'add' : 'remove']('-selected');
   });
 
   listen(clickable, 'click', () => message.selectPeer(peer));
