@@ -10,6 +10,7 @@ type Props = {
   items: BehaviorSubject<readonly any[]>,
   threshold?: number,
   reversed?: boolean,
+  padding?: number,
   batch?: number,
   renderer: (item: any) => HTMLElement,
   key?: (item: any) => string,
@@ -24,19 +25,30 @@ type Props = {
  *  renderer: (data) => div`.css`(text(data))
  * })
  */
-export default function list({ tag, className, threshold = 400, reversed = false, batch = 5, items, renderer, key = (i) => `${i}` }: Props) {
+export default function list({ tag, className, threshold = 400, reversed = false,
+  padding = 0,
+  batch = 5,
+  items,
+  renderer,
+  key = (i) => `${i}`,
+}: Props) {
   const container = el(tag || 'div', { className: 'list__container' });
   const elements: Record<string, HTMLElement> = {};
   let current: any[] = [];
   let pending: any[] = [];
 
+  if (padding) {
+    container.style.paddingTop = `${padding}px`;
+    container.style.paddingBottom = `${padding}px`;
+  }
+
   let viewport = container.getBoundingClientRect();
   let offset = 0;
   let last = -1;
   let first = -1;
-  let inited = false;
   let locked = false;
   let bottomFreeSpace = false;
+  let topFreeSpace = false;
 
   const mountChild = (data: any, before?: any): Element => {
     const id = key(data);
@@ -63,39 +75,79 @@ export default function list({ tag, className, threshold = 400, reversed = false
   // Mount visible children
   const init = () => {
     current = items.value.slice(0);
-    let lastRect = { top: 0, height: 0 };
 
-    while (last < current.length - 1 && viewport.height + threshold > lastRect.top - viewport.top + lastRect.height) {
-      last += 1;
-      const id = key(current[last]);
-      // to do replace
-      mountChild(current[last]);
-      lastRect = elements[id].getBoundingClientRect();
+    if (reversed === false) {
+      let lastRect = { top: 0, height: 0 };
 
-      if (first === -1) first = 0;
+      while (last < current.length - 1 && viewport.height + threshold > lastRect.top - viewport.top + lastRect.height) {
+        last += 1;
+        const id = key(current[last]);
+        // to do replace
+        mountChild(current[last]);
+        lastRect = elements[id].getBoundingClientRect();
+
+        if (first === -1) first = 0;
+      }
+
+      const numb = Math.min(batch, current.length - last - 1);
+      for (let i = 0; i < numb; i += 1) {
+        last += 1;
+        mountChild(current[last]);
+      }
+
+      if (last === current.length - 1) bottomFreeSpace = true;
+    } else {
+      last = items.value.length - 1;
+      first = items.value.length;
+
+      if (last === -1) return;
+
+      let theight = 0;
+
+      while (first > 1 && theight < threshold + viewport.height) {
+        first -= 1;
+        mountChild(current[first], current[first + 1]);
+        theight += elements[current[first]].getBoundingClientRect().height;
+      }
+
+      const num = Math.min(batch, first);
+      for (let i = 0; i < num; i += 1) {
+        first -= 1;
+        mountChild(current[first], current[first + 1]);
+      }
+
+      if (first === 0) topFreeSpace = true;
+
+      container.scrollTop = container.scrollHeight - viewport.height;
     }
-
-    const numb = Math.min(batch, current.length - last - 1);
-    for (let i = 0; i < numb; i += 1) {
-      last += 1;
-      mountChild(current[last]);
-    }
-
-    if (last === current.length - 1) bottomFreeSpace = true;
-
-    inited = true;
   };
 
   // animation FLIP
   const flip = (next: any[]) => {
-    if (!inited) return;
-    if (inited && current.length === 0 && next.length > 0) {
+    if (current.length === 0 && next.length > 0) {
       init();
       return;
     }
 
     const visible = current.slice(first, last + 1);
-    let nextVisibleFirst = next.indexOf(visible[0]);
+
+    let nextVisibleFirst;
+    let nextVisibleLast;
+
+    if (reversed === false) {
+      nextVisibleFirst = first; // next.indexOf(visible[0]);
+      nextVisibleLast = first + visible.length - 1;
+      if (nextVisibleLast >= next.length) nextVisibleLast = next.length - 1;
+      // nextVisibleFirst = Math.max(0, nextVisibleLast - visible.length + 1);
+    } else {
+      nextVisibleLast = next.length - (current.length - last - 1) - 1;
+      if (nextVisibleLast < 0) nextVisibleLast = 0;
+      nextVisibleFirst = nextVisibleLast - (last - first);
+      if (nextVisibleFirst < 0) nextVisibleFirst = 0;
+    }
+
+    console.log('current', first, last, current.length);
+    console.log('next', nextVisibleFirst, nextVisibleLast, next.length);
 
     // No need to rerender
     if (nextVisibleFirst > -1 && next.slice(nextVisibleFirst, visible.length) === visible) {
@@ -105,8 +157,6 @@ export default function list({ tag, className, threshold = 400, reversed = false
 
     locked = true;
 
-    let nextVisibleLast = next.length > last ? last : next.length - 1;
-    nextVisibleFirst = Math.max(0, nextVisibleLast - visible.length + 1);
     const nextVisible = [];
 
     const flipFrom: Record<string, ClientRect> = {};
@@ -133,7 +183,7 @@ export default function list({ tag, className, threshold = 400, reversed = false
         if (bottomFreeSpace) {
           const elRect = element.getBoundingClientRect();
           nextVisibleLast += 1;
-          if (viewport.height + threshold < elRect.top - viewport.top + elRect.height) bottomFreeSpace = false;
+          if (viewport.height + threshold * 2 < elRect.top - viewport.top + elRect.height) bottomFreeSpace = false;
         }
       // swap
       } else if (elements[ekey] !== nextEl) {
@@ -299,7 +349,6 @@ export default function list({ tag, className, threshold = 400, reversed = false
   });
 
   listen(container, 'scroll', () => {
-    console.log(container.scrollTop);
     if (container.scrollTop < 0) return;
     if (container.scrollTop + viewport.height > container.scrollHeight) return;
     if (container.scrollTop === offset || locked) return;
@@ -322,5 +371,5 @@ export default function list({ tag, className, threshold = 400, reversed = false
     viewport = container.getBoundingClientRect();
   });
 
-  return div`.list${className}`(container);
+  return div`.list${className}${reversed ? 'reversed' : ''}`(container);
 }

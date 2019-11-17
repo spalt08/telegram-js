@@ -17,6 +17,7 @@
   &__content {
     flex: 1 50%;
     background: #E6EBEE;
+    
   }
 }
 
@@ -25,9 +26,12 @@
   height: 100%;
   background-image: url(~assets/bg.jpg);
   background-size: 500px auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 
   &__history {
-    height: 100%;
+    flex: 1 50%;
   }
 }
 

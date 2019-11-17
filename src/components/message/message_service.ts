@@ -10,9 +10,13 @@ export default function serviceMessage(msg: MessageService) {
     case 'messageActionChatCreate': {
       return (
         div`.msgservice`(
-          strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
-          text(' created the group '),
-          strong(text(msg.action.title)),
+          div`.msgservice__wrapper`(
+            div`.msgservice__inner`(
+              strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
+              text(' created the group '),
+              strong(text(msg.action.title)),
+            ),
+          ),
         )
       );
     }
@@ -20,8 +24,12 @@ export default function serviceMessage(msg: MessageService) {
     case 'messageActionChatEditPhoto': {
       return (
         div`.msgservice`(
-          strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
-          text(' updated group photo'),
+          div`.msgservice__wrapper`(
+            div`.msgservice__inner`(
+              strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
+              text(' updated group photo'),
+            ),
+          ),
         )
         // todo display photo
       );
@@ -30,9 +38,13 @@ export default function serviceMessage(msg: MessageService) {
     case 'messageActionChatEditTitle': {
       return (
         div`.msgservice`(
-          strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
-          text(' changed title to '),
-          strong(text(msg.action.title)),
+          div`.msgservice__wrapper`(
+            div`.msgservice__inner`(
+              strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
+              text(' changed title to '),
+              strong(text(msg.action.title)),
+            ),
+          ),
         )
       );
     }
@@ -40,22 +52,28 @@ export default function serviceMessage(msg: MessageService) {
     case 'messageActionChatDeletePhoto': {
       return (
         div`.msgservice`(
-          strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
-          text(' deleted group photo '),
+          div`.msgservice__wrapper`(
+            div`.msgservice__inner`(
+              strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
+              text(' deleted group photo '),
+            ),
+          ),
         )
       );
     }
 
     case 'messageActionChatAddUser': {
-      return div(
-        ...msg.action.users.map((user_id: number) => {
-          const invited = userCache.get(user_id);
-          return div`.msgservice`(
-            strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
-            text(' invited '),
-            strong(text(invited ? `${invited.first_name} ${invited.last_name}` : '')),
-          );
-        }),
+      return div`.msgservice`(
+        div`.msgservice__wrapper`(
+          ...msg.action.users.map((user_id: number) => {
+            const invited = userCache.get(user_id);
+            return div`.msgservice__inner`(
+              strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
+              text(' invited '),
+              strong(text(invited ? `${invited.first_name} ${invited.last_name}` : '')),
+            );
+          }),
+        ),
       );
     }
 
@@ -63,9 +81,13 @@ export default function serviceMessage(msg: MessageService) {
       const removed = userCache.get(msg.action.user_id);
       return (
         div`.msgservice`(
-          strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
-          text(' removed '),
-          strong(text(removed ? `${removed.first_name} ${removed.last_name}` : '')),
+          div`.msgservice__wrapper`(
+            div`.msgservice__inner`(
+              strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
+              text(' removed '),
+              strong(text(removed ? `${removed.first_name} ${removed.last_name}` : '')),
+            ),
+          ),
         )
       );
     }
@@ -73,9 +95,13 @@ export default function serviceMessage(msg: MessageService) {
     case 'messageActionChannelCreate': {
       return (
         div`.msgservice`(
-          strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
-          text(' created channel '),
-          strong(text(msg.action.title)),
+          div`.msgservice__wrapper`(
+            div`.msgservice__inner`(
+              strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
+              text(' created channel '),
+              strong(text(msg.action.title)),
+            ),
+          ),
         )
       );
     }
@@ -83,7 +109,11 @@ export default function serviceMessage(msg: MessageService) {
     case 'messageActionChatMigrateTo': {
       return (
         div`.msgservice`(
-          text('Group was converted to supergroup'),
+          div`.msgservice__wrapper`(
+            div`.msgservice__inner`(
+              text('Group was converted to supergroup'),
+            ),
+          ),
         )
       );
     }
@@ -91,8 +121,12 @@ export default function serviceMessage(msg: MessageService) {
     case 'messageActionChannelMigrateFrom': {
       return (
         div`.msgservice`(
-          text('Channel was created from group '),
-          strong(text(msg.action.title)),
+          div`.msgservice__wrapper`(
+            div`.msgservice__inner`(
+              text('Channel was created from group '),
+              strong(text(msg.action.title)),
+            ),
+          ),
         )
       );
     }
@@ -100,8 +134,12 @@ export default function serviceMessage(msg: MessageService) {
     case 'messageActionPinMessage': {
       return (
         div`.msgservice`(
-          strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
-          text(' pinned message'),
+          div`.msgservice__wrapper`(
+            div`.msgservice__inner`(
+              strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
+              text(' pinned message'),
+            ),
+          ),
         )
       );
     }
@@ -109,8 +147,12 @@ export default function serviceMessage(msg: MessageService) {
     case 'messageActionScreenshotTaken': {
       return (
         div`.msgservice`(
-          strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
-          text(' made a screenshot'),
+          div`.msgservice__wrapper`(
+            div`.msgservice__inner`(
+              strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
+              text(' made a screenshot'),
+            ),
+          ),
         )
       );
     }
@@ -118,7 +160,11 @@ export default function serviceMessage(msg: MessageService) {
     case 'messageActionCustomAction': {
       return (
         div`.msgservice`(
-          text(msg.action.message),
+          div`.msgservice__wrapper`(
+            div`.msgservice__inner`(
+              text(msg.action.message),
+            ),
+          ),
         )
       );
     }

@@ -45,7 +45,7 @@ export default class DialogsService {
       offset_date: 0,
       offset_id: 0,
       offset_peer: { _: 'inputPeerEmpty' },
-      limit: 50,
+      limit: 1000, // todo: Load dialogs on scroll
       hash: 0,
     };
 

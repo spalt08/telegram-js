@@ -18,7 +18,8 @@ interface MessageHooks {
 }
 
 export default function message(id: number, peer: Peer) {
-  const container = div`.message`();
+  const inner = div`.message__inner`();
+  const container = div`.message`(inner);
   const subject = messageCache.useItemBehaviorSubject(container, peerMessageToId(peer, id));
   const msg = subject.value;
 
@@ -108,9 +109,9 @@ export default function message(id: number, peer: Peer) {
         else container.classList.remove('with-media');
       }
 
-      unmountChildren(container);
-      if (picture) mount(container, picture);
-      if (wrapper) mount(container, wrapper);
+      unmountChildren(inner);
+      if (picture) mount(inner, picture);
+      if (wrapper) mount(inner, wrapper);
     }
 
     prev = next;
@@ -121,13 +122,13 @@ export default function message(id: number, peer: Peer) {
   useObservable(container, subject, (next) => next && rerender(next));
 
   useOnMount(container, () => {
-    const prevEl = container.previousElementSibling;
-    const pinterface = prevEl && hasInterface<MessageHooks>(prevEl) ? getInterface(prevEl) : null;
+    const nextEl = container.nextElementSibling;
+    const pinterface = nextEl && hasInterface<MessageHooks>(nextEl) ? getInterface(nextEl) : null;
 
-    if (!prevEl) container.classList.add('first');
-    if (prevEl && pinterface && pinterface.getFromID && msg.from_id !== pinterface.getFromID()) {
-      prevEl.classList.add('last');
-      container.classList.add('first');
+    if (!nextEl) container.classList.add('last');
+    if (nextEl && pinterface && pinterface.getFromID && msg.from_id !== pinterface.getFromID()) {
+      nextEl.classList.add('first');
+      container.classList.add('last');
     }
   });
 

@@ -1,4 +1,5 @@
 import { Dialog, Peer, Message, AnyShortMessage, MessageEmpty } from 'cache/types';
+import { ARCHIVE_FOLDER_ID } from 'const/api';
 
 export function peerToId(peer: Peer): string {
   switch (peer._) {
@@ -50,4 +51,8 @@ export function shortMessageToMessage(self: number, message: AnyShortMessage): M
     },
     media: { _: 'messageMediaEmpty' },
   };
+}
+
+export function isDialogArchived(dialog: Dialog) {
+  return dialog.folder_id === ARCHIVE_FOLDER_ID;
 }
