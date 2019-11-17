@@ -1,7 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import { TLConstructor, ClientError, TLAbstract } from 'mtproto-js';
 import client from 'client/client';
-import { Peer, Message } from 'cache/types';
+import { Peer } from 'cache/types';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import { peerToId } from '../helpers/api';
@@ -18,6 +18,8 @@ export default class MessagesService {
 
   peerHistoryUnsubscribe: (() => void) | undefined;
 
+  total = 0;
+
   selectPeer(peer: Peer) {
     if (this.activePeer.value && peerToId(peer) === peerToId(this.activePeer.value)) {
       return;
@@ -33,50 +35,53 @@ export default class MessagesService {
       this.history.next(history);
     });
 
-    if (this.history.value.length > 0) {
-      return; // todo: Load older on scroll
-    }
-
-    this.isLoading.next(true);
-    this.loadMessages(peer, 0, (messages) => {
-      if (messages && messages.length > 0) {
-        this.loadMessages(peer, messages[messages.length - 1].id);
-      }
-    });
+    this.loadMessages(peer, 0);
   }
 
-  protected loadMessages(peer: Peer, olderThanId = 0, cb?: (history?: Readonly<Message>[]) => void) {
+  protected loadMessages(peer: Peer, olderThanId = 0) {
+    if (this.isLoading.value === true) return;
+
     this.isLoading.next(true);
 
+    const chunk = 100;
     const payload = {
       peer: peerToInputPeer(peer),
       offset_id: olderThanId,
-      offset_date: Math.floor(Date.now() / 1000),
+      offset_date: 0,
       add_offset: 0,
-      limit: 100,
+      limit: chunk,
       max_id: 0,
       min_id: 0,
       hash: 0,
     };
 
+    console.log(payload);
+
     client.call('messages.getHistory', payload, (_err: ClientError, res: TLAbstract) => {
-      let messages: Readonly<Message>[] | undefined;
+
+      console.log(_err, res);
 
       try {
         if (res instanceof TLConstructor) {
           const data = res.json();
-          messages = data.messages;
+
+          this.total = res._ === 'messages.messages' ? data.dialogs.length : data.count;
+
           userCache.put(data.users);
           chatCache.put(data.chats);
           messageCache.indices.peers.putHistoryMessages(data.messages);
-          // no need to call this.history.next(...), it's already subscribed and notified
         }
       } finally {
         this.isLoading.next(false);
       }
-
-      if (cb) cb(messages);
     });
+  }
+
+  loadMoreHistory() {
+    if (this.history.value.length > 0 && this.history.value.length < this.total && this.activePeer.value) {
+      const offset_id = this.history.value[this.history.value.length - 1];
+      this.loadMessages(this.activePeer.value, offset_id);
+    }
   }
 
   // todo: Watch new messages and put them to the thread of the active peer:

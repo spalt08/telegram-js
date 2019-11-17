@@ -174,7 +174,7 @@
     border-bottom-left-radius: 0;
   }
 
-  &.out:last-child &__baloon {
+  &.out.last &__baloon, &.out:last-child &__baloon {
     border-bottom-right-radius: 0;
     border-bottom-left-radius: 10px;
   }

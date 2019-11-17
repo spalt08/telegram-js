@@ -2,7 +2,7 @@ import { BehaviorSubject } from 'rxjs';
 import { TLConstructor } from 'mtproto-js';
 import client from 'client/client';
 import { userCache, chatCache, messageCache, dialogCache } from 'cache';
-import { peerToId, shortMessageToMessage } from 'helpers/api';
+import { peerToId, shortMessageToMessage, peerMessageToId } from 'helpers/api';
 import { Message } from 'cache/types';
 
 /**
@@ -10,6 +10,10 @@ import { Message } from 'cache/types';
  */
 export default class DialogsService {
   dialogs = new BehaviorSubject(dialogCache.indices.order.getIds());
+
+  total = 0;
+
+  loading = false;
 
   constructor() {
     client.updates.on('updateNewChannelMessage', (res: TLConstructor) => {
@@ -40,12 +44,16 @@ export default class DialogsService {
     });
   }
 
-  updateDialogs() {
+  updateDialogs(offsetDate = 0) {
+    if (this.loading) return;
+
+    this.loading = true;
+
     const payload = {
-      offset_date: 0,
+      offset_date: offsetDate,
       offset_id: 0,
       offset_peer: { _: 'inputPeerEmpty' },
-      limit: 1000, // todo: Load dialogs on scroll
+      limit: 50,
       hash: 0,
     };
 
@@ -61,12 +69,26 @@ export default class DialogsService {
       if (res instanceof TLConstructor && (res._ === 'messages.dialogs' || res._ === 'messages.dialogsSlice')) {
         const data = res.json();
 
+        this.total = res._ === 'messages.dialogs' ? data.dialogs.length : data.count;
+
         userCache.put(data.users);
         chatCache.put(data.chats);
         messageCache.put(data.messages);
-        dialogCache.replaceAll(data.dialogs);
+        dialogCache.put(data.dialogs);
       }
+
+      this.loading = false;
     });
+  }
+
+  loadMoreDialogs() {
+    if (this.dialogs.value.length > 0 && this.dialogs.value.length < this.total) {
+      const last = dialogCache.get(this.dialogs.value[this.dialogs.value.length - 1]);
+      if (last) {
+        const msg = messageCache.get(peerMessageToId(last.peer, last.top_message));
+        if (msg && msg._ !== 'messageEmpty') this.updateDialogs(msg.date);
+      }
+    }
   }
 
   updateTopMessage(message: Readonly<Message>) {

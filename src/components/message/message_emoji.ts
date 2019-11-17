@@ -7,7 +7,7 @@ export default function emojiMessage(message: string, timestamp: number) {
     div`.emoji`(
       div`.emoji__content${`e${message.length / 2}`}`(text(message)),
       div`.message__date`(
-        datetime({ timestamp }),
+        datetime({ timestamp, date: false }),
       ),
     )
   );

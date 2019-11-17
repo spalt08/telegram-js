@@ -68,9 +68,8 @@ export default function serviceMessage(msg: MessageService) {
           ...msg.action.users.map((user_id: number) => {
             const invited = userCache.get(user_id);
             return div`.msgservice__inner`(
-              strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
-              text(' invited '),
-              strong(text(invited ? `${invited.first_name} ${invited.last_name}` : '')),
+              strong(text(invited ? `${invited.first_name} ${invited.last_name}` : 'Deleted Account')),
+              text(' joined the group'),
             );
           }),
         ),

@@ -2,7 +2,7 @@ import { BehaviorSubject } from 'rxjs';
 import { div } from 'core/html';
 import { mount } from 'core/dom';
 import { useObservable } from 'core/hooks';
-import { message as service, dialog } from 'services';
+import { message as service } from 'services';
 import message from 'components/message/message';
 import { list } from 'components/ui';
 import header from './header/header';
@@ -33,6 +33,7 @@ export default function messages() {
     threshold: 800,
     batch: 30,
     renderer: (id: number) => message(id, service.activePeer.value!),
+    onReachEnd: () => service.loadMoreHistory(),
   }));
 
   return element;

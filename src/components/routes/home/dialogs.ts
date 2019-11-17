@@ -16,5 +16,6 @@ export default function dialogs() {
     threshold: 400,
     batch: 20,
     renderer: (id: string) => dialog(id),
+    onReachEnd: () => service.loadMoreDialogs(),
   });
 }

@@ -14,6 +14,7 @@ type Props = {
   batch?: number,
   renderer: (item: any) => HTMLElement,
   key?: (item: any) => string,
+  onReachEnd?: () => void,
 };
 
 /**
@@ -31,6 +32,7 @@ export default function list({ tag, className, threshold = 400, reversed = false
   items,
   renderer,
   key = (i) => `${i}`,
+  onReachEnd,
 }: Props) {
   const container = el(tag || 'div', { className: 'list__container' });
   const elements: Record<string, HTMLElement> = {};
@@ -262,6 +264,9 @@ export default function list({ tag, className, threshold = 400, reversed = false
     last = nextVisibleLast;
 
     locked = false;
+
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    if (reversed === false) scrollDown();
   };
 
   const lock = () => { locked = true; };
@@ -279,7 +284,8 @@ export default function list({ tag, className, threshold = 400, reversed = false
 
     const lastRect = elements[key(current[last])].getBoundingClientRect();
     // Add elements from bottom
-    if (!locked && viewport.height + threshold > lastRect.top - viewport.top + lastRect.height) {
+    if ((!locked && viewport.height + threshold > lastRect.top - viewport.top + lastRect.height)
+      || container.scrollTop + viewport.height >= container.scrollHeight - 10) {
       let prevScroll = container.scrollTop;
       const numb = Math.min(batch, current.length - last - 1);
 
@@ -311,6 +317,8 @@ export default function list({ tag, className, threshold = 400, reversed = false
       // offset = container.scrollTop;
 
       unlock();
+
+      if (current.length - last - 1 <= batch && reversed === false && onReachEnd) onReachEnd();
     }
   };
 
@@ -353,6 +361,8 @@ export default function list({ tag, className, threshold = 400, reversed = false
       container.scrollTop = prevScroll;
 
       unlock();
+
+      if (first <= batch && reversed === true && onReachEnd) onReachEnd();
     }
   };
 

@@ -101,7 +101,7 @@ export default function message(id: number, peer: Peer) {
             ),
           ),
           div`.message__date`(
-            datetime({ timestamp: msg.date }),
+            datetime({ timestamp: msg.date, date: false }),
           ),
         );
 
