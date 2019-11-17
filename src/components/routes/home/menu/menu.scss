@@ -9,16 +9,16 @@
 
   &__burger {
     padding: 6PX;
-    cursor: pointer;
     margin-right: 16px;
     display: flex;
     justify-content: left;
     align-items: center;
+    cursor: not-allowed;
 
-    & .icon {
+    &_icon {
       width: 24PX;
 
-      & path {
+      path {
         fill: #707579;
       }
     }
@@ -27,10 +27,24 @@
   &__search {
     flex: 1 50%;
     height: 44px;
-    padding-left: 42px;
+    padding: 0 12px;
     background-color: #F4F4F5;
     color: #8D969C;
-    line-height: 44px;
     border-radius: 22px;
+    cursor: not-allowed;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+
+    &_icon {
+      width: 24px;
+      height: 24px;
+      margin-right: 6px;
+      flex: none;
+
+      path {
+        fill: #8D969C;
+      }
+    }
   }
 }
