@@ -87,6 +87,10 @@ export default class AuthService {
 
     client.call('auth.sendCode', payload, (err, res) => {
       if (err && err.type === 'network') {
+        if (err.message && err.message.indexOf('400')) {
+          client.svc.meta = {};
+        }
+
         this.errPhone.next('NETWORK_ERROR');
         cb();
         return;
