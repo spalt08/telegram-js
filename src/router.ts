@@ -6,7 +6,7 @@ const hashRouter = true;
 
 export const history = {
   push: (path: string) => {
-    window.history.pushState({ path }, 'Telegram Web', hashRouter ? `/#${path}` : path);
+    window.history.pushState({ path }, 'Telegram Web', hashRouter ? `./#${path}` : path);
     const event = document.createEvent('Event');
     event.initEvent('popstate', false, false);
     window.dispatchEvent(event);
