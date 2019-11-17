@@ -5,8 +5,8 @@ import { useObservable } from 'core/hooks';
 import { message as service } from 'services';
 import message from 'components/message/message';
 import { list } from 'components/ui';
-import header from './header/header';
 import messageInput from 'components/message/input/message_input';
+import header from './header/header';
 
 function reverseIdsList<T>(ids: Readonly<T[]>): T[] {
   const { length } = ids;

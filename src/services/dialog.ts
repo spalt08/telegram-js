@@ -53,7 +53,7 @@ export default class DialogsService {
       offset_date: offsetDate,
       offset_id: 0,
       offset_peer: { _: 'inputPeerEmpty' },
-      limit: 20,
+      limit: 60,
       hash: 0,
     };
 

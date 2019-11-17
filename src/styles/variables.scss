@@ -9,3 +9,11 @@ $user-bg-colors: (
   "7" #73cdd0,
   "8" #fba76f,
 );
+
+$break-small: 720px;
+
+@mixin respond-to($media) {
+  @if $media == small {
+    @media only screen and (max-width: $break-small) { @content; }
+  }
+}
