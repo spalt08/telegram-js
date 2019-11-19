@@ -128,20 +128,23 @@ module.exports = (env, argv) => {
       new CleanWebpackPlugin(),
       new HtmlWebpackPlugin({ template: 'src/index.ejs' }),
       new FaviconsWebpackPlugin({
-        logo: path.join(__dirname, './src/assets/favicon.png'), // image from which favicons will be generated
-        background: '#ffffff', // theme color for mobile browsers
+        logo: path.join(__dirname, './src/assets/favicon.svg'), // image from which favicons will be generated
         // type of favicons to generate, WARNING: dramaticly decreases build speed, use wisely
-        icons: {
-          android: false,
-          appleIcon: false,
-          appleStartup: false,
-          coast: false,
-          favicons: true,
-          firefox: false,
-          opengraph: false,
-          twitter: false,
-          yandex: false,
-          windows: false,
+        prefix: 'assets/favicons',
+        favicons: {
+          background: '#ffffff',
+          icons: {
+            android: true,
+            appleIcon: { offset: 5 },
+            appleStartup: { offset: 15 },
+            coast: false,
+            favicons: true,
+            firefox: false,
+            opengraph: false,
+            twitter: false,
+            yandex: false,
+            windows: false,
+          },
         },
       }),
       new MiniCssExtractPlugin({
