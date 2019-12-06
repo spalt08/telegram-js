@@ -30,3 +30,8 @@ declare module 'pako/lib/deflate' {
 declare module 'pako/lib/inflate' {
   export { inflate, Inflate, inflateRaw, ungzip } from 'pako';
 }
+
+declare module 'code-points' {
+  const codePoints: (str: string, options?: { unique?: boolean }) => number[];
+  export default codePoints;
+}

@@ -244,10 +244,20 @@ export function useObservable<T>(base: unknown, observable: Observable<T>, onCha
 
 /**
  * Listens to the MaybeObservable value change during the element is mounted
+ *
+ * Set `lazy` to `false` to force calling `onChange` when the element is mounted
  */
-export function useMaybeObservable<T>(base: unknown, value: MaybeObservable<T>, onChange: (newValue: T) => void): () => void {
+export function useMaybeObservable<T>(base: unknown, value: MaybeObservable<T>, onChange: (newValue: T) => void, lazy = false): () => void {
   if (value instanceof Observable) {
     return useObservable(base, value, onChange);
+  }
+
+  if (lazy && !isMountTriggered(base)) {
+    const stopWatchMount = useOnMount(base, () => {
+      stopWatchMount();
+      onChange(value);
+    });
+    return stopWatchMount;
   }
 
   onChange(value);

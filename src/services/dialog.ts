@@ -3,7 +3,6 @@ import { TLConstructor } from 'mtproto-js';
 import client from 'client/client';
 import { userCache, chatCache, messageCache, dialogCache } from 'cache';
 import { peerMessageToId } from 'helpers/api';
-import { Message } from 'cache/types';
 
 /**
  * Singleton service class for handling auth flow
@@ -89,8 +88,9 @@ export default class DialogsService {
 
           userCache.put(data.users);
           chatCache.put(data.chats);
+          // Not used because list can't handle it properly
+          // data.messages.forEach((message: Message) => messageCache.indices.peers.putHistoryMessages([message]));
           messageCache.put(data.messages);
-          // data.messages.forEach((message: Message) => messageCache.indices.peers.putHistoryMessages([message])); Not used because other components can't handle it properly
           dialogCache.put(data.dialogs);
         }
       } finally {

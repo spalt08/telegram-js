@@ -2,7 +2,7 @@ import { BehaviorSubject } from 'rxjs';
 import { pluck, map } from 'rxjs/operators';
 import { div, form, img, h1, p, text, label } from 'core/html';
 import { blurAll, listen } from 'core/dom';
-import { phoneInput, selectAutoComplete, button, checkbox } from 'components/ui';
+import { phoneInput, selectAutoComplete, button, checkbox, emoji } from 'components/ui';
 import countries, { Country } from 'const/country';
 import { getInterface } from 'core/hooks';
 import { auth } from 'services';
@@ -10,9 +10,9 @@ import logo from 'assets/logo.svg';
 import { humanizeErrorOperator } from 'helpers/humanizeError';
 import '../login.scss';
 
-const countryOptionRenderer = ({ phone, label: countryLabel, emoji }: Country) => (
+const countryOptionRenderer = ({ phone, label: countryLabel, emoji: emojiStr }: Country) => (
   div`.logincountry`(
-    div`.logincountry__flag`(text(emoji)),
+    emoji(emojiStr, { className: 'logincountry__flag', lazy: true }),
     div`.logincountry__label`(text(countryLabel)),
     div`.logincountry__phone`(text(phone)),
   )

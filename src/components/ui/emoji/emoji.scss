@@ -1,0 +1,17 @@
+.emoji-polyfill {
+  // Sizes must correspond to how native emojies are rendered
+
+  display: inline-block;
+  vertical-align: middle;
+  width: 1.2em; // Native emojies need some space
+  height: 1.2em;
+  line-height: 1.2em;
+  text-align: center;
+
+  > img {
+    display: inline-block;
+    vertical-align: baseline;
+    width: 1.05em;
+    height: 1.05em;
+  }
+}

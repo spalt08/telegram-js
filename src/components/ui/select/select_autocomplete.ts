@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { div, text as textNode } from 'core/html';
-import { mount, unmount, listen, dispatch, setValue, getAttribute } from 'core/dom';
+import { mount, unmount, listen, dispatch, setValue, getAttribute, isMounted } from 'core/dom';
 import { useInterface, useToBehaviorSubject, useOutsideEvent } from 'core/hooks';
 import { MaybeObservable } from 'core/types';
 import { KEYBOARD } from 'const';
@@ -123,7 +123,7 @@ export default function selectAutoComplete<T>({
   listen(inputEl!, 'focus', () => {
     setValue(inputEl, '');
     element.classList.add('focused');
-    if (optionsEl.parentNode !== element) {
+    if (!isMounted(optionsEl)) {
       mount(element, optionsEl);
       if (selected) handleHighlight(selected);
     }

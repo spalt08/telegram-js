@@ -1369,6 +1369,18 @@ code-point-at@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/code-point-at/-/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
 
+code-point@^1.0.1:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/code-point/-/code-point-1.1.0.tgz#999841f51f54ccae4a0dabbc869063234603fecd"
+  integrity sha1-mZhB9R9UzK5KDau8hpBjI0YD/s0=
+
+code-points@^2.0.0-1:
+  version "2.0.0-1"
+  resolved "https://registry.yarnpkg.com/code-points/-/code-points-2.0.0-1.tgz#01c23bda70cf45ef5772590c3ab8ba4f8774f58a"
+  integrity sha512-PuPoUdSqHY96e+CvEGe0+J9XkEqnQ4o79X+k+PJlZ84sZDoSJ2Q8/1OJT4dqYn8yL5EUxGCq/x2EcLEfvcGqaw==
+  dependencies:
+    code-point "^1.0.1"
+
 collection-visit@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/collection-visit/-/collection-visit-1.0.0.tgz#4bc0373c164bc3291b4d368c829cf1a80a59dca0"

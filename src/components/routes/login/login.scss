@@ -168,12 +168,13 @@
   width: 100%;
 
   &__flag {
+    flex: none;
     font-size: 1.5rem;
-    padding-right: 1rem;
+    margin: 1px 1rem -1px 0;
   }
 
   &__label {
-    flex: 0 100%;
+    flex: auto;
     font-size: 1rem;
     overflow: hidden;
     text-overflow: ellipsis;

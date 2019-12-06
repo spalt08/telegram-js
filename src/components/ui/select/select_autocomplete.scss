@@ -10,7 +10,7 @@
     top: 21px;
     right: 16px;
     width: 15px;
-    height: 15px; 
+    height: 15px;
     cursor: pointer;
     z-index: 2;
 
@@ -54,7 +54,7 @@
     background-color: #4EA4F5;
     transform: rotate(-45deg);
   }
-  
+
   &.focused &__arrow:after {
     background-color: #4EA4F5;
     transform: rotate(45deg);
@@ -62,7 +62,7 @@
 
   &__options {
     position: absolute;
-    top: 120%;
+    top: calc(100% + 8px);
     width: 100%;
     background: #FFF;
     border-radius: 10px;
