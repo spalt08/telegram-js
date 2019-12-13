@@ -17,3 +17,8 @@ export function mapObject<T, P, K extends keyof any>(object: Record<K, T>, map: 
   });
   return newObject;
 }
+
+// https://stackoverflow.com/q/4467539/1118709
+export function modulo(dividend: number, divider: number): number {
+  return ((dividend % divider) + divider) % divider;
+}

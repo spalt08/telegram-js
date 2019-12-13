@@ -1,11 +1,12 @@
 /* eslint-disable no-param-reassign */
 import { div, text as textNode } from 'core/html';
-import { mount, unmount, listen, dispatch, setValue, getAttribute, isMounted } from 'core/dom';
+import { mount, unmount, listen, dispatch, setValue, isMounted } from 'core/dom';
 import { useInterface, useToBehaviorSubject, useOutsideEvent } from 'core/hooks';
 import { MaybeObservable } from 'core/types';
 import { KEYBOARD } from 'const';
 import textInput from '../text_input/text_input';
 import './select_autocomplete.scss';
+import { modulo } from '../../../helpers/data';
 
 type Props<T> = {
   label?: string,
@@ -13,9 +14,9 @@ type Props<T> = {
   selected: number,
   options?: T[],
   disabled?: MaybeObservable<boolean>,
-  optionRenderer?: (data: T) => Node,
-  optionLabeler?: (data: T) => string,
-  onChange?: (data: T) => void,
+  optionRenderer?(data: T): Node,
+  optionLabeler?(data: T): string,
+  onChange?(data: T): void,
 };
 
 /**
@@ -54,8 +55,8 @@ export default function selectAutoComplete<T>({
   );
 
   const optionsEl = div`.select__options`(
-    ...options.map((data: T, key: number) => (
-      div`.select__option`({ key },
+    ...options.map((data) => (
+      div`.select__option`(
         optionRenderer(data),
       )
     )),
@@ -70,41 +71,56 @@ export default function selectAutoComplete<T>({
     inputEl.blur();
   };
 
-  const handleHighlight = (index: number) => {
+  const handleHighlight = (index: number, scrollTo = false) => {
     if (highlighted === index) return;
     if (highlighted > -1) {
-      (optionsEl.childNodes[highlighted] as HTMLElement).classList.remove('active');
+      optionsEl.children[highlighted].classList.remove('active');
     }
-    if (index >= options.length) {
-      highlighted = 0;
-    } else if (index <= -1) {
-      highlighted = options.length - 1;
-    } else {
+    if (index >= 0 && index < options.length) {
       highlighted = index;
-    }
-    if (highlighted > -1) {
-      (optionsEl.childNodes[highlighted] as HTMLElement).classList.add('active');
+      const highlightedElement = optionsEl.children[index];
+      highlightedElement.classList.add('active');
+      if (scrollTo) {
+        highlightedElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+        });
+      }
+    } else {
+      highlighted = -1;
     }
   };
 
-  const fetchOptions = (highlight: boolean = false) => {
-    let first = -1;
+  const getNextVisibleOption = (targetIndex: number, direction: Exclude<number, 0>): number => {
+    const step = direction > 0 ? 1 : -1;
+    const optionsCount = optionsEl.children.length;
+    for (let i = 0; i < optionsCount; i++) {
+      const index = modulo(targetIndex + step * (i + 1), optionsCount);
+      const option = optionsEl.children[index] as HTMLElement;
+      if (option.style.display !== 'none') {
+        return index;
+      }
+    }
+    return -1;
+  };
 
-    for (let i = 0; i < optionsEl.childNodes.length; i++) {
-      const node = optionsEl.childNodes[i] as HTMLElement;
-      if (!query || node.textContent!.toLowerCase().indexOf(query) > -1) {
-        node.style.display = '';
-        if (first === -1) first = i;
+  const filterOptions = (highlight: boolean = false) => {
+    for (let i = 0; i < optionsEl.children.length; i++) {
+      const option = optionsEl.children[i] as HTMLElement;
+      if (!query || option.textContent!.toLowerCase().indexOf(query) > -1) {
+        option.style.display = '';
       } else {
-        node.style.display = 'none';
+        option.style.display = 'none';
       }
     }
 
-    if (highlight) handleHighlight(first);
+    if (highlight) {
+      handleHighlight(getNextVisibleOption(-1, 1));
+    }
   };
 
-  const setSelected = (key: number) => {
-    selected = key === -1 ? 0 : key;
+  const setSelected = (index: number) => {
+    selected = index === -1 ? 0 : index;
     performBlur();
 
     if (onChange) onChange(options[selected]);
@@ -116,8 +132,8 @@ export default function selectAutoComplete<T>({
     if (!query && q) element.classList.add('filled');
     if (query && !q) element.classList.remove('filled');
 
-    query = q.toLowerCase();
-    fetchOptions(true);
+    query = q.trim().toLowerCase();
+    filterOptions(true);
   });
 
   listen(inputEl!, 'focus', () => {
@@ -127,7 +143,7 @@ export default function selectAutoComplete<T>({
       mount(element, optionsEl);
       if (selected) handleHighlight(selected);
     }
-    fetchOptions();
+    filterOptions();
   });
 
   listen(arrow, 'click', () => {
@@ -146,18 +162,18 @@ export default function selectAutoComplete<T>({
   listen(inputEl!, 'keydown', (event: KeyboardEvent) => {
     switch (event.keyCode) {
       case KEYBOARD.TAB:
-        // To Do: shift tabs
+        // todo: Shift tabs
         event.preventDefault();
         setSelected(highlighted);
         performBlur();
         break;
 
       case KEYBOARD.ARROW_DOWN:
-        handleHighlight(highlighted + 1);
+        handleHighlight(getNextVisibleOption(highlighted, 1), true);
         break;
 
       case KEYBOARD.ARROW_UP:
-        handleHighlight(highlighted - 1);
+        handleHighlight(getNextVisibleOption(highlighted, -1), true);
         break;
 
       case KEYBOARD.ENTER:
@@ -175,13 +191,8 @@ export default function selectAutoComplete<T>({
   });
 
   for (let i = 0; i < optionsEl.childNodes.length; i++) {
-    listen(optionsEl.childNodes[i] as HTMLDivElement, 'click', (event: MouseEvent) => event.currentTarget instanceof HTMLDivElement
-      && setSelected(parseInt(getAttribute(event.currentTarget, 'data-key'), 10)),
-    );
-
-    listen(optionsEl.childNodes[i] as HTMLDivElement, 'mouseenter', (event: Event) => event.currentTarget instanceof HTMLDivElement
-      && handleHighlight(parseInt(getAttribute(event.currentTarget, 'data-key'), 10)),
-    );
+    listen(optionsEl.childNodes[i], 'click', () => setSelected(i));
+    listen(optionsEl.childNodes[i], 'mousemove', () => handleHighlight(i));
   }
 
   if (selected !== undefined) setSelected(selected);
