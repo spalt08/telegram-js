@@ -18,8 +18,6 @@ interface Props extends Omit<TextInputProps, 'type' | 'className' | 'inputClassN
 export default function passwordInput({ className = '', inputClassName = '', initiallyHidden = true, onHideToggle, ...inputProps }: Props) {
   const isHidden = new BehaviorSubject(initiallyHidden);
 
-  // todo: Remove the native show password button in Edge and IE
-
   const inputEl = textInput({
     ...inputProps,
     type: isHidden.pipe(map((hidden) => (hidden ? 'password' : 'text'))),

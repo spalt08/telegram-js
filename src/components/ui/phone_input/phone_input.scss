@@ -1,4 +1,7 @@
 .phoneinput {
+  $valid-highlight: #4EA4F5;
+  $error-highlight: #ea615d;
+
   border: 1px solid transparent;
   border-radius: 11px;
   transition: border-color .2s ease;
@@ -50,20 +53,28 @@
 
   &.focused,
   &.focused &__container {
-    border-color: #4EA4F5;
+    border-color: $valid-highlight;
   }
 
   &.focused &__label {
-    color: #4EA4F5;
+    color: $valid-highlight;
+  }
+
+  &.focused input {
+    caret-color: $valid-highlight;
   }
 
   &.error,
   &.error &__container {
-    border-color: #ea615d;
+    border-color: $error-highlight;
   }
 
   &.error &__label {
-    color: #ea615d;
+    color: $error-highlight;
+  }
+
+  &.error input {
+    caret-color: $error-highlight;
   }
 
   input {

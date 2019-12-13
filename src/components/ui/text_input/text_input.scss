@@ -1,4 +1,7 @@
 .input {
+  $valid-highlight: #4EA4F5;
+  $error-highlight: #ea615d;
+
   position: relative;
   background: #FFFFFF;
   border-radius: 11px;
@@ -52,27 +55,29 @@
   }
 
   &.focused {
-    border-color: #4EA4F5;
+    border-color: $valid-highlight;
 
     input {
       outline: none;
-      border-color: #4EA4F5;
+      border-color: $valid-highlight;
+      caret-color: $valid-highlight;
     }
   }
 
   &.focused.filled &__label {
-    color: #4EA4F5;
+    color: $valid-highlight;
   }
 
   &.error {
-    border-color: #ea615d;
+    border-color: $error-highlight;
 
     input {
-      border-color: #ea615d;
+      border-color: $error-highlight;
+      caret-color: $valid-highlight;
     }
   }
 
   &.error.filled &__label {
-    color: #ea615d;
+    color: $error-highlight;
   }
 }
