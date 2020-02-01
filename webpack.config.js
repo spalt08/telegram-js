@@ -32,6 +32,16 @@ module.exports = (env, argv) => {
     module: {
       rules: [
         {
+          test: /worker\.[^.]+$/,
+          use: {
+            loader: 'worker-loader',
+            options: {
+              inline: true,
+              fallback: false,
+            },
+          },
+        },
+        {
           test: /\.ts$/,
           exclude: /node_modules/,
           loader: 'ts-loader',

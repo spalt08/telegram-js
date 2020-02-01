@@ -29,6 +29,22 @@
   dependencies:
     regenerator-runtime "^0.13.2"
 
+"@cryptography/pbkdf2@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@cryptography/pbkdf2/-/pbkdf2-0.1.0.tgz#3b4ea7e9957eecace90484046de6f9e0c8486144"
+
+"@cryptography/sha1@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@cryptography/sha1/-/sha1-0.1.0.tgz#ea3ef75b467d6fb45e963b80f999c92729efe793"
+
+"@cryptography/sha256@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@cryptography/sha256/-/sha256-0.1.4.tgz#bf0e6d5d995ac45b7a0491ad3c9eede2182f682d"
+
+"@cryptography/sha512@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@cryptography/sha512/-/sha512-0.1.2.tgz#2ccea40b3918a55ca95a55d304cec36368ffb980"
+
 "@jimp/bmp@^0.5.4":
   version "0.5.4"
   resolved "https://registry.yarnpkg.com/@jimp/bmp/-/bmp-0.5.4.tgz#b7b375aa774f26154912569864d5466e71333ef1"
@@ -1372,12 +1388,10 @@ code-point-at@^1.0.0:
 code-point@^1.0.1:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/code-point/-/code-point-1.1.0.tgz#999841f51f54ccae4a0dabbc869063234603fecd"
-  integrity sha1-mZhB9R9UzK5KDau8hpBjI0YD/s0=
 
 code-points@^2.0.0-1:
   version "2.0.0-1"
   resolved "https://registry.yarnpkg.com/code-points/-/code-points-2.0.0-1.tgz#01c23bda70cf45ef5772590c3ab8ba4f8774f58a"
-  integrity sha512-PuPoUdSqHY96e+CvEGe0+J9XkEqnQ4o79X+k+PJlZ84sZDoSJ2Q8/1OJT4dqYn8yL5EUxGCq/x2EcLEfvcGqaw==
   dependencies:
     code-point "^1.0.1"
 
@@ -3866,7 +3880,7 @@ loader-runner@^2.4.0:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/loader-runner/-/loader-runner-2.4.0.tgz#ed47066bfe534d7e84c4c7b9998c2a75607d9357"
 
-loader-utils@1.2.3, loader-utils@^1.0.2, loader-utils@^1.0.3, loader-utils@^1.1.0, loader-utils@^1.2.3:
+loader-utils@1.2.3, loader-utils@^1.0.0, loader-utils@^1.0.2, loader-utils@^1.0.3, loader-utils@^1.1.0, loader-utils@^1.2.3:
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/loader-utils/-/loader-utils-1.2.3.tgz#1ff5dc6911c9f0a062531a4c04b609406108c2c7"
   dependencies:
@@ -4267,10 +4281,13 @@ ms@^2.1.1:
 "mtproto-js@file:./packages/mtproto-js":
   version "0.2.0"
   dependencies:
+    "@cryptography/pbkdf2" "^0.1.0"
+    "@cryptography/sha1" "^0.1.0"
+    "@cryptography/sha256" "^0.1.4"
+    "@cryptography/sha512" "^0.1.2"
     aes-js "^3.1.2"
     big-integer "^1.6.46"
     pako "^1.0.10"
-    rusha "^0.8.13"
 
 multicast-dns-service-types@^1.1.0:
   version "1.1.0"
@@ -5801,10 +5818,6 @@ run-queue@^1.0.0, run-queue@^1.0.3:
   dependencies:
     aproba "^1.1.1"
 
-rusha@^0.8.13:
-  version "0.8.13"
-  resolved "https://registry.yarnpkg.com/rusha/-/rusha-0.8.13.tgz#9a084e7b860b17bff3015b92c67a6a336191513a"
-
 rxjs@^6.4.0, rxjs@^6.5.3:
   version "6.5.3"
   resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-6.5.3.tgz#510e26317f4db91a7eb1de77d9dd9ba0a4899a3a"
@@ -5851,6 +5864,13 @@ sass-loader@^8.0.0:
 sax@>=0.6.0, sax@^1.2.4, sax@~1.2.4:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/sax/-/sax-1.2.4.tgz#2816234e2378bddc4e5354fab5caa895df7100d9"
+
+schema-utils@^0.4.0:
+  version "0.4.7"
+  resolved "https://registry.yarnpkg.com/schema-utils/-/schema-utils-0.4.7.tgz#ba74f597d2be2ea880131746ee17d0a093c68187"
+  dependencies:
+    ajv "^6.1.0"
+    ajv-keywords "^3.1.0"
 
 schema-utils@^1.0.0:
   version "1.0.0"
@@ -7084,6 +7104,13 @@ worker-farm@^1.7.0:
   resolved "https://registry.yarnpkg.com/worker-farm/-/worker-farm-1.7.0.tgz#26a94c5391bbca926152002f69b84a4bf772e5a8"
   dependencies:
     errno "~0.1.7"
+
+worker-loader@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/worker-loader/-/worker-loader-2.0.0.tgz#45fda3ef76aca815771a89107399ee4119b430ac"
+  dependencies:
+    loader-utils "^1.0.0"
+    schema-utils "^0.4.0"
 
 worker-rpc@^0.1.0:
   version "0.1.1"

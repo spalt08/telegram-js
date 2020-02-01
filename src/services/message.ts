@@ -1,7 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
-import { TLConstructor, ClientError, TLAbstract } from 'mtproto-js';
 import client from 'client/client';
-import { Message, Peer } from 'cache/types';
+import { Message, Peer, AnyShortMessage } from 'cache/types';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage, shortChatMessageToMessage } from 'helpers/api';
@@ -19,26 +18,21 @@ export default class MessagesService {
   peerHistoryUnsubscribe: (() => void) | undefined;
 
   constructor() {
-    client.updates.on('updateNewMessage', (res: TLConstructor) => {
-      const update = res.json();
+    client.updates.on('updateNewMessage', (update: any) => {
       // console.log('updateNewMessage', update);
       this.handleMessagePush(update.message);
     });
 
-    client.updates.on('updateShortMessage', (res: TLConstructor) => {
-      const update = res.json();
+    client.updates.on('updateShortMessage', (update: AnyShortMessage) => {
       // todo store userid
       // console.log('updateShortMessage', update);
-      const message = shortMessageToMessage(client.svc.meta[client.cfg.dc].userID as number, update);
+      const message = shortMessageToMessage(client.getUserID(), update);
       this.handleMessagePush(message);
     });
 
-    client.updates.on('updateShortChatMessage', (res: TLConstructor) => {
-      const update = res.json();
-      if (process.env.NODE_ENV === 'development') {
-        console.log(update);
-      }
+    client.updates.on('updateShortChatMessage', (update: AnyShortMessage) => {
       const message = shortChatMessageToMessage(update);
+
       if (process.env.NODE_ENV === 'development') {
         console.log(update);
         console.log(message);
@@ -46,20 +40,17 @@ export default class MessagesService {
       // this.handleMessagePush(message);
     });
 
-    client.updates.on('updateNewChannelMessage', (res: TLConstructor) => {
-      const update = res.json();
+    client.updates.on('updateNewChannelMessage', (update: any) => {
       // console.log('updateNewChannelMessage', update);
       this.handleMessagePush(update.message);
     });
 
-    client.updates.on('updateDeleteMessages', (res: TLConstructor) => {
-      const update = res.json();
+    client.updates.on('updateDeleteMessages', (update: any) => {
       // console.log('updateDeleteMessage', update);
       update.messages.forEach((messageId: number) => messageCache.remove(getUserMessageId(messageId)));
     });
 
-    client.updates.on('updateDeleteChannelMessages', (res: TLConstructor) => {
-      const update = res.json();
+    client.updates.on('updateDeleteChannelMessages', (update: any) => {
       // console.log('updateDeleteChannelMessages', update);
       update.messages.forEach((messageId: number) => messageCache.remove(
         peerMessageToId({ _: 'peerChannel', channel_id: update.channel_id }, messageId),
@@ -102,10 +93,10 @@ export default class MessagesService {
       hash: 0,
     };
 
-    client.call('messages.getHistory', payload, (_err: ClientError, res: TLAbstract) => {
+    client.call('messages.getHistory', payload, (_err: any, res: any) => {
       try {
-        if (res instanceof TLConstructor) {
-          const data = res.json();
+        if (res) {
+          const data = res;
 
           userCache.put(data.users);
           chatCache.put(data.chats);

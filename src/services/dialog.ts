@@ -1,5 +1,4 @@
 import { BehaviorSubject } from 'rxjs';
-import { TLConstructor } from 'mtproto-js';
 import client from 'client/client';
 import { userCache, chatCache, messageCache, dialogCache } from 'cache';
 import { peerMessageToId } from 'helpers/api';
@@ -72,15 +71,14 @@ export default class DialogsService {
     client.call('messages.getDialogs', payload, (err, res) => {
       if (err && err.message && err.message.indexOf('USER_MIGRATE_') > -1) {
         // todo store dc
-        localStorage.setItem('dc', err.message.slice(-1));
-        client.cfg.dc = +err.message.slice(-1);
+        client.setBaseDC(+err.message.slice(-1));
         this.doUpdateDialogs();
         return;
       }
 
       try {
-        if (res instanceof TLConstructor && (res._ === 'messages.dialogs' || res._ === 'messages.dialogsSlice')) {
-          const data = res.json();
+        if (res && (res._ === 'messages.dialogs' || res._ === 'messages.dialogsSlice')) {
+          const data = res;
 
           if (data.dialogs.length < chunk - 10) { // -10 just in case
             this.isComplete = true;

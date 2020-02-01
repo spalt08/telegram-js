@@ -6,10 +6,10 @@
     "lint": "eslint --ext .js,.ts ./src",
     "build": "webpack --mode=production --progress",
     "build:noprogress": "webpack --mode=production",
+    "build:mtproto": "yarn remove mtproto-js && cd ./packages/mtproto-js && npm run build && cd ../../ && yarn add file:./packages/mtproto-js",
     "start": "webpack-dev-server --progress",
     "analyze:prod": "npm run build -- --analyze",
-    "analyze:dev": "npm start -- --analyze",
-    "link:mtproto": "rm -rf node_modules/mtproto-js && ln -s ../packages/mtproto-js node_modules/mtproto-js"
+    "analyze:dev": "npm start -- --analyze"
   },
   "private": true,
   "repository": {
@@ -69,6 +69,7 @@
     "webpack": "^4.41.2",
     "webpack-bundle-analyzer": "^3.6.0",
     "webpack-cli": "^3.3.10",
-    "webpack-dev-server": "^3.9.0"
+    "webpack-dev-server": "^3.9.0",
+    "worker-loader": "^2.0.0"
   }
 }

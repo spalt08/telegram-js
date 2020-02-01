@@ -12,14 +12,13 @@ export default class FileService {
   getFile(
     location: InputFileLocation,
     cb: (url: string) => void,
-    dc: number = client.cfg.dc,
+    dc: number = client.getBaseDC(),
     mime: string = '',
     offset: number = 0,
     limit: number = MAX_CHUNK_SIZE,
     parts: string = '',
   ) {
     // todo cache lookup
-
     client.call('upload.getFile', { location, offset, limit }, { dc }, (err, result) => {
       // redirect to another dc
       if (err && err.message && err.message.indexOf('FILE_MIGRATE_') > -1) {
@@ -34,7 +33,7 @@ export default class FileService {
       }
 
       if (!err && result) {
-        this.processFile(location, result.json(), mime, dc, offset, limit, parts, cb);
+        this.processFile(location, result, mime, dc, offset, limit, parts, cb);
       }
     });
   }
@@ -77,6 +76,7 @@ export default class FileService {
     if (process.env.NODE_ENV === 'development') {
       console.log(part, file.slice(uploaded, uploaded + remaining).length, uploaded, remaining);
     }
+
     const payload = {
       file_id: id.uint,
       file_part: part,
@@ -86,7 +86,7 @@ export default class FileService {
     client.call('upload.saveFilePart', payload, (err, res) => {
       if (err || !res) cb(id, 0);
 
-      if (res && res.json() === true) this.resolveUpload(file, id, part, total, cb);
+      if (res && res === true) this.resolveUpload(file, id, part, total, cb);
     });
   };
 

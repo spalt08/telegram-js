@@ -74,7 +74,7 @@ export default class AuthService {
     this.phoneNumber.next(phoneNumber);
 
     if (!remember) {
-      client.svc.storage = window.sessionStorage;
+      client.storage = window.sessionStorage;
       useStorage = window.sessionStorage;
     }
 
@@ -85,7 +85,7 @@ export default class AuthService {
       settings: {},
     };
 
-    client.call('auth.sendCode', payload, (err, res) => {
+    client.call('auth.sendCode', payload, (err, result) => {
       if (err && err.type === 'network') {
         console.log(err);
         if (err.message && (err.message.indexOf('400') || err.code === 1006)) {
@@ -100,9 +100,9 @@ export default class AuthService {
       if (err) {
         // Should use another DC
         if (err.message && err.message.indexOf('PHONE_MIGRATE_') > -1) {
-          client.cfg.dc = +err.message.slice(-1);
+          client.setBaseDC(+err.message.slice(-1));
+
           this.sendCode(phoneNumber, remember, cb);
-          useStorage.setItem('dc', err.message.slice(-1));
 
         // Display error message
         } else {
@@ -111,10 +111,6 @@ export default class AuthService {
         }
         return;
       }
-
-      if (!res) return;
-
-      const result = res.json();
 
       // Success
       if (result._ === 'auth.sentCode') {
@@ -146,7 +142,6 @@ export default class AuthService {
       // Should use 2FA authorization
       if (err && err.message === 'SESSION_PASSWORD_NEEDED') {
         this.state.next('2fa');
-
         this.getPasswordAlgo();
         return;
       }
@@ -160,7 +155,7 @@ export default class AuthService {
 
       if (!res) return;
 
-      this.authorize(res.json());
+      this.authorize(res);
     });
   }
 
@@ -171,7 +166,7 @@ export default class AuthService {
   getPasswordAlgo() {
     client.call('account.getPassword', {}, (err, algo) => {
       if (err || !algo) this.getPasswordAlgo();
-      else this.passwordAlgo = algo.json();
+      else this.passwordAlgo = algo;
     });
   }
 
@@ -186,8 +181,8 @@ export default class AuthService {
       return;
     }
 
-    client.getPasswordKdfAsync(this.passwordAlgo, password, (ip) => {
-      client.call('auth.checkPassword', { password: ip }, (err, res) => {
+    client.getPasswordKdfAsync(this.passwordAlgo, password, (hash) => {
+      client.call('auth.checkPassword', { password: hash }, (err, res) => {
         if (err && err.type === 'network') {
           this.errPassword.next('NETWORK_ERROR');
           cb();
@@ -205,7 +200,7 @@ export default class AuthService {
 
         if (!res) return;
 
-        this.authorize(res.json());
+        this.authorize(res);
       });
     });
   }
@@ -245,7 +240,7 @@ export default class AuthService {
       if (!res) return;
 
       if (this.profilePhoto) this.setProfilePhoto();
-      this.authorize(res.json());
+      this.authorize(res);
     });
   }
 
@@ -264,8 +259,8 @@ export default class AuthService {
       this.userID = response.user.id;
 
       // Create keys for other dcs
-      for (let i = 1; i <= (client.cfg.test ? 3 : 5); i += 1) {
-        if (i !== client.cfg.dc) client.authorize(i);
+      for (let i = 1; i <= (client.svc.test ? 3 : 5); i += 1) {
+        if (i !== client.getBaseDC()) client.authorize(i);
       }
 
       history.push('/');
