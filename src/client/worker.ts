@@ -4,6 +4,8 @@ import { Client, TypeLanguage, ClientError, TLConstructor } from 'mtproto-js';
 import { API_ID, API_HASH, APP_VERSION } from '../const/api';
 import Layer105 from './layer105.json';
 import { WorkerMessage } from './types';
+import { UploadFile } from '../cache/types';
+import { typeToMime, hexToBlob } from '../helpers/files';
 
 
 /**
@@ -32,6 +34,54 @@ function resolveUpdate(id: string, update: TLConstructor) {
 }
 
 /**
+ * File managers: getFile method
+ */
+function downloadFilePart(
+  location: any, cb: (f: string) => void, dc: number = client!.cfg.dc, mime = '', offset = 0, limit = 1024 * 1024, parts = '',
+) {
+  if (!client) throw new Error('Client is undefined');
+
+  client.call('upload.getFile', { location, offset, limit }, { dc }, (err, result) => {
+    // redirect to another dc
+    if (err && err.message && err.message.indexOf('FILE_MIGRATE_') > -1) {
+      downloadFilePart(location, cb, +err.message.slice(-1), mime, offset, limit, parts);
+      return;
+    }
+
+    // todo handling errors
+    if (err) {
+      console.log(err);
+      return;
+    }
+
+    if (!err && result) {
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      processFilePart(location, result.json(), mime, dc, offset, limit, parts, cb);
+    }
+  });
+}
+
+/**
+ * File part processor
+ */
+function processFilePart(
+  location: any, file: UploadFile, imime: string, dc: number, offset: number, limit: number, parts: string, cb: (url: string) => void,
+) {
+  // todo load parts
+  if (file.bytes.length / 2 === limit) {
+    downloadFilePart(location, cb, dc, imime, offset + 4096, limit, parts + file.bytes.slice(0, 4096 * 2));
+    return;
+  }
+
+  const mime = imime || typeToMime(file.type);
+  const blob = hexToBlob(file.bytes, mime);
+  const url = (URL || webkitURL).createObjectURL(blob);
+
+  cb(url);
+}
+
+
+/**
  * Process worker message
  */
 function process(message: WorkerMessage) {
@@ -57,7 +107,6 @@ function process(message: WorkerMessage) {
 
     // Broadcast meta changes
     client.on('metaChanged', (newMeta: any) => {
-      console.log('metaChanged', newMeta);
       resolve('', 'meta', newMeta);
     });
 
@@ -113,6 +162,14 @@ function process(message: WorkerMessage) {
       });
       break;
     }
+
+    case 'get_file': {
+      downloadFilePart(payload.location, (url) => {
+        resolve(id, type, url);
+      }, payload.dc, payload.mime);
+      break;
+    }
+
 
     default: {
       throw new Error(`Unknown task: ${type}`);

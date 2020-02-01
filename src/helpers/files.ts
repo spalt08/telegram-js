@@ -1,12 +1,17 @@
-import { hex } from 'mtproto-js';
 import { StorageFileType, Document, InputFileLocation, DocumentAttributeSticker } from 'cache/types';
 
 export function hexToBlob(str: string, type: string) {
-  return new Blob([hex(str).buffer], { type });
+  const buf = new Uint8Array(str.length / 2);
+
+  for (let i = 0; i < str.length; i += 2) {
+    buf[i / 2] = +`0x${str.slice(i, i + 2)}`;
+  }
+
+  return new Blob([buf], { type });
 }
 
 export function blobToUrl(blob: Blob) {
-  return (window.URL || window.webkitURL).createObjectURL(blob);
+  return (URL || webkitURL).createObjectURL(blob);
 }
 
 export function typeToMime(type: StorageFileType) {

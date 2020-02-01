@@ -2,8 +2,8 @@ import { div, text, img } from 'core/html';
 import { Peer, Message } from 'cache/types';
 import { peerToInitials, peerToColorCode } from 'cache/accessors';
 import { getPeerPhotoInputLocation } from 'helpers/photo';
-import { file } from 'services';
 import { unmount, listenOnce, mount } from 'core/dom';
+import client from 'client/client';
 import './avatar.scss';
 
 export default function profileAvatar(peer: Peer, message?: Message) {
@@ -16,7 +16,7 @@ export default function profileAvatar(peer: Peer, message?: Message) {
   const location = getPeerPhotoInputLocation(peer, message);
 
   if (location) {
-    file.getFile(location, (src) => {
+    client.getFile(location, (src) => {
       if (!src) return;
 
       standart.classList.add('removed');

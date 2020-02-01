@@ -1,5 +1,6 @@
 import ClientWorker from './worker';
 import { WorkerMessage } from './types';
+import { InputFileLocation } from '../cache/types';
 
 /**
  * Request error
@@ -27,7 +28,7 @@ const updates: Record<string, UpdateResolver[]> = {};
 const clientDebug = localStorage.getItem('debugmt') || false;
 const dc = +localStorage.getItem('dc')! || 2;
 const svc = {
-  test: true,
+  test: false,
   baseDC: dc,
   meta: JSON.parse(localStorage.getItem('meta') || '{}'),
 };
@@ -107,6 +108,8 @@ worker.onmessage = (event: MessageEvent) => {
 
   const data = event.data as WorkerMessage;
 
+  console.log(data.type, data.id, data.payload);
+
   switch (data.type) {
     case 'call':
       requests[event.data.id](data.payload.err, data.payload.result);
@@ -162,6 +165,10 @@ function authorize(dc_id: number, cb?: AnyResolver) {
   task('authorize', dc_id, cb);
 }
 
+function getFile(location: InputFileLocation, cb: AnyResolver, dc_id?: number, mime?: string) {
+  task('get_file', { location, dc_id, mime }, cb);
+}
+
 const client = {
   svc,
   call,
@@ -173,6 +180,7 @@ const client = {
   setBaseDC,
   getPasswordKdfAsync,
   authorize,
+  getFile,
   storage: window.localStorage,
 };
 

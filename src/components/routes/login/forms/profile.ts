@@ -1,6 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Bytes } from 'mtproto-js';
 import { div, form, h1, p, text, input, img } from 'core/html';
 import { button, textInput } from 'components/ui';
 import { blurAll, listen } from 'core/dom';
@@ -61,7 +60,7 @@ export default function formProfile() {
   const saveFile = (file: File) => {
     const reader = new FileReader();
     reader.onload = () => {
-      auth.profilePhoto = new Bytes(reader.result);
+      // auth.profilePhoto = new Bytes(reader.result);
     };
     reader.readAsArrayBuffer(file);
   };

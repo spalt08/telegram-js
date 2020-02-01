@@ -3,7 +3,7 @@ import { div, img } from 'core/html';
 import { materialSpinner } from 'components/icons';
 import { mount, unmount, listenOnce } from 'core/dom';
 import { getOrientation, getThumbnail, checkDimensions, getPhotoLocation, getSizeType, getSize } from 'helpers/photo';
-import { file } from 'services';
+import client from 'client/client';
 import './photo.scss';
 
 const PHOTO_W_DIM = 100 / 320;
@@ -45,7 +45,7 @@ export default function mediaPhoto(photo: Photo) {
   const type = getSizeType(photo.sizes, PHOTO_THUMBNAIL_MAX);
   const location = getPhotoLocation(photo, type);
 
-  file.getFile(location, (src) => {
+  client.getFile(location, (src) => {
     // if (background) background.style.backgroundImage = `url(${src})`;
     if (preview) unmount(preview);
     unmount(loader);

@@ -4,7 +4,6 @@ import client from 'client/client';
 import { API_HASH, API_ID } from 'const/api';
 import { unformat } from 'helpers/phone';
 import { history } from 'router';
-import { Bytes } from 'mtproto-js';
 // eslint-disable-next-line
 import { file } from 'services';
 
@@ -52,7 +51,7 @@ export default class AuthService {
   /** Passwork KDF algo */
   passwordAlgo?: any;
 
-  profilePhoto?: Bytes;
+  profilePhoto?: string;
 
   userID: number = 0;
 
@@ -270,14 +269,14 @@ export default class AuthService {
   setProfilePhoto() {
     if (!this.profilePhoto) return;
 
-    file.uploadFile(this.profilePhoto, (id, parts) => {
-      if (parts === 0) return;
+    // file.uploadFile(this.profilePhoto, (id, parts) => {
+    //   if (parts === 0) return;
 
-      const inputFile = { _: 'inputFile', id: id.uint, parts, name: 'favicon.png', md5_checksum: '' };
+    //   const inputFile = { _: 'inputFile', id: id.uint, parts, name: 'favicon.png', md5_checksum: '' };
 
-      client.call('photos.uploadProfilePhoto', { file: inputFile }, (_err, _res) => {
-        // console.log(err, res);
-      });
-    });
+    //   client.call('photos.uploadProfilePhoto', { file: inputFile }, (_err, _res) => {
+    //     // console.log(err, res);
+    //   });
+    // });
   }
 }

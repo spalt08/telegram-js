@@ -3,7 +3,7 @@ import { Document } from 'cache/types';
 import { img, div } from 'core/html';
 import { mount, listenOnce, unmount } from 'core/dom';
 import { getDocumentLocation } from 'helpers/files';
-import { file } from 'services';
+import client from 'client/client';
 import './sticker.scss';
 
 export default function mediaSticker(document: Document) {
@@ -22,7 +22,7 @@ export default function mediaSticker(document: Document) {
 
   const location = getDocumentLocation(document);
 
-  file.getFile(location, (src: string) => {
+  client.getFile(location, (src: string) => {
     const sticker = img({ src, className: 'sticker__image' });
     mount(container, sticker);
 
