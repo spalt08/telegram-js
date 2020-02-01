@@ -96,7 +96,7 @@ export function useOnMount(base: unknown, onMount: () => void): () => void {
   lifecycle.mount.push(onMount);
 
   return () => {
-    const mounts = enhanced.__hooks.lifecycle && enhanced.__hooks.lifecycle.unmount;
+    const mounts = enhanced.__hooks.lifecycle && enhanced.__hooks.lifecycle.mount;
     if (mounts) {
       const listenerIndex = mounts.indexOf(onMount);
       if (listenerIndex > -1) {
@@ -112,7 +112,7 @@ export function useOnMount(base: unknown, onMount: () => void): () => void {
  *
  * @example
  * // ...
- * const unsubscribe = useOnMount(element, () => {
+ * const unsubscribe = useOnUnmount(element, () => {
  *   clearInterval(intervalId);
  * });
  *
