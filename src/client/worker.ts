@@ -2,10 +2,10 @@
 
 import { Client, TypeLanguage, ClientError, TLConstructor } from 'mtproto-js';
 import { API_ID, API_HASH, APP_VERSION } from '../const/api';
-import Layer105 from './layer105.json';
 import { WorkerMessage } from './types';
 import { UploadFile } from '../cache/types';
 import { typeToMime, hexToBlob } from '../helpers/files';
+import loadSchema from './schema';
 
 
 /**
@@ -87,39 +87,42 @@ function processFilePart(
 function process(message: WorkerMessage) {
   const { payload, type, id } = message;
 
+  console.log(message );
+
   if (type === 'init') {
-    const tl = new TypeLanguage(Layer105);
-    client = new Client(tl, {
-      ssl: true,
-      protocol: 'intermediate',
-      transport: 'websocket',
+    loadSchema((layer: any) => {
+      const tl = new TypeLanguage(layer);
+      client = new Client(tl, {
+        ssl: true,
+        protocol: 'intermediate',
+        transport: 'websocket',
 
-      APILayer: 105,
-      APIID: API_ID,
-      APIHash: API_HASH,
+        APILayer: 105,
+        APIID: API_ID,
+        APIHash: API_HASH,
 
-      deviceModel: 'test',
-      systemVersion: 'test',
-      appVersion: APP_VERSION,
-      langCode: 'en',
-      ...payload,
-    });
+        deviceModel: 'test',
+        systemVersion: 'test',
+        appVersion: APP_VERSION,
+        langCode: 'en',
+        ...payload,
+      });
 
-    // Broadcast meta changes
-    client.on('metaChanged', (newMeta: any) => {
-      resolve('', 'meta', newMeta);
-    });
+      // Broadcast meta changes
+      client.on('metaChanged', (newMeta: any) => {
+        resolve('', 'meta', newMeta);
+      });
 
-    if (pending.length > 0) {
-      for (let i = 0; i < pending.length; i += 1) {
-        const msg = pending.shift();
-        if (msg) process(msg);
+      client.updates.fetch();
+
+      while (pending.length > 0) {
+        process(pending.shift()!);
       }
-    }
+    });
   }
 
   if (!client) {
-    pending.push(message);
+    if (type !== 'init') pending.push(message);
     return;
   }
 

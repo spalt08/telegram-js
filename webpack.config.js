@@ -24,7 +24,7 @@ module.exports = (env, argv) => {
 
     resolve: {
       modules: [sourceDirectory, 'node_modules'],
-      extensions: ['.js', '.ts', '.json'],
+      extensions: ['.js', '.ts'],
     },
 
     devtool: isProduction ? undefined : 'inline-source-map',
@@ -102,6 +102,11 @@ module.exports = (env, argv) => {
               { cleanupIDs: false },
             ],
           },
+        },
+        // https://github.com/webpack-contrib/file-loader/issues/259
+        {
+          test: /\.json\.txt$/,
+          loader: 'file-loader',
         },
       ],
     },

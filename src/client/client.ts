@@ -108,8 +108,6 @@ worker.onmessage = (event: MessageEvent) => {
 
   const data = event.data as WorkerMessage;
 
-  console.log(data.type, data.id, data.payload);
-
   switch (data.type) {
     case 'call':
       requests[event.data.id](data.payload.err, data.payload.result);
