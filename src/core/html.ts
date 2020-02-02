@@ -22,6 +22,10 @@ export const p = ElementFactory('p');
 export const input = ElementFactory('input');
 export const label = ElementFactory('label');
 export const strong = ElementFactory('strong');
+export const italic = ElementFactory('i');
+export const pre = ElementFactory('pre');
+export const code = ElementFactory('code');
+export const a = ElementFactory('a');
 
 /**
  * Wrapper for any text children
