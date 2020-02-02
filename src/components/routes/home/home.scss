@@ -64,8 +64,9 @@
     .messages {
       width: 100%;
       height: 100%;
-      // background-image: url(~assets/bg.jpg); // Removed to smooth the scroll in Safari
-      background-size: 500px auto;
+      background-image: url(~assets/chamomile.jpg);
+      background-size: cover;
+      background-position: center center;
       display: flex;
       flex-direction: column;
       position: relative;
