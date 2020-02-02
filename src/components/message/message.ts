@@ -3,11 +3,11 @@ import { mount, unmountChildren } from 'core/dom';
 import { useOnMount, useObservable, useInterface, getInterface, hasInterface } from 'core/hooks';
 import { Peer, MessageCommon, Message } from 'cache/types';
 import { messageCache } from 'cache';
-import { datetime } from 'components/ui';
+import { datetime, formattedMessage } from 'components/ui';
 import { profileAvatar, profileTitle } from 'components/profile';
 import { userIdToPeer } from 'helpers/api';
 import { idToColorCode } from 'cache/accessors';
-import { isEmoji, formatText } from 'helpers/message';
+import { isEmoji } from 'helpers/message';
 import { auth } from 'services';
 import serviceMessage from './message_service';
 import messageMedia from './message_media';
@@ -106,7 +106,7 @@ export default function message(uniqueId: string, peer: Peer) {
             div`.message__text`(
               title || nothing,
               reply || nothing,
-              formatText(next),
+              formattedMessage(next),
             ),
           ),
           div`.message__date`(

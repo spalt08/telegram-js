@@ -350,6 +350,8 @@ export type MessageAction = {
   message: string,
 } | {
   _: 'messageActionScreenshotTaken',
+} | {
+  _: 'messageActionContactSignUp',
 };
 
 /**

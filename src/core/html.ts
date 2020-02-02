@@ -1,4 +1,4 @@
-import { ElementFactory } from './factory';
+import { ElementFactory, createFragment } from './factory';
 import { useMaybeObservable } from './hooks';
 import { MaybeObservable } from './types'; // eslint-disable-line import/named
 
@@ -39,3 +39,4 @@ export function text(value: MaybeObservable<{ toString(): string; }>) {
 }
 
 export const nothing = text('');
+export const fragment = createFragment;
