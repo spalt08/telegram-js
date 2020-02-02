@@ -87,8 +87,6 @@ function processFilePart(
 function process(message: WorkerMessage) {
   const { payload, type, id } = message;
 
-  console.log(message );
-
   if (type === 'init') {
     loadSchema((layer: any) => {
       const tl = new TypeLanguage(layer);
