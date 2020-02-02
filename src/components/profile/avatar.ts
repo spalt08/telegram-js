@@ -8,10 +8,10 @@ import './avatar.scss';
 
 export default function profileAvatar(peer: Peer, message?: Message) {
   const colorCode = peerToColorCode(peer);
-  const standart = div`.avatar__standart${`color-${colorCode}`}`(
+  const standard = div`.avatar__standard${`color-${colorCode}`}`(
     text(peerToInitials(peer)),
   );
-  const container = div`.avatar`(standart);
+  const container = div`.avatar`(standard);
 
   const location = getPeerPhotoInputLocation(peer, message);
 
@@ -19,8 +19,8 @@ export default function profileAvatar(peer: Peer, message?: Message) {
     client.getFile(location, (src) => {
       if (!src) return;
 
-      standart.classList.add('removed');
-      listenOnce(standart, 'animationend', () => unmount(standart));
+      standard.classList.add('removed');
+      listenOnce(standard, 'animationend', () => unmount(standard));
 
       const picture = div`.avatar__picture`(
         img({ src }),

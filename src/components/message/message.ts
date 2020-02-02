@@ -7,7 +7,7 @@ import { datetime } from 'components/ui';
 import { profileAvatar, profileTitle } from 'components/profile';
 import { userIdToPeer } from 'helpers/api';
 import { idToColorCode } from 'cache/accessors';
-import { isEmoji } from 'helpers/message';
+import { isEmoji, formatText } from 'helpers/message';
 import { auth } from 'services';
 import serviceMessage from './message_service';
 import messageMedia from './message_media';
@@ -106,7 +106,7 @@ export default function message(uniqueId: string, peer: Peer) {
             div`.message__text`(
               title || nothing,
               reply || nothing,
-              text(next.message),
+              formatText(next),
             ),
           ),
           div`.message__date`(
