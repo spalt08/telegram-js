@@ -32,12 +32,12 @@ module.exports = (env, argv) => {
     module: {
       rules: [
         {
-          test: /worker\.[^.]+$/,
+          test: /(^|\/|\.)worker\.[^.]+$/,
           use: {
             loader: 'worker-loader',
             options: {
-              inline: true,
-              fallback: false,
+              inline: false,
+              name: 'worker.[hash].js',
             },
           },
         },

@@ -5,7 +5,7 @@ import { API_ID, API_HASH, APP_VERSION } from '../const/api';
 import { WorkerMessage } from './types';
 import { UploadFile } from '../cache/types';
 import { typeToMime, hexToBlob } from '../helpers/files';
-import loadSchema from './schema';
+import schema from './layer105.json';
 
 
 /**
@@ -88,35 +88,33 @@ function process(message: WorkerMessage) {
   const { payload, type, id } = message;
 
   if (type === 'init') {
-    loadSchema((layer: any) => {
-      const tl = new TypeLanguage(layer);
-      client = new Client(tl, {
-        ssl: true,
-        protocol: 'intermediate',
-        transport: 'websocket',
+    const tl = new TypeLanguage(schema);
+    client = new Client(tl, {
+      ssl: true,
+      protocol: 'intermediate',
+      transport: 'websocket',
 
-        APILayer: 105,
-        APIID: API_ID,
-        APIHash: API_HASH,
+      APILayer: 105,
+      APIID: API_ID,
+      APIHash: API_HASH,
 
-        deviceModel: 'test',
-        systemVersion: 'test',
-        appVersion: APP_VERSION,
-        langCode: 'en',
-        ...payload,
-      });
-
-      // Broadcast meta changes
-      client.on('metaChanged', (newMeta: any) => {
-        resolve('', 'meta', newMeta);
-      });
-
-      client.updates.fetch();
-
-      while (pending.length > 0) {
-        process(pending.shift()!);
-      }
+      deviceModel: 'test',
+      systemVersion: 'test',
+      appVersion: APP_VERSION,
+      langCode: 'en',
+      ...payload,
     });
+
+    // Broadcast meta changes
+    client.on('metaChanged', (newMeta: any) => {
+      resolve('', 'meta', newMeta);
+    });
+
+    client.updates.fetch();
+
+    while (pending.length > 0) {
+      process(pending.shift()!);
+    }
   }
 
   if (!client) {

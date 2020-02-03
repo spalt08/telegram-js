@@ -11,7 +11,8 @@
     "module": "esnext",
     "moduleResolution": "node",
     "sourceMap": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true
   },
   "include": [
     "src/**/*"
