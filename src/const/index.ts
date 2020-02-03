@@ -1,2 +1,2 @@
-export { default as KEYBOARD } from './keyboard';
+export * from './dom';
 export { default as countries } from './country';
