@@ -1,4 +1,4 @@
-import { ElementFactory } from './factory';
+import { ElementFactory, createFragment } from './factory';
 import { useMaybeObservable } from './hooks';
 import { MaybeObservable } from './types'; // eslint-disable-line import/named
 
@@ -22,6 +22,10 @@ export const p = ElementFactory('p');
 export const input = ElementFactory('input');
 export const label = ElementFactory('label');
 export const strong = ElementFactory('strong');
+export const italic = ElementFactory('i');
+export const pre = ElementFactory('pre');
+export const code = ElementFactory('code');
+export const a = ElementFactory('a');
 
 /**
  * Wrapper for any text children
@@ -35,3 +39,4 @@ export function text(value: MaybeObservable<{ toString(): string; }>) {
 }
 
 export const nothing = text('');
+export const fragment = createFragment;

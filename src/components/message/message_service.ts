@@ -1,7 +1,11 @@
-import { MessageService } from 'cache/types';
+import { MessageService, User } from 'cache/types';
 import { div, strong, text } from 'core/html';
 import { userCache } from 'cache';
 import './message_service.scss';
+
+function userNameToHtml(user?: User) {
+  return strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account'));
+}
 
 export default function serviceMessage(msg: MessageService) {
   const user = userCache.get(msg.from_id);
@@ -12,7 +16,7 @@ export default function serviceMessage(msg: MessageService) {
         div`.msgservice`(
           div`.msgservice__wrapper`(
             div`.msgservice__inner`(
-              strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
+              userNameToHtml(user),
               text(' created the group '),
               strong(text(msg.action.title)),
             ),
@@ -26,7 +30,7 @@ export default function serviceMessage(msg: MessageService) {
         div`.msgservice`(
           div`.msgservice__wrapper`(
             div`.msgservice__inner`(
-              strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
+              userNameToHtml(user),
               text(' updated group photo'),
             ),
           ),
@@ -40,7 +44,7 @@ export default function serviceMessage(msg: MessageService) {
         div`.msgservice`(
           div`.msgservice__wrapper`(
             div`.msgservice__inner`(
-              strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
+              userNameToHtml(user),
               text(' changed title to '),
               strong(text(msg.action.title)),
             ),
@@ -54,7 +58,7 @@ export default function serviceMessage(msg: MessageService) {
         div`.msgservice`(
           div`.msgservice__wrapper`(
             div`.msgservice__inner`(
-              strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
+              userNameToHtml(user),
               text(' deleted group photo '),
             ),
           ),
@@ -68,7 +72,7 @@ export default function serviceMessage(msg: MessageService) {
           ...msg.action.users.map((user_id: number) => {
             const invited = userCache.get(user_id);
             return div`.msgservice__inner`(
-              strong(text(invited ? `${invited.first_name} ${invited.last_name}` : 'Deleted Account')),
+              userNameToHtml(invited),
               text(' joined the group'),
             );
           }),
@@ -82,7 +86,7 @@ export default function serviceMessage(msg: MessageService) {
         div`.msgservice`(
           div`.msgservice__wrapper`(
             div`.msgservice__inner`(
-              strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
+              userNameToHtml(user),
               text(' removed '),
               strong(text(removed ? `${removed.first_name} ${removed.last_name}` : '')),
             ),
@@ -96,7 +100,7 @@ export default function serviceMessage(msg: MessageService) {
         div`.msgservice`(
           div`.msgservice__wrapper`(
             div`.msgservice__inner`(
-              strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
+              userNameToHtml(user),
               text(' created channel '),
               strong(text(msg.action.title)),
             ),
@@ -135,7 +139,7 @@ export default function serviceMessage(msg: MessageService) {
         div`.msgservice`(
           div`.msgservice__wrapper`(
             div`.msgservice__inner`(
-              strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
+              userNameToHtml(user),
               text(' pinned message'),
             ),
           ),
@@ -148,7 +152,7 @@ export default function serviceMessage(msg: MessageService) {
         div`.msgservice`(
           div`.msgservice__wrapper`(
             div`.msgservice__inner`(
-              strong(text(user ? `${user.first_name} ${user.last_name}` : 'Deleted Account')),
+              userNameToHtml(user),
               text(' made a screenshot'),
             ),
           ),
@@ -162,6 +166,19 @@ export default function serviceMessage(msg: MessageService) {
           div`.msgservice__wrapper`(
             div`.msgservice__inner`(
               text(msg.action.message),
+            ),
+          ),
+        )
+      );
+    }
+
+    case 'messageActionContactSignUp': {
+      return (
+        div`.msgservice`(
+          div`.msgservice__wrapper`(
+            div`.msgservice__inner`(
+              userNameToHtml(user),
+              text(' joined Telegram'),
             ),
           ),
         )

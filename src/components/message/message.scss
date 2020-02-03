@@ -37,7 +37,7 @@
     height: 30px;
   }
 
-  & .avatar__standart {
+  & .avatar__standard {
     font-size: 12px;
   }
   &.with-media &__baloon, &.with-media .photo {
@@ -76,6 +76,7 @@
     padding: 0PX 5PX;
     font-size: 15px;
     white-space: pre-wrap;
+    overflow-wrap: break-word;
 
     &:after {
       content: '';
@@ -88,6 +89,11 @@
       font-style: italic;
       color: #707579;
       line-height: 180%;
+    }
+
+    & a {
+      color: #50A2E9;
+      text-decoration: none;
     }
   }
 
@@ -114,6 +120,10 @@
 
   &.chat &__baloon {
     max-width: 80%;
+  }
+
+  &.chat code {
+    color: #4E7391;
   }
 
   & .avatar {
@@ -161,6 +171,10 @@
     border-top-right-radius: 5px;
     border-bottom-left-radius: 10px;
     border-top-left-radius: 10px;
+  }
+
+  &.out code {
+    color: #469165;
   }
 
   &.last.out:after, &.out:last-child:after {
