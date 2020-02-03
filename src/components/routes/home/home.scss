@@ -80,6 +80,15 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
+
+        .wheel {
+          stroke-width: 1.5px;
+          stroke: white;
+        }
+
+        .background {
+          fill: rgba(0, 0, 0, 0.3);
+        }
       }
     }
   }
