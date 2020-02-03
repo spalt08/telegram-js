@@ -1,6 +1,7 @@
 import { MessageEntity, MessageCommon } from 'cache/types';
-import { strong, text, code, pre, italic, a, fragment } from 'core/html';
+import { strong, text, code, pre, em, a, fragment } from 'core/html';
 import { mount } from 'core/dom';
+import { newWindowLinkAttributes } from '../../../const';
 
 interface TreeNode {
   children: TreeNode[];
@@ -50,7 +51,7 @@ function nodeToHtml(node: TreeNode, result: Node[]) {
         result.push(strong(text(node.value)));
         break;
       case 'messageEntityItalic':
-        result.push(italic(text(node.value)));
+        result.push(em(text(node.value)));
         break;
       case 'messageEntityPre':
         result.push(pre(text(node.value)));
@@ -62,10 +63,10 @@ function nodeToHtml(node: TreeNode, result: Node[]) {
         result.push(a({ href: `mailto:${node.value}` }, text(node.value)));
         break;
       case 'messageEntityUrl':
-        result.push(a({ href: fixUrl(node.value), target: '_blank' }, text(node.value)));
+        result.push(a({ ...newWindowLinkAttributes, href: fixUrl(node.value) }, text(node.value)));
         break;
       case 'messageEntityTextUrl':
-        result.push(a({ href: fixUrl(node.entity.url), target: '_blank' }, text(node.value)));
+        result.push(a({ ...newWindowLinkAttributes, href: fixUrl(node.entity.url) }, text(node.value)));
         break;
       case 'messageEntityMention':
         result.push(a({ href: '#' }, text(node.value)));

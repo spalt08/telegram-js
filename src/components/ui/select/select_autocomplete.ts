@@ -3,7 +3,7 @@ import { div, text as textNode } from 'core/html';
 import { mount, unmount, listen, dispatch, setValue, isMounted } from 'core/dom';
 import { useInterface, useToBehaviorSubject, useOutsideEvent } from 'core/hooks';
 import { MaybeObservable } from 'core/types';
-import { KEYBOARD } from 'const';
+import { KeyboardKeys } from 'const'; // eslint-disable-line import/named
 import textInput from '../text_input/text_input';
 import './select_autocomplete.scss';
 import { modulo } from '../../../helpers/data';
@@ -161,27 +161,27 @@ export default function selectAutoComplete<T>({
 
   listen(inputEl!, 'keydown', (event: KeyboardEvent) => {
     switch (event.keyCode) {
-      case KEYBOARD.TAB:
+      case KeyboardKeys.TAB:
         // todo: Shift tabs
         event.preventDefault();
         setSelected(highlighted);
         performBlur();
         break;
 
-      case KEYBOARD.ARROW_DOWN:
+      case KeyboardKeys.ARROW_DOWN:
         handleHighlight(getNextVisibleOption(highlighted, 1), true);
         break;
 
-      case KEYBOARD.ARROW_UP:
+      case KeyboardKeys.ARROW_UP:
         handleHighlight(getNextVisibleOption(highlighted, -1), true);
         break;
 
-      case KEYBOARD.ENTER:
+      case KeyboardKeys.ENTER:
         event.preventDefault();
         setSelected(highlighted);
         break;
 
-      case KEYBOARD.ESC:
+      case KeyboardKeys.ESC:
         event.preventDefault();
         dispatch(arrow, 'click');
         break;
