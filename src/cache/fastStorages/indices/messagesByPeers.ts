@@ -1,6 +1,7 @@
 import { BehaviorSubject, Subject } from 'rxjs';
 import binarySearch from 'binary-search';
 import { messageToDialogPeer, peerToId } from 'helpers/api';
+import { mergeOrderedArrays } from 'helpers/data';
 import { useWhileMounted } from 'core/hooks';
 import { Message, Peer } from '../../types';
 import Collection from '../collection';
@@ -9,9 +10,14 @@ type HistoryWatcher = (ids: Readonly<number[]>) => void;
 
 // todo: Add messages from migrated chats to the corresponding groups. Migrated chats are marked with migrated_to attribute.
 
+// See Array.prototype.sort
+function compareIdsForOrder(id1: number, id2: number) {
+  return id2 - id1;
+}
+
 // integer means the exact position, float means the position between positions floor(n) and ceil(n)
 function findIdInOrderedList(ids: number[], id: number): number {
-  const rawValue = binarySearch(ids, id, (id1, id2) => id2 - id1);
+  const rawValue = binarySearch(ids, id, compareIdsForOrder);
   return rawValue >= 0 ? rawValue : (-rawValue - 1.5);
 }
 
@@ -41,42 +47,13 @@ class PeerIndex {
 
   // ids are in descending order
   public putHistoryIds(ids: number[]) {
-    if (ids.length === 0) {
-      return;
-    }
-
     // Remove ids from vagrant list
     ids.forEach((id) => this.removeVagrantId(id));
 
-    // Find a position where to insert. If the given ids range intersect
-    const startIndex = Math.ceil(findIdInOrderedList(this.historyIds, ids[0]));
-    const endIndex = Math.floor(findIdInOrderedList(this.historyIds, ids[ids.length - 1])) + 1;
-
-    // Join the given ids with the ids from the found position
-    const idsIntersection = [];
-    let hasNewIds = false;
-    for (let curI = startIndex, newI = 0; curI < endIndex || newI < ids.length;) {
-      if (this.historyIds[curI] === ids[newI]) {
-        idsIntersection.push(ids[newI]);
-        curI += 1;
-        newI += 1;
-        continue;
-      }
-      if (this.historyIds[curI] > ids[newI]) {
-        idsIntersection.push(this.historyIds[curI]);
-        curI += 1;
-      } else {
-        idsIntersection.push(ids[newI]);
-        newI += 1;
-        hasNewIds = true;
-      }
+    const hasNewIds = mergeOrderedArrays(this.historyIds, ids, compareIdsForOrder);
+    if (hasNewIds) {
+      this.notifyHistoryWatchers();
     }
-    if (!hasNewIds) {
-      return;
-    }
-
-    this.historyIds.splice(startIndex, endIndex - startIndex, ...idsIntersection);
-    this.notifyHistoryWatchers();
   }
 
   public putVagrantId(messageId: number) {

@@ -102,7 +102,7 @@ export default class MessagesService {
           chatCache.put(data.chats);
           messageCache.indices.peers.putHistoryMessages(data.messages);
           if (data.messages.length < chunk - 10) { // -10 just in case
-            messageCache.indices.peers.pubHistoryComplete(peer);
+            messageCache.indices.peers.putHistoryComplete(peer);
           }
         }
       } finally {
