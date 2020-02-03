@@ -1,4 +1,4 @@
-import url from './layer105.json.txt';
+import url from './layer105.json?file';
 
 /**
  * Reduce bundle size by loading schema

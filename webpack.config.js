@@ -90,6 +90,14 @@ module.exports = (env, argv) => {
                 name: 'assets/[contenthash].[ext]',
               },
             },
+            {
+              resourceQuery: /(^|\?|&)file($|&)/i,
+              loader: 'file-loader',
+              type: 'javascript/auto', // https://github.com/webpack-contrib/file-loader/issues/259#issuecomment-541492227
+              options: {
+                name: 'assets/[contenthash].[ext]',
+              },
+            },
           ],
         },
         {
@@ -102,11 +110,6 @@ module.exports = (env, argv) => {
               { cleanupIDs: false },
             ],
           },
-        },
-        // https://github.com/webpack-contrib/file-loader/issues/259
-        {
-          test: /\.json\.txt$/,
-          loader: 'file-loader',
         },
       ],
     },
