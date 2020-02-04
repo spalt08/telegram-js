@@ -6,7 +6,7 @@ const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const CssoWebpackPlugin = require('csso-webpack-plugin').default;
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
@@ -32,12 +32,12 @@ module.exports = (env, argv) => {
     module: {
       rules: [
         {
-          test: /worker\.[^.]+$/,
+          test: /(^|\/|\.)worker\.[^.]+$/,
           use: {
             loader: 'worker-loader',
             options: {
-              inline: true,
-              fallback: false,
+              inline: false,
+              name: 'worker.[hash].js',
             },
           },
         },
@@ -90,6 +90,14 @@ module.exports = (env, argv) => {
                 name: 'assets/[contenthash].[ext]',
               },
             },
+            {
+              resourceQuery: /(^|\?|&)file($|&)/i,
+              loader: 'file-loader',
+              type: 'javascript/auto', // https://github.com/webpack-contrib/file-loader/issues/259#issuecomment-541492227
+              options: {
+                name: 'assets/[contenthash].[ext]',
+              },
+            },
           ],
         },
         {
@@ -102,11 +110,6 @@ module.exports = (env, argv) => {
               { cleanupIDs: false },
             ],
           },
-        },
-        // https://github.com/webpack-contrib/file-loader/issues/259
-        {
-          test: /\.json\.txt$/,
-          loader: 'file-loader',
         },
       ],
     },
@@ -122,7 +125,6 @@ module.exports = (env, argv) => {
             },
           },
         }),
-        new OptimizeCSSAssetsPlugin({}),
       ],
     },
 
@@ -166,6 +168,7 @@ module.exports = (env, argv) => {
         filename: '[name].[hash].css',
         chunkFilename: '[id].[hash].css',
       }),
+      new CssoWebpackPlugin(),
       new ForkTsCheckerWebpackPlugin({
         eslint: true,
         compilerOptions: {

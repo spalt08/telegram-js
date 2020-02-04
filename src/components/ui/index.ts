@@ -10,3 +10,4 @@ export { default as ripple } from './ripple/ripple';
 export { default as list } from './list/list';
 export { default as sectionSpinner } from './section_spinner/section_spinner';
 export { default as emoji } from './emoji/emoji';
+export { default as formattedMessage } from './formatted_message/formatted_message';

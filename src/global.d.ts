@@ -24,6 +24,11 @@ declare module '*?raw' {
   export default text;
 }
 
+declare module '*?file' {
+  const url: string;
+  export default url;
+}
+
 declare module 'pako/lib/deflate' {
   export { deflate, Deflate, deflateRaw, gzip } from 'pako';
 }

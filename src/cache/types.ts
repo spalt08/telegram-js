@@ -162,6 +162,52 @@ export type MessageMedia = {
   _: 'messageMediaPoll',
 };
 
+/**
+ * MessageEntity object
+ * Ref: https://core.telegram.org/type/MessageEntity
+ */
+export type MessageEntity = (
+  {
+    _: 'messageEntityUnknown',
+  } | {
+    _: 'messageEntityMention',
+  } | {
+    _: 'messageEntityHashtag',
+  } | {
+    _: 'messageEntityBotCommand',
+  } | {
+    _: 'messageEntityUrl',
+  } | {
+    _: 'messageEntityEmail',
+  } | {
+    _: 'messageEntityBold',
+  } | {
+    _: 'messageEntityItalic',
+  } | {
+    _: 'messageEntityCode',
+  } | {
+    _: 'messageEntityPre',
+  } | {
+    _: 'messageEntityTextUrl',
+    url: string,
+  } | {
+    _: 'messageEntityMentionName',
+    user_id: number,
+  } | {
+    _: 'messageEntityPhone',
+  } | {
+    _: 'messageEntityCashtag',
+  } | {
+    _: 'messageEntityUnderline',
+  } | {
+    _: 'messageEntityStrike',
+  } | {
+    _: 'messageEntityBlockquote',
+  }) & {
+  offset: number,
+  length: number,
+};
+
 export type Document = {
   _: 'document',
   id: any,
@@ -229,6 +275,7 @@ export type MessageCommon = {
   to_id: Peer,
   media: MessageMedia,
   reply_to_msg_id?: number,
+  entities: MessageEntity[],
 };
 
 export type MessageService = {
@@ -303,6 +350,8 @@ export type MessageAction = {
   message: string,
 } | {
   _: 'messageActionScreenshotTaken',
+} | {
+  _: 'messageActionContactSignUp',
 };
 
 /**
