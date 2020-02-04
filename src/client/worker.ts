@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-globals */
 
-import { Client, TypeLanguage, ClientError, TLConstructor } from 'mtproto-js';
+import { Client, TypeLanguage, ClientError, TLConstructor } from '../../packages/mtproto-js/src';
 import { API_ID, API_HASH, APP_VERSION } from '../const/api';
 import { WorkerMessage } from './types';
 import { UploadFile } from '../cache/types';
