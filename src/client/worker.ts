@@ -29,8 +29,8 @@ function resolve(id: string, type: string, payload: any) {
 /**
  * Resolve update
  */
-function resolveUpdate(id: string, update: TLConstructor) {
-  ctx.postMessage({ id, type: 'update', payload: update.json() } as WorkerMessage);
+function resolveUpdate(id: string, update: any) {
+  ctx.postMessage({ id, type: 'update', payload: update } as WorkerMessage);
 }
 
 /**
@@ -56,7 +56,7 @@ function downloadFilePart(
 
     if (!err && result) {
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      processFilePart(location, result.json(), mime, dc, offset, limit, parts, cb);
+      processFilePart(location, result, mime, dc, offset, limit, parts, cb);
     }
   });
 }
@@ -134,7 +134,7 @@ function process(message: WorkerMessage) {
         payload.method,
         payload.params,
         payload.headers,
-        (err: ClientError, result?: TLConstructor) => resolve(id, type, { err, result: result && result.json() }),
+        (err: ClientError, result?: TLConstructor) => resolve(id, type, { err, result }),
       );
 
       break;
@@ -158,8 +158,8 @@ function process(message: WorkerMessage) {
     }
 
     case 'authorize': {
-      client.authorize(payload, (err, key) => {
-        resolve(id, type, err || key);
+      client.authorize(payload, (key) => {
+        resolve(id, type, key);
       });
       break;
     }
