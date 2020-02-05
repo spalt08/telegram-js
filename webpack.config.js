@@ -6,7 +6,7 @@ const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const CssoWebpackPlugin = require('csso-webpack-plugin').default;
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
@@ -125,7 +125,6 @@ module.exports = (env, argv) => {
             },
           },
         }),
-        new OptimizeCSSAssetsPlugin({}),
       ],
     },
 
@@ -169,6 +168,7 @@ module.exports = (env, argv) => {
         filename: '[name].[hash].css',
         chunkFilename: '[id].[hash].css',
       }),
+      new CssoWebpackPlugin(),
       new ForkTsCheckerWebpackPlugin({
         eslint: true,
         compilerOptions: {

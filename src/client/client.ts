@@ -54,7 +54,7 @@ worker.postMessage({
 function call(method: string, data: Record<string, any>, cb?: RequestResolver): void;
 function call(method: string, data: Record<string, any>, headers: Record<string, any>, cb?: RequestResolver): void;
 function call(method: string, ...args: unknown[]): void {
-  const id = method + Date.now().toString(16);
+  const id = method + Date.now().toString() + Math.random() * 1000;
 
   let params: Record<string, any> = {};
   let headers: Record<string, any> = {};
@@ -78,7 +78,7 @@ function call(method: string, ...args: unknown[]): void {
  * Any task wrapper
  */
 function task(type: WorkerMessage['type'], payload: any, cb?: AnyResolver) {
-  const id = type + Date.now().toString();
+  const id = type + Date.now().toString() + Math.random() * 1000;
   worker.postMessage({ id, type, payload } as WorkerMessage);
   if (cb) quene[id] = cb;
 }
