@@ -1,5 +1,5 @@
 import ClientWorker from './worker';
-import { WorkerMessage } from './types';
+import { WorkerMessage } from './worker.types';
 import { InputFileLocation } from '../cache/types';
 
 /**
@@ -17,6 +17,7 @@ export type ClientError = {
 type RequestResolver = (err: ClientError | null, res?: any) => void;
 type UpdateResolver = (res?: any) => void;
 type AnyResolver = (...payload: unknown[]) => void;
+type EventResolver = (event: any) => void;
 
 /**
  * Vars
@@ -25,6 +26,7 @@ const worker = new ClientWorker();
 const requests: Record<string, RequestResolver> = {};
 const quene: Record<string, AnyResolver> = {};
 const updates: Record<string, UpdateResolver[]> = {};
+const eventListeners: Record<string, EventResolver[]> = {};
 const clientDebug = localStorage.getItem('debugmt') || false;
 const dc = +localStorage.getItem('dc')! || 2;
 const svc = {
@@ -47,6 +49,11 @@ worker.postMessage({
   },
 } as WorkerMessage);
 
+/**
+ * Pass online / offline events
+ */
+window.addEventListener('online', () => worker.postMessage({ type: 'windowEvent', payload: 'online' }));
+window.addEventListener('offline', () => worker.postMessage({ type: 'windowEvent', payload: 'offline' }));
 
 /**
  * Make RPC API request
@@ -81,6 +88,25 @@ function task(type: WorkerMessage['type'], payload: any, cb?: AnyResolver) {
   const id = type + Date.now().toString() + Math.random() * 1000;
   worker.postMessage({ id, type, payload } as WorkerMessage);
   if (cb) quene[id] = cb;
+}
+
+/**
+ * Subscribe client event
+ */
+function subscribe(type: string, cb: EventResolver) {
+  if (!eventListeners[type]) eventListeners[type] = [];
+  eventListeners[type].push(cb);
+}
+
+/**
+ * Emit client event
+ */
+function emit(type: string, data: any) {
+  if (!eventListeners[type]) eventListeners[type] = [];
+
+  for (let i = 0; i < eventListeners[type].length; i++) {
+    eventListeners[type][i](data);
+  }
 }
 
 /**
@@ -122,6 +148,10 @@ worker.onmessage = (event: MessageEvent) => {
 
     case 'meta':
       svc.meta = data.payload;
+      break;
+
+    case 'network':
+      emit('networkChanged', data.payload);
       break;
 
     default:
@@ -170,6 +200,7 @@ function getFile(location: InputFileLocation, cb: AnyResolver, dc_id?: number, m
 const client = {
   svc,
   call,
+  on: subscribe,
   updates: {
     on,
   },

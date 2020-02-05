@@ -4,8 +4,6 @@ import client from 'client/client';
 import { API_HASH, API_ID } from 'const/api';
 import { unformat } from 'helpers/phone';
 import { history } from 'router';
-// eslint-disable-next-line
-import { file } from 'services';
 
 let useStorage = window.localStorage;
 
