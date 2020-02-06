@@ -26,7 +26,7 @@ export default function dialogs({ className = '' }: Props = {}) {
     threshold: 1,
     batch: 20,
     renderer: (id: string) => dialog(id),
-    onReachEnd: () => service.loadMoreDialogs(),
+    onReachBottom: () => service.loadMoreDialogs(),
   });
 
   let spinner: Node | undefined;

@@ -1,6 +1,6 @@
-import { el, mount, unmount, listen } from 'core/dom';
+import { el, mount, unmount, listen, listenOnce } from 'core/dom';
 import { div } from 'core/html';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import './list.scss';
 import { useObservable, useInterface, useOnMount, useListenWhileMounted } from 'core/hooks';
 
@@ -14,10 +14,11 @@ type Props<T> = {
   batch?: number,
   renderer: (item: T) => HTMLElement,
   key?: (item: T) => string,
-  onReachEnd?: () => void,
   onReachTop?: () => void,
   onReachBottom?: () => void,
 };
+
+const ease = (t: number) => t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
 
 /**
  * Scrollable container with flip animations
@@ -54,11 +55,6 @@ export default function list<T>({ tag, className,
     rect?: DOMRect,
   }> = {};
 
-  // scroll state
-  let isLocked = false;
-  let viewport = wrapper.getBoundingClientRect();
-  const updateViewport = () => { viewport = wrapper.getBoundingClientRect(); };
-
   // cached items
   let current: readonly T[] = [];
   let first = -1;
@@ -66,6 +62,8 @@ export default function list<T>({ tag, className,
   let offset: number = -1;
   let pending: readonly T[] = [];
   let focused: T | undefined;
+  let isLocked = false;
+  let viewport = wrapper.getBoundingClientRect();
 
   // item -> HTMLElement
   const element = (data: T): HTMLElement => {
@@ -82,12 +80,193 @@ export default function list<T>({ tag, className,
   const mountChild = (item: T, before?: T) => mount(container, element(item), before ? element(before) : undefined);
   const unMountChild = (item: T) => unmount(element(item));
 
-  // const fetchLayout = () => {
-  //   for (let i = first; i <= last; i++) {
-  //     const id = key(current[i]);
-  //     elements[id].rect = elements[id].el.getBoundingClientRect();
-  //   }
-  // };
+  // mount before node, not data
+  const mountBeforeNode = (item: T, before?: Node) => {
+    const elm = element(item);
+    unmount(elm);
+    mount(container, elm, before);
+  };
+
+
+  // update content with flip animations
+  const update = (next: readonly T[]) => {
+    const focusedIndex = focused ? next.indexOf(focused) : -1;
+
+    // fallback if no changes
+    if (focusedIndex === -1 && current === next && !focused) return;
+
+    // pass if nothing is rendered
+    if (focusedIndex === -1 && (current.length === 0 || last < first)) {
+      current = next.slice(0);
+      return;
+    }
+
+    isLocked = true;
+
+    // visible elements
+    const visible = first > -1 && last > -1 ? current.slice(first, last + 1) : [];
+
+    // visible indexes after update
+    let nextFirst;
+    let nextLast;
+
+    // animation class
+    const animationClass = focusedIndex === -1 || current.length === 0 ? 'list__appeared' : 'list__scrolled';
+
+    // if has focused element
+    if (focusedIndex !== -1) {
+      nextFirst = Math.max(0, focusedIndex - batch);
+      nextLast = Math.min(focusedIndex + batch, next.length - 1);
+
+    // keep first element visible
+    } else if (pivotBottom === false) {
+      nextFirst = first;
+      nextLast = Math.min(first + visible.length - 1, next.length - 1);
+
+    // keep last element visible
+    } else {
+      nextLast = Math.max(0, next.length - (current.length - last - 1) - 1);
+      nextFirst = Math.max(nextLast - (last - first), 0);
+    }
+
+    // no need to rerender
+    if (nextFirst > -1 && next.slice(nextFirst, visible.length) === visible) {
+      current = next;
+      return;
+    }
+
+    isLocked = true;
+
+    const nextVisible = [];
+    const flipFrom: Record<string, ClientRect> = {};
+    const flipTo: Record<string, ClientRect> = {};
+
+    // keep start position for flip
+    for (let i = 0; i < visible.length; i += 1) {
+      flipFrom[key(visible[i])] = element(visible[i]).getBoundingClientRect();
+    }
+
+    // iterate through elements and update it's position
+    let nextEl = container.firstChild;
+    for (let i = nextFirst; i <= nextLast; i += 1) {
+      const elm = element(next[i]);
+      // add new element
+      if (visible.indexOf(next[i]) === -1) {
+        mountChild(next[i]);
+
+        elm.classList.add(animationClass);
+        listenOnce(elm, 'animationend', () => elm.classList.remove(animationClass));
+
+      // swap elements
+      } else if (element(next[i]) !== nextEl) {
+        unMountChild(next[i]);
+        mountBeforeNode(next[i], nextEl as Node);
+      }
+
+      // continue
+      nextEl = elm.nextSibling;
+
+      // update next visible shortcut
+      nextVisible.push(next[i]);
+    }
+
+    // remove old elements
+    for (let i = 0; i < visible.length; i += 1) {
+      const elm = element(visible[i]);
+
+      elm.style.transformOrigin = '';
+      elm.classList.remove('list__flipping');
+
+      if (nextVisible.indexOf(visible[i]) === -1) {
+        unmount(elm);
+        delete flipFrom[key(visible[i])];
+      }
+    }
+
+    // keep position
+    if (focusedIndex === -1) {
+      container.scrollTop = offset;
+
+    // change position
+    } else {
+      const rect = element(focused!).getBoundingClientRect();
+      const rectTopOffset = container.scrollTop + rect.top - viewport.top;
+
+      let scrollValue = rectTopOffset;
+      if (viewport.height > rect.height) scrollValue -= (viewport.height - rect.height) / 2;
+      else scrollValue -= 50;
+
+      console.log(container.scrollTop, rect.top, viewport.top, 'rectTopOffset', rectTopOffset);
+
+      element(focused!).classList.add('focused');
+      container.scrollTop = offset = scrollValue; // eslint-disable-line
+    }
+
+    // animatet if not focused
+    if (focusedIndex === -1) {
+      // animate elements
+      let animated = Object.keys(flipFrom);
+      for (let i = 0; i < animated.length; i += 1) {
+        const akey = animated[i];
+
+        flipTo[akey] = elements[akey].el.getBoundingClientRect();
+
+        const iTop = flipFrom[akey].top - flipTo[akey].top;
+        const iLeft = flipFrom[akey].left - flipTo[akey].left;
+
+        if (iTop === 0 && iLeft === 0) {
+          delete flipFrom[akey];
+          continue;
+        } else {
+          elements[akey].el.style.transformOrigin = 'top left';
+          elements[akey].el.style.transform = `translate(${iLeft}px, ${iTop}px)`;
+        }
+      }
+
+      // get final list of els to animate
+      animated = Object.keys(flipFrom);
+
+      // Wait next frame
+      requestAnimationFrame(() => {
+        for (let i = 0; i < animated.length; i += 1) {
+          const toBeFlipped = elements[animated[i]].el;
+
+          toBeFlipped.classList.add('list__flipping');
+          toBeFlipped.style.transform = '';
+
+          listenOnce(toBeFlipped, 'transitionend', () => {
+            toBeFlipped.style.transformOrigin = '';
+            toBeFlipped.classList.remove('list__flipping');
+          });
+        }
+      });
+    }
+
+    if (focused) {
+      element(focused).classList.remove('focused');
+      focused = undefined;
+    }
+    current = next.slice(0);
+    console.log('was', first, last);
+    console.log('now', nextFirst, nextLast);
+    first = nextFirst;
+    last = nextLast;
+
+    isLocked = false;
+  };
+
+  // scroll state
+  const updateViewport = () => { viewport = wrapper.getBoundingClientRect(); };
+  const lock = () => { isLocked = true; };
+  const unlock = (updateVirtualize: boolean = true) => {
+    isLocked = false;
+    if (pending.length > 0) {
+      update(pending);
+      pending = [];
+    }
+
+    if (updateVirtualize) virtualize(); // eslint-disable-line @typescript-eslint/no-use-before-define
+  };
 
   // virtualize scroll elements
   const virtualize = () => {
@@ -99,7 +278,9 @@ export default function list<T>({ tag, className,
 
     // render initial elements, first min(batch, current.length) elements
     if (last - first <= 0 && last !== 0) {
+      lock();
       updateViewport();
+
       const count = Math.min(batch, current.length);
 
       if (count > 0) {
@@ -110,8 +291,7 @@ export default function list<T>({ tag, className,
       for (let i = 0; i < count; i += 1) mountChild(current[++last]);
       if (pivotBottom) container.scrollTop = offset = container.scrollHeight - viewport.height; // eslint-disable-line no-multi-assign
 
-      console.log('init batch', count, ':', first, last);
-
+      unlock(false);
       virtualize();
       return;
     }
@@ -121,7 +301,7 @@ export default function list<T>({ tag, className,
       const count = Math.min(batch, first);
 
       if (count > 0) {
-        isLocked = true;
+        lock();
 
         // keep scroll position
         let scrollPos = container.scrollTop;
@@ -146,12 +326,10 @@ export default function list<T>({ tag, className,
         // keep scroll
         container.scrollTop = offset = scrollPos; // eslint-disable-line no-multi-assign
 
-        isLocked = false;
+        unlock();
+      }
 
-        console.log('added top batch', count, ':', first, last, `(removed: ${removed})`);
-        return;
-      } else if (onReachTop) onReachTop();
-
+      if (first <= batch && onReachTop) onReachTop();
     }
 
     // apply bottom elements and shrink top
@@ -159,7 +337,7 @@ export default function list<T>({ tag, className,
       const count = Math.min(batch, current.length - last - 1);
 
       if (count > 0) {
-        isLocked = true;
+        lock();
 
         // keep scroll position
         const scrollPos = container.scrollTop;
@@ -183,18 +361,79 @@ export default function list<T>({ tag, className,
         // keep scroll
         container.scrollTop = offset = scrollPos - scrollDelta; // eslint-disable-line no-multi-assign
 
-        isLocked = false;
+        unlock();
+      }
 
-        console.log('added top batch', count, ':', first, last, `(removed: ${removed})`);
-      } else if (onReachBottom) onReachBottom();
+      if (current.length - last - 1 <= batch && onReachBottom) onReachBottom();
     }
+  };
+
+  const scrollTo = (elm: HTMLElement) => {
+    lock();
+
+    // calculate
+    const rect = elm.getBoundingClientRect();
+    const rectTopOffset = container.scrollTop + rect.top - viewport.top;
+
+    let scollValue = rectTopOffset;
+    if (viewport.height > rect.height) scollValue -= (viewport.height - rect.height) / 2;
+    else scollValue -= 50;
+
+    elm.classList.add('focused');
+
+    const from = container.scrollTop;
+    const dy = scollValue - from;
+    const duration = 300;
+    let start: number | undefined;
+
+    const animateScroll = (timestamp: number) => {
+      if (!start) start = timestamp;
+
+      const progress = timestamp - start;
+      const percentage = Math.min(1, progress / duration);
+
+      if (percentage > 0) {
+        container.scrollTo(0, from + ease(percentage) * dy);
+      }
+
+      if (percentage < 1) {
+        requestAnimationFrame(animateScroll);
+      } else {
+        unlock();
+        elm.classList.remove('focused');
+      }
+    };
+
+    requestAnimationFrame(animateScroll);
+  };
+
+  // scrollTo(item)
+  const focus = (item: T) => {
+    const index = current.indexOf(item);
+
+    // data wasn't loaded yet
+    if (index === -1) {
+      focused = item;
+      return;
+    }
+
+    // make transition
+    if (index < first || index > last) {
+      focused = item;
+      update(current);
+      return;
+    }
+
+    scrollTo(element(item));
   };
 
   // on items changed
   useObservable(container, items, (next: readonly T[]) => {
-    current = next;
-
-    virtualize();
+    if (isLocked) pending = next.slice(0);
+    else {
+      update(next);
+      virtualize();
+    }
   });
 
   // on container scrolled
@@ -221,10 +460,7 @@ export default function list<T>({ tag, className,
   // return with interface
   return useInterface(wrapper, {
     // alias: scrollTo(item)
-    focus(item: T) {
-      focused = item;
-    },
-
+    focus,
     // clear list
     clear() {
       for (let i = first; i <= last; i += 1) {
@@ -234,6 +470,8 @@ export default function list<T>({ tag, className,
       elements = {};
       current = [];
       pending = [];
+      first = -1;
+      last = -2;
     },
   });
 }

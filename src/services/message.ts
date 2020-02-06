@@ -13,6 +13,8 @@ export default class MessagesService {
 
   isLoading = new BehaviorSubject<boolean>(false);
 
+  focused = new BehaviorSubject<string>('');
+
   history = new BehaviorSubject<Readonly<number[]>>([]);
 
   peerHistoryUnsubscribe: (() => void) | undefined;

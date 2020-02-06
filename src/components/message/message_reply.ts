@@ -3,7 +3,9 @@ import { Peer } from 'cache/types';
 import { peerMessageToId } from 'helpers/api';
 import { profileTitle } from 'components/profile';
 import { div, text } from 'core/html';
+import { message as service } from 'services';
 import './message_reply.scss';
+import { listen } from 'core/dom';
 
 export default function messageReply(peer: Peer, id: number) {
   const msg = messageCache.get(peerMessageToId(peer, id));
@@ -17,7 +19,7 @@ export default function messageReply(peer: Peer, id: number) {
   if (msg.media && msg.media._ !== 'messageMediaEmpty') message = 'Media';
   if (msg.message) message = msg.message;
 
-  return (
+  const element = (
     div`.reply`(
       div`.reply__content`(
         div`.reply__title`(profileTitle({ _: 'peerUser', user_id: msg.from_id })),
@@ -25,4 +27,8 @@ export default function messageReply(peer: Peer, id: number) {
       ),
     )
   );
+
+  listen(element, 'click', () => service.focused.next(peerMessageToId(peer, id)));
+
+  return element;
 }

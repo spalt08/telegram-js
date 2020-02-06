@@ -7,6 +7,13 @@
   max-width: 740px;
   margin: 0 auto;
   padding: 0 20PX;
+  transition: background-color .3s ease;
+  transition-delay: .6s;
+
+  &.focused {
+    transition: none;
+    background-color: rgba(0, 132, 255, 0.2);
+  }
 
   &__inner {
     padding-bottom: 4PX;

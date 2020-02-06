@@ -7,6 +7,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    will-change: transform;
 
     > * {
       flex: none;
@@ -30,6 +31,11 @@
     z-index: 1;
   }
 
+  &__scrolled {
+    animation: listScrolled .3s ease;
+    z-index: 1;
+  }
+
   &__removed {
     position: absolute;
     animation: listRemove .3s ease;
@@ -49,6 +55,12 @@
 @keyframes listAppear {
   from {
     opacity: 0;
+  }
+}
+
+@keyframes listScrolled {
+  from {
+    transform: translateY(-100vh);
   }
 }
 
