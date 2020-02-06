@@ -298,13 +298,23 @@ export type MessageEmpty = {
  * Refs:
  * - https://core.telegram.org/constructor/updateShortMessage
  */
-export type AnyShortMessage = {
+export type AnyUpdateShortMessage = {
   _: 'updateShortMessage', // -> MessageCommon { peerUser }
   user_id: number,
   message: string
   date: number,
   id: number,
   out: boolean,
+};
+
+/**
+ * Update messages
+ * Refs:
+ * - https://core.telegram.org/type/update
+ */
+export type AnyUpdateMessage = {
+  _: 'updateNewMessage' | 'updateNewChannelMessage',
+  message: Message,
 };
 
 /**
