@@ -1,0 +1,59 @@
+.roundButton {
+  position: relative;
+  appearance: none;
+  border: none;
+  font-size: 16px;
+  margin: 0;
+  height: 54px;
+  width: 54px;
+  background: #4EA4F5;
+  color: #FFFFFF;
+  text-align: center;
+  border-radius: 50%;
+  text-transform: uppercase;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: .2s ease;
+  outline: none;
+  cursor: pointer;
+  padding: 5px 10px;
+
+  &:hover, &:focus {
+    background: #4797E2;
+    outline: none;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    background: #4797E2;
+  }
+
+  & .ripple__content {
+    display: inline-flex;
+  }
+
+  &__spinner {
+    $size: 27px;
+    display: none;
+    position: absolute;
+    width: $size;
+    height: $size;
+    top: calc(50% - #{$size / 2});
+    right: 13px;
+
+    circle {
+      stroke: #FFFFFF;
+    }
+  }
+
+  &.loading {
+    padding-left: 45px;
+    padding-right: 45px;
+  }
+
+  &.loading &__spinner {
+    display: block;
+  }
+}

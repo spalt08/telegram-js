@@ -14,6 +14,8 @@
   }
 
   &__sidebar {
+    flex: 0 420px;
+    overflow: hidden;
     width: 26%;
     max-width: 420px;
     min-width: 320px;
@@ -56,6 +58,7 @@
 
   &__content {
     flex: 1 50%;
+    overflow: hidden;
     background: #E6EBEE;
 
     @include respond-to(small) {
@@ -84,5 +87,27 @@
         transform: translate(-50%, -50%);
       }
     }
+  }
+
+  &__right_sidebar {
+    flex: 0 20px;
+    overflow: hidden;
+    max-width: 420px;
+    height: 100%;
+    border-left: 1px solid #EDEEF0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    transition-property: flex-basis;
+    transition-duration: 0.2s;
+
+    @include respond-to(small) {
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+  
+  &__right_sidebar:hover {
+    flex-basis: 420px;
   }
 }

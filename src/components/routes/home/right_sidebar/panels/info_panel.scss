@@ -1,0 +1,32 @@
+.info_panel {
+  display: flex;
+  flex-direction: column;
+
+  & .header_button {
+    width: 33px;
+    height: 33px;
+    background: transparent;
+    margin: 10px;
+    
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+    path {
+      fill: #707579
+    }
+  }
+
+  & .header_button:hover, & .header_button:focus {
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+  }
+
+  &__title {
+    flex: 1;
+  }
+}
