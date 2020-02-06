@@ -14,10 +14,11 @@
 
   &__inner {
     position: relative;
-    max-width: 674px;
+    max-width: 600px;
     display: inline-flex;
 
     &::before {
+      display: none;
       content: "";
       position: absolute;
       top: -10px;
@@ -178,32 +179,32 @@
     display: none;
   }
 
-  &.media &__inner::before, &.as-emoji &__inner::before {
-    display: none;
+  &.shadowed &__inner::before {
+    display: block;
   }
 
-  &__inner::before {
+  &.shadowed &__inner::before {
     border-image: url(~assets/message_in-central@2x.png) 49 49 49 49 fill;
   }
-  &.first &__inner::before {
+  &.shadowed.first &__inner::before {
     border-image: url(~assets/message_in-upper@2x.png) 49 49 49 49 fill;
   }
-  &.last &__inner::before {
+  &.shadowedlast &__inner::before {
     border-image: url(~assets/message_in-lower@2x.png) 49 49 49 49 fill;
   }
-  &.first.last &__inner::before {
+  &.shadowed.first.last &__inner::before {
     border-image: url(~assets/message_in-whole@2x.png) 49 49 49 49 fill;
   }
-  &.out &__inner::before {
+  &.shadowed.out &__inner::before {
     border-image: url(~assets/message_out-central@2x.png) 49 49 49 49 fill;
   }
-  &.out.first &__inner::before {
+  &.shadowed.out.first &__inner::before {
     border-image: url(~assets/message_out-upper@2x.png) 49 49 49 49 fill;
   }
-  &.out.last &__inner::before {
+  &.shadowed.out.last &__inner::before {
     border-image: url(~assets/message_out-lower@2x.png) 49 49 49 49 fill;
   }
-  &.out.first.last &__inner::before {
+  &.shadowed.out.first.last &__inner::before {
     border-image: url(~assets/message_out-whole@2x.png) 49 49 49 49 fill;
   }
 
