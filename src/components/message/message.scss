@@ -32,20 +32,20 @@
 
   &.last &__inner::after {
     position: absolute;
-    left: -9px;
-    width: 11px;
-    bottom: -1px;
-    height: 20px; 
+    left: -7px;
+    width: 7px;
+    bottom: 0px;
+    height: 17px; 
     z-index: 2;
     content: '';
-    background-image: url(~assets/message_corner.svg);
+    background-image: url(~assets/message_corner@2x.png);
     background-size: 100%;
   }
 
   &.out.last &__inner::after {
-    background-image: url(~assets/message_corner-out.svg);
+    background-image: url(~assets/message_corner-out@2x.png);
     left: auto;
-    right: -9px;
+    right: -7px;
   }
   
   &.chat.last &__inner {
@@ -106,7 +106,7 @@
   }
 
   &.chat {
-    padding-left: 54px;
+    padding-left: 58px;
   }
 
   &.chat code {
