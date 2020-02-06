@@ -2,7 +2,7 @@ import { div, text, img } from 'core/html';
 import { Peer, Message } from 'cache/types';
 import { peerToInitials, peerToColorCode } from 'cache/accessors';
 import { getPeerPhotoInputLocation } from 'helpers/photo';
-import { unmount, listenOnce, mount } from 'core/dom';
+import { unmount, mount } from 'core/dom';
 import client from 'client/client';
 import './avatar.scss';
 
