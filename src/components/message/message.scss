@@ -2,18 +2,20 @@
 
 .message {
   font-size: 15px;
-  width: auto;
-  max-width: 740px;
-  margin-right: auto;
+  margin: auto;
   padding: 2.5px 20px;
+  max-width: 740px;
+  width: 100%;
+  display: flex;
 
   &.out {
-    margin-left: auto;
-    margin-right: 0;
+    flex-direction: row-reverse;
   }
 
   &__inner {
     position: relative;
+    max-width: 674px;
+    display: inline-flex;
 
     &::before {
       content: "";
@@ -47,7 +49,7 @@
   }
   
   &.chat.last &__inner {
-    margin-left: 34px;
+    margin-left: 38px;
   }
 
   & .avatar {
@@ -172,11 +174,11 @@
     background: transparent;
   }
 
-  &.last.media &__inner:after, &.last.media.out &__inner:after, &.last.as-emoji &__inner:after { 
+  &.last.media &__inner:after, &.last.as-emoji &__inner::after { 
     display: none;
   }
 
-  &.media &__inner:before, &.media.out &__inner:before, &.as-emoji &__inner:before {
+  &.media &__inner::before, &.as-emoji &__inner::before {
     display: none;
   }
 
