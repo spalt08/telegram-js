@@ -438,8 +438,9 @@ export default function list<T>({ tag, className,
 
   // on container scrolled
   listen(container, 'scroll', () => {
+    console.log(container.scrollTop);
     // release focused
-    if (focused) focused = undefined;
+    if (focused && !isLocked) focused = undefined;
 
     // prevent overscroll events
     if (container.scrollTop < 0) return;

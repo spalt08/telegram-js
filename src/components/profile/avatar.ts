@@ -19,8 +19,7 @@ export default function profileAvatar(peer: Peer, message?: Message) {
     client.getFile(location, (src) => {
       if (!src) return;
 
-      standard.classList.add('removed');
-      listenOnce(standard, 'animationend', () => unmount(standard));
+      unmount(standard);
 
       const picture = div`.avatar__picture`(
         img({ src }),
