@@ -10,10 +10,6 @@ export default function messageMedia(media: MessageMedia): HTMLElement | null {
       return mediaPhoto(media.photo);
 
     case 'messageMediaDocument':
-      if (process.env.NODE_ENV === 'development') {
-        console.log(media);
-      }
-
       if (media.document.mime_type === 'application/x-tgsticker') {
         return mediaAnimatedSticker(media.document);
       }
