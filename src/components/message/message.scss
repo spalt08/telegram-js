@@ -5,7 +5,9 @@
   margin: auto;
   padding: 2.5px 20px;
   max-width: 740px;
-  padding: 0 20PX;
+  width: 100%;
+  display: flex;
+
   transition: background-color .3s ease;
   transition-delay: .6s;
 
@@ -13,8 +15,6 @@
     transition: none;
     background-color: rgba(0, 132, 255, 0.2);
   }
-  width: 100%;
-  display: flex;
 
   &.out {
     flex-direction: row-reverse;
