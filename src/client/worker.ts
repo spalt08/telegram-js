@@ -41,7 +41,7 @@ function downloadFilePart(
 ) {
   if (!client) throw new Error('Client is undefined');
 
-  client.call('upload.getFile', { location, offset, limit }, { dc }, (err, result) => {
+  client.call('upload.getFile', { location, offset, limit }, { dc, thread: 2 }, (err, result) => {
     // redirect to another dc
     if (err && err.message && err.message.indexOf('FILE_MIGRATE_') > -1) {
       downloadFilePart(location, cb, +err.message.slice(-1), mime, offset, limit, parts);
