@@ -155,13 +155,50 @@ export default function message(uniqueId: string, peer: Peer) {
   useObservable(container, subject, (next) => next && rerender(next));
 
   useOnMount(container, () => {
+    const prevEl = container.previousElementSibling;
     const nextEl = container.nextElementSibling;
-    const pinterface = nextEl && hasInterface<MessageHooks>(nextEl) ? getInterface(nextEl) : null;
+    const pinterface = prevEl && hasInterface<MessageHooks>(prevEl) ? getInterface(prevEl) : null;
+    const ninterface = nextEl && hasInterface<MessageHooks>(nextEl) ? getInterface(nextEl) : null;
 
-    if (!nextEl) container.classList.add('last');
-    if (nextEl && pinterface && pinterface.getFromID && msg.from_id !== pinterface.getFromID()) {
-      nextEl.classList.add('first');
+    if (!nextEl && !prevEl) {
+      console.log('case', 1);
+      container.classList.add('first');
       container.classList.add('last');
+    }
+
+    if (nextEl && !prevEl) {
+      console.log('case', 2);
+      container.classList.add('first');
+
+      if (ninterface && ninterface.getFromID && msg.from_id === ninterface.getFromID()) {
+        container.classList.remove('last');
+        nextEl.classList.remove('first');
+      } else {
+        container.classList.add('last');
+      }
+    }
+
+    if (prevEl && !nextEl) {
+      console.log('case', 3);
+      container.classList.add('last');
+
+      if (pinterface && pinterface.getFromID && msg.from_id === pinterface.getFromID()) {
+        prevEl.classList.remove('last');
+      } else {
+        container.classList.add('first');
+        prevEl.classList.add('last');
+      }
+    }
+
+    if (prevEl && nextEl) {
+      console.log('case', 4);
+      if (pinterface && pinterface.getFromID && msg.from_id === pinterface.getFromID()) {
+        container.classList.remove('first');
+        prevEl.classList.remove('last');
+      } else {
+        container.classList.add('first');
+        prevEl.classList.add('last');
+      }
     }
   });
 

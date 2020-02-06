@@ -247,8 +247,6 @@ export default function list<T>({ tag, className,
       focused = undefined;
     }
     current = next.slice(0);
-    console.log('was', first, last);
-    console.log('now', nextFirst, nextLast);
     first = nextFirst;
     last = nextLast;
 
@@ -438,7 +436,6 @@ export default function list<T>({ tag, className,
 
   // on container scrolled
   listen(container, 'scroll', () => {
-    console.log(container.scrollTop);
     // release focused
     if (focused && !isLocked) focused = undefined;
 
