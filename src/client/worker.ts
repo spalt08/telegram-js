@@ -2,7 +2,7 @@
 
 import { Client, TypeLanguage, ClientError, TLConstructor } from '../../packages/mtproto-js/src';
 import { API_ID, API_HASH, APP_VERSION } from '../const/api';
-import { WorkerMessage } from './types';
+import { WorkerMessage } from './worker.types';
 import { UploadFile } from '../cache/types';
 import { typeToMime, hexToBlob } from '../helpers/files';
 import schema from './layer105.json';
@@ -110,6 +110,11 @@ function process(message: WorkerMessage) {
       resolve('', 'meta', newMeta);
     });
 
+    // Broadcast network changes
+    client.on('networkChanged', (state: any) => {
+      resolve('', 'network', state);
+    });
+
     client.updates.fetch();
 
     while (pending.length > 0) {
@@ -124,6 +129,14 @@ function process(message: WorkerMessage) {
 
   switch (type) {
     case 'init': {
+      break;
+    }
+
+    case 'windowEvent': {
+      // todo: check support
+      const event = new Event(payload);
+      self.dispatchEvent(event);
+
       break;
     }
 

@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
-import { Message, Peer, AnyShortMessage } from 'cache/types';
+import { Message, Peer, AnyUpdateMessage, AnyUpdateShortMessage } from 'cache/types';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage, shortChatMessageToMessage } from 'helpers/api';
@@ -18,30 +18,21 @@ export default class MessagesService {
   peerHistoryUnsubscribe: (() => void) | undefined;
 
   constructor() {
-    client.updates.on('updateNewMessage', (update: any) => {
-      // console.log('updateNewMessage', update);
+    client.updates.on('updateNewMessage', (update: AnyUpdateMessage) => {
       this.handleMessagePush(update.message);
     });
 
-    client.updates.on('updateShortMessage', (update: AnyShortMessage) => {
-      // todo store userid
-      // console.log('updateShortMessage', update);
+    client.updates.on('updateShortMessage', (update: AnyUpdateShortMessage) => {
       const message = shortMessageToMessage(client.getUserID(), update);
       this.handleMessagePush(message);
     });
 
-    client.updates.on('updateShortChatMessage', (update: AnyShortMessage) => {
+    client.updates.on('updateShortChatMessage', (update: AnyUpdateShortMessage) => {
       const message = shortChatMessageToMessage(update);
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log(update);
-        console.log(message);
-      }
-      // this.handleMessagePush(message);
+      this.handleMessagePush(message);
     });
 
-    client.updates.on('updateNewChannelMessage', (update: any) => {
-      // console.log('updateNewChannelMessage', update);
+    client.updates.on('updateNewChannelMessage', (update: AnyUpdateMessage) => {
       this.handleMessagePush(update.message);
     });
 
