@@ -4,8 +4,8 @@
   font-size: 15px;
   width: auto;
   max-width: 740px;
-  margin: 3px auto 3px 0;
-  padding: 0 20PX;
+  margin-right: auto;
+  padding: 3px 20px;
 
   &.out {
     margin-left: auto;
@@ -49,22 +49,6 @@
   &.chat.last &__inner {
     margin-left: 34px;
   }
-  
-  // &__baloon {
-  //   background: #FFFFFF;
-  //   border-radius: 10px;
-  //   border-bottom-left-radius: 5px;
-  //   border-top-left-radius: 5px;
-  //   position: relative;
-  //   box-shadow: 0px 1px 2px 0px rgba(16, 35, 47, 0.15);
-  //   z-index: 1;
-  //   width: auto;
-  //   max-width: 600px;
-  //   overflow: hidden;
-  //   display: inline-block;
-  //   text-align: left;
-  //   vertical-align: bottom;
-  // }
 
   & .avatar {
     width: 30px;
@@ -84,30 +68,6 @@
   &__content {
     padding: 5PX;
   }
-
-  // &.last:after, &:last-child:after {
-  //   position: absolute;
-  //   left: 11PX;
-  //   width: 11PX;
-  //   bottom: 3PX;
-  //   height: 20PX; 
-  //   z-index: 2;
-  //   content: '';
-  //   background-image: url(~assets/message_corner.svg);
-  //   background-size: 100%;
-  // }
-
-  // &.last:before, &:last-child:before {
-  //   position: absolute;
-  //   left: 11PX;
-  //   width: 11PX;
-  //   height: 20PX; 
-  //   bottom: 1PX;
-  //   content: '';
-  //   background-image: url(~assets/message_corner-shadow.svg);
-  //   background-size: 100%;
-  //   z-index: 0;
-  // }
 
   &__text {
     padding: 0PX 5PX;
@@ -143,21 +103,9 @@
     bottom: 1PX;
   }
 
-  // &.chat.last:after, &.chat:last-child:after {
-  //   left: 45.5PX;
-  // }
-
-  // &.chat.last:before, &.chat:last-child:before {
-  //   left: 45.5PX;
-  // }
-
   &.chat {
-    padding-left: 54PX;
+    padding-left: 54px;
   }
-
-  // &.chat &__baloon {
-  //   max-width: 80%;
-  // }
 
   &.chat code {
     color: #4E7391;
