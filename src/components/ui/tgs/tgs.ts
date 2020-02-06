@@ -39,6 +39,7 @@ export default function tgs({ src, className, autoplay = false, loop = false }: 
         loop,
         autoplay,
         animationData,
+        renderer: 'canvas',
       }) as AnimationItem & { currentFrame: number};
     });
   }
