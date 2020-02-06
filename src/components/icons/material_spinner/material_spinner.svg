@@ -6,16 +6,8 @@
     -->
   </defs>
   <circle
-    class="background"
+    class="xb8ytEhx"
     r="20"
-    cx="22"
-    cy="22"
-    stroke="none"
-    fill="none"
-  />
-  <circle
-    class="wheel"
-    r="17"
     cx="22"
     cy="22"
     stroke="#000"
