@@ -8,6 +8,29 @@ import Collection from '../collection';
 
 type HistoryWatcher = (ids: Readonly<number[]>) => void;
 
+export interface IdsChunkReference {
+  readonly history: BehaviorSubject<IdsChunk>;
+
+  // The chunk must intersect or directly touch the referenced chunk
+  putChunk(chunk: IdsChunk): void;
+
+  // You must call when you don't want to watch the chunk anymore
+  revoke(): void;
+}
+
+export interface IdsChunk {
+  ids: number[];
+  oldestReached?: boolean;
+  newestReached?: boolean;
+}
+
+interface IdsChunkStore {
+  oldestReached: boolean;
+  newestReached: boolean;
+  ids: number[];
+  refs: IdsChunkReference[];
+}
+
 // todo: Add messages from migrated chats to the corresponding groups. Migrated chats are marked with migrated_to attribute.
 
 // See Array.prototype.sort
@@ -15,73 +38,200 @@ function compareIdsForOrder(id1: number, id2: number) {
   return id2 - id1;
 }
 
+function isChunkEmpty(chunk: IdsChunk) {
+  return !chunk.newestReached && !chunk.oldestReached && !chunk.ids.length;
+}
+
+function getChunkNewestId(chunk: IdsChunk) {
+  if (chunk.newestReached) {
+    return Infinity;
+  }
+  return chunk.ids.length ? chunk.ids[0] : -Infinity;
+}
+
+function getChunkOldestId(chunk: IdsChunk) {
+  if (chunk.oldestReached) {
+    return -Infinity;
+  }
+  return chunk.ids.length ? chunk.ids[chunk.ids.length - 1] : Infinity;
+}
+
+// id = Infinity refers to the chunk with the newest message, -Infinity to the chunk with the oldest
+function compareChunksAndIdForOrder(chunk: IdsChunk, id: number): number {
+  if (isChunkEmpty(chunk)) {
+    if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
+      console.error('Unexpected empty chunk (no ids and not oldest or newest)');
+    }
+    return -1;
+  }
+  if (compareIdsForOrder(getChunkNewestId(chunk), id) > 0) {
+    return 1;
+  }
+  if (compareIdsForOrder(getChunkOldestId(chunk), id) < 0) {
+    return -1;
+  }
+  return 0;
+}
+
 // integer means the exact position, float means the position between positions floor(n) and ceil(n)
-function findIdInOrderedList(ids: number[], id: number): number {
+function findInIdsList(ids: number[], id: number): number {
   const rawValue = binarySearch(ids, id, compareIdsForOrder);
+  return rawValue >= 0 ? rawValue : (-rawValue - 1.5);
+}
+
+// integer means the exact position, float means the position between positions floor(n) and ceil(n)
+function findChunkWithMessage(chunks: IdsChunk[], messageId: number): number {
+  const rawValue = binarySearch(chunks, messageId, compareChunksAndIdForOrder);
   return rawValue >= 0 ? rawValue : (-rawValue - 1.5);
 }
 
 class PeerIndex {
   /**
-   * The messages from the main messages list. The ids are in descending order.
-   * If the messages come together here, it means that they come together in the server database, there are no gaps.
+   * Each chunk is a continuous sequence of ids that has no missing id in between.
+   * The chunks and the ids inside are in descending order.
+   * The intersecting chunks must be combined into a single chunk. Touching chunks _should_ be too.
+   * There are no empty chunks.
+   * There are only unique ids inside.
    */
-  public historyIds: number[] = [];
-
-  /**
-   * Whether the history ids list is filled up to the oldest id
-   */
-  public historyComplete = false;
-
-  /**
-   * The messages got from other sources (e.g. replied to messages). Their positions in the history is unknown.
-   * An id may be only in one of the lists (preferable in `historyIds`).
-   */
-  public vagrantIds = new Set<number>();
-
-  public historyWatchers: HistoryWatcher[] = [];
+  public chunks: IdsChunkStore[] = [];
 
   public isEmpty() {
-    return this.historyIds.length > 0 && this.vagrantIds.size > 0;
+    const { chunks } = this;
+    return !(chunks.length === 1 && chunks[0].newestReached && chunks[0].oldestReached)
+      && chunks.reduce((idsCount, chunk) => idsCount + chunk.ids.length, 0) === 0;
   }
 
-  // ids are in descending order
-  public putHistoryIds(ids: number[]) {
-    // Remove ids from vagrant list
-    ids.forEach((id) => this.removeVagrantId(id));
+  public hasReferences() {
+    return this.chunks.some((chunk) => chunk.refs.length);
+  }
 
-    const hasNewIds = mergeOrderedArrays(this.historyIds, ids, compareIdsForOrder);
-    if (hasNewIds) {
-      this.notifyHistoryWatchers();
+  // ids are in descending order and with no missing ids in between
+  public putChunk(chunkRef: IdsChunkReference, chunk: IdsChunk) {
+    if (isChunkEmpty(chunk)) {
+      return;
+    }
+
+    const targetChunkIndex = this.chunks.findIndex((_chunk) => _chunk.refs.includes(chunkRef));
+    let newestChunkIndex = Math.ceil(findChunkWithMessage(this.chunks, getChunkNewestId(chunk)));
+    let oldestChunkIndex = Math.floor(findChunkWithMessage(this.chunks, getChunkOldestId(chunk)));
+
+    if (targetChunkIndex >= 0) {
+      newestChunkIndex = Math.min(targetChunkIndex, newestChunkIndex);
+      oldestChunkIndex = Math.max(targetChunkIndex, oldestChunkIndex);
+    }
+
+    let isChanged = false;
+
+    // Combine the chunks that intersect with the given ids in a single chunk
+    // If no chunk intersects, then the combined chunk will be empty
+    const chunksToCombine = this.chunks.slice(newestChunkIndex, oldestChunkIndex + 1);
+    let newChunk: IdsChunkStore;
+    if (chunksToCombine.length === 1) {
+      [newChunk] = chunksToCombine;
+    } else {
+      newChunk = {
+        ids: [],
+        refs: [],
+        oldestReached: false,
+        newestReached: false,
+      };
+      chunksToCombine.forEach((_chunk) => {
+        newChunk.ids.push(..._chunk.ids);
+        newChunk.refs.push(..._chunk.refs);
+        newChunk.oldestReached = newChunk.oldestReached || _chunk.oldestReached;
+        newChunk.newestReached = newChunk.newestReached || _chunk.newestReached;
+      });
+      isChanged = true;
+    }
+
+    // Merge the given ids and data with the combined chunk to fill its gaps
+    if (mergeOrderedArrays(newChunk.ids, chunk.ids, compareIdsForOrder)) {
+      isChanged = true;
+    }
+    if (chunk.oldestReached && !newChunk.oldestReached) {
+      newChunk.oldestReached = true;
+      isChanged = true;
+    }
+    if (chunk.newestReached && !newChunk.newestReached) {
+      newChunk.newestReached = true;
+      isChanged = true;
+    }
+
+    if (isChanged) {
+      // Put the result chunk to its place in the chunks list
+      this.chunks.splice(newestChunkIndex, oldestChunkIndex - newestChunkIndex + 1, newChunk);
+
+      // Notify listeners about the changes
+      newChunk.refs.forEach((ref) => ref.history.next({
+        ids: newChunk.ids,
+        newestReached: newChunk.newestReached,
+        oldestReached: newChunk.oldestReached,
+      }));
+    }
+
+    // If the given chunk wasn't attached to the chunk, attach it and give the current chunk state
+    if (targetChunkIndex < 0) {
+      this.attachChunkReference(chunkRef, newChunk);
     }
   }
 
-  public putVagrantId(messageId: number) {
-    if (this.getHistoryIdIndex(messageId) === undefined) {
-      this.vagrantIds.add(messageId);
+  public removeId(messageId: number) {
+    const chunkIndex = findChunkWithMessage(this.chunks, messageId);
+    if (chunkIndex % 1 !== 0) {
+      return;
     }
-  }
-
-  public removeHistoryId(messageId: number) {
-    const index = this.getHistoryIdIndex(messageId);
-    if (index !== undefined) {
-      this.historyIds.splice(index, 1);
-      this.notifyHistoryWatchers();
+    const chunk = this.chunks[chunkIndex];
+    const idIndex = findInIdsList(chunk.ids, messageId);
+    if (idIndex % 1 !== 0) {
+      return;
     }
+    chunk.ids.splice(idIndex, 1);
+    if (isChunkEmpty(chunk)) {
+      this.chunks.splice(chunkIndex, 1);
+    }
+    chunk.refs.forEach((ref) => ref.history.next({
+      ids: [],
+      oldestReached: false,
+      newestReached: false,
+    }));
   }
 
-  public removeVagrantId(messageId: number) {
-    this.vagrantIds.delete(messageId);
+  public makeChunkReference(existingMessageId?: number): IdsChunkReference {
+    const chunkReference: IdsChunkReference = {
+      history: new BehaviorSubject({ ids: [] }),
+      putChunk: (chunk) => this.putChunk(chunkReference, chunk),
+      revoke: () => this.chunks.forEach((chunk) => {
+        const refIndex = chunk.refs.indexOf(chunkReference);
+        if (refIndex >= 0) {
+          chunk.refs.splice(refIndex, 1);
+        }
+      }),
+    };
+
+    if (existingMessageId === Infinity) {
+      this.putChunk(chunkReference, { ids: [], newestReached: true });
+    } else if (existingMessageId === -Infinity) {
+      this.putChunk(chunkReference, { ids: [], oldestReached: true });
+    } else if (existingMessageId) {
+      const chunkIndex = findChunkWithMessage(this.chunks, existingMessageId);
+      if (chunkIndex % 1 === 0) {
+        this.attachChunkReference(chunkReference, this.chunks[chunkIndex]);
+      }
+    }
+
+    return chunkReference;
   }
 
-  protected getHistoryIdIndex(messageId: number): number | undefined {
-    const index = findIdInOrderedList(this.historyIds, messageId);
-    const isIdFound = index % 1 === 0;
-    return isIdFound ? index : undefined;
-  }
-
-  protected notifyHistoryWatchers() {
-    this.historyWatchers.forEach((watcher) => watcher(this.historyIds));
+  protected attachChunkReference(chunkRef: IdsChunkReference, chunk: IdsChunkStore) {
+    if (!chunk.refs.includes(chunkRef)) {
+      chunk.refs.push(chunkRef);
+      chunkRef.history.next({
+        ids: chunk.ids,
+        oldestReached: chunk.oldestReached,
+        newestReached: chunk.newestReached,
+      });
+    }
   }
 }
 
@@ -113,6 +263,7 @@ export default function messagesByPeers(collection: Collection<Message, any>) {
       return;
     }
 
+    // todo: Chunk the changes
     collectionChanges.forEach(([action, message]) => {
       const peer = messageToDialogPeer(message);
       if (!peer) {
@@ -181,10 +332,10 @@ export default function messagesByPeers(collection: Collection<Message, any>) {
      * Marks that the history of the given peer is loaded up to the end (the oldest message).
      * You can get this value later though isHistoryEnded.
      */
-    pubHistoryComplete(peer: Peer, completed = true) {
+    putHistoryComplete(peer: Peer, completed = true) {
       const peerId = peerToId(peer);
       const peerIndex = getOrCreatePeer(peerId);
-      peerIndex.historyComplete = completed;
+      peerIndex.oldestReached = completed;
     },
 
     /**
@@ -217,7 +368,7 @@ export default function messagesByPeers(collection: Collection<Message, any>) {
     isHistoryComplete(peer: Peer) {
       const peerId = peerToId(peer);
       const peerIndex = peers[peerId];
-      return peerIndex ? peerIndex.historyComplete : false;
+      return peerIndex ? peerIndex.oldestReached : false;
     },
 
     watchHistory(peer: Peer, onChange: HistoryWatcher): () => void {
