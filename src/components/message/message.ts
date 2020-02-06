@@ -161,13 +161,11 @@ export default function message(uniqueId: string, peer: Peer) {
     const ninterface = nextEl && hasInterface<MessageHooks>(nextEl) ? getInterface(nextEl) : null;
 
     if (!nextEl && !prevEl) {
-      console.log('case', 1);
       container.classList.add('first');
       container.classList.add('last');
     }
 
     if (nextEl && !prevEl) {
-      console.log('case', 2);
       container.classList.add('first');
 
       if (ninterface && ninterface.getFromID && msg.from_id === ninterface.getFromID()) {
@@ -179,7 +177,6 @@ export default function message(uniqueId: string, peer: Peer) {
     }
 
     if (prevEl && !nextEl) {
-      console.log('case', 3);
       container.classList.add('last');
 
       if (pinterface && pinterface.getFromID && msg.from_id === pinterface.getFromID()) {
@@ -191,7 +188,6 @@ export default function message(uniqueId: string, peer: Peer) {
     }
 
     if (prevEl && nextEl) {
-      console.log('case', 4);
       if (pinterface && pinterface.getFromID && msg.from_id === pinterface.getFromID()) {
         container.classList.remove('first');
         prevEl.classList.remove('last');

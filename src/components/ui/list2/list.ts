@@ -101,6 +101,8 @@ export default function list<T>({ tag, className,
       return;
     }
 
+    console.log('update from', container.scrollTop);
+
     isLocked = true;
 
     // visible elements
@@ -161,6 +163,11 @@ export default function list<T>({ tag, className,
       } else if (element(next[i]) !== nextEl) {
         unMountChild(next[i]);
         mountBeforeNode(next[i], nextEl as Node);
+
+        if (focusedIndex !== -1) {
+          elm.classList.add(animationClass);
+          listenOnce(elm, 'animationend', () => elm.classList.remove(animationClass));
+        }
       }
 
       // continue
@@ -190,13 +197,11 @@ export default function list<T>({ tag, className,
     // change position
     } else {
       const rect = element(focused!).getBoundingClientRect();
-      const rectTopOffset = container.scrollTop + rect.top - viewport.top;
+      const rectTopOffset = container.scrollTop + rect.top - viewport.top + viewport.height / 2;
 
       let scrollValue = rectTopOffset;
-      if (viewport.height > rect.height) scrollValue -= (viewport.height - rect.height) / 2;
+      if (viewport.height > rect.height) scrollValue += 0; // rect.height / 2;
       else scrollValue -= 50;
-
-      console.log(container.scrollTop, rect.top, viewport.top, 'rectTopOffset', rectTopOffset);
 
       element(focused!).classList.add('focused');
       container.scrollTop = offset = scrollValue; // eslint-disable-line
@@ -282,7 +287,7 @@ export default function list<T>({ tag, className,
       const count = Math.min(batch, current.length);
 
       if (count > 0) {
-        first = pivotBottom ? current.length - batch : 0;
+        first = pivotBottom ? Math.max(0, current.length - batch) : 0;
         last = first - 1;
       }
 
