@@ -37,7 +37,7 @@ export default function messages() {
     items: itemsSubject,
     reversed: true,
     threshold: 800,
-    batch: 20,
+    batch: 20000,
     renderer: (id: string) => message(id, service.activePeer.value!),
     onReachEnd: () => service.loadMoreHistory(),
   }), element.lastElementChild!);
