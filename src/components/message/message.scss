@@ -2,10 +2,15 @@
 
 .message {
   font-size: 15px;
-  width: 100%;
+  width: auto;
   max-width: 740px;
-  margin: 4px auto;
+  margin: 3px auto 3px 0;
   padding: 0 20PX;
+
+  &.out {
+    margin-left: auto;
+    margin-right: 0;
+  }
 
   &__inner {
     position: relative;
@@ -42,7 +47,7 @@
   }
   
   &.chat.last &__inner {
-    margin-left: 36px;
+    margin-left: 34px;
   }
   
   // &__baloon {
@@ -158,6 +163,16 @@
     color: #4E7391;
   }
 
+  & pre {
+    display: inline;
+    white-space: pre-line;
+    margin: 0;
+  }
+
+  &.chat pre {
+    color: #4e7391;
+  }
+
   & .avatar {
     margin-right: 4px;
     display: none;
@@ -193,124 +208,88 @@
     display: none;
   }
 
-  // &.out &__inner {
-  //   flex-direction: row-reverse;
-  // }
-
-  // &.out &__baloon {
-  //   background: #EEFFDE;
-  //   border-bottom-right-radius: 5px;
-  //   border-top-right-radius: 5px;
-  //   border-bottom-left-radius: 10px;
-  //   border-top-left-radius: 10px;
-  // }
-
   &.out code {
     color: #469165;
   }
 
-  // &.last.out:after, &.out:last-child:after {
-  //   background-image: url(~assets/message_corner-out.svg);
-  //   left: auto;
-  //   right: 11PX;
-  // }
-
-  // &.last.out:before, &.out:last-child:before {
-  //   background-image: url(~assets/message_corner-out-shadow.svg);
-  //   left: auto;
-  //   right: 11PX;
-  // }
+  &.out pre {
+    color: #469165;
+  }
 
   &.out &__date {
     color: #54B152;
   }
 
-  // &.first, &:first-child {
-  //   .message__baloon {
-  //     border-top-left-radius: 10px;
-  //     border-top-right-radius: 10px;
-  //   }
-  // }
+  &.media &__inner, &.media.out &__inner, &.as-emoji &__inner {
+    background: transparent;
+  }
 
-  // &.last &__baloon, &:last-child &__baloon {
-  //   border-bottom-left-radius: 0;
-  // }
+  &.last.media &__inner:after, &.last.media.out &__inner:after, &.last.as-emoji &__inner:after { 
+    display: none;
+  }
 
-  // &.out.last &__baloon, &.out:last-child &__baloon {
-  //   border-bottom-right-radius: 0;
-  //   border-bottom-left-radius: 10px;
-  // }
+  &.media &__inner:before, &.media.out &__inner:before, &.as-emoji &__inner:before {
+    display: none;
+  }
 
-  // &.last.media &__baloon {
-  //   border-bottom-left-radius: 10px;
-  //   border-bottom-right-radius: 10px;
-  // }
-
-  // &.last.media:after, &.last.media.out:after, &.last.as-emoji:after { 
-  //   display: none;
-  // }
-
-  // &.last.media:before, &.last.media.out:before, &.last.as-emoji:before {
-  //   display: none;
-  // }
-
-  .message__inner::before {
+  &__inner::before {
     border-image: url(~assets/message_in-central@2x.png) 49 49 49 49 fill;
   }
-  &.first .message__inner::before {
+  &.first &__inner::before {
     border-image: url(~assets/message_in-upper@2x.png) 49 49 49 49 fill;
   }
-  &.last .message__inner::before {
+  &.last &__inner::before {
     border-image: url(~assets/message_in-lower@2x.png) 49 49 49 49 fill;
   }
-  &.first.last .message__inner::before {
+  &.first.last &__inner::before {
     border-image: url(~assets/message_in-whole@2x.png) 49 49 49 49 fill;
   }
-  &.out .message__inner::before {
+  &.out &__inner::before {
     border-image: url(~assets/message_out-central@2x.png) 49 49 49 49 fill;
   }
-  &.out.first .message__inner::before {
+  &.out.first &__inner::before {
     border-image: url(~assets/message_out-upper@2x.png) 49 49 49 49 fill;
   }
-  &.out.last .message__inner::before {
+  &.out.last &__inner::before {
     border-image: url(~assets/message_out-lower@2x.png) 49 49 49 49 fill;
   }
-  &.out.first.last .message__inner::before {
+  &.out.first.last &__inner::before {
     border-image: url(~assets/message_out-whole@2x.png) 49 49 49 49 fill;
   }
 
-  &__inner {
-    padding: 6px;
-    border-radius: 12.5px;
+  &__baloon {
     border-radius: 6px;
-  }
-  
-  &__inner {
     background: #FFFFFF;
-    border-top-right-radius: 12.5px;
-    border-bottom-right-radius: 12.5px;
+    overflow: hidden;
+  }
+
+  & &__baloon {
+    border-radius: 6px 12.5px 12.5px 6px;
   }
   
-  &.first &__inner {
+  &.first &__baloon {
     border-top-left-radius: 12.5px;
   }
   
-  &.last &__inner {
+  &.last &__baloon {
     border-bottom-left-radius: 0;
   }
   
-  &.out &__inner {
+  &.out &__baloon {
     background: #EEFFDE;
-    border-top-left-radius: 12.5px;
-    border-bottom-left-radius: 12.5px;
+    border-radius: 12.5px 6px 6px 12.5px;
   }
   
-  &.out.first &__inner {
+  &.out.first &__baloon {
     border-top-right-radius: 12.5px;
   }
   
-  &.out.last &__inner {
+  &.out.last &__baloon {
     border-bottom-right-radius: 0;
   }
   
+  &.last.media &__baloon {
+    border-bottom-left-radius: 12.5px;
+    border-bottom-right-radius: 12.5px;
+  }
 }
