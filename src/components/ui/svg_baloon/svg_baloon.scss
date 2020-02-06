@@ -1,0 +1,9 @@
+.svgBaloon {
+  display: inline-flex;
+  margin-right: -7px;
+  
+  &.incoming {
+    margin-left: -7px;
+    margin-right: 0;
+  }
+}

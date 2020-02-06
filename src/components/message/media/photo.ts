@@ -5,6 +5,7 @@ import { mount, unmount, listenOnce } from 'core/dom';
 import { getOrientation, getThumbnail, checkDimensions, getPhotoLocation, getSizeType, getSize } from 'helpers/photo';
 import client from 'client/client';
 import './photo.scss';
+import { useInterface } from 'core/hooks';
 
 const PHOTO_W_DIM = 100 / 320;
 const PHOTO_H_DIM = 48 / 320;
@@ -62,5 +63,10 @@ export default function mediaPhoto(photo: Photo) {
     mount(container, preview);
   }, photo.dc_id);
 
-  return container;
+  return useInterface(container, {
+    needsShadow: () => true,
+    getSize() {
+      return box;
+    },
+  });
 }

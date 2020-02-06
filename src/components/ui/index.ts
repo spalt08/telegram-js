@@ -11,3 +11,4 @@ export { default as list } from './list2/list';
 export { default as sectionSpinner } from './section_spinner/section_spinner';
 export { default as emoji } from './emoji/emoji';
 export { default as formattedMessage } from './formatted_message/formatted_message';
+export { default as svgBaloon } from './svg_baloon/svg_baloon';

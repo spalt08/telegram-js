@@ -1,11 +1,10 @@
 @import '~styles/variables.scss';
 
 .message {
-  position: relative;
   font-size: 15px;
-  width: 100%;
+  margin: auto;
+  padding: 2.5px 20px;
   max-width: 740px;
-  margin: 0 auto;
   padding: 0 20PX;
   transition: background-color .3s ease;
   transition-delay: .6s;
@@ -14,34 +13,60 @@
     transition: none;
     background-color: rgba(0, 132, 255, 0.2);
   }
+  width: 100%;
+  display: flex;
 
-  &__inner {
-    padding-bottom: 4PX;
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    align-items: flex-end;
+  &.out {
+    flex-direction: row-reverse;
   }
 
-  &__baloon {
-    background: #FFFFFF;
-    border-radius: 10px;
-    border-bottom-left-radius: 5px;
-    border-top-left-radius: 5px;
+  &__inner {
     position: relative;
-    box-shadow: 0px 1px 2px 0px rgba(16, 35, 47, 0.15);
-    z-index: 1;
-    width: auto;
     max-width: 600px;
-    overflow: hidden;
-    display: inline-block;
-    text-align: left;
-    vertical-align: bottom;
+    display: inline-flex;
+
+    &::before {
+      display: none;
+      content: "";
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      right: -10px;
+      bottom: -10px;
+      border-style: solid;
+      border-width: 25px;
+      z-index: -1;
+    }
+  }
+
+  &.last &__inner::after {
+    position: absolute;
+    left: -7px;
+    width: 7px;
+    bottom: 0px;
+    height: 17px; 
+    z-index: 2;
+    content: '';
+    background-image: url(~assets/message_corner@2x.png);
+    background-size: 100%;
+  }
+
+  &.out.last &__inner::after {
+    background-image: url(~assets/message_corner-out@2x.png);
+    left: auto;
+    right: -7px;
+  }
+  
+  &.chat.last &__inner {
+    margin-left: 38px;
   }
 
   & .avatar {
-    width: 30px;
-    height: 30px;
+    width: 33px;
+    height: 33px;
+    position: absolute;
+    left: -38px;
+    bottom: 0;
   }
 
   & .avatar__standard {
@@ -53,30 +78,6 @@
 
   &__content {
     padding: 5PX;
-  }
-
-  &.last:after, &:last-child:after {
-    position: absolute;
-    left: 11PX;
-    width: 11PX;
-    bottom: 3PX;
-    height: 20PX; 
-    z-index: 2;
-    content: '';
-    background-image: url(~assets/message_corner.svg);
-    background-size: 100%;
-  }
-
-  &.last:before, &:last-child:before {
-    position: absolute;
-    left: 11PX;
-    width: 11PX;
-    height: 20PX; 
-    bottom: 1PX;
-    content: '';
-    background-image: url(~assets/message_corner-shadow.svg);
-    background-size: 100%;
-    z-index: 0;
   }
 
   &__text {
@@ -113,24 +114,22 @@
     bottom: 1PX;
   }
 
-  &.chat.last:after, &.chat:last-child:after {
-    left: 45.5PX;
-  }
-
-  &.chat.last:before, &.chat:last-child:before {
-    left: 45.5PX;
-  }
-
   &.chat {
-    padding-left: 54PX;
-  }
-
-  &.chat &__baloon {
-    max-width: 80%;
+    padding-left: 58px;
   }
 
   &.chat code {
     color: #4E7391;
+  }
+
+  & pre {
+    display: inline;
+    white-space: pre-line;
+    margin: 0;
+  }
+
+  &.chat pre {
+    color: #4e7391;
   }
 
   & .avatar {
@@ -168,64 +167,88 @@
     display: none;
   }
 
-  &.out &__inner {
-    flex-direction: row-reverse;
-  }
-
-  &.out &__baloon {
-    background: #EEFFDE;
-    border-bottom-right-radius: 5px;
-    border-top-right-radius: 5px;
-    border-bottom-left-radius: 10px;
-    border-top-left-radius: 10px;
-  }
-
   &.out code {
     color: #469165;
   }
 
-  &.last.out:after, &.out:last-child:after {
-    background-image: url(~assets/message_corner-out.svg);
-    left: auto;
-    right: 11PX;
-  }
-
-  &.last.out:before, &.out:last-child:before {
-    background-image: url(~assets/message_corner-out-shadow.svg);
-    left: auto;
-    right: 11PX;
+  &.out pre {
+    color: #469165;
   }
 
   &.out &__date {
     color: #54B152;
   }
 
-  &.first, &:first-child {
-    .message__baloon {
-      border-top-left-radius: 10px;
-      border-top-right-radius: 10px;
-    }
+  &.media &__inner, &.media.out &__inner, &.as-emoji &__inner {
+    background: transparent;
   }
 
-  &.last &__baloon, &:last-child &__baloon {
+  &.last.media &__inner:after, &.last.as-emoji &__inner::after { 
+    display: none;
+  }
+
+  &.shadowed &__inner::before {
+    display: block;
+  }
+
+  &.shadowed &__inner::before {
+    border-image: url(~assets/message_in-central@2x.png) 49 49 49 49 fill;
+  }
+  &.shadowed.first &__inner::before {
+    border-image: url(~assets/message_in-upper@2x.png) 49 49 49 49 fill;
+  }
+  &.shadowedlast &__inner::before {
+    border-image: url(~assets/message_in-lower@2x.png) 49 49 49 49 fill;
+  }
+  &.shadowed.first.last &__inner::before {
+    border-image: url(~assets/message_in-whole@2x.png) 49 49 49 49 fill;
+  }
+  &.shadowed.out &__inner::before {
+    border-image: url(~assets/message_out-central@2x.png) 49 49 49 49 fill;
+  }
+  &.shadowed.out.first &__inner::before {
+    border-image: url(~assets/message_out-upper@2x.png) 49 49 49 49 fill;
+  }
+  &.shadowed.out.last &__inner::before {
+    border-image: url(~assets/message_out-lower@2x.png) 49 49 49 49 fill;
+  }
+  &.shadowed.out.first.last &__inner::before {
+    border-image: url(~assets/message_out-whole@2x.png) 49 49 49 49 fill;
+  }
+
+  &__baloon {
+    border-radius: 6px;
+    background: #FFFFFF;
+    overflow: hidden;
+  }
+
+  & &__baloon {
+    border-radius: 6px 12.5px 12.5px 6px;
+  }
+  
+  &.first &__baloon {
+    border-top-left-radius: 12.5px;
+  }
+  
+  &.last &__baloon {
     border-bottom-left-radius: 0;
   }
-
-  &.out.last &__baloon, &.out:last-child &__baloon {
+  
+  &.out &__baloon {
+    background: #EEFFDE;
+    border-radius: 12.5px 6px 6px 12.5px;
+  }
+  
+  &.out.first &__baloon {
+    border-top-right-radius: 12.5px;
+  }
+  
+  &.out.last &__baloon {
     border-bottom-right-radius: 0;
-    border-bottom-left-radius: 10px;
   }
-
+  
   &.last.media &__baloon {
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
-  }
-
-  &.last.media:after, &.last.media.out:after, &.last.as-emoji:after {
-    display: none;
-  }
-
-  &.last.media:before, &.last.media.out:before, &.last.as-emoji:before {
-    display: none;
+    border-bottom-left-radius: 12.5px;
+    border-bottom-right-radius: 12.5px;
   }
 }

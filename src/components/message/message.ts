@@ -1,16 +1,16 @@
 import { div, text, nothing } from 'core/html';
 import { mount, unmountChildren } from 'core/dom';
-import { useOnMount, useObservable, useInterface, getInterface, hasInterface } from 'core/hooks';
+import { useOnMount, useObservable, useInterface, getInterface, hasInterface, WithInterfaceHook } from 'core/hooks';
 import { Peer, MessageCommon, Message } from 'cache/types';
 import { messageCache } from 'cache';
-import { datetime, formattedMessage } from 'components/ui';
+import { datetime, formattedMessage, svgBaloon } from 'components/ui';
 import { profileAvatar, profileTitle } from 'components/profile';
 import { userIdToPeer } from 'helpers/api';
 import { idToColorCode } from 'cache/accessors';
 import { isEmoji } from 'helpers/message';
 import { auth } from 'services';
 import serviceMessage from './message_service';
-import messageMedia from './message_media';
+import messageMedia, { Media } from './message_media';
 import './message.scss';
 import emojiMessage from './message_emoji';
 import messageReply from './message_reply';
@@ -36,7 +36,7 @@ export default function message(uniqueId: string, peer: Peer) {
   let prev: MessageCommon | undefined;
   let picture: HTMLElement | undefined;
   let title: HTMLElement | undefined;
-  let media: HTMLElement | null | undefined;
+  let media: (HTMLElement & WithInterfaceHook<Media>) | null | undefined;
   let reply: HTMLElement | null;
 
   // Rerender on change
@@ -76,8 +76,15 @@ export default function message(uniqueId: string, peer: Peer) {
       if (!next.message && media) {
         container.classList.add('media');
 
+        if (getInterface(media).needsShadow()) {
+          container.classList.add('shadowed');
+        }
+
         if (media.classList.contains('sticker')) {
           wrapper = media;
+        } else if (media.classList.contains('photo')) {
+          const { width, height } = getInterface(media).getSize();
+          wrapper = svgBaloon({ width, height, tail: true, incoming: !out }, [media]);
         } else {
           wrapper = div`.message__baloon`(media);
         }
@@ -113,6 +120,8 @@ export default function message(uniqueId: string, peer: Peer) {
             datetime({ timestamp: msg.date, date: false }),
           ),
         );
+
+        container.classList.add('shadowed');
 
         if (media) container.classList.add('with-media');
         else container.classList.remove('with-media');
