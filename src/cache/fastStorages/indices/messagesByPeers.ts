@@ -2,33 +2,45 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import binarySearch from 'binary-search';
 import { messageToDialogPeer, peerToId } from 'helpers/api';
 import { mergeOrderedArrays } from 'helpers/data';
-import { useWhileMounted } from 'core/hooks';
 import { Message, Peer } from '../../types';
 import Collection from '../collection';
 
-type HistoryWatcher = (ids: Readonly<number[]>) => void;
-
-export interface IdsChunkReference {
+interface IdsChunkReference {
   readonly history: BehaviorSubject<IdsChunk>;
 
   // The chunk must intersect or directly touch the referenced chunk
   putChunk(chunk: IdsChunk): void;
 
-  // You must call when you don't want to watch the chunk anymore
+  // You should call when you don't want to watch the chunk anymore
   revoke(): void;
 }
 
 export interface IdsChunk {
-  ids: number[];
-  oldestReached?: boolean;
-  newestReached?: boolean;
+  // Ids in descending order without missing ids in between
+  readonly ids: Readonly<number[]>;
+  // Set to true if you know that these ids are the oldest for the peer
+  readonly oldestReached?: boolean;
+  // Set to true if you know that these ids are the newest for the peer so far
+  readonly newestReached?: boolean;
 }
 
 interface IdsChunkStore {
+  ids: number[];
   oldestReached: boolean;
   newestReached: boolean;
-  ids: number[];
   refs: IdsChunkReference[];
+}
+
+export interface MessagesChunk extends Omit<IdsChunk, 'ids'> {
+  /**
+   * ⚠️ Watch the the messages peer matches the chunk peer
+   * In descending order with no missing messages in between
+   */
+  readonly messages: Readonly<Message>[];
+}
+
+export interface MessagesChunkReference extends Omit<IdsChunkReference, 'putChunk'> {
+  putChunk(chunk: MessagesChunk): void;
 }
 
 // todo: Add messages from migrated chats to the corresponding groups. Migrated chats are marked with migrated_to attribute.
@@ -86,6 +98,14 @@ function findChunkWithMessage(chunks: IdsChunk[], messageId: number): number {
   return rawValue >= 0 ? rawValue : (-rawValue - 1.5);
 }
 
+function idsChunkStoreToChunk(chunk: IdsChunkStore): IdsChunk {
+  return {
+    ids: chunk.ids,
+    oldestReached: chunk.oldestReached,
+    newestReached: chunk.newestReached,
+  };
+}
+
 class PeerIndex {
   /**
    * Each chunk is a continuous sequence of ids that has no missing id in between.
@@ -94,7 +114,7 @@ class PeerIndex {
    * There are no empty chunks.
    * There are only unique ids inside.
    */
-  public chunks: IdsChunkStore[] = [];
+  protected chunks: IdsChunkStore[] = [];
 
   public isEmpty() {
     const { chunks } = this;
@@ -102,8 +122,8 @@ class PeerIndex {
       && chunks.reduce((idsCount, chunk) => idsCount + chunk.ids.length, 0) === 0;
   }
 
-  public hasReferences() {
-    return this.chunks.some((chunk) => chunk.refs.length);
+  public countReferences() {
+    return this.chunks.reduce((sum, chunk) => sum + chunk.refs.length, 0);
   }
 
   // ids are in descending order and with no missing ids in between
@@ -163,11 +183,8 @@ class PeerIndex {
       this.chunks.splice(newestChunkIndex, oldestChunkIndex - newestChunkIndex + 1, newChunk);
 
       // Notify listeners about the changes
-      newChunk.refs.forEach((ref) => ref.history.next({
-        ids: newChunk.ids,
-        newestReached: newChunk.newestReached,
-        oldestReached: newChunk.oldestReached,
-      }));
+      const chunkData = idsChunkStoreToChunk(newChunk);
+      newChunk.refs.forEach((ref) => ref.history.next(chunkData));
     }
 
     // If the given chunk wasn't attached to the chunk, attach it and give the current chunk state
@@ -190,31 +207,43 @@ class PeerIndex {
     if (isChunkEmpty(chunk)) {
       this.chunks.splice(chunkIndex, 1);
     }
-    chunk.refs.forEach((ref) => ref.history.next({
-      ids: [],
-      oldestReached: false,
-      newestReached: false,
-    }));
+    const chunkData = idsChunkStoreToChunk(chunk);
+    chunk.refs.forEach((ref) => ref.history.next(chunkData));
   }
 
-  public makeChunkReference(existingMessageId?: number): IdsChunkReference {
-    const chunkReference: IdsChunkReference = {
+  public makeChunkReference(targetMessageId?: number): IdsChunkReference {
+    const chunkReference = {
+      isRevoked: false,
       history: new BehaviorSubject({ ids: [] }),
-      putChunk: (chunk) => this.putChunk(chunkReference, chunk),
-      revoke: () => this.chunks.forEach((chunk) => {
-        const refIndex = chunk.refs.indexOf(chunkReference);
-        if (refIndex >= 0) {
-          chunk.refs.splice(refIndex, 1);
+      putChunk: (chunk: IdsChunk) => {
+        if (chunkReference.isRevoked) {
+          if (process.env.NODE_ENV === 'development') {
+            // eslint-disable-next-line no-console
+            console.error('Called `putChunk` on a revoked chunk reference. The call is ignored.');
+          }
+          return;
         }
-      }),
+        this.putChunk(chunkReference, chunk);
+      },
+      revoke: () => {
+        if (!chunkReference.isRevoked) {
+          this.chunks.forEach((chunk) => {
+            const refIndex = chunk.refs.indexOf(chunkReference);
+            if (refIndex >= 0) {
+              chunk.refs.splice(refIndex, 1);
+            }
+          });
+          chunkReference.isRevoked = true;
+        }
+      },
     };
 
-    if (existingMessageId === Infinity) {
+    if (targetMessageId === Infinity) {
       this.putChunk(chunkReference, { ids: [], newestReached: true });
-    } else if (existingMessageId === -Infinity) {
+    } else if (targetMessageId === -Infinity) {
       this.putChunk(chunkReference, { ids: [], oldestReached: true });
-    } else if (existingMessageId) {
-      const chunkIndex = findChunkWithMessage(this.chunks, existingMessageId);
+    } else if (targetMessageId) {
+      const chunkIndex = findChunkWithMessage(this.chunks, targetMessageId);
       if (chunkIndex % 1 === 0) {
         this.attachChunkReference(chunkReference, this.chunks[chunkIndex]);
       }
@@ -226,35 +255,44 @@ class PeerIndex {
   protected attachChunkReference(chunkRef: IdsChunkReference, chunk: IdsChunkStore) {
     if (!chunk.refs.includes(chunkRef)) {
       chunk.refs.push(chunkRef);
-      chunkRef.history.next({
-        ids: chunk.ids,
-        oldestReached: chunk.oldestReached,
-        newestReached: chunk.newestReached,
-      });
+      chunkRef.history.next(idsChunkStoreToChunk(chunk));
     }
   }
 }
 
 /**
- * Indexes messages by peers. Also keeps the history order (in the descending order (new first)).
+ * Stores chunks of messages history (in the descending order (new first)).
  */
 export default function messagesByPeers(collection: Collection<Message, any>) {
-  const peers = {} as Record<string, PeerIndex>;
-  const globalChangeSubject = new Subject<[string, Readonly<number[]>]>();
+  const peers = {} as Record<string, {
+    index: PeerIndex,
+    newestRef: IdsChunkReference,
+  }>;
+  const newestMessagesSubject = new Subject<[string, number]>();
   let isUpdatingByThisIndex = false;
 
   function getOrCreatePeer(peerId: string) {
     if (!peers[peerId]) {
-      peers[peerId] = new PeerIndex();
-      peers[peerId].historyWatchers.push((ids) => globalChangeSubject.next([peerId, ids]));
+      const index = new PeerIndex();
+      const newestRef = index.makeChunkReference(Infinity);
+      newestRef.history.subscribe(({ ids }) => {
+        if (ids.length) {
+          newestMessagesSubject.next([peerId, ids[0]]);
+        }
+      });
+      peers[peerId] = { index, newestRef };
     }
     return peers[peerId];
   }
 
   function removePeerIfEmpty(peerId: string) {
-    // 1 historyWatcher is the global watcher
-    if (peers[peerId] && peers[peerId].isEmpty() && peers[peerId].historyWatchers.length === 1) {
-      delete peers[peerId];
+    if (peers[peerId]) {
+      const { index, newestRef } = peers[peerId];
+      // 1 reference is the global newest messages references
+      if (index.isEmpty() && index.countReferences() <= 1) {
+        newestRef.revoke();
+        delete peers[peerId];
+      }
     }
   }
 
@@ -263,31 +301,24 @@ export default function messagesByPeers(collection: Collection<Message, any>) {
       return;
     }
 
-    // todo: Chunk the changes
+    // todo: Batch the changes
     collectionChanges.forEach(([action, message]) => {
-      const peer = messageToDialogPeer(message);
-      if (!peer) {
-        return;
+      if (action === 'remove') {
+        const peer = messageToDialogPeer(message);
+        if (!peer) {
+          return;
+        }
+
+        const peerId = peerToId(peer);
+
+        if (peers[peerId]) {
+          peers[peerId].index.removeId(message.id);
+          removePeerIfEmpty(peerId);
+        }
       }
 
-      const peerId = peerToId(peer);
-
-      switch (action) {
-        case 'add': {
-          getOrCreatePeer(peerId).putVagrantId(message.id);
-          break;
-        }
-        case 'remove': {
-          if (peers[peerId]) {
-            peers[peerId].removeHistoryId(message.id);
-            peers[peerId].removeVagrantId(message.id);
-            removePeerIfEmpty(peerId);
-          }
-          break;
-        }
-        // No update because we assume that a message can't change the id or peer
-        default:
-      }
+      // No `add` because we don't need to store vagrant ids
+      // No `update` because we assume that a message can't change the id or peer
     });
   });
 
@@ -296,109 +327,99 @@ export default function messagesByPeers(collection: Collection<Message, any>) {
     peers,
 
     /**
-     * Notifies about all peers histories changes.
-     * The events are arrays [peerId, messageNumIds (descending)]
+     * Notifies about incoming new messages in all the peers.
+     * The events are arrays [peerId, messageNumId]
      */
-    historyChanges: globalChangeSubject,
+    newestMessages: newestMessagesSubject,
 
     /**
-     * Puts messages to the dialog messages history. Don't use it to put vagrant messages (e.g. replied to message).
-     * You may put any messages, event that already exist in the history or the collection.
-     * ⚠️ The messages MUST be from one peer
-     * ⚠️ The messages MUST be sorted by id descending
+     * Puts a new (the most recent for a peer) message to the storage and the index
      */
-    putHistoryMessages(messages: Readonly<Message>[]) {
-      if (!messages.length) {
-        return;
-      }
-
-      const peer = messageToDialogPeer(messages[0]);
+    putNewestMessage(message: Readonly<Message>) {
+      const peer = messageToDialogPeer(message);
       if (!peer) {
         return;
       }
 
-      const peerIndex = getOrCreatePeer(peerToId(peer));
+      const { newestRef } = getOrCreatePeer(peerToId(peer));
 
       try {
         isUpdatingByThisIndex = true;
-        collection.put(messages);
-        peerIndex.putHistoryIds(messages.map((message) => message.id));
+        collection.put(message);
+        newestRef.putChunk({
+          ids: [message.id],
+          newestReached: true,
+        });
       } finally {
         isUpdatingByThisIndex = false;
       }
     },
 
     /**
-     * Marks that the history of the given peer is loaded up to the end (the oldest message).
-     * You can get this value later though isHistoryEnded.
+     * Makes a reference that allow to get the messages from the chunk, watch them and put new messages into it.
+     *
+     * @param targetMessageId The id of the message that the given chunk must contain. Examples:
+     *  - If you want to work with messages around the found or replied message, give its id;
+     *  - If you want to work with the newest messages, give `Infinity`;
+     *  - If you want to work with the oldest messages, give `-Infinity`;
      */
-    putHistoryComplete(peer: Peer, completed = true) {
+    makeChunkReference(peer: Peer, targetMessageId?: number): MessagesChunkReference {
       const peerId = peerToId(peer);
-      const peerIndex = getOrCreatePeer(peerId);
-      peerIndex.oldestReached = completed;
-    },
+      const { index: peerIndex } = getOrCreatePeer(peerId);
 
-    /**
-     * The returned ids are in descending order (like the server returns).
-     * ⚠️ Here and everywhere else the history is mutated by reference.
-     */
-    getHistory(peer: Peer, start?: number, end?: number): Readonly<number[]> {
-      const peerId = peerToId(peer);
-      const peerIndex = peers[peerId];
-      if (!peerIndex) {
-        return [];
-      }
-      return start === undefined && end === undefined
-        ? peerIndex.historyIds
-        : peerIndex.historyIds.slice(start, end);
-    },
+      const idsChunkReference = peerIndex.makeChunkReference(targetMessageId);
 
-    getVagrant(peer: Peer): Readonly<number[]> {
-      const peerId = peerToId(peer);
-      const peerIndex = peers[peerId];
-      if (!peerIndex) {
-        return [];
-      }
-
-      const ids: number[] = [];
-      peerIndex.vagrantIds.forEach((id) => ids.push(id));
-      return ids;
-    },
-
-    isHistoryComplete(peer: Peer) {
-      const peerId = peerToId(peer);
-      const peerIndex = peers[peerId];
-      return peerIndex ? peerIndex.oldestReached : false;
-    },
-
-    watchHistory(peer: Peer, onChange: HistoryWatcher): () => void {
-      const peerId = peerToId(peer);
-      let peerIndex = getOrCreatePeer(peerId);
-      peerIndex.historyWatchers.push(onChange);
-
-      return () => {
-        peerIndex = peers[peerId];
-        if (peerIndex) {
-          const index = peerIndex.historyWatchers.indexOf(onChange);
-          if (index >= 0) {
-            peerIndex.historyWatchers.splice(index, 1);
-            removePeerIfEmpty(peerId);
+      const messagesChunkReference = {
+        isRevoked: false,
+        history: idsChunkReference.history,
+        putChunk(chunk: MessagesChunk) {
+          if (messagesChunkReference.isRevoked) {
+            if (process.env.NODE_ENV === 'development') {
+              // eslint-disable-next-line no-console
+              console.error('Called `putChunk` on a revoked chunk reference. The call is ignored.');
+            }
+            return;
           }
-        }
-      };
-    },
+          if (process.env.NODE_ENV === 'development') {
+            chunk.messages.forEach((message, messageIndex) => {
+              const messagePeer = messageToDialogPeer(message);
+              if (!messagePeer) {
+                return;
+              }
 
-    /**
-     * Makes a behavior subject that is updated only while the element is mounted for a history the given peer.
-     * This subject can be subscribed on directly without memory leaks concerns.
-     */
-    useHistoryBehaviorSubject(base: unknown, peer: Peer): BehaviorSubject<Readonly<number[]>> {
-      const subject = new BehaviorSubject(this.getHistory(peer));
-      useWhileMounted(base, () => {
-        subject.next(this.getHistory(peer));
-        return this.watchHistory(peer, (history) => subject.next(history));
-      });
-      return subject;
+              const messagePeerId = peerToId(peer);
+              if (messagePeerId !== peerId) {
+                // eslint-disable-next-line no-console
+                console.error('Called `putChunk` with a message of a wrong peer', {
+                  chunkPeer: peer,
+                  messagePeer,
+                  messageIndex,
+                  message,
+                });
+              }
+            });
+          }
+          try {
+            isUpdatingByThisIndex = true;
+            collection.put(chunk.messages);
+            idsChunkReference.putChunk({
+              ...chunk,
+              ids: chunk.messages.map((message) => message.id),
+            });
+          } finally {
+            isUpdatingByThisIndex = false;
+          }
+        },
+        revoke() {
+          if (!messagesChunkReference.isRevoked) {
+            idsChunkReference.revoke();
+            removePeerIfEmpty(peerId);
+            messagesChunkReference.isRevoked = true;
+          }
+        },
+      };
+
+      return messagesChunkReference;
     },
   };
 }

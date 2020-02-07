@@ -3,6 +3,7 @@ import client from 'client/client';
 import { Message, Peer, AnyUpdateMessage, AnyUpdateShortMessage } from 'cache/types';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
+import { MessagesChunkReference } from 'cache/fastStorages/indices/messagesByPeers';
 import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage, shortChatMessageToMessage } from 'helpers/api';
 
 /**
@@ -15,7 +16,7 @@ export default class MessagesService {
 
   history = new BehaviorSubject<Readonly<number[]>>([]);
 
-  peerHistoryUnsubscribe: (() => void) | undefined;
+  cacheChunkRef?: MessagesChunkReference;
 
   constructor() {
     client.updates.on('updateNewMessage', (update: AnyUpdateMessage) => {
@@ -49,52 +50,65 @@ export default class MessagesService {
     });
   }
 
-  selectPeer(peer: Peer) {
-    if (this.activePeer.value && peerToId(peer) === peerToId(this.activePeer.value)) {
+  selectPeer(peer: Peer | null) {
+    if (
+      (peer && this.activePeer.value && peerToId(peer) === peerToId(this.activePeer.value))
+      || (!peer && !this.activePeer.value)
+    ) {
       return;
     }
 
-    if (this.peerHistoryUnsubscribe) {
-      this.peerHistoryUnsubscribe();
+    if (this.cacheChunkRef) {
+      this.cacheChunkRef.revoke();
+      this.cacheChunkRef = undefined;
     }
 
+    if (this.isLoading.value) {
+      this.isLoading.next(false);
+    }
     this.activePeer.next(peer);
-    this.history.next(messageCache.indices.peers.getHistory(peer));
-    this.peerHistoryUnsubscribe = messageCache.indices.peers.watchHistory(peer, (history) => {
-      this.history.next(history);
-    });
 
-    this.loadMessages(peer, 0);
+    if (peer) {
+      this.cacheChunkRef = messageCache.indices.peers.makeChunkReference(peer, Infinity);
+      this.cacheChunkRef.history.subscribe(({ ids }) => this.history.next(ids));
+      this.loadMessages(); // todo: Load from the first to the newest in cache. Or mark the chunk as not newest and recreate the chunk reference.
+    }
   }
 
-  protected loadMessages(peer: Peer, olderThanId = 0) {
-    if (this.isLoading.value) return;
+  protected loadMessages(olderThanId = 0) {
+    if (this.isLoading.value || !this.activePeer.value) return;
 
     this.isLoading.next(true);
+    const cacheChunkRef = this.cacheChunkRef!; // Remember for the case when the peer or chunk changes during the loading
 
-    const chunk = 100;
+    const chunkLength = 100;
     const payload = {
-      peer: peerToInputPeer(peer),
+      peer: peerToInputPeer(this.activePeer.value),
       offset_id: olderThanId,
       offset_date: 0,
       add_offset: 0,
-      limit: chunk,
+      limit: chunkLength,
       max_id: 0,
       min_id: 0,
       hash: 0,
     };
 
     client.call('messages.getHistory', payload, (_err: any, res: any) => {
+      if (cacheChunkRef !== this.cacheChunkRef) {
+        // Another peer or chunk is loading at the moment
+        return;
+      }
+
       try {
         if (res) {
           const data = res;
 
           userCache.put(data.users);
           chatCache.put(data.chats);
-          messageCache.indices.peers.putHistoryMessages(data.messages);
-          if (data.messages.length < chunk - 10) { // -10 just in case
-            messageCache.indices.peers.putHistoryComplete(peer);
-          }
+          cacheChunkRef.putChunk({
+            messages: data.messages,
+            oldestReached: data.messages.length < chunkLength - 10, // -10 just in case
+          });
         }
       } finally {
         this.isLoading.next(false);
@@ -103,9 +117,10 @@ export default class MessagesService {
   }
 
   loadMoreHistory() {
-    if (this.activePeer.value && !messageCache.indices.peers.isHistoryComplete(this.activePeer.value)) {
-      const offset_id = this.history.value[this.history.value.length - 1];
-      this.loadMessages(this.activePeer.value, offset_id);
+    const history = this.cacheChunkRef && this.cacheChunkRef.history.value;
+    if (history && !history.oldestReached) {
+      const offset_id = history.ids[history.ids.length - 1];
+      this.loadMessages(offset_id);
     }
   }
 
@@ -114,6 +129,6 @@ export default class MessagesService {
       return;
     }
 
-    messageCache.indices.peers.putHistoryMessages([message]);
+    messageCache.indices.peers.putNewestMessage(message);
   }
 }

@@ -31,7 +31,11 @@ export function modulo(dividend: number, divider: number): number {
  *
  * @see Array.prototype.sort for the `compare` description. It describes both arrays.
  */
-export function mergeOrderedArrays<T>(destination: T[], source: T[], compare: (a: T, b: T) => number): boolean {
+export function mergeOrderedArrays<T>(
+  destination: T[],
+  source: Readonly<T[]>,
+  compare: (a: T, b: T) => number,
+): boolean {
   if (!source.length) {
     return false;
   }
