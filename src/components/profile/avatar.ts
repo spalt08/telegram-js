@@ -3,30 +3,43 @@ import { Peer, Message } from 'cache/types';
 import { peerToInitials, peerToColorCode } from 'cache/accessors';
 import { getPeerPhotoInputLocation } from 'helpers/photo';
 import { unmount, mount } from 'core/dom';
-import client from 'client/client';
+import media from 'client/media';
 import './avatar.scss';
 
 export default function profileAvatar(peer: Peer, message?: Message) {
-  const colorCode = peerToColorCode(peer);
-  const standard = div`.avatar__standard${`color-${colorCode}`}`(
-    text(peerToInitials(peer)),
-  );
-  const container = div`.avatar`(standard);
-
+  const container = div`.avatar`();
   const location = getPeerPhotoInputLocation(peer, message);
+  let defaultPicture: HTMLElement | undefined;
 
-  if (location) {
-    client.getFile(location, (src) => {
-      if (!src) return;
-
-      unmount(standard);
-
-      const picture = div`.avatar__picture`(
-        img({ src }),
+  const preview = (src: string | null) => {
+    if (!src) {
+      defaultPicture = div`.avatar__standard${`color-${peerToColorCode(peer)}`}`(
+        text(peerToInitials(peer)),
       );
 
-      mount(container, picture);
-    });
+      mount(container, defaultPicture);
+    } else {
+      if (defaultPicture) unmount(defaultPicture);
+      mount(container, div`.avatar__picture`(img({ src })));
+    }
+  };
+
+  // display default icon
+  if (!location) {
+    preview(null);
+    return container;
+  }
+
+  const url = media.cached(location);
+
+  // download file
+  if (url === undefined) {
+    preview(null);
+    media.get(location, preview);
+
+  // display from cache
+  } else {
+    preview(url);
   }
 
   return container;
