@@ -39,6 +39,7 @@ export default function svgBaloon({ tag = 'div', className = '', ...props }: Pro
   children.forEach((child) => mount(container, child));
 
   container.style.clipPath = `url(#${id})`;
+  (container.style as any).webkitClipPath = `url(#${id})`;
 
   return container;
 }

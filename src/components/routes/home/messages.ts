@@ -2,7 +2,7 @@ import { BehaviorSubject, combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { div } from 'core/html';
 import { mount, unmount } from 'core/dom';
-import { useObservable } from 'core/hooks';
+import { useObservable, getInterface } from 'core/hooks';
 import { message as service } from 'services';
 import message from 'components/message/message';
 import { list, sectionSpinner } from 'components/ui';
@@ -32,18 +32,21 @@ export default function messages() {
     map(([messagesList, isLoading]) => messagesList.length < 3 && isLoading),
   );
 
-  mount(element, list({
+  const scroll = list({
     className: 'messages__history',
     items: itemsSubject,
-    reversed: true,
-    threshold: 800,
+    pivotBottom: true,
+    threshold: 2,
     batch: 20,
     renderer: (id: string) => message(id, service.activePeer.value!),
-    onReachEnd: () => service.loadMoreHistory(),
-  }), element.lastElementChild!);
+    onReachTop: () => service.loadMoreHistory(),
+  });
+
+  mount(element, scroll, element.lastElementChild!);
 
   // Make the list scroll to bottom on an active peer change
-  useObservable(element, service.activePeer, () => itemsSubject.next([]));
+  useObservable(element, service.activePeer, () => getInterface(scroll).clear());
+  useObservable(element, service.focused, (id: string) => id && getInterface(scroll).focus(id));
 
   useObservable(element, service.history, (history) => itemsSubject.next(
     service.activePeer.value ? prepareIdsList(service.activePeer.value, history) : [],

@@ -33,6 +33,8 @@ function resolveUpdate(id: string, update: any) {
   ctx.postMessage({ id, type: 'update', payload: update } as WorkerMessage);
 }
 
+const fileCache: Record<string, any> = {};
+
 /**
  * File managers: getFile method
  */
@@ -41,7 +43,14 @@ function downloadFilePart(
 ) {
   if (!client) throw new Error('Client is undefined');
 
-  client.call('upload.getFile', { location, offset, limit }, { dc }, (err, result) => {
+  const cacheKey = JSON.stringify(location);
+
+  if (fileCache[cacheKey]) {
+    cb(fileCache[cacheKey]);
+    return;
+  }
+
+  client.call('upload.getFile', { location, offset, limit }, { dc, thread: 2 }, (err, result) => {
     // redirect to another dc
     if (err && err.message && err.message.indexOf('FILE_MIGRATE_') > -1) {
       downloadFilePart(location, cb, +err.message.slice(-1), mime, offset, limit, parts);
@@ -77,6 +86,7 @@ function processFilePart(
   const blob = hexToBlob(file.bytes, mime);
   const url = (URL || webkitURL).createObjectURL(blob);
 
+  fileCache[JSON.stringify(location)] = url;
   cb(url);
 }
 
