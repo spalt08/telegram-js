@@ -38,27 +38,25 @@ function getCachedFile(location: InputFileLocation): string | null | undefined {
 }
 
 /** Download file */
-function getFile(location: InputFileLocation, cb: MediaResolver, dc_id?: number, mime?: string) {
+function getFile(location: InputFileLocation, cb: MediaResolver, dc_id?: number, mime?: string): string {
+  const id = locationToString(location);
   const cached = getCachedFile(location);
 
   // already downloaded
   if (cached) {
     cb(cached);
 
-  // download
+  // already processing
+  } else if (requests[id]) {
+    requests[id].push(cb);
+
+  // should download
   } else {
-    const id = locationToString(location);
-
-    // already processing
-    if (requests[id]) {
-      requests[id].push(cb);
-
-    // new
-    } else {
-      requests[id] = [cb];
-      task('get_file', { location, dc_id, mime }, resolve(location));
-    }
+    requests[id] = [cb];
+    task('get_file', { location, dc_id, mime }, resolve(location));
   }
+
+  return id;
 }
 
 export default {
