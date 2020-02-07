@@ -56,7 +56,6 @@ export default function photo({ rect, photo, message }: Props) {
 
     image.classList.add('transition');
     image.style.transformOrigin = 'top left';
-    image.style.borderRadius = '32px';
     image.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
 
     if (hasInterface<PopupInterface>(element.parentElement)) {
@@ -64,9 +63,11 @@ export default function photo({ rect, photo, message }: Props) {
     }
 
     listenOnce(image, 'transitionend', () => {
-      if (hasInterface<PopupInterface>(element.parentElement)) {
-        getInterface(element.parentElement).close();
-      }
+      setTimeout(() => {
+        if (hasInterface<PopupInterface>(element.parentElement)) {
+          getInterface(element.parentElement).close();
+        }
+      }, 100);
     });
   });
 
