@@ -20,30 +20,30 @@
     position: relative;
     flex: 1 50%;
 
-    &:after {
+    &::after {
       position: absolute;
-      right: -8.5PX;
-      width: 11PX;
-      bottom: -1PX;
-      height: 20PX; 
+      right: -7px;
+      width: 7px;
+      bottom: 0px;
+      height: 17px; 
       z-index: 2;
       content: '';
-      background-image: url(~assets/message_corner.svg);
+      background-image: url(~assets/message_corner@2x.png);
       background-size: 100%;
       transform: scaleX(-1);
     }
   
-    &:before {
+    &::before {
       position: absolute;
-      right: -9.5PX;
-      width: 11PX;
-      height: 20PX; 
-      bottom: -2PX;
+      left: -10px;
+      top: -10px;
+      right: -10px;
+      bottom: -10px;
       content: '';
-      background-image: url(~assets/message_corner-shadow.svg);
-      background-size: 100%;
-      transform: scaleX(-1);
+      border-image: url(~assets/message_out-whole@2x.png) 49 49 49 49 fill;
       z-index: 0;
+      border-style: solid;
+      border-width: 25px;
     }
   }
 

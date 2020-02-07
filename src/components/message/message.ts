@@ -1,6 +1,6 @@
 import { div, text, nothing } from 'core/html';
 import { mount, unmountChildren } from 'core/dom';
-import { useOnMount, useObservable, useInterface, getInterface, hasInterface, WithInterfaceHook } from 'core/hooks';
+import { useOnMount, useObservable, useInterface, getInterface, hasInterface } from 'core/hooks';
 import { Peer, MessageCommon, Message } from 'cache/types';
 import { messageCache } from 'cache';
 import { datetime, formattedMessage, svgBaloon } from 'components/ui';
@@ -10,7 +10,7 @@ import { idToColorCode } from 'cache/accessors';
 import { isEmoji } from 'helpers/message';
 import { auth } from 'services';
 import serviceMessage from './message_service';
-import messageMedia, { Media } from './message_media';
+import messageMedia from './message_media';
 import './message.scss';
 import emojiMessage from './message_emoji';
 import messageReply from './message_reply';
@@ -36,7 +36,7 @@ export default function message(uniqueId: string, peer: Peer) {
   let prev: MessageCommon | undefined;
   let picture: HTMLElement | undefined;
   let title: HTMLElement | undefined;
-  let media: (HTMLElement & WithInterfaceHook<Media>) | null | undefined;
+  let media: ReturnType<typeof messageMedia>;
   let reply: HTMLElement | null;
 
   // Rerender on change
@@ -63,8 +63,6 @@ export default function message(uniqueId: string, peer: Peer) {
 
       if (msg.media && msg.media._ !== 'messageMediaEmpty') {
         media = messageMedia(msg.media);
-      } else {
-        media = null;
       }
     }
 
@@ -76,7 +74,7 @@ export default function message(uniqueId: string, peer: Peer) {
       if (!next.message && media) {
         container.classList.add('media');
 
-        if (getInterface(media).needsShadow()) {
+        if (getInterface(media).needsShadow) {
           container.classList.add('shadowed');
         }
 

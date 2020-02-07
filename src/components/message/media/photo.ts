@@ -64,7 +64,7 @@ export default function mediaPhoto(photo: Photo) {
   }, photo.dc_id);
 
   return useInterface(container, {
-    needsShadow: () => true,
+    needsShadow: true,
     getSize() {
       return box;
     },
