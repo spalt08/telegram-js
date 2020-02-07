@@ -55,6 +55,7 @@ export function shortMessageToMessage(self: number, message: AnyShortMessage): M
       user_id: message.user_id,
     },
     media: { _: 'messageMediaEmpty' },
+    entities: [],
   };
 }
 

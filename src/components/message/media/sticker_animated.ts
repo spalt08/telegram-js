@@ -6,6 +6,7 @@ import { getDocumentLocation } from 'helpers/files';
 import { tgs } from 'components/ui';
 import client from 'client/client';
 import './sticker.scss';
+import { useInterface } from 'core/hooks';
 
 export default function mediaAnimatedSticker(document: Document) {
   const container = div`.sticker`();
@@ -35,5 +36,10 @@ export default function mediaAnimatedSticker(document: Document) {
     }
   }, document.dc_id, document.mime_type);
 
-  return container;
+  return useInterface(container, {
+    needsShadow: false,
+    getSize() {
+      return { width: 200, height: 200 };
+    },
+  });
 }

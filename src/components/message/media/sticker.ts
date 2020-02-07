@@ -5,6 +5,7 @@ import { mount, listenOnce, unmount } from 'core/dom';
 import { getDocumentLocation } from 'helpers/files';
 import client from 'client/client';
 import './sticker.scss';
+import { useInterface } from 'core/hooks';
 
 export default function mediaSticker(document: Document) {
   const container = div`.sticker`();
@@ -34,5 +35,10 @@ export default function mediaSticker(document: Document) {
     }
   }, document.dc_id, document.mime_type);
 
-  return container;
+  return useInterface(container, {
+    needsShadow: false,
+    getSize() {
+      return { width: 200, height: 200 };
+    },
+  });
 }
