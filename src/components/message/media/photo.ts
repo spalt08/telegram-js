@@ -1,4 +1,4 @@
-import { Photo } from 'cache/types';
+import { Photo, MessageCommon } from 'cache/types';
 import { div, img } from 'core/html';
 import { materialSpinner } from 'components/icons';
 import { mount, unmount, listenOnce, listen } from 'core/dom';
@@ -6,12 +6,13 @@ import { getOrientation, getThumbnail, checkDimensions, getPhotoLocation, getSiz
 import { useInterface } from 'core/hooks';
 import media from 'client/media';
 import './photo.scss';
+import { main } from 'services';
 
 const PHOTO_W_DIM = 100 / 320;
 const PHOTO_H_DIM = 48 / 320;
 const PHOTO_THUMBNAIL_MAX = 320;
 
-export default function mediaPhoto(photo: Photo) {
+export default function mediaPhoto(photo: Photo, message: MessageCommon) {
   if (photo._ !== 'photo') return null;
 
   const orientation = getOrientation(photo.sizes);
@@ -58,7 +59,10 @@ export default function mediaPhoto(photo: Photo) {
       img({ src, alt: 'Message Photo' }),
     );
 
-    // listen(preview, 'click', 
+    listen(preview, 'click', () => {
+      const rect = preview?.getBoundingClientRect();
+      main.showPopup('photo', { rect, photo, message });
+    });
 
     mount(container, preview);
   };
