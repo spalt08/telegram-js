@@ -22,6 +22,16 @@ export function typeToMime(type: StorageFileType) {
   }
 }
 
+export function locationToString(location: InputFileLocation): string {
+  switch (location._) {
+    case 'inputPeerPhotoFileLocation':
+      return `profile_${location.local_id}_${location.volume_id}`;
+
+    default:
+      throw new Error(`No location hash value for ${location._}`);
+  }
+}
+
 export function getDocumentLocation(document: Document, size: string = 'y'): InputFileLocation {
   return {
     _: 'inputDocumentFileLocation',
