@@ -59,7 +59,6 @@
   
   &.chat.last &__inner {
     margin-left: 38px;
-    width: calc(100% - 38px);
   }
 
   & .avatar {
@@ -221,10 +220,6 @@
     border-radius: 6px;
     background: #FFFFFF;
     overflow: hidden;
-    width: 100%;
-  }
-
-  & &__baloon {
     border-radius: 6px 12.5px 12.5px 6px;
   }
   
