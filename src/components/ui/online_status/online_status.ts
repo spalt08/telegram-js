@@ -16,7 +16,7 @@ export function formatTime(date: Date) {
 }
 
 export function formatDate(date: Date) {
-  return `${date.getDate()}.${date.getMonth()}.${date.getFullYear()}`;
+  return `${date.getDate()}.${`0${date.getMonth() + 1}`.slice(-2)}.${date.getFullYear() - 2000}`;
 }
 
 function formatLastSeenTime(date: Date) {
