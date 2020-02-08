@@ -9,12 +9,15 @@ export default function rightSidebar() {
   const container = div`.right_sidebar`();
 
   let info: Node;
+  let media: Node;
 
   useObservable(container, service.activePeer, (peer) => {
     if (info) unmount(info);
+    if (media) unmount(media);
     if (peer) {
       info = infoPanel(peer);
       mount(container, info);
+      mount(container, media);
     }
   });
 

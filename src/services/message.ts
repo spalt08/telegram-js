@@ -1,7 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { Message, Peer, AnyUpdateMessage, AnyUpdateShortMessage } from 'cache/types';
-import { chatCache, messageCache, userCache } from 'cache';
+import { chatCache, messageCache, userCache, mediaCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage, shortChatMessageToMessage } from 'helpers/api';
 
@@ -12,6 +12,8 @@ export default class MessagesService {
   activePeer = new BehaviorSubject<Peer | null>(null);
 
   isLoading = new BehaviorSubject<boolean>(false);
+
+  isMediaLoading = new BehaviorSubject<boolean>(false);
 
   focused = new BehaviorSubject<string>('');
 
@@ -67,6 +69,7 @@ export default class MessagesService {
     });
 
     this.loadMessages(peer, 0);
+    this.loadMedia(peer, 0);
   }
 
   protected loadMessages(peer: Peer, olderThanId = 0) {
@@ -100,6 +103,41 @@ export default class MessagesService {
         }
       } finally {
         this.isLoading.next(false);
+      }
+    });
+  }
+
+  protected loadMedia(peer: Peer, olderThanId = 0) {
+    if (this.isMediaLoading.value) return;
+
+    this.isMediaLoading.next(true);
+
+    const chunk = 35;
+    const payload = {
+      peer: peerToInputPeer(peer),
+      q: '',
+      filter: { _: 'inputMessagesFilterPhotoVideo' },
+      offset_id: olderThanId,
+      add_offset: 0,
+      limit: chunk,
+      max_id: 0,
+      min_id: 0,
+      hash: 0,
+    };
+
+    client.call('messages.search', payload, (_err: any, res: any) => {
+      try {
+        if (res) {
+          const data = res;
+
+          data.messages.forEach((message: Message) => {
+            if (message._ === 'message' && message.media._ === 'messageMediaPhoto') {
+              mediaCache.put(peerToId(peer), message.media);
+            }
+          });
+        }
+      } finally {
+        this.isMediaLoading.next(false);
       }
     });
   }
