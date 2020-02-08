@@ -28,9 +28,8 @@ export default function messages() {
   let spinner: Node | undefined;
 
   const itemsSubject = new BehaviorSubject<string[]>([]);
-  const showSpinnerObservable = combineLatest([service.history, service.isLoading]).pipe(
-    map(([messagesList, isLoading]) => messagesList.length < 3 && isLoading),
-  );
+  const showSpinnerObservable = combineLatest([service.history, service.loadingSides])
+    .pipe(map(([messagesList, loadingDirections]) => messagesList.length < 3 && loadingDirections.length));
 
   mount(element, list({
     className: 'messages__history',

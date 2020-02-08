@@ -373,34 +373,37 @@ export default function messagesByPeers(collection: Collection<Message, any>) {
         isRevoked: false,
         history: idsChunkReference.history,
         putChunk(chunk: MessagesChunk) {
-          if (messagesChunkReference.isRevoked) {
-            if (process.env.NODE_ENV === 'development') {
-              // eslint-disable-next-line no-console
-              console.error('Called `putChunk` on a revoked chunk reference. The call is ignored.');
-            }
-            return;
-          }
-          if (process.env.NODE_ENV === 'development') {
-            chunk.messages.forEach((message, messageIndex) => {
-              const messagePeer = messageToDialogPeer(message);
-              if (!messagePeer) {
-                return;
-              }
-
-              const messagePeerId = peerToId(peer);
-              if (messagePeerId !== peerId) {
-                // eslint-disable-next-line no-console
-                console.error('Called `putChunk` with a message of a wrong peer', {
-                  chunkPeer: peer,
-                  messagePeer,
-                  messageIndex,
-                  message,
-                });
-              }
-            });
-          }
           try {
             isUpdatingByThisIndex = true;
+
+            if (messagesChunkReference.isRevoked) {
+              if (process.env.NODE_ENV === 'development') {
+                // eslint-disable-next-line no-console
+                console.error('Called `putChunk` on a revoked chunk reference. The call is ignored.');
+              }
+              return;
+            }
+
+            if (process.env.NODE_ENV === 'development') {
+              chunk.messages.forEach((message, messageIndex) => {
+                const messagePeer = messageToDialogPeer(message);
+                if (!messagePeer) {
+                  return;
+                }
+
+                const messagePeerId = peerToId(peer);
+                if (messagePeerId !== peerId) {
+                  // eslint-disable-next-line no-console
+                  console.error('Called `putChunk` with a message of a wrong peer', {
+                    chunkPeer: peer,
+                    messagePeer,
+                    messageIndex,
+                    message,
+                  });
+                }
+              });
+            }
+
             collection.put(chunk.messages);
             idsChunkReference.putChunk({
               ...chunk,
