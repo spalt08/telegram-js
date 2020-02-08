@@ -1,5 +1,5 @@
-import { inflate } from 'pako/lib/inflate';
 import lottiePlayer, { AnimationItem } from 'lottie-web';
+import utils from 'client/utils';
 import { div } from 'core/html';
 import { useInterface, useOnUnmount, useOnMount } from 'core/hooks';
 
@@ -12,10 +12,9 @@ const load = (url: string, cb: (json: any) => void) => {
 
   xhr.onreadystatechange = () => {
     if (xhr.readyState === 4 && xhr.status === 200) {
-      const data = inflate(xhr.response, { to: 'string' });
-      const json = JSON.parse(data);
-
-      cb(json);
+      utils.ungzip(xhr.response, (data: string) => {
+        cb(JSON.parse(data));
+      });
     }
   };
 };
@@ -23,11 +22,11 @@ const load = (url: string, cb: (json: any) => void) => {
 interface Props {
   src: string,
   className?: string,
-  autoplay?: boolean,
+  autoplay: boolean,
   loop?: boolean,
 }
 
-export default function tgs({ src, className, autoplay = false, loop = false }: Props) {
+export default function tgs({ src, className, autoplay = true, loop = false }: Props) {
   let animation: AnimationItem & { currentFrame: number};
 
   const container = div({ className });
@@ -38,6 +37,7 @@ export default function tgs({ src, className, autoplay = false, loop = false }: 
         container,
         loop,
         animationData,
+        autoplay,
         renderer: 'canvas',
       }) as AnimationItem & { currentFrame: number};
     });

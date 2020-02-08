@@ -11,7 +11,7 @@ export default function stickerSet(key: string, stickers: Document[]) {
     div`.sticker-set`(
       div`.sticker-set__title`(text(key)),
       div`.sticker-set__items`(
-        ...stickers.map((sticker: Document) => div`.sticker-set__item`(stickerRenderer(sticker, '100%'))),
+        ...stickers.map((sticker: Document) => div`.sticker-set__item`(stickerRenderer(sticker, { size: '100%', autoplay: true }))),
       ),
     )
   );

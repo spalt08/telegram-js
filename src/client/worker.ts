@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-globals */
 
+import { inflate } from 'pako/lib/inflate';
 import { Client, TypeLanguage, ClientError, TLConstructor } from '../../packages/mtproto-js/src';
 import { API_ID, API_HASH, APP_VERSION } from '../const/api';
 import { WorkerMessage } from './worker.types';
@@ -192,6 +193,10 @@ function process(message: WorkerMessage) {
       break;
     }
 
+    case 'ungzip': {
+      resolve(id, type, inflate(payload, { to: 'string' }));
+      break;
+    }
 
     default: {
       throw new Error(`Unknown task: ${type}`);

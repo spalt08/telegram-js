@@ -7,7 +7,12 @@ import media from 'client/media';
 import { tgs } from 'components/ui';
 import './sticker.scss';
 
-export default function stickerRenderer(sticker: Document, size: string = '200px') {
+type StickerOptions = {
+  size: string,
+  autoplay: boolean,
+};
+
+export default function stickerRenderer(sticker: Document, { size = '200px', autoplay = true }: StickerOptions) {
   const container = div`.sticker`({ style: { width: size, height: size } });
   const thumbnailUrl = getThumbnail(sticker.thumbs);
 
@@ -25,7 +30,7 @@ export default function stickerRenderer(sticker: Document, size: string = '200px
 
   media.get(location, (src: string) => {
     if (sticker.mime_type === 'application/x-tgsticker') {
-      const animated = tgs({ src, className: 'sticker__tgs', autoplay: true, loop: true });
+      const animated = tgs({ src, className: 'sticker__tgs', autoplay, loop: true });
       mount(container, animated);
 
       if (thumbnail) {
