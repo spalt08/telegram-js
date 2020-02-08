@@ -216,13 +216,10 @@
     border-image: url(~assets/message_out-whole@2x.png) 49 49 49 49 fill;
   }
 
-  &__baloon {
+  & &__baloon {
     border-radius: 6px;
     background: #FFFFFF;
     overflow: hidden;
-  }
-
-  & &__baloon {
     border-radius: 6px 12.5px 12.5px 6px;
   }
   

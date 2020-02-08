@@ -6,9 +6,9 @@ import { getSizeType, getPhotoLocation } from 'helpers/photo';
 import { listen, listenOnce } from 'core/dom';
 import { getInterface, hasInterface } from 'core/hooks';
 import { close } from 'components/icons';
-import { PopupInterface } from '../interface';
 import { profileAvatar, profileTitle } from 'components/profile';
 import { datetime } from 'components/ui';
+import { PopupInterface } from '../interface';
 
 type Props = {
   rect: DOMRect,
@@ -21,7 +21,7 @@ const PHOTO_THUMBNAIL_MAX = 320;
 /**
  * Media photo popup handler
  */
-export default function photo({ rect, photo, message }: Props) {
+export default function photoPopup({ rect, photo, message }: Props) {
   const type = getSizeType(photo.sizes, PHOTO_THUMBNAIL_MAX);
   const location = getPhotoLocation(photo, type);
   const src = media.cached(location);

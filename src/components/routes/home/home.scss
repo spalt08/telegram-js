@@ -69,7 +69,7 @@
       width: 100%;
       height: 100%;
       background-color: rgb(183, 191, 152);
-      background-image: url(~assets/chamomile.jpg);
+      background-image: url(~assets/chamomile-blurred.jpg);
       background-size: cover;
       background-position: center center;
       display: flex;
@@ -79,6 +79,8 @@
       &__history {
         flex: 1 50%;
         z-index: 0;
+        mask-image: linear-gradient(bottom,transparent,#000 0.8rem);
+        -webkit-mask-image: -webkit-linear-gradient(bottom,transparent,#000 0.8rem);
       }
 
       &__spinner {
