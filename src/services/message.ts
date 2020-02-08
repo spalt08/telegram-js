@@ -74,7 +74,7 @@ export default class MessagesService {
 
     this.isLoading.next(true);
 
-    const chunk = 100;
+    const chunk = 35;
     const payload = {
       peer: peerToInputPeer(peer),
       offset_id: olderThanId,

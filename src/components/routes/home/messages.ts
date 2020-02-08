@@ -36,8 +36,8 @@ export default function messages() {
     className: 'messages__history',
     items: itemsSubject,
     pivotBottom: true,
-    threshold: 2,
-    batch: 20,
+    threshold: 1,
+    batch: 35,
     renderer: (id: string) => message(id, service.activePeer.value!),
     onReachTop: () => service.loadMoreHistory(),
   });

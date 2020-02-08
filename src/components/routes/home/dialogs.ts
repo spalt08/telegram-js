@@ -24,7 +24,7 @@ export default function dialogs({ className = '' }: Props = {}) {
     className: 'dialogs',
     items: service.dialogs,
     threshold: 1,
-    batch: 20,
+    batch: 30,
     renderer: (id: string) => dialog(id),
     onReachBottom: () => service.loadMoreDialogs(),
   });

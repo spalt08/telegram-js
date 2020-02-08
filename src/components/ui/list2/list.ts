@@ -332,7 +332,7 @@ export default function list<T>({ tag, className,
         unlock();
       }
 
-      if (first <= batch && onReachTop) onReachTop();
+      if (first <= batch * 2 && onReachTop) onReachTop();
     }
 
     // apply bottom elements and shrink top
@@ -367,7 +367,7 @@ export default function list<T>({ tag, className,
         unlock();
       }
 
-      if (current.length - last - 1 <= batch && onReachBottom) onReachBottom();
+      if (current.length - last - 1 <= batch * 2 && onReachBottom) onReachBottom();
     }
   };
 
