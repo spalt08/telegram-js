@@ -33,7 +33,7 @@ export default class MessagesService {
 
   loadingSides = new BehaviorSubject<LoadingSide[]>([]);
 
-  focused = new BehaviorSubject<string>('');
+  focusedMessageId = new BehaviorSubject<number | undefined>(undefined);
 
   history = new BehaviorSubject<Readonly<number[]>>([]);
 
@@ -86,6 +86,7 @@ export default class MessagesService {
 
     this.loadingSides.next([]);
     this.activePeer.next(peer);
+    this.focusedMessageId.next(undefined);
 
     if (peer) {
       this.cacheChunkRef = messageCache.indices.peers.makeChunkReference(peer, Infinity);
@@ -171,6 +172,8 @@ export default class MessagesService {
 
           userCache.put(data.users);
           chatCache.put(data.chats);
+
+          // todo: The replied messages are not included. Load the messages that aren't loaded.
 
           if (isLoadedChunkActual) {
             const isLoadedChunkFull = data.messages.length >= LOAD_CHUNK_LENGTH - 10; // -10 just in case

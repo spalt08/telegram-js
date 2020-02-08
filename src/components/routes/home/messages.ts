@@ -45,7 +45,11 @@ export default function messages() {
 
   // Make the list scroll to bottom on an active peer change
   useObservable(element, service.activePeer, () => getInterface(scroll).clear());
-  useObservable(element, service.focused, (id: string) => id && getInterface(scroll).focus(id));
+  useObservable(element, service.focusedMessageId, (id) => {
+    if (id && service.activePeer.value) {
+      getInterface(scroll).focus(peerMessageToId(service.activePeer.value, id));
+    }
+  });
 
   useObservable(element, service.history, (history) => itemsSubject.next(
     service.activePeer.value ? prepareIdsList(service.activePeer.value, history) : [],
