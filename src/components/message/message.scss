@@ -59,6 +59,7 @@
   
   &.chat.last &__inner {
     margin-left: 38px;
+    width: calc(100% - 38px);
   }
 
   & .avatar {
@@ -216,10 +217,11 @@
     border-image: url(~assets/message_out-whole@2x.png) 49 49 49 49 fill;
   }
 
-  &__baloon {
+  & &__baloon {
     border-radius: 6px;
     background: #FFFFFF;
     overflow: hidden;
+    width: 100%;
   }
 
   & &__baloon {
