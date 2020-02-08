@@ -1,9 +1,29 @@
 .msginput {
-  cursor: not-allowed;
   padding: 0 20px;
 
   &.hidden {
     display: none;
+  }
+
+  &__emoji {
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    margin-right: 16px;
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    svg path {
+      fill: #8e979d;
+      transition: fill .3s ease;
+    }
+
+    &:hover svg path {
+      fill: #50a2e8;
+    }
   }
 
   &__container {

@@ -1,0 +1,41 @@
+.emoji-category {
+  padding: 16px 10px;
+  text-align: left;
+
+  &:last-child { margin-bottom: 0; }
+
+  &__title {
+    color: #7b8083;
+    text-transform: uppercase;
+    font-weight: 500;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+    padding: 0 6px;
+  }
+
+  &__items {
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  &__item {
+    display: inline-block;
+    font-size: 30px;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    line-height: 1;
+    padding-top: 5px;
+    transition: background-color .15s ease-out;
+
+    &:hover {
+      background-color: #f5f5f5;
+      border-radius: 10px;
+    }
+  }
+}

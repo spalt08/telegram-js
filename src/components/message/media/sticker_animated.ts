@@ -5,7 +5,6 @@ import { mount, listenOnce, unmount } from 'core/dom';
 import { getDocumentLocation } from 'helpers/files';
 import { tgs } from 'components/ui';
 import client from 'client/client';
-import './sticker.scss';
 import { useInterface } from 'core/hooks';
 
 export default function mediaAnimatedSticker(document: Document) {

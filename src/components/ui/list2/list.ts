@@ -2,12 +2,12 @@ import { el, mount, unmount, listen, listenOnce } from 'core/dom';
 import { div } from 'core/html';
 import { BehaviorSubject } from 'rxjs';
 import './list.scss';
-import { useObservable, useInterface, useOnMount, useListenWhileMounted } from 'core/hooks';
+import { useInterface, useOnMount, useListenWhileMounted, useMaybeObservable } from 'core/hooks';
 
 type Props<T> = {
   tag?: keyof HTMLElementTagNameMap,
   className?: string,
-  items: BehaviorSubject<readonly T[]>,
+  items: T[] | BehaviorSubject<readonly T[]>,
   threshold?: number,
   pivotBottom?: boolean,
   padding?: number,
@@ -431,7 +431,7 @@ export default function list<T>({ tag, className,
   };
 
   // on items changed
-  useObservable(container, items, (next: readonly T[]) => {
+  useMaybeObservable(container, items, (next: readonly T[]) => {
     if (isLocked) pending = next.slice(0);
     else {
       update(next);

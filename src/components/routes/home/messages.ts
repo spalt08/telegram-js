@@ -6,7 +6,7 @@ import { useObservable, getInterface } from 'core/hooks';
 import { message as service } from 'services';
 import message from 'components/message/message';
 import { list, sectionSpinner } from 'components/ui';
-import messageInput from 'components/message/input/message_input';
+import messageInput from 'components/message/input/input';
 import { Peer } from 'cache/types';
 import { peerMessageToId } from 'helpers/api';
 import header from './header/header';
