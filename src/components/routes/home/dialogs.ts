@@ -23,7 +23,7 @@ export default function dialogs({ className = '' }: Props = {}) {
   const listEl = list({
     className: 'dialogs',
     items: service.dialogs,
-    threshold: 1,
+    threshold: 2,
     batch: 30,
     renderer: (id: string) => dialog(id),
     onReachBottom: () => service.loadMoreDialogs(),
