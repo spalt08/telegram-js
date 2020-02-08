@@ -17,7 +17,7 @@ export const enum LoadingSide {
   New,
 }
 
-const LOAD_CHUNK_LENGTH = 100;
+const LOAD_CHUNK_LENGTH = 35;
 
 const DIRECTION_TO_SIDE: Record<Direction, LoadingSide[]> = {
   [Direction.Older]: [LoadingSide.Old],
@@ -31,9 +31,11 @@ const DIRECTION_TO_SIDE: Record<Direction, LoadingSide[]> = {
 export default class MessagesService {
   activePeer = new BehaviorSubject<Peer | null>(null);
 
-  history = new BehaviorSubject<Readonly<number[]>>([]);
-
   loadingSides = new BehaviorSubject<LoadingSide[]>([]);
+
+  focused = new BehaviorSubject<string>('');
+
+  history = new BehaviorSubject<Readonly<number[]>>([]);
 
   protected cacheChunkRef?: MessagesChunkReference;
 

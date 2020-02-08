@@ -1,5 +1,25 @@
 import { StorageFileType, Document, InputFileLocation, DocumentAttributeSticker } from 'cache/types';
 
+export function hexToStr(hex: string): string {
+  let str = '';
+
+  for (let i = 0; i < hex.length; i += 2) {
+    str += String.fromCharCode(+`0x${hex.slice(i, i + 2)}`);
+  }
+
+  return str;
+}
+
+export function strToBlob(str: string, type: string) {
+  const buf = new Uint8Array(str.length);
+
+  for (let i = 0; i < str.length; i += 1) {
+    buf[i] = str.charCodeAt(i);
+  }
+
+  return new Blob([buf], { type });
+}
+
 export function hexToBlob(str: string, type: string) {
   const buf = new Uint8Array(str.length / 2);
 
@@ -19,6 +39,19 @@ export function typeToMime(type: StorageFileType) {
     case 'storage.fileJpeg': return 'image/jpeg';
     case 'storage.filePng': return 'image/png';
     default: return 'image/jpeg';
+  }
+}
+
+export function locationToString(location: InputFileLocation): string {
+  switch (location._) {
+    case 'inputPeerPhotoFileLocation':
+      return `profile_${location.local_id}_${location.volume_id}`;
+
+    case 'inputPhotoFileLocation':
+      return `photo_${location.file_reference}`;
+
+    default:
+      throw new Error(`No location hash value for ${location._}`);
   }
 }
 

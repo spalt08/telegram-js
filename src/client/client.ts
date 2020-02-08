@@ -84,7 +84,7 @@ function call(method: string, ...args: unknown[]): void {
 /**
  * Any task wrapper
  */
-function task(type: WorkerMessage['type'], payload: any, cb?: AnyResolver) {
+export function task(type: WorkerMessage['type'], payload: any, cb?: AnyResolver) {
   const id = type + Date.now().toString() + Math.random() * 1000;
   worker.postMessage({ id, type, payload } as WorkerMessage);
   if (cb) quene[id] = cb;

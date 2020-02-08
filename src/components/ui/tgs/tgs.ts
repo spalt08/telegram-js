@@ -1,7 +1,7 @@
 import { inflate } from 'pako/lib/inflate';
 import lottiePlayer, { AnimationItem } from 'lottie-web';
 import { div } from 'core/html';
-import { useInterface } from 'core/hooks';
+import { useInterface, useOnUnmount, useOnMount } from 'core/hooks';
 
 const load = (url: string, cb: (json: any) => void) => {
   const xhr = new XMLHttpRequest();
@@ -37,11 +37,14 @@ export default function tgs({ src, className, autoplay = false, loop = false }: 
       animation = lottiePlayer.loadAnimation({
         container,
         loop,
-        autoplay,
         animationData,
+        renderer: 'canvas',
       }) as AnimationItem & { currentFrame: number};
     });
   }
+
+  useOnUnmount(container, () => animation.stop());
+  useOnMount(container, () => autoplay && animation && animation.play());
 
   return useInterface(container, {
     goTo(value: number, animate: boolean = false) {

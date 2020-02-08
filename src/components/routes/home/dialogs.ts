@@ -23,10 +23,10 @@ export default function dialogs({ className = '' }: Props = {}) {
   const listEl = list({
     className: 'dialogs',
     items: service.dialogs,
-    threshold: 600,
-    batch: 20,
+    threshold: 2,
+    batch: 30,
     renderer: (id: string) => dialog(id),
-    onReachEnd: () => service.loadMoreDialogs(),
+    onReachBottom: () => service.loadMoreDialogs(),
   });
 
   let spinner: Node | undefined;

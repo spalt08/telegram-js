@@ -11,9 +11,9 @@ import { isEmoji } from 'helpers/message';
 import { auth } from 'services';
 import serviceMessage from './message_service';
 import messageMedia from './message_media';
-import './message.scss';
 import emojiMessage from './message_emoji';
 import messageReply from './message_reply';
+import './message.scss';
 
 interface MessageHooks {
   getFromID(): number;
@@ -62,7 +62,7 @@ export default function message(uniqueId: string, peer: Peer) {
       shouldRerender = true;
 
       if (msg.media && msg.media._ !== 'messageMediaEmpty') {
-        media = messageMedia(msg.media);
+        media = messageMedia(msg.media, next);
       }
     }
 
@@ -74,7 +74,7 @@ export default function message(uniqueId: string, peer: Peer) {
       if (!next.message && media) {
         container.classList.add('media');
 
-        if (getInterface(media).needsShadow) {
+        if (hasInterface(media) && getInterface(media).needsShadow) {
           container.classList.add('shadowed');
         }
 
@@ -153,13 +153,46 @@ export default function message(uniqueId: string, peer: Peer) {
   useObservable(container, subject, (next) => next && rerender(next));
 
   useOnMount(container, () => {
+    const prevEl = container.previousElementSibling;
     const nextEl = container.nextElementSibling;
-    const pinterface = nextEl && hasInterface<MessageHooks>(nextEl) ? getInterface(nextEl) : null;
+    const pinterface = prevEl && hasInterface<MessageHooks>(prevEl) ? getInterface(prevEl) : null;
+    const ninterface = nextEl && hasInterface<MessageHooks>(nextEl) ? getInterface(nextEl) : null;
 
-    if (!nextEl) container.classList.add('last');
-    if (nextEl && pinterface && pinterface.getFromID && msg.from_id !== pinterface.getFromID()) {
-      nextEl.classList.add('first');
+    if (!nextEl && !prevEl) {
+      container.classList.add('first');
       container.classList.add('last');
+    }
+
+    if (nextEl && !prevEl) {
+      container.classList.add('first');
+
+      if (ninterface && ninterface.getFromID && msg.from_id === ninterface.getFromID()) {
+        container.classList.remove('last');
+        nextEl.classList.remove('first');
+      } else {
+        container.classList.add('last');
+      }
+    }
+
+    if (prevEl && !nextEl) {
+      container.classList.add('last');
+
+      if (pinterface && pinterface.getFromID && msg.from_id === pinterface.getFromID()) {
+        prevEl.classList.remove('last');
+      } else {
+        container.classList.add('first');
+        prevEl.classList.add('last');
+      }
+    }
+
+    if (prevEl && nextEl) {
+      if (pinterface && pinterface.getFromID && msg.from_id === pinterface.getFromID()) {
+        container.classList.remove('first');
+        prevEl.classList.remove('last');
+      } else {
+        container.classList.add('first');
+        prevEl.classList.add('last');
+      }
     }
   });
 

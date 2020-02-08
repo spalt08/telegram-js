@@ -55,7 +55,7 @@ export default class DialogsService {
   }
 
   protected doUpdateDialogs(offsetDate = 0, cb?: () => void) {
-    const chunk = 60;
+    const chunk = 30;
     const payload = {
       offset_date: offsetDate,
       offset_id: 0,
