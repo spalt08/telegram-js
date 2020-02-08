@@ -1,11 +1,14 @@
-import { div, img } from 'core/html';
+import { div, img, nothing, text } from 'core/html';
 import { MessageCommon, PhotoNotEmpty } from 'cache/types';
 import './photo.scss';
 import media from 'client/media';
 import { getSizeType, getPhotoLocation } from 'helpers/photo';
 import { listen, listenOnce } from 'core/dom';
 import { getInterface, hasInterface } from 'core/hooks';
+import { close } from 'components/icons';
 import { PopupInterface } from '../interface';
+import { profileAvatar, profileTitle } from 'components/profile';
+import { datetime } from 'components/ui';
 
 type Props = {
   rect: DOMRect,
@@ -23,10 +26,30 @@ export default function photo({ rect, photo, message }: Props) {
   const location = getPhotoLocation(photo, type);
   const src = media.cached(location);
 
-  const image = img`.photo_full`({ src });
-  const element = div`.popup`(image);
+  const closeEl = close({ className: 'photofull_close' });
+  const image = img`.photofull_photo`({ src });
+  const header = div`.photofull_header`(
+    div`.photofull_author`(
+      profileAvatar({ _: 'peerUser', user_id: message.from_id }),
+      div`.photofull_author-details`(
+        profileTitle({ _: 'peerUser', user_id: message.from_id }),
+        div`.photofull_author-date`(
+          datetime({ timestamp: message.date, full: true }),
+        ),
+      ),
+    ),
+    closeEl,
+  );
+  const footer = message.message ? div`.photofull_footer`(
+    div`.photofull_message`(text(message.message)),
+  ) : undefined;
 
-  console.log(rect.top);
+  const element = div`.popup.fullscreen`(
+    header,
+    image,
+    footer || nothing,
+  );
+
   listen(image, 'load', () => {
     const next = image.getBoundingClientRect();
     const dx = rect.left - next.left;
@@ -56,7 +79,10 @@ export default function photo({ rect, photo, message }: Props) {
 
     if (hasInterface<PopupInterface>(element.parentElement)) {
       getInterface(element.parentElement).fade();
+      header.classList.add('closing');
+      if (footer) footer.classList.add('closing');
     }
+
 
     const duration = 200;
     let start: number | undefined;
