@@ -11,9 +11,9 @@ import { isEmoji } from 'helpers/message';
 import { auth } from 'services';
 import serviceMessage from './message_service';
 import messageMedia from './message_media';
-import './message.scss';
 import emojiMessage from './message_emoji';
 import messageReply from './message_reply';
+import './message.scss';
 
 interface MessageHooks {
   getFromID(): number;
@@ -62,7 +62,7 @@ export default function message(uniqueId: string, peer: Peer) {
       shouldRerender = true;
 
       if (msg.media && msg.media._ !== 'messageMediaEmpty') {
-        media = messageMedia(msg.media, msg);
+        media = messageMedia(msg.media, next);
       }
     }
 
@@ -74,7 +74,7 @@ export default function message(uniqueId: string, peer: Peer) {
       if (!next.message && media) {
         container.classList.add('media');
 
-        if (getInterface(media).needsShadow) {
+        if (hasInterface(media) && getInterface(media).needsShadow) {
           container.classList.add('shadowed');
         }
 
