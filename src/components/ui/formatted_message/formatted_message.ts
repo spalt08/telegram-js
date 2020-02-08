@@ -14,13 +14,13 @@ function createTreeNode(str: string, entity?: MessageEntity): TreeNode {
   return {
     children: [],
     entity,
-    value: str,
+    value: str || undefined,
     length: str.length,
   };
 }
 
 function applyEntity(node: TreeNode, offset: number, length: number, entity: MessageEntity) {
-  if (offset + length >= 0 && offset >= node.length) return;
+  if (offset < 0 || (offset + length >= 0 && offset >= node.length)) return;
   if (node.value !== undefined) {
     node.children.push(createTreeNode(node.value.substr(0, offset)));
     node.children.push(createTreeNode(node.value.substr(offset, length), entity));

@@ -3,7 +3,7 @@ import { mount, unmountChildren } from 'core/dom';
 import { useOnMount, useObservable, useInterface, getInterface, hasInterface } from 'core/hooks';
 import { Peer, MessageCommon, Message } from 'cache/types';
 import { messageCache } from 'cache';
-import { datetime, formattedMessage } from 'components/ui';
+import { datetime, formattedMessage, svgBaloon } from 'components/ui';
 import { profileAvatar, profileTitle } from 'components/profile';
 import { userIdToPeer } from 'helpers/api';
 import { idToColorCode } from 'cache/accessors';
@@ -36,7 +36,7 @@ export default function message(uniqueId: string, peer: Peer) {
   let prev: MessageCommon | undefined;
   let picture: HTMLElement | undefined;
   let title: HTMLElement | undefined;
-  let media: HTMLElement | null | undefined;
+  let media: ReturnType<typeof messageMedia>;
   let reply: HTMLElement | null;
 
   // Rerender on change
@@ -63,8 +63,6 @@ export default function message(uniqueId: string, peer: Peer) {
 
       if (msg.media && msg.media._ !== 'messageMediaEmpty') {
         media = messageMedia(msg.media);
-      } else {
-        media = null;
       }
     }
 
@@ -76,8 +74,15 @@ export default function message(uniqueId: string, peer: Peer) {
       if (!next.message && media) {
         container.classList.add('media');
 
+        if (getInterface(media).needsShadow) {
+          container.classList.add('shadowed');
+        }
+
         if (media.classList.contains('sticker')) {
           wrapper = media;
+        } else if (media.classList.contains('photo')) {
+          const { width, height } = getInterface(media).getSize();
+          wrapper = svgBaloon({ width, height, tail: true, incoming: !out }, [media]);
         } else {
           wrapper = div`.message__baloon`(media);
         }
@@ -113,6 +118,8 @@ export default function message(uniqueId: string, peer: Peer) {
             datetime({ timestamp: msg.date, date: false }),
           ),
         );
+
+        container.classList.add('shadowed');
 
         if (media) container.classList.add('with-media');
         else container.classList.remove('with-media');
