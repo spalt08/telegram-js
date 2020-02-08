@@ -78,7 +78,7 @@ export default function mediaPhoto(photo: Photo, message: MessageCommon) {
   }
 
   return useInterface(container, {
-    needsShadow: () => true,
+    needsShadow: true,
     getSize() {
       return box;
     },

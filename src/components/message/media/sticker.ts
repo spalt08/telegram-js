@@ -36,7 +36,7 @@ export default function mediaSticker(document: Document) {
   }, document.dc_id, document.mime_type);
 
   return useInterface(container, {
-    needsShadow: () => false,
+    needsShadow: false,
     getSize() {
       return { width: 200, height: 200 };
     },

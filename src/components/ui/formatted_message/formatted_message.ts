@@ -14,7 +14,7 @@ function createTreeNode(str: string, entity?: MessageEntity): TreeNode {
   return {
     children: [],
     entity,
-    value: str.length === 0 ? undefined : str,
+    value: str || undefined,
     length: str.length,
   };
 }
