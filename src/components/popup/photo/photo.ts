@@ -26,6 +26,7 @@ export default function photo({ rect, photo, message }: Props) {
   const image = img`.photo_full`({ src });
   const element = div`.popup`(image);
 
+  console.log(rect.top);
   listen(image, 'load', () => {
     const next = image.getBoundingClientRect();
     const dx = rect.left - next.left;
@@ -33,7 +34,6 @@ export default function photo({ rect, photo, message }: Props) {
     const scale = rect.width / next.width;
 
     image.style.transformOrigin = 'top left';
-    image.style.opacity = '0';
     image.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
 
     listenOnce(image, 'transitionend', () => {
@@ -50,25 +50,36 @@ export default function photo({ rect, photo, message }: Props) {
 
   listen(element, 'click', () => {
     const current = image.getBoundingClientRect();
-    const dx = rect.left - current.left;
-    const dy = rect.top - current.top;
-    const scale = rect.width / current.width;
-
-    image.classList.add('transition');
-    image.style.transformOrigin = 'top left';
-    image.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
+    const dx = Math.round(rect.left - current.left);
+    const dy = Math.round(rect.top - current.top);
+    const dscale = rect.width / current.width - 1;
 
     if (hasInterface<PopupInterface>(element.parentElement)) {
       getInterface(element.parentElement).fade();
     }
 
-    listenOnce(image, 'transitionend', () => {
-      setTimeout(() => {
-        if (hasInterface<PopupInterface>(element.parentElement)) {
-          getInterface(element.parentElement).close();
-        }
-      }, 100);
-    });
+    const duration = 200;
+    let start: number | undefined;
+
+    const animateClose = (timestamp: number) => {
+      if (!start) start = timestamp;
+
+      const progress = timestamp - start;
+      const percentage = Math.min(1, progress / duration);
+
+      if (percentage > 0) {
+        const scale = 1 + dscale * percentage;
+        image.style.transform = `translate(${dx * percentage}px, ${dy * percentage}px) scale(${scale})`;
+      }
+
+      if (percentage < 1) {
+        requestAnimationFrame(animateClose);
+      } else if (hasInterface<PopupInterface>(element.parentElement)) {
+        getInterface(element.parentElement).close();
+      }
+    };
+
+    requestAnimationFrame(animateClose);
   });
 
   return element;

@@ -38,6 +38,7 @@ export default function popup() {
     close() {
       wrapper.classList.remove('opened');
       wrapper.classList.remove('closing');
+      if (element) unmount(element);
     },
   });
 }
