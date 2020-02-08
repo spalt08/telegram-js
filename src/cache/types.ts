@@ -93,6 +93,7 @@ export type User = WithMin<{
   last_name: string,
   access_hash: string,
   photo: UserProfilePhoto,
+  status: UserStatus,
 }>;
 
 /**
@@ -106,6 +107,26 @@ export type UserProfilePhoto = {
   photo_small: FileLocation,
   photo_big: FileLocation,
   dc_id: number,
+};
+
+/**
+ * User status object
+ * Ref: https://core.telegram.org/type/UserStatus
+ */
+export type UserStatus = {
+  _: 'userStatusEmpty',
+} | {
+  _: 'userStatusOnline',
+  expires: number,
+} | {
+  _: 'userStatusOffline',
+  was_online: number,
+} | {
+  _: 'userStatusRecently',
+} | {
+  _: 'userStatusLastWeek',
+} | {
+  _: 'userStatusLastMonth',
 };
 
 /**

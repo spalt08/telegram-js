@@ -4,10 +4,10 @@
   border: none;
   font-size: 16px;
   margin: 0;
-  height: 54px;
-  width: 54px;
-  background: #4EA4F5;
-  color: #FFFFFF;
+  width: 33px;
+  height: 33px;
+  color: #707579;
+  background: transparent;
   text-align: center;
   border-radius: 50%;
   text-transform: uppercase;
@@ -20,14 +20,22 @@
   cursor: pointer;
   padding: 5px 10px;
 
-  &:hover, &:focus {
-    background: #4797E2;
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+  path {
+    fill: #707579
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.1);
     outline: none;
   }
 
   &:disabled {
     cursor: not-allowed;
-    background: #4797E2;
+    background: rgba(0, 0, 0, 0.1);
   }
 
   & .ripple__content {
