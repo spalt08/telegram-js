@@ -6,6 +6,7 @@ import { Peer } from 'cache/types';
 import { profileAvatar, profileTitle } from 'components/profile';
 import { onlineStatus } from 'components/ui/online_status/online_status';
 import { close, edit, more } from '../../../../icons';
+import peerInfo from './peer_info';
 
 export default function infoPanel(peer: Peer) {
   return (
@@ -18,6 +19,6 @@ export default function infoPanel(peer: Peer) {
       div`.info_panel__avatar`(profileAvatar(peer)),
       div`.info_panel__name`(el('h3', {}, [profileTitle(peer)])),
       div`.info_panel__status`(onlineStatus(peer)),
-      div`.info_panel__info`(text('info')))
+      peerInfo(peer))
   );
 }

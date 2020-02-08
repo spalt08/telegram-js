@@ -91,9 +91,12 @@ export type Dialog = {
 export type User = WithMin<{
   first_name: string,
   last_name: string,
+  username: string,
+  phone: string,
   access_hash: string,
   photo: UserProfilePhoto,
   status: UserStatus,
+  info?: UserFull,
 }>;
 
 /**
@@ -127,6 +130,15 @@ export type UserStatus = {
   _: 'userStatusLastWeek',
 } | {
   _: 'userStatusLastMonth',
+};
+
+/**
+ * Full user information
+ * Ref: https://core.telegram.org/constructor/userFull
+ */
+export type UserFull = {
+  user: User,
+  about: string,
 };
 
 /**
