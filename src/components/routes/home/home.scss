@@ -76,6 +76,8 @@
       &__history {
         flex: 1 50%;
         z-index: 0;
+        mask-image: linear-gradient(bottom,transparent,#000 0.8rem);
+        -webkit-mask-image: -webkit-linear-gradient(bottom,transparent,#000 0.8rem);
       }
 
       &__spinner {
