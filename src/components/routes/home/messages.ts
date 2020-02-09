@@ -2,10 +2,10 @@ import { BehaviorSubject, combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { div } from 'core/html';
 import { mount, unmount } from 'core/dom';
-import { useObservable, getInterface } from 'core/hooks';
+import { useObservable } from 'core/hooks';
 import { message as service } from 'services';
 import message from 'components/message/message';
-import { list, sectionSpinner } from 'components/ui';
+import { sectionSpinner, VirtualizedList } from 'components/ui';
 import messageInput from 'components/message/input/input';
 import { Peer } from 'cache/types';
 import { peerMessageToId } from 'helpers/api';
@@ -31,7 +31,7 @@ export default function messages() {
   const showSpinnerObservable = combineLatest([service.history, service.loadingSides])
     .pipe(map(([messagesList, loadingDirections]) => messagesList.length < 3 && loadingDirections.length));
 
-  const scroll = list({
+  const scroll = new VirtualizedList({
     className: 'messages__history',
     items: itemsSubject,
     pivotBottom: true,
@@ -41,13 +41,13 @@ export default function messages() {
     onReachTop: () => service.loadMoreHistory(),
   });
 
-  mount(element, scroll, element.lastElementChild!);
+  mount(element, scroll.wrapper, element.lastElementChild!);
 
   // Make the list scroll to bottom on an active peer change
-  useObservable(element, service.activePeer, () => getInterface(scroll).clear());
+  useObservable(element, service.activePeer, () => scroll.clear());
   useObservable(element, service.focusedMessageId, (id) => {
     if (id && service.activePeer.value) {
-      getInterface(scroll).focus(peerMessageToId(service.activePeer.value, id));
+      scroll.focus(peerMessageToId(service.activePeer.value, id));
     }
   });
 

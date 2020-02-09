@@ -1,6 +1,6 @@
 import { combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { list, sectionSpinner } from 'components/ui';
+import { VirtualizedList, sectionSpinner } from 'components/ui';
 import { dialog as service } from 'services';
 import { div } from 'core/html';
 import { mount, unmount } from 'core/dom';
@@ -20,7 +20,7 @@ export default function dialogs({ className = '' }: Props = {}) {
     map(([dialogsList, isLoading]) => dialogsList.length === 0 && isLoading),
   );
 
-  const listEl = list({
+  const listEl = new VirtualizedList({
     className: 'dialogs',
     items: service.dialogs,
     threshold: 2,
@@ -32,7 +32,7 @@ export default function dialogs({ className = '' }: Props = {}) {
   let spinner: Node | undefined;
   const element = div({ className },
     status(),
-    listEl,
+    listEl.wrapper,
   );
 
   useObservable(element, showSpinnerObservable, (show) => {
