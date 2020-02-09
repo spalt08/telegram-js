@@ -304,16 +304,14 @@ export class VirtualizedList {
       const height = this.heights[visible[i]];
 
       // force slowdown
-      flipFrom[visible[i]] = this.elements[visible[i]].getBoundingClientRect();
-      flipFrom[visible[i]] = this.elements[visible[i]].getBoundingClientRect();
-      //  {
-      //   top: offset,
-      //   height,
-      // };
+      // flipFrom[visible[i]] = this.elements[visible[i]].getBoundingClientRect();
+      // flipFrom[visible[i]] = this.elements[visible[i]].getBoundingClientRect();
+      flipFrom[visible[i]] = {
+        top: offset,
+        height,
+      };
 
-      // force slowdown
-      const task = height * height * height * height;
-      offset += height + task - task;
+      offset += height;
     }
 
     // iterate through elements and update it's position
@@ -366,12 +364,12 @@ export class VirtualizedList {
       const height = this.heights[nextVisible[i]];
 
       // force slowdown
-      flipTo[nextVisible[i]] = this.elements[nextVisible[i]].getBoundingClientRect();
-      flipTo[nextVisible[i]] = this.elements[nextVisible[i]].getBoundingClientRect();
-      // {
-      //   top: offset,
-      //   height,
-      // };
+      // flipTo[nextVisible[i]] = this.elements[nextVisible[i]].getBoundingClientRect();
+      // flipTo[nextVisible[i]] = this.elements[nextVisible[i]].getBoundingClientRect();
+      flipTo[nextVisible[i]] = {
+        top: offset,
+        height,
+      };
 
       offset += height;
     }
@@ -393,8 +391,7 @@ export class VirtualizedList {
     // get final list of els to animate
     animated = Object.keys(flipFrom);
 
-    // Wait next frame
-    requestAnimationFrame(() => {
+    const animate = () => {
       for (let i = 0; i < animated.length; i += 1) {
         const elm = this.elements[animated[i]];
 
@@ -406,7 +403,13 @@ export class VirtualizedList {
           elm.classList.remove('list__flipping');
         });
       }
-    });
+    };
+
+    // Wait next frame
+    // temp fix for chrome
+    requestAnimationFrame(
+      () => requestAnimationFrame(animate),
+    );
 
     this.updateData(next);
     this.first = nextFirst;
@@ -493,10 +496,9 @@ export class VirtualizedList {
     }
 
     // update scroll inner content height
-    if (prevFirst !== this.first || prevLast !== this.last) {
-      this.updateHeigths();
-      this.scrollHeight = this.container.scrollHeight;
-    }
+    if (prevFirst !== this.first || prevLast !== this.last) this.scrollHeight = this.container.scrollHeight;
+
+    if (this.pendingRecalculate.length > 0) this.updateHeigths();
 
     // keep scroll position if top elements was added
     if (prevFirst > this.first) {
