@@ -462,10 +462,12 @@ export class VirtualizedList {
         // remove bottom elements
         while (this.last > 0 && removedHeight < spaceBottom - this.cfg.threshold * this.viewport.height) {
           if (removedHeight > 0) this.unMount(this.current[this.last--]);
-          removedHeight += this.heights[this.current[this.last]];
+          removedHeight += this.heights[this.current[this.last]] || this.elements[this.current[this.last]].offsetHeight;
 
           if (removedHeight === 0) throw new Error('height cannot be zero');
         }
+
+        console.log('removed from bottom', removedHeight);
 
         for (let i = 0; i < count; i += 1) this.mount(this.current[--this.first], this.current[this.first + 1]);
         skipNext = true;
@@ -484,7 +486,7 @@ export class VirtualizedList {
         // remove top elements
         while (this.first < this.current.length && removedHeight < this.scrollTop - this.cfg.threshold * this.viewport.height) {
           if (removedHeight > 0) this.unMount(this.current[this.first++]);
-          removedHeight += this.heights[this.current[this.first]];
+          removedHeight += this.heights[this.current[this.first]] || this.elements[this.current[this.last]].offsetHeight;
           if (removedHeight === 0) throw new Error('height cannot be zero');
         }
 
@@ -505,7 +507,7 @@ export class VirtualizedList {
       let deltaHeight = 0;
 
       for (let i = this.first; i < prevFirst; i++) {
-        deltaHeight += this.heights[this.current[i]];
+        deltaHeight += this.heights[this.current[i]] || this.elements[this.current[i]].offsetHeight;
       }
 
       this.container.scrollTop = this.scrollTop += deltaHeight;
@@ -516,7 +518,7 @@ export class VirtualizedList {
       let deltaHeight = 0;
 
       for (let i = prevFirst; i < this.first; i++) {
-        deltaHeight += this.heights[this.current[i]];
+        deltaHeight += this.heights[this.current[i]] || this.elements[this.current[i]].offsetHeight;
       }
 
       this.container.scrollTop = this.scrollTop -= deltaHeight;
