@@ -378,7 +378,6 @@ export default function list<T>({ tag, className,
 
     let scollValue = rectTopOffset;
     if (viewport.height > rect.height) scollValue -= (viewport.height - rect.height) / 2;
-    else scollValue -= 50;
 
     elm.classList.add('focused');
 
@@ -457,6 +456,8 @@ export default function list<T>({ tag, className,
   // lifecycle events
   useOnMount(container, updateViewport);
   useListenWhileMounted(container, window, 'resize', updateViewport);
+  listen(container, 'transitionend', updateViewport);
+  listen(container, 'animationend', updateViewport);
 
   // return with interface
   return useInterface(wrapper, {
