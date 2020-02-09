@@ -22,7 +22,7 @@ const load = (url: string, cb: (json: any) => void) => {
 interface Props {
   src: string,
   className?: string,
-  autoplay: boolean,
+  autoplay?: boolean,
   loop?: boolean,
 }
 

@@ -101,8 +101,6 @@ export default function list<T>({ tag, className,
       return;
     }
 
-    console.log('update from', container.scrollTop);
-
     isLocked = true;
 
     // visible elements

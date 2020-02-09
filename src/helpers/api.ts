@@ -1,4 +1,4 @@
-import { Dialog, Peer, Message, AnyShortMessage, MessageEmpty } from 'cache/types';
+import { Dialog, Peer, Message, AnyUpdateShortMessage, MessageEmpty } from 'cache/types';
 import { ARCHIVE_FOLDER_ID } from 'const/api';
 
 export function peerToId(peer: Peer): string {
@@ -45,7 +45,7 @@ export function userIdToPeer(id: number): Peer {
   return { _: 'peerUser', user_id: id };
 }
 
-export function shortMessageToMessage(self: number, message: AnyShortMessage): Message {
+export function shortMessageToMessage(self: number, message: AnyUpdateShortMessage): Message {
   return {
     ...message,
     _: 'message',

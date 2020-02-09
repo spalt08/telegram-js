@@ -1,5 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
-import client, { ClientError } from 'client/client';
+import client from 'client/client';
+import { ClientError } from 'client/worker.types';
 import { Document } from 'cache/types';
 
 /**

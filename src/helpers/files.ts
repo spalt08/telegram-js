@@ -54,7 +54,7 @@ export function locationToString(location: InputFileLocation): string {
       return `document_${location.id}_${location.file_reference}`;
 
     default:
-      throw new Error(`No location hash value for ${location._}`);
+      throw new Error(`No location hash value for ${location}`);
   }
 }
 
