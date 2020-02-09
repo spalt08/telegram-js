@@ -6,7 +6,7 @@ import { profileAvatar } from 'components/profile';
 import './header.scss';
 import roundButton from 'components/ui/round_button/round_button';
 import { more } from 'components/icons';
-import { onlineStatus } from 'components/ui/online_status/online_status';
+import { onlineStatus } from 'components/ui';
 import peerTitle from '../dialog/peer_title';
 
 export default function header() {
