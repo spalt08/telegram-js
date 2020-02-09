@@ -151,7 +151,6 @@ export default function message(uniqueId: string, peer: Peer) {
   rerender(msg);
 
   useObservable(container, subject, (next) => next && rerender(next));
-  useObservable(container, subject, (next) => console.log(next));
 
   useOnMount(container, () => {
     const prevEl = container.previousElementSibling;
