@@ -14,12 +14,15 @@
   flex-direction: column;
   justify-content: space-between;
   overflow: hidden;
-  display: none;
+  display: flex;  
   transform-origin: bottom left;
+  opacity: 0;
+  transform: scale(0);
+  transition: .3s ease-out;
 
   &.opened {
-    display: flex;  
-    animation: stickmojiPanelShow .3s ease-out;
+    opacity: 1;
+    transform: scale(1);
   }
 
   &__tabs {
@@ -92,17 +95,3 @@
     transform: translateX(-100%);
   }
 }
-
-
-@keyframes stickmojiPanelShow {
-  0% {
-    opacity: 0;
-    transform: scale(0);
-  }
-
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-

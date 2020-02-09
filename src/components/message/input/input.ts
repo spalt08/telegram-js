@@ -21,9 +21,29 @@ export default function messageInput() {
     div`.msginput__btn`(),
   );
 
-  listen(emojiIcon, 'click', () => {
+  let closeTimer: number | undefined;
+  const closeDelay = 300;
+
+  const openPanel = () => {
+    if (closeTimer) clearTimeout(closeTimer);
     stickmojiPanelEl.classList.add('opened');
-  });
+    emojiIcon.classList.add('active');
+  };
+
+  const closePanel = () => {
+    stickmojiPanelEl.classList.remove('opened');
+    emojiIcon.classList.remove('active');
+  };
+
+  const closePanelDelayed = () => {
+    if (closeTimer) clearTimeout(closeTimer);
+    closeTimer = setTimeout(closePanel as TimerHandler, closeDelay);
+  };
+
+  listen(emojiIcon, 'mouseenter', openPanel);
+  listen(emojiIcon, 'mouseleave', closePanelDelayed);
+  listen(stickmojiPanelEl, 'mouseenter', openPanel);
+  listen(stickmojiPanelEl, 'mouseleave', closePanelDelayed);
 
   mount(element, container);
   container.classList.remove('hidden');

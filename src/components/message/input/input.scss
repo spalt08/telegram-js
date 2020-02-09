@@ -21,7 +21,7 @@
       transition: fill .3s ease;
     }
 
-    &:hover svg path {
+    &:hover svg path, &.active svg path  {
       fill: #50a2e8;
     }
   }
