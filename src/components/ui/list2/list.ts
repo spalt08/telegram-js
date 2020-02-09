@@ -13,7 +13,6 @@ type Props<T> = {
   padding?: number,
   batch?: number,
   renderer: (item: T) => HTMLElement,
-  key?: (item: T) => string,
   onReachTop?: () => void,
   onReachBottom?: () => void,
 };
@@ -29,17 +28,16 @@ const ease = (t: number) => t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2
  *  renderer: (data) => div`.css`(text(data))
  * })
  */
-export default function list<T>({ tag, className,
+export default function list({ tag, className,
   pivotBottom = false,
   padding = 0,
   batch = 20,
   threshold = 2,
   items,
   renderer,
-  key = (i) => `${i}`,
   onReachTop,
   onReachBottom,
-}: Props<T>) {
+}: Props<string>) {
   const container = el(tag || 'div', { className: 'list__container' });
   const wrapper = div`.list${className}${pivotBottom ? 'reversed' : ''}`(container);
 
@@ -52,36 +50,39 @@ export default function list<T>({ tag, className,
   // storage for rendered items
   let elements: Record<string, {
     el: HTMLElement,
-    rect?: DOMRect,
+    height: number,
   }> = {};
 
   // cached items
-  let current: readonly T[] = [];
+  let current: readonly string[] = [];
   let first = -1;
   let last = -2;
   let offset: number = -1;
-  let pending: readonly T[] = [];
-  let focused: T | undefined;
+  let pending: readonly string[] = [];
+  let focused: string | undefined;
   let isLocked = false;
   let viewport = wrapper.getBoundingClientRect();
 
   // item -> HTMLElement
-  const element = (data: T): HTMLElement => {
-    const id = key(data);
-    if (!elements[id]) {
-      elements[id] = { el: renderer(data) };
+  const element = (key: string): HTMLElement => {
+    if (!elements[key]) {
+      elements[key] = { el: renderer(key), height: 0 };
       // todo: catch element layout update
     }
 
-    return elements[id].el;
+    return elements[key].el;
   };
 
+  // item -> height
+  const recalculatedHeight = (key: string): number => elements[key].height = elements[key].el.offsetHeight;
+  const height = (key: string): number => elements[key].height || recalculatedHeight(key);
+
   // mount or unmount item
-  const mountChild = (item: T, before?: T) => mount(container, element(item), before ? element(before) : undefined);
-  const unMountChild = (item: T) => unmount(element(item));
+  const mountChild = (item: string, before?: string) => mount(container, element(item), before ? element(before) : undefined);
+  const unMountChild = (item: string) => unmount(element(item));
 
   // mount before node, not data
-  const mountBeforeNode = (item: T, before?: Node) => {
+  const mountBeforeNode = (item: string, before?: Node) => {
     const elm = element(item);
     unmount(elm);
     mount(container, elm, before);
@@ -89,7 +90,7 @@ export default function list<T>({ tag, className,
 
 
   // update content with flip animations
-  const update = (next: readonly T[]) => {
+  const update = (next: readonly string[]) => {
     const focusedIndex = focused ? next.indexOf(focused) : -1;
 
     // fallback if no changes
@@ -143,7 +144,7 @@ export default function list<T>({ tag, className,
 
     // keep start position for flip
     for (let i = 0; i < visible.length; i += 1) {
-      flipFrom[key(visible[i])] = element(visible[i]).getBoundingClientRect();
+      flipFrom[visible[i]] = element(visible[i]).getBoundingClientRect();
     }
 
     // iterate through elements and update it's position
@@ -184,7 +185,7 @@ export default function list<T>({ tag, className,
 
       if (nextVisible.indexOf(visible[i]) === -1) {
         unmount(elm);
-        delete flipFrom[key(visible[i])];
+        delete flipFrom[visible[i]];
       }
     }
 
@@ -290,6 +291,7 @@ export default function list<T>({ tag, className,
       }
 
       for (let i = 0; i < count; i += 1) mountChild(current[++last]);
+      for (let i = 0; i < count; i += 1) height(current[last - i]);
       if (pivotBottom) container.scrollTop = offset = container.scrollHeight - viewport.height; // eslint-disable-line no-multi-assign
 
       unlock(false);
@@ -313,7 +315,7 @@ export default function list<T>({ tag, className,
         const spaceBottom = container.scrollHeight - (container.scrollTop + viewport.height);
 
         while (removeHeight < spaceBottom - threshold * viewport.height && removed < count) {
-          removeHeight += element(current[last - removed]).getBoundingClientRect().height;
+          removeHeight += height(current[last - removed]);
           removed += 1;
         }
 
@@ -322,7 +324,7 @@ export default function list<T>({ tag, className,
         for (let i = 0; i < count; i += 1) mountChild(current[--first], current[first + 1]);
 
         // recalculate
-        for (let i = 0; i < count; i += 1) scrollPos += element(current[first + i]).getBoundingClientRect().height;
+        for (let i = 0; i < count; i += 1) scrollPos += height(current[first + i]);
 
         // keep scroll
         container.scrollTop = offset = scrollPos; // eslint-disable-line no-multi-assign
@@ -351,7 +353,7 @@ export default function list<T>({ tag, className,
 
         while (removeHeight < spaceTop - threshold * viewport.height && removed < count) {
           scrollDelta = removeHeight;
-          removeHeight += element(current[first + removed]).getBoundingClientRect().height;
+          removeHeight += height(current[first + removed]);
           removed += 1;
         }
 
@@ -408,7 +410,7 @@ export default function list<T>({ tag, className,
   };
 
   // scrollTo(item)
-  const focus = (item: T) => {
+  const focus = (item: string) => {
     const index = current.indexOf(item);
 
     // data wasn't loaded yet
@@ -428,7 +430,7 @@ export default function list<T>({ tag, className,
   };
 
   // on items changed
-  useMaybeObservable(container, items, (next: readonly T[]) => {
+  useMaybeObservable(container, items, (next: readonly string[]) => {
     if (isLocked) pending = next.slice(0);
     else {
       update(next);
