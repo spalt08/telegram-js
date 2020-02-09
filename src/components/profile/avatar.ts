@@ -9,7 +9,7 @@ import { auth } from 'services';
 import { savedmessages, avatarDeletedaccount } from 'components/icons';
 import { userCache } from 'cache';
 
-function isMe(peer: Peer) {
+function isMyself(peer: Peer) {
   return peer._ === 'peerUser' && peer.user_id === auth.userID;
 }
 
@@ -17,8 +17,8 @@ function isDeletedAccount(peer: Peer) {
   return (peer._ === 'peerUser' && (userCache.get(peer.user_id)?.deleted ?? true));
 }
 
-export default function profileAvatar(peer: Peer, message?: Message) {
-  const me = isMe(peer);
+export default function profileAvatar(peer: Peer, message?: Message, showSavedMessagesBadge = false) {
+  const me = isMyself(peer);
   const deletedAccount = isDeletedAccount(peer);
   const container = div`.avatar`();
   const location = getPeerPhotoInputLocation(peer, message);
@@ -26,7 +26,7 @@ export default function profileAvatar(peer: Peer, message?: Message) {
 
   const preview = (src: string | null) => {
     if (!src) {
-      if (me) {
+      if (me && showSavedMessagesBadge) {
         defaultPicture = div`.avatar__predefined`(
           savedmessages(),
         );
