@@ -43,7 +43,7 @@ export default function tgs({ src, className, autoplay = true, loop = false }: P
     });
   }
 
-  useOnUnmount(container, () => animation.stop());
+  useOnUnmount(container, () => animation && animation.stop());
   useOnMount(container, () => autoplay && animation && animation.play());
 
   return useInterface(container, {

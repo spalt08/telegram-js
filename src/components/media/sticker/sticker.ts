@@ -14,21 +14,9 @@ type StickerOptions = {
 
 export default function stickerRenderer(sticker: Document, { size = '200px', autoplay = true }: StickerOptions) {
   const container = div`.sticker`({ style: { width: size, height: size } });
-  const thumbnailUrl = getThumbnail(sticker.thumbs);
-
   let thumbnail: HTMLElement | undefined;
 
-  if (thumbnailUrl) {
-    thumbnail = div`.sticker__thumb`(
-      img({ src: thumbnailUrl, alt: 'Sticker Preview' }),
-    );
-
-    mount(container, thumbnail);
-  }
-
-  const location = getDocumentLocation(sticker);
-
-  media.get(location, (src: string) => {
+  const render = (src: string) => {
     if (sticker.mime_type === 'application/x-tgsticker') {
       const animated = tgs({ src, className: 'sticker__tgs', autoplay, loop: true });
       mount(container, animated);
@@ -54,7 +42,25 @@ export default function stickerRenderer(sticker: Document, { size = '200px', aut
         });
       }
     }
-  }, sticker.dc_id, sticker.mime_type);
+  };
+
+  const location = getDocumentLocation(sticker);
+  const cached = media.cached(location);
+
+  if (cached) {
+    render(cached);
+  } else {
+    const thumbnailUrl = getThumbnail(sticker.thumbs);
+    if (thumbnailUrl) {
+      thumbnail = div`.sticker__thumb`(
+        img({ src: thumbnailUrl, alt: 'Sticker Preview' }),
+      );
+
+      mount(container, thumbnail);
+    }
+
+    media.get(location, render, sticker.dc_id, sticker.mime_type);
+  }
 
   return container;
 }
