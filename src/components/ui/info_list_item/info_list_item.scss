@@ -1,0 +1,34 @@
+.infoListItem {
+  display: flex;
+  margin: 15px 0;
+  cursor: default;
+
+  &.hidden {
+    display: none;
+  }
+
+  &__content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__icon {
+    flex: .3;
+    display: flex;
+    justify-content: center;
+
+    path {
+      fill: #707579;
+    }
+  }
+
+  &__label {
+    color: #707579;
+    font-size: 13px;
+
+    path {
+      fill: #707579;
+    }
+  }
+}

@@ -12,6 +12,10 @@ export default class MainService {
   /** Last Opened Popup */
   popup = new BehaviorSubject('');
 
+  /** State of sidebar visibility */
+  private isRightSidebarVisible = false;
+  rightSidebarVisibility = new BehaviorSubject(false);
+
   /** Popup Context */
   popupCtx: any = {};
 
@@ -25,5 +29,10 @@ export default class MainService {
   showPopup(type: string, ctx: any): void {
     this.popupCtx = ctx;
     this.popup.next(type);
+  }
+
+  toggleRightSidebar() {
+    this.isRightSidebarVisible = !this.isRightSidebarVisible;
+    this.rightSidebarVisibility.next(this.isRightSidebarVisible)
   }
 }

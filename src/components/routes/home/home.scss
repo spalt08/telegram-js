@@ -92,16 +92,20 @@
   }
 
   &__right_sidebar {
-    flex: 0 420px;
+    flex-grow: 0;
+    flex-shrink: 0;
     overflow: hidden;
     max-width: 420px;
     height: 100%;
-    border-left: 1px solid #EDEEF0;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     transition-property: flex-basis;
-    transition-duration: 0.2s;
+    transition-duration: .15s;
+
+    &.visible {
+      border-left: 1px solid #EDEEF0;
+    }
 
     @include respond-to(small) {
       width: 100%;

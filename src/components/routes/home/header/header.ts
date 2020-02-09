@@ -1,4 +1,4 @@
-import { message } from 'services';
+import { message, main } from 'services';
 import { useObservable } from 'core/hooks';
 import { div } from 'core/html';
 import { unmountChildren, mount } from 'core/dom';
@@ -28,7 +28,11 @@ export default function header() {
     mount(container, profile);
 
     const actions = div`.header__actions`(
-      roundButton({ }, more()),
+      roundButton({
+        onClick: () => {
+          main.toggleRightSidebar();
+        },
+      }, more()),
     );
 
     mount(container, actions);

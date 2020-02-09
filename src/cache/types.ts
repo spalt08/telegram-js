@@ -96,6 +96,7 @@ export type User = WithMin<{
   access_hash: string,
   photo: UserProfilePhoto,
   status: UserStatus,
+  deleted: boolean,
 }>;
 
 /**

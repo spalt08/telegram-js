@@ -1,7 +1,7 @@
 import { div } from 'core/html';
 import { mount, unmount } from 'core/dom';
 import { message as service } from 'services';
-import { useObservable } from 'core/hooks';
+import { useObservable, useInterface } from 'core/hooks';
 import infoPanel from './panels/info_panel';
 import './right_sidebar.scss';
 import mediaPanel from './panels/media_panel';
@@ -23,5 +23,9 @@ export default function rightSidebar() {
     }
   });
 
-  return container;
+  return useInterface(container, {
+    setWidth(width: number) {
+      container.style.width = `${width}px`;
+    },
+  });
 }

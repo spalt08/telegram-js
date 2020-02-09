@@ -1,55 +1,41 @@
-import { Peer, UserFull } from 'cache/types';
-import { userCache } from 'cache';
-import { div, text, nothing } from 'core/html';
+import { Peer } from 'cache/types';
+import { user } from 'services';
+import { userCache, userFullCache } from 'cache';
+import { div, nothing } from 'core/html';
 import { useObservable } from 'core/hooks';
-import client from 'client/client';
 import { info, username, phone } from 'components/icons';
 import './peer_info.scss';
+import { BehaviorSubject } from 'rxjs';
+import infoListItem from 'components/ui/info_list_item/info_list_item';
 
 export default function peerInfo(peer: Peer) {
   switch (peer._) {
     case 'peerUser': {
-      const bioElement = text('');
-      const usernameElement = text('');
-      const phoneElement = text('');
+      const bioSubject = new BehaviorSubject<string>('');
+      const usernameSubject = new BehaviorSubject<string>('');
+      const phoneSubject = new BehaviorSubject<string>('');
       const container = div`.peerInfo`(
-        div`.peerInfo__row`(
-          div`.icon`(info()),
-          div(
-            div`.value`(bioElement),
-            div`.hint`(text('Bio')),
-          ),
-        ),
-        div`.peerInfo__row`(
-          div`.icon`(username()),
-          div(
-            div`.value`(usernameElement),
-            div`.hint`(text('Username')),
-          ),
-        ),
-        div`.peerInfo__row`(
-          div`.icon`(phone()),
-          div(
-            div`.value`(phoneElement),
-            div`.hint`(text('Phone')),
-          ),
-        ),
+        infoListItem(info(), 'Bio', bioSubject),
+        infoListItem(username(), 'Username', usernameSubject),
+        infoListItem(phone(), 'Phone', phoneSubject),
       );
+
+      // fetching user information
+      const userByPeer = userCache.get(peer.user_id);
+      if (userByPeer) user.loadFullInfo(userByPeer);
+
       const userSubject = userCache.useItemBehaviorSubject(container, peer.user_id);
       useObservable(container, userSubject, (u) => {
         if (u) {
-          usernameElement.textContent = u.username || '';
-          phoneElement.textContent = u.phone || '';
-          if (!u.info) {
-            const payload = {
-              id: { _: 'inputUser', user_id: u.id, access_hash: u.access_hash },
-            };
-            client.call('users.getFullUser', payload, (err, userFull: UserFull) => {
-              bioElement.textContent = userFull.about;
-            });
-          }
+          usernameSubject.next(u.username || '');
+          phoneSubject.next(u.phone ? `+${u.phone}` : '');
         }
       });
+      const userFullSubject = userFullCache.useItemBehaviorSubject(container, peer.user_id);
+      useObservable(container, userFullSubject, (uf) => {
+        if (uf) bioSubject.next(uf.about);
+      });
+
       return container;
     }
     default:

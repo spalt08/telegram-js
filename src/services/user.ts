@@ -1,6 +1,6 @@
 import client from 'client/client';
 import { User, UserFull } from 'cache/types';
-import { userCache } from 'cache';
+import { userFullCache } from 'cache';
 
 /**
  * Singleton service class for handling users
@@ -11,7 +11,7 @@ export default class UserService {
       id: { _: 'inputUser', user_id: user.id, access_hash: user.access_hash },
     };
     client.call('users.getFullUser', payload, (err, userFull: UserFull) => {
-      userCache.put({ ...user, info: userFull });
+      userFullCache.put(userFull);
     });
   }
 }

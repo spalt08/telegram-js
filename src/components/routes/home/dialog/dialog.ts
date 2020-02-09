@@ -75,7 +75,7 @@ export default function dialogPreview(id: string) {
   });
 
   useObservable(clickable, isSelectedObservable, (isSelected) => {
-    clickable.classList[isSelected ? 'add' : 'remove']('-selected');
+    clickable.classList.toggle('-selected', isSelected);
   });
 
   listen(clickable, 'click', () => message.selectPeer(peer));

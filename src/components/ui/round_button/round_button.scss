@@ -29,13 +29,12 @@
   }
 
   &:hover {
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, .05);
     outline: none;
   }
 
   &:disabled {
     cursor: not-allowed;
-    background: rgba(0, 0, 0, 0.1);
   }
 
   & .ripple__content {

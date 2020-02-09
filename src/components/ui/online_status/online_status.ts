@@ -53,7 +53,7 @@ function formatStatus(status: UserStatus) {
 }
 
 export function onlineStatus(peer: Peer) {
-  const statusText = text('');
+  const statusText = text('\u200b'); // unicode zero width space character
   const container = span`.onlineStatus`(statusText);
 
   if (peer._ === 'peerUser') {
