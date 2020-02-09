@@ -5,7 +5,6 @@ import { auth } from 'services';
 import popup from 'components/popup/popup';
 import { Router, history } from './router';
 import 'styles/global.scss';
-import 'styles/app_loading.scss';
 
 const loadingPlaceholder = document.querySelector('.appLoading');
 if (loadingPlaceholder) {
