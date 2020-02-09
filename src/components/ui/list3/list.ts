@@ -244,6 +244,7 @@ export class VirtualizedList {
 
     // fallback if no changes
     if (this.current.length === next.length && arr_contains(this.current, next)) {
+      this.updateData(next);
       this.virtualize();
       return;
     }
@@ -290,8 +291,6 @@ export class VirtualizedList {
       this.virtualize();
       return;
     }
-
-    console.log('from', this.first, this.last, `${this.current.length}`, 'to', nextFirst, nextLast, `${next.length}`);
 
     this.lock();
 
@@ -493,10 +492,11 @@ export class VirtualizedList {
       if (this.cfg.onReachBottom && this.current.length - this.last - 1 <= this.cfg.batch * 3) this.cfg.onReachBottom();
     }
 
-    this.updateHeigths();
-
     // update scroll inner content height
-    if (prevFirst !== this.first || prevLast !== this.last) this.scrollHeight = this.container.scrollHeight;
+    if (prevFirst !== this.first || prevLast !== this.last) {
+      this.updateHeigths();
+      this.scrollHeight = this.container.scrollHeight;
+    }
 
     // keep scroll position if top elements was added
     if (prevFirst > this.first) {
@@ -560,8 +560,10 @@ export class VirtualizedList {
     }
 
     this.elements = {};
+    this.heights = {};
     this.current = [];
     this.pending = [];
+    this.pendingRecalculate = [];
     this.first = -1;
     this.last = -2;
   };
