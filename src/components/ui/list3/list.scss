@@ -1,0 +1,73 @@
+.list {
+  overflow: hidden;
+
+  .list__container {
+    height: 100%;
+    overflow: auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+
+    > * {
+      flex: none;
+      will-change: transform;
+    }
+
+    &:last-child {
+      padding-bottom: 10px;
+    }
+  }
+
+  &.reversed {
+    justify-content: flex-end;
+    display: flex;
+    flex-direction: column;
+
+    .list__container {
+      max-height: 100%;
+      height: auto;
+    }
+  }
+
+  &__appeared {
+    animation: listAppear .3s ease;
+    z-index: 1;
+  }
+
+  &__scrolled {
+    animation: listScrolled .3s ease;
+    z-index: 1;
+  }
+
+  &__removed {
+    position: absolute;
+    animation: listRemove .3s ease;
+  }
+
+  &__flipping {
+    transition: transform .3s ease;
+    z-index: 1;
+  }
+}
+
+.test {
+  background: #FFF;
+}
+
+@keyframes listAppear {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes listScrolled {
+  from {
+    transform: translateY(-100vh);
+  }
+}
+
+@keyframes listRemove {
+  to {
+    opacity: 0;
+  }
+}
