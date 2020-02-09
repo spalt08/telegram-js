@@ -263,7 +263,7 @@ class PeerIndex {
 /**
  * Stores chunks of messages history (in the descending order (new first)).
  */
-export default function messagesByPeers(collection: Collection<Message, any>) {
+export default function messageHistory(collection: Collection<Message, any>) {
   const peers = {} as Record<string, {
     index: PeerIndex,
     newestRef: IdsChunkReference,

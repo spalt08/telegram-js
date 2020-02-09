@@ -3,7 +3,7 @@ import client from 'client/client';
 import { Message, Peer, AnyUpdateMessage, AnyUpdateShortMessage } from 'cache/types';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
-import { MessagesChunkReference } from 'cache/fastStorages/indices/messagesByPeers';
+import { MessagesChunkReference } from 'cache/fastStorages/indices/messageHistory';
 import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage, shortChatMessageToMessage } from 'helpers/api';
 
 const enum Direction {
@@ -89,7 +89,7 @@ export default class MessagesService {
     this.focusedMessageId.next(undefined);
 
     if (peer) {
-      this.cacheChunkRef = messageCache.indices.peers.makeChunkReference(peer, Infinity);
+      this.cacheChunkRef = messageCache.indices.history.makeChunkReference(peer, Infinity);
       this.cacheChunkRef.history.subscribe(({ ids }) => this.history.next(ids));
       const { ids } = this.cacheChunkRef.history.value;
       if (ids.length < LOAD_CHUNK_LENGTH) {
@@ -229,6 +229,6 @@ export default class MessagesService {
       return;
     }
 
-    messageCache.indices.peers.putNewestMessage(message);
+    messageCache.indices.history.putNewestMessage(message);
   }
 }

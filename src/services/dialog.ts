@@ -19,7 +19,7 @@ export default class DialogsService {
       this.dialogs.next(dialogCache.indices.order.getIds());
     });
 
-    messageCache.indices.peers.newestMessages.subscribe(([peerId, messageId]) => {
+    messageCache.indices.history.newestMessages.subscribe(([peerId, messageId]) => {
       const dialog = dialogCache.get(peerId);
       if (!dialog) {
         return;
@@ -83,7 +83,7 @@ export default class DialogsService {
           userCache.put(data.users);
           chatCache.put(data.chats);
           messageCache.batchChanges(() => {
-            data.messages.forEach((message: Message) => messageCache.indices.peers.putNewestMessage(message));
+            data.messages.forEach((message: Message) => messageCache.indices.history.putNewestMessage(message));
           });
           messageCache.put(data.messages);
           dialogCache.put(data.dialogs);
