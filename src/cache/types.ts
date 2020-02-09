@@ -93,6 +93,7 @@ export type User = WithMin<{
   last_name: string,
   access_hash: string,
   photo: UserProfilePhoto,
+  deleted: boolean,
 }>;
 
 /**
