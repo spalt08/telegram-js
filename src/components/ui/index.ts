@@ -12,3 +12,5 @@ export { default as sectionSpinner } from './section_spinner/section_spinner';
 export { default as emoji } from './emoji/emoji';
 export { default as formattedMessage } from './formatted_message/formatted_message';
 export { default as svgBaloon } from './svg_baloon/svg_baloon';
+export { default as onlineStatus } from './online_status/online_status';
+export { default as infoListItem } from './info_list_item/info_list_item';

@@ -1,10 +1,9 @@
 import { div, text } from 'core/html';
-import { el } from 'core/dom';
 import { main } from 'services';
 import roundButton from 'components/ui/round_button/round_button';
 import { Peer } from 'cache/types';
 import { profileAvatar, profileTitle } from 'components/profile';
-import { onlineStatus } from 'components/ui/online_status/online_status';
+import { onlineStatus } from 'components/ui';
 import { close, edit, more } from '../../../../icons';
 import peerInfo from './peer_info';
 import './info_panel.scss';

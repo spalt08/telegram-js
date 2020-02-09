@@ -4,9 +4,9 @@ import { userCache, userFullCache } from 'cache';
 import { div, nothing } from 'core/html';
 import { useObservable } from 'core/hooks';
 import { info, username, phone } from 'components/icons';
-import './peer_info.scss';
 import { BehaviorSubject } from 'rxjs';
-import infoListItem from 'components/ui/info_list_item/info_list_item';
+import { infoListItem } from 'components/ui';
+import './peer_info.scss';
 
 export default function peerInfo(peer: Peer) {
   switch (peer._) {
