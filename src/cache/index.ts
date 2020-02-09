@@ -72,6 +72,7 @@ export const dialogCache = new Collection({
   },
 });
 
+export const mediaCache = new Dictionary<string, MessageMedia>();
 
 /**
  * File urls cache

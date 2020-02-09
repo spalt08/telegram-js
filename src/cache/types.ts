@@ -91,9 +91,11 @@ export type Dialog = {
 export type User = WithMin<{
   first_name: string,
   last_name: string,
+  username: string,
+  phone: string,
   access_hash: string,
   photo: UserProfilePhoto,
-  deleted: boolean,
+  status: UserStatus,
 }>;
 
 /**
@@ -107,6 +109,35 @@ export type UserProfilePhoto = {
   photo_small: FileLocation,
   photo_big: FileLocation,
   dc_id: number,
+};
+
+/**
+ * User status object
+ * Ref: https://core.telegram.org/type/UserStatus
+ */
+export type UserStatus = {
+  _: 'userStatusEmpty',
+} | {
+  _: 'userStatusOnline',
+  expires: number,
+} | {
+  _: 'userStatusOffline',
+  was_online: number,
+} | {
+  _: 'userStatusRecently',
+} | {
+  _: 'userStatusLastWeek',
+} | {
+  _: 'userStatusLastMonth',
+};
+
+/**
+ * Full user information
+ * Ref: https://core.telegram.org/constructor/userFull
+ */
+export type UserFull = {
+  user: User,
+  about: string,
 };
 
 /**
