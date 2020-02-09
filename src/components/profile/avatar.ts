@@ -5,17 +5,40 @@ import { getPeerPhotoInputLocation } from 'helpers/photo';
 import { unmount, mount } from 'core/dom';
 import media from 'client/media';
 import './avatar.scss';
+import { auth } from 'services';
+import { savedmessages, avatarDeletedaccount } from 'components/icons';
+import { userCache } from 'cache';
 
-export default function profileAvatar(peer: Peer, message?: Message) {
+function isMyself(peer: Peer) {
+  return peer._ === 'peerUser' && peer.user_id === auth.userID;
+}
+
+function isDeletedAccount(peer: Peer) {
+  return (peer._ === 'peerUser' && (userCache.get(peer.user_id)?.deleted ?? true));
+}
+
+export default function profileAvatar(peer: Peer, message?: Message, showSavedMessagesBadge = false) {
+  const me = isMyself(peer);
+  const deletedAccount = isDeletedAccount(peer);
   const container = div`.avatar`();
   const location = getPeerPhotoInputLocation(peer, message);
-  let defaultPicture: HTMLElement | undefined;
+  let defaultPicture: Element | undefined;
 
   const preview = (src: string | null) => {
     if (!src) {
-      defaultPicture = div`.avatar__standard${`color-${peerToColorCode(peer)}`}`(
-        text(peerToInitials(peer)),
-      );
+      if (me && showSavedMessagesBadge) {
+        defaultPicture = div`.avatar__predefined`(
+          savedmessages(),
+        );
+      } else if (deletedAccount) {
+        defaultPicture = div`.avatar__predefined`(
+          avatarDeletedaccount(),
+        );
+      } else {
+        defaultPicture = div`.avatar__standard${`color-${peerToColorCode(peer)}`}`(
+          text(peerToInitials(peer)),
+        );
+      }
 
       mount(container, defaultPicture);
     } else {
@@ -25,7 +48,7 @@ export default function profileAvatar(peer: Peer, message?: Message) {
   };
 
   // display default icon
-  if (!location) {
+  if (!location || me || deletedAccount) {
     preview(null);
     return container;
   }

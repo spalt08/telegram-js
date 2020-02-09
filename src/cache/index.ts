@@ -3,7 +3,7 @@ import Collection, { makeGetIdFromProp } from './fastStorages/collection';
 import Dictionary from './fastStorages/dictionary';
 import { Chat, Dialog, Message, User, MessageMedia } from './types';
 import { orderBy } from './fastStorages/indices';
-import messagesByPeers from './fastStorages/indices/messagesByPeers';
+import messageHistory from './fastStorages/indices/messageHistory';
 
 // todo: Save the main part of the cache to a persistent storage
 
@@ -24,7 +24,7 @@ export const chatCache = new Collection<Chat, {}, number>({
 });
 
 const messageCacheIndices = {
-  peers: messagesByPeers,
+  history: messageHistory,
 };
 
 /**

@@ -6,11 +6,13 @@ import './status.scss';
 
 export default function status() {
   let isDisplayed = true;
+  let timer: ReturnType<typeof setTimeout>;
   const label = text('Connecting...');
+  const spinner = materialSpinner({ className: 'network-status__loader' });
 
-  const element = div`.network-status`(
+  const element = div`.network-status .hidden`(
     div`.network-status__container`(
-      materialSpinner({ className: 'network-status__loader' }),
+      spinner,
       label,
     ),
   );
@@ -19,6 +21,9 @@ export default function status() {
     if (state === 'connected' && isDisplayed === true) {
       element.classList.add('hidden');
       isDisplayed = false;
+      timer = setTimeout(() => {
+        spinner.style.display = 'none';
+      }, 1000);
     }
 
     if (state === 'waiting') {
@@ -32,6 +37,8 @@ export default function status() {
     if (isDisplayed === false && (state === 'waiting' || state === 'disconnected')) {
       element.classList.remove('hidden');
       isDisplayed = true;
+      clearTimeout(timer);
+      spinner.style.display = '';
     }
   });
 

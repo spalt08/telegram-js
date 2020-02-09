@@ -1,12 +1,12 @@
 /* eslint-disable no-restricted-globals */
 
-import { Client, TypeLanguage, ClientError, TLConstructor } from '../../packages/mtproto-js/src';
+import { inflate } from 'pako/lib/inflate';
+import { Client, TypeLanguage, TLConstructor } from '../../packages/mtproto-js/src';
 import { API_ID, API_HASH, APP_VERSION } from '../const/api';
-import { WorkerMessage } from './worker.types';
+import { WorkerMessage, ClientError } from './worker.types';
 import { UploadFile } from '../cache/types';
 import { typeToMime, hexToBlob } from '../helpers/files';
 import schema from './layer105.json';
-
 
 /**
  * Vars
@@ -59,7 +59,7 @@ function downloadFilePart(
 
     // todo handling errors
     if (err) {
-      console.log(err);
+      throw new Error(JSON.stringify(err));
       return;
     }
 
@@ -192,6 +192,10 @@ function process(message: WorkerMessage) {
       break;
     }
 
+    case 'ungzip': {
+      resolve(id, type, inflate(payload, { to: 'string' }));
+      break;
+    }
 
     default: {
       throw new Error(`Unknown task: ${type}`);

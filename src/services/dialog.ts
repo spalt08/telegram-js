@@ -2,6 +2,7 @@ import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { userCache, chatCache, messageCache, dialogCache } from 'cache';
 import { peerMessageToId } from 'helpers/api';
+import { Message } from 'cache/types';
 
 /**
  * Singleton service class for handling auth flow
@@ -18,24 +19,19 @@ export default class DialogsService {
       this.dialogs.next(dialogCache.indices.order.getIds());
     });
 
-    messageCache.indices.peers.historyChanges.subscribe(([peerId, messageIds]) => {
-      const topMessageNumId = messageIds[0];
-      if (!topMessageNumId) {
-        return;
-      }
-
+    messageCache.indices.history.newestMessages.subscribe(([peerId, messageId]) => {
       const dialog = dialogCache.get(peerId);
       if (!dialog) {
         return;
       }
 
-      if (dialog.top_message === topMessageNumId) {
+      if (dialog.top_message === messageId) {
         return;
       }
 
       dialogCache.put({
         ...dialog,
-        top_message: topMessageNumId,
+        top_message: messageId,
       });
     });
   }
@@ -86,8 +82,9 @@ export default class DialogsService {
 
           userCache.put(data.users);
           chatCache.put(data.chats);
-          // Not used because list can't handle it properly
-          // data.messages.forEach((message: Message) => messageCache.indices.peers.putHistoryMessages([message]));
+          messageCache.batchChanges(() => {
+            data.messages.forEach((message: Message) => messageCache.indices.history.putNewestMessage(message));
+          });
           messageCache.put(data.messages);
           dialogCache.put(data.dialogs);
         }

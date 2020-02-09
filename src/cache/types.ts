@@ -96,7 +96,6 @@ export type User = WithMin<{
   access_hash: string,
   photo: UserProfilePhoto,
   status: UserStatus,
-  info?: UserFull,
 }>;
 
 /**
@@ -199,44 +198,19 @@ export type MessageMedia = {
  * MessageEntity object
  * Ref: https://core.telegram.org/type/MessageEntity
  */
-export type MessageEntity = (
-  {
-    _: 'messageEntityUnknown',
-  } | {
-    _: 'messageEntityMention',
-  } | {
-    _: 'messageEntityHashtag',
-  } | {
-    _: 'messageEntityBotCommand',
-  } | {
-    _: 'messageEntityUrl',
-  } | {
-    _: 'messageEntityEmail',
-  } | {
-    _: 'messageEntityBold',
-  } | {
-    _: 'messageEntityItalic',
-  } | {
-    _: 'messageEntityCode',
-  } | {
-    _: 'messageEntityPre',
-  } | {
-    _: 'messageEntityTextUrl',
-    url: string,
-  } | {
-    _: 'messageEntityMentionName',
-    user_id: number,
-  } | {
-    _: 'messageEntityPhone',
-  } | {
-    _: 'messageEntityCashtag',
-  } | {
-    _: 'messageEntityUnderline',
-  } | {
-    _: 'messageEntityStrike',
-  } | {
-    _: 'messageEntityBlockquote',
-  }) & {
+export type MessageEntity = ({
+  _: 'messageEntityUnknown' | 'messageEntityMention' | 'messageEntityHashtag' | 'messageEntityBotCommand'
+  | 'messageEntityUrl' | 'messageEntityEmail' | 'messageEntityBold' | 'messageEntityItalic' | 'messageEntityCode'
+  | 'messageEntityPre';
+} | {
+  _: 'messageEntityTextUrl',
+  url: string,
+} | {
+  _: 'messageEntityMentionName',
+  user_id: number,
+} | {
+  _: 'messageEntityPhone' | 'messageEntityCashtag' | 'messageEntityUnderline' | 'messageEntityStrike' | 'messageEntityBlockquote',
+}) & {
   offset: number,
   length: number,
 };
@@ -455,4 +429,18 @@ export type DocumentAttribute = DocumentAttributeSticker;
 export type DocumentAttributeSticker = {
   _: 'documentAttributeSticker',
   alt: string,
+};
+
+/**
+ * Ref: https://core.telegram.org/type/MessagesFilter
+ */
+export type MessageFilter = {
+  _: 'inputMessagesFilterEmpty' | 'inputMessagesFilterPhotos' | 'inputMessagesFilterVideo'
+  | 'inputMessagesFilterPhotoVideo' | 'inputMessagesFilterDocument' | 'inputMessagesFilterUrl'
+  | 'inputMessagesFilterGif' | 'inputMessagesFilterVoice' | 'inputMessagesFilterMusic' | 'inputMessagesFilterChatPhotos'
+  | 'inputMessagesFilterRoundVoice' | 'inputMessagesFilterRoundVideo' | 'inputMessagesFilterMyMentions'
+  | 'inputMessagesFilterGeo' | 'inputMessagesFilterContacts';
+} | {
+  _: 'inputMessagesFilterPhoneCalls';
+  missed: boolean;
 };

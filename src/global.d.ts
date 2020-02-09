@@ -1,5 +1,7 @@
-declare module '.scss';
-declare module '.css';
+declare module 'aes-js'
+
+declare module '.scss'
+declare module '.css'
 
 declare module '*.svg' {
   const src: string;

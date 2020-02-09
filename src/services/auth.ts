@@ -84,7 +84,6 @@ export default class AuthService {
 
     client.call('auth.sendCode', payload, (err, result) => {
       if (err && err.type === 'network') {
-        console.log(err);
         if (err.message && (err.message.indexOf('400') || err.code === 1006)) {
           client.svc.meta = {};
         }
@@ -265,7 +264,7 @@ export default class AuthService {
   }
 
   setProfilePhoto() {
-    if (!this.profilePhoto) return;
+    // if (!this.profilePhoto) return;
 
     // file.uploadFile(this.profilePhoto, (id, parts) => {
     //   if (parts === 0) return;

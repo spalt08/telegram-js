@@ -60,7 +60,9 @@ export default function mediaPhoto(photo: Photo, message: MessageCommon) {
     );
 
     listen(preview, 'click', () => {
-      const rect = preview?.getBoundingClientRect();
+      if (!preview) return;
+
+      const rect = preview.getBoundingClientRect();
       main.showPopup('photo', { rect, photo, message });
     });
 

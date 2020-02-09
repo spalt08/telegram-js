@@ -13,6 +13,9 @@
       flex: none;
     }
 
+    &:last-child {
+      padding-bottom: 10px;
+    }
   }
 
   &.reversed {

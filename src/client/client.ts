@@ -1,15 +1,6 @@
 import ClientWorker from './worker';
-import { WorkerMessage } from './worker.types';
+import { WorkerMessage, ClientError } from './worker.types';
 import { InputFileLocation } from '../cache/types';
-
-/**
- * Request error
- */
-export type ClientError = {
-  type: 'rpc' | 'network' | 'transport' | 'internal';
-  code: number,
-  message?: string,
-};
 
 /**
  * Worker callbacks

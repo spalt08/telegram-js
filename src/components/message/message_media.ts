@@ -1,6 +1,5 @@
 import { MessageMedia, MessageCommon } from 'cache/types';
 import mediaPhoto from './media/photo';
-import mediaAnimatedSticker from './media/sticker_animated';
 import mediaSticker from './media/sticker';
 import './message_media.scss';
 
@@ -10,15 +9,7 @@ export default function messageMedia(media: MessageMedia, message: MessageCommon
       return mediaPhoto(media.photo, message);
 
     case 'messageMediaDocument':
-      if (media.document.mime_type === 'application/x-tgsticker') {
-        return mediaAnimatedSticker(media.document);
-      }
-
-      if (media.document.mime_type === 'image/webp') {
-        return mediaSticker(media.document);
-      }
-
-      break;
+      return mediaSticker(media.document);
 
     default:
       return null;
