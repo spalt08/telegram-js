@@ -19,8 +19,9 @@ export default function emojiPanel() {
   const categoryList = new VirtualizedList({
     className: 'emoji-panel__content',
     items: categories,
+    compare: (a: string, b: string) => categories.indexOf(a) > categories.indexOf(b),
     renderer: (key: string) => emojiCategory(key),
-    batch: 9,
+    batch: 1,
     threshold: 1,
   });
 

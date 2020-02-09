@@ -15,6 +15,7 @@ type Props = {
   verticalPadding?: number,
   batch?: number,
   scrollBatch?: number,
+  compare?: (left: string, right: string) => boolean,
   onReachTop?: () => void,
   onReachBottom?: () => void,
 };
@@ -25,6 +26,13 @@ type LocalPosition = {
 };
 
 const ease = (t: number) => t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+
+const arr_contains = (a: readonly string[], b: readonly string[]): boolean => {
+  for (let i = 0; i < b.length; ++i) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+};
 
 /**
  * Scrollable virtualized list with flip animations
@@ -57,6 +65,7 @@ export class VirtualizedList {
     pivotBottom: boolean,
     threshold: number,
     scrollBatch?: number,
+    compare?: (left: string, right: string) => boolean,
     onReachTop?: () => void,
     onReachBottom?: () => void,
   };
@@ -96,6 +105,7 @@ export class VirtualizedList {
     className,
     items,
     renderer,
+    compare,
     threshold = 1,
     batch = 20,
     scrollBatch = batch,
@@ -113,6 +123,7 @@ export class VirtualizedList {
       scrollBatch,
       pivotBottom,
       threshold,
+      compare,
       onReachTop,
       onReachBottom,
     };
@@ -218,16 +229,35 @@ export class VirtualizedList {
     const focusedIndex = this.focused ? next.indexOf(this.focused) : -1;
 
     if (focusedIndex !== -1) {
-      // todo
+      // todo handle changes
       this.updateData(next);
+      this.virtualize();
+      return;
+    }
+
+    // pass if nothing is rendered
+    if (this.current.length === 0 || this.last < this.first) {
+      this.updateData(next);
+      this.virtualize();
       return;
     }
 
     // fallback if no changes
-    if (this.current === next) return;
+    if (this.current.length === next.length && arr_contains(this.current, next)) {
+      this.virtualize();
+      return;
+    }
 
-    // pass if nothing is rendered
-    if (this.current.length === 0 || this.last < this.first) {
+    // fallback if current data is a part of next (lazy load)
+    if (this.cfg.pivotBottom === false && arr_contains(next, this.current)) {
+      this.updateData(next);
+      this.virtualize();
+      return;
+    }
+
+    if (this.cfg.pivotBottom === true && arr_contains(next.slice(-this.current.length), this.current)) {
+      this.first = this.first + next.length - this.current.length;
+      this.last = this.last + next.length - this.current.length;
       this.updateData(next);
       this.virtualize();
       return;
@@ -260,6 +290,8 @@ export class VirtualizedList {
       this.virtualize();
       return;
     }
+
+    console.log('from', this.first, this.last, `${this.current.length}`, 'to', nextFirst, nextLast, `${next.length}`);
 
     this.lock();
 
@@ -565,8 +597,9 @@ export class VirtualizedList {
         requestAnimationFrame(animateScroll);
       } else {
         this.scrollTop = this.container.scrollTop;
-        this.unlock();
         elm.classList.remove('focused');
+        this.unlock();
+        this.virtualize();
       }
     };
 
