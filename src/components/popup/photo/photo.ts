@@ -27,7 +27,7 @@ export default function photoPopup({ rect, photo, message }: Props) {
   const src = media.cached(location);
 
   const closeEl = close({ className: 'photofull_close' });
-  const image = img`.photofull_photo`({ src });
+  const image = img`.photofull_photo`({ src, style: { opacity: '0' }});
   const header = div`.photofull_header`(
     div`.photofull_author`(
       profileAvatar({ _: 'peerUser', user_id: message.from_id }),
@@ -67,7 +67,7 @@ export default function photoPopup({ rect, photo, message }: Props) {
     requestAnimationFrame(() => {
       image.classList.add('transition');
       image.style.transform = '';
-      image.style.opacity = '1';
+      image.style.opacity = '';
     });
   });
 
