@@ -15,9 +15,9 @@
   }
 
   &__items {
-    display: flex;
-    justify-content: flex-start;
-    flex-wrap: wrap;
+    display: grid;
+    justify-content: space-between;
+    grid-template-columns: 20% 20% 20% 20% 20%;
   }
 
   &__item {
