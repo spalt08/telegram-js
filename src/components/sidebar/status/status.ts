@@ -38,7 +38,7 @@ export default function status() {
       element.classList.remove('hidden');
       isDisplayed = true;
       clearTimeout(timer);
-      spinner.style.removeProperty('display');
+      spinner.style.display = '';
     }
   });
 
