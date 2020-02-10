@@ -27,6 +27,4 @@ const router = new Router({
 mount(document.body, router.element);
 mount(document.body, popup());
 
-// todo: Check in IE 11 and add required polyfills
-// todo: Fix SVGs in IE
 // todo: Check that the app works from a subdirectory

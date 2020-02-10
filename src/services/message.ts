@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
-import { Message, Peer, AnyUpdateMessage, AnyUpdateShortMessage } from 'cache/types';
+import { Message, Peer, AnyUpdateMessage, AnyUpdateShortMessage, Messages, MessagesNotModified } from 'cache/types';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import { MessagesChunkReference } from 'cache/fastStorages/indices/messageHistory';
@@ -59,7 +59,6 @@ export default class MessagesService {
     });
 
     client.updates.on('updateDeleteMessages', (update: any) => {
-      // console.log('updateDeleteMessage', update);
       update.messages.forEach((messageId: number) => messageCache.remove(getUserMessageId(messageId)));
     });
 
@@ -160,13 +159,12 @@ export default class MessagesService {
     }
 
     // console.log('loadMessages - request', payload);
-    client.call('messages.getHistory', payload, (_err: any, res: any) => {
+    client.call('messages.getHistory', payload, (_err: any, data?: Exclude<Messages, MessagesNotModified>) => {
       // Another peer or chunk is loading at the moment
       const isLoadedChunkActual = chunkRef === this.cacheChunkRef;
 
       try {
-        if (res) {
-          const data = res;
+        if (data) {
           // console.log('loadMessages - response', data);
 
           userCache.put(data.users);
