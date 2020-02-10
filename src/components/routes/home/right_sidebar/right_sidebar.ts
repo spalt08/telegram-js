@@ -1,25 +1,29 @@
 import { div } from 'core/html';
-import { mount, unmount } from 'core/dom';
-import { message as service } from 'services';
+import { mount, unmountChildren } from 'core/dom';
+import { message, main, RightSidebarPanel } from 'services';
 import { useObservable, useInterface } from 'core/hooks';
+import { combineLatest } from 'rxjs';
 import infoPanel from './panels/info_panel';
+import searchPanel from './panels/search_panel';
 import './right_sidebar.scss';
-import mediaPanel from './panels/media_panel';
 
 export default function rightSidebar() {
-  const container = div`.right_sidebar`();
+  const container = div`.rightSidebar`();
 
-  let info: Node;
-  let media: Node;
+  const sidebarSubject = combineLatest(main.rightSidebarPanel, message.activePeer);
 
-  useObservable(container, service.activePeer, (peer) => {
-    if (info) unmount(info);
-    if (media) unmount(media);
-    if (peer) {
-      info = infoPanel(peer);
-      media = mediaPanel(peer);
-      mount(container, info);
-      mount(container, media);
+  useObservable(container, sidebarSubject, ([panel, peer]) => {
+    unmountChildren(container);
+    if (panel !== RightSidebarPanel.None && peer) {
+      switch (panel) {
+        case RightSidebarPanel.Info:
+          mount(container, infoPanel(peer));
+          break;
+        case RightSidebarPanel.Search:
+          mount(container, searchPanel(peer));
+          break;
+        default:
+      }
     }
   });
 

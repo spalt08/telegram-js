@@ -1,8 +1,8 @@
 import { div, text } from 'core/html';
 import { MaybeObservable } from 'core/types';
 import { useMaybeObservable } from 'core/hooks';
-import './info_list_item.scss';
 import ripple from '../ripple/ripple';
+import './info_list_item.scss';
 
 export default function infoListItem(icon: SVGSVGElement, label: string, value: MaybeObservable<string>) {
   const container = div`.infoListItem.hidden`(

@@ -5,9 +5,9 @@ import './round_button.scss';
 /**
  * Basic button
  */
-export default function roundButton({ className = '', onClick = () => { } }, child: Node) {
+export default function roundButton({ className = '', onClick = () => { }, disabled = false }, child: Node) {
   const element = (
-    ripple({ tag: 'button', className: `roundButton ${className}` }, [child])
+    ripple({ tag: 'button', className: `roundButton ${className}`, disabled }, [child])
   );
 
   listen(element, 'click', onClick);

@@ -1,6 +1,6 @@
 import { div } from 'core/html';
 import { useObservable, getInterface } from 'core/hooks';
-import { main } from 'services';
+import { main, RightSidebarPanel } from 'services';
 import messages from './messages';
 import dialogs from './dialogs';
 import menu from './menu/menu';
@@ -27,10 +27,10 @@ export default function home() {
 
   const width = 360;
 
-  useObservable(rightSidebarElement, main.rightSidebarVisibility, (visible) => {
+  useObservable(rightSidebarElement, main.rightSidebarPanel, (panel) => {
     getInterface(rightSidebarElement).setWidth(width);
-    rightSidebarWrapper.style.flexBasis = `${visible ? width : 0}px`;
-    rightSidebarWrapper.classList.toggle('visible', visible);
+    rightSidebarWrapper.style.flexBasis = `${panel ? width : 0}px`;
+    rightSidebarWrapper.classList.toggle('visible', panel !== RightSidebarPanel.None);
   });
 
   return container;

@@ -2,6 +2,12 @@ import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { Photo, Message } from 'cache/types';
 
+export enum RightSidebarPanel {
+  None,
+  Info,
+  Search
+}
+
 /**
  * Singleton service class for handling main thread
  */
@@ -13,8 +19,7 @@ export default class MainService {
   popup = new BehaviorSubject('');
 
   /** State of sidebar visibility */
-  private isRightSidebarVisible = false;
-  rightSidebarVisibility = new BehaviorSubject(false);
+  rightSidebarPanel = new BehaviorSubject(RightSidebarPanel.None);
 
   /** Popup Context */
   popupCtx: any = {};
@@ -31,8 +36,7 @@ export default class MainService {
     this.popup.next(type);
   }
 
-  toggleRightSidebar() {
-    this.isRightSidebarVisible = !this.isRightSidebarVisible;
-    this.rightSidebarVisibility.next(this.isRightSidebarVisible)
+  setRightSidebarPanel(panel: RightSidebarPanel) {
+    this.rightSidebarPanel.next(panel);
   }
 }

@@ -1,11 +1,11 @@
-import { message, main } from 'services';
+import { message, main, RightSidebarPanel } from 'services';
 import { useObservable } from 'core/hooks';
 import { div } from 'core/html';
 import { unmountChildren, mount } from 'core/dom';
 import { profileAvatar } from 'components/profile';
 import './header.scss';
 import roundButton from 'components/ui/round_button/round_button';
-import { more } from 'components/icons';
+import { more, search } from 'components/icons';
 import { onlineStatus } from 'components/ui';
 import peerTitle from '../dialog/peer_title';
 
@@ -30,7 +30,12 @@ export default function header() {
     const actions = div`.header__actions`(
       roundButton({
         onClick: () => {
-          main.toggleRightSidebar();
+          main.setRightSidebarPanel(RightSidebarPanel.Search);
+        },
+      }, search()),
+      roundButton({
+        onClick: () => {
+          main.setRightSidebarPanel(RightSidebarPanel.Info);
         },
       }, more()),
     );

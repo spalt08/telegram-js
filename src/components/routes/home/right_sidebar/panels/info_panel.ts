@@ -1,5 +1,6 @@
 import { div, text } from 'core/html';
 import { main } from 'services';
+import { RightSidebarPanel } from 'services/main';
 import roundButton from 'components/ui/round_button/round_button';
 import { Peer } from 'cache/types';
 import { profileAvatar, profileTitle } from 'components/profile';
@@ -9,20 +10,16 @@ import peerInfo from './peer_info';
 import './info_panel.scss';
 
 export default function infoPanel(peer: Peer) {
-  function closeSidebar() {
-    main.toggleRightSidebar();
-  }
-
   return (
-    div`.info_panel`(
-      div`.info_panel__header`(
-        roundButton({ className: 'header_button close_button', onClick: closeSidebar }, close()),
-        div`.info_panel__title`(text('Info')),
-        roundButton({}, edit()),
-        roundButton({}, more())),
-      div`.info_panel__avatar`(profileAvatar(peer)),
-      div`.info_panel__name`(profileTitle(peer)),
-      div`.info_panel__status`(onlineStatus(peer)),
+    div`.infoPanel`(
+      div`.infoPanel__header`(
+        roundButton({ className: 'header_button close_button', onClick: () => main.setRightSidebarPanel(RightSidebarPanel.None) }, close()),
+        div`.infoPanel__title`(text('Info')),
+        roundButton({ disabled: true }, edit()),
+        roundButton({ disabled: true }, more())),
+      div`.infoPanel__avatar`(profileAvatar(peer)),
+      div`.infoPanel__name`(profileTitle(peer)),
+      div`.infoPanel__status`(onlineStatus(peer)),
       peerInfo(peer))
   );
 }

@@ -5,6 +5,8 @@ import MainService from './main';
 import MediaService from './media';
 import UserService from './user';
 
+export { RightSidebarPanel } from './main';
+
 export const main = new MainService();
 export const auth = new AuthService();
 export const message = new MessageService();
