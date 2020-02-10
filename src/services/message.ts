@@ -59,7 +59,6 @@ export default class MessagesService {
     });
 
     client.updates.on('updateDeleteMessages', (update: any) => {
-      // console.log('updateDeleteMessage', update);
       update.messages.forEach((messageId: number) => messageCache.remove(getUserMessageId(messageId)));
     });
 
