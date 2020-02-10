@@ -70,6 +70,13 @@ export default class MessagesService {
         peerMessageToId({ _: 'peerChannel', channel_id: update.channel_id }, messageId),
       ));
     });
+
+    client.updates.on('updateUserStatus', (update: any) => {
+      const user = userCache.get(update.user_id);
+      if (user) {
+        userCache.put({ ...user, status: update.status });
+      }
+    });
   }
 
   selectPeer(peer: Peer | null) {
