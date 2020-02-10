@@ -292,6 +292,7 @@ export default class MessagesService {
     };
 
     client.call('messages.sendMessage', params, (err, result) => {
+      console.log('After sending', err, result);
       if (err) {
         // todo handling errors
       }
@@ -305,7 +306,6 @@ export default class MessagesService {
         delete this.pendingMessages[randId];
       }
 
-      console.log('After sending', err, result);
     });
   };
 
