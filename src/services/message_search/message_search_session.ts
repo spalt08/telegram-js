@@ -51,7 +51,7 @@ function makeSearchRequest(
   const filter: MessageFilter = { _: 'inputMessagesFilterEmpty' };
   const parameters = {
     peer: peerToInputPeer(peer),
-    q: request,
+    q: request, // The server doesn't treat it as expected. Todo: find out how to use this parameter.
     from_id: 0,
     filter,
     min_date: 0,

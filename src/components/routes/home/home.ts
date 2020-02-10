@@ -2,6 +2,7 @@ import { div } from 'core/html';
 import messages from './messages';
 import dialogs from './dialogs';
 import menu from './menu/menu';
+import messagesSearch from './messages_search/messages_search';
 import './home.scss';
 
 /**
@@ -16,6 +17,9 @@ export default function home() {
       ),
       div`.home__content`(
         messages(),
+      ),
+      div`.home__temp-right`(
+        messagesSearch(),
       ),
     )
   );

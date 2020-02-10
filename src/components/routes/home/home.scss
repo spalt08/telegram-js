@@ -87,4 +87,14 @@
       }
     }
   }
+
+  &__temp-right {
+    // todo: Replace it with a proper right sidebar implementation
+    display: flex;
+    flex-direction: column;
+    width: 420px;
+    max-width: 25%;
+    background: #fff;
+    border-left: 1px solid #dadce0;
+  }
 }

@@ -1,0 +1,17 @@
+.messagesSearch {
+  flex: auto;
+  display: flex;
+  flex-direction: column;
+
+  &__header {
+    flex: none;
+    height: 62px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+  }
+
+  &__input {
+    flex: auto;
+  }
+}
