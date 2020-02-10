@@ -5,7 +5,7 @@ import { Peer } from 'cache/types';
 import { close } from '../../../../icons';
 import './search_panel.scss';
 
-export default function searchPanel(peer: Peer) {
+export default function searchPanel(_peer: Peer) {
   return (
     div`.searchPanel`(
       div`.searchPanel__header`(
