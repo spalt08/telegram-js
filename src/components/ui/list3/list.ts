@@ -438,7 +438,7 @@ export class VirtualizedList {
     let skipNext = false;
 
     // render initial elements, first min(batch, current.length) elements
-    if (this.last - this.first <= 0 && this.last !== 0) {
+    if (this.last - this.first < 0) {
       this.updateViewport();
 
       const count = Math.min(this.cfg.batch, this.current.length);
@@ -532,7 +532,6 @@ export class VirtualizedList {
       this.scrollTop -= deltaHeight;
       this.container.scrollTop = this.scrollTop;
       this.forceScrollTopChange = true;
-      console.log('was removed after', this.container.scrollTop, this.scrollTop);
     }
 
     this.unlock();
