@@ -124,7 +124,7 @@ export default class Dictionary<TKey extends keyof any, TItem> {
    * Makes a behavior subject that is updated only while the element is mounted for an item with the given key.
    * This subject can be subscribed on directly without memory leaks concerns.
    */
-  public useItemBehaviorSubject(base: unknown, key: TKey): BehaviorSubject<Readonly<TItem> | undefined> {
+  public useItemBehaviorSubject(base: Node, key: TKey): BehaviorSubject<Readonly<TItem> | undefined> {
     const subject = new BehaviorSubject(this.get(key));
     useWhileMounted(base, () => {
       subject.next(this.get(key));

@@ -17,13 +17,13 @@ export default function messageTextarea({ onSend }: Props) {
   let nextHeight = height;
   let frameNumber: number | undefined;
 
-  console.log(element.selectionEnd);
-
   listen(element, 'keypress', (event: KeyboardEvent) => {
     if (event.keyCode === KeyboardKeys.ENTER) {
       event.preventDefault();
       onSend(element.value.trim());
       element.value = '';
+      element.style.transition = '';
+      element.style.height = '';
     }
   });
 
