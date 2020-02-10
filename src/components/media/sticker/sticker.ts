@@ -1,6 +1,6 @@
 import { div, img } from 'core/html';
 import { Document } from 'cache/types';
-import { mount, listenOnce, unmount } from 'core/dom';
+import { mount, listenOnce, unmount, listen } from 'core/dom';
 import { getThumbnail } from 'helpers/photo';
 import { getDocumentLocation } from 'helpers/files';
 import media from 'client/media';
@@ -10,9 +10,10 @@ import './sticker.scss';
 type StickerOptions = {
   size: string,
   autoplay: boolean,
+  onClick?: (sticker: Document) => void,
 };
 
-export default function stickerRenderer(sticker: Document, { size = '200px', autoplay = true }: StickerOptions) {
+export default function stickerRenderer(sticker: Document, { size = '200px', autoplay = true, onClick }: StickerOptions) {
   const container = div`.sticker`({ style: { width: size, height: size } });
   let thumbnail: HTMLElement | undefined;
 
@@ -61,6 +62,8 @@ export default function stickerRenderer(sticker: Document, { size = '200px', aut
 
     media.get(location, render, sticker.dc_id, sticker.mime_type);
   }
+
+  if (onClick) listen(container, 'click', () => onClick(sticker));
 
   return container;
 }

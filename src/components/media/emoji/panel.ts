@@ -16,7 +16,7 @@ const categoryIcons: Record<string, SVGSVGElement> = {
   flags: flag(),
 };
 
-export default function emojiPanel() {
+export default function emojiPanel(onSelect?: (emoji: string) => void) {
   let active: string = '';
 
   const onFocus = (nextActive: string) => {
@@ -30,7 +30,7 @@ export default function emojiPanel() {
   const categoryList = new VirtualizedList({
     className: 'emoji-panel__content',
     items: categories,
-    renderer: (key: string) => emojiCategory(key),
+    renderer: (key: string) => emojiCategory(key, onSelect),
     batch: 2,
     threshold: 1,
     onFocus,

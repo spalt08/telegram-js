@@ -7,7 +7,7 @@ import { Document } from 'cache/types';
 import stickerSet from './set';
 import './panel.scss';
 
-export default function stickerPanel() {
+export default function stickerPanel(onSelect?: (sticker: Document) => void) {
   const loader = materialSpinner({ className: 'sticker-panel__loader' });
   const container = (
     div`.sticker-panel`(
@@ -22,7 +22,7 @@ export default function stickerPanel() {
     if (stickers.length > 0 && !isLoaded) {
       unmount(loader);
       mount(container, div`.sticker-panel__content`(
-        stickerSet('Recent', stickers),
+        stickerSet('Recent', stickers, onSelect),
       ));
       isLoaded = true;
     }

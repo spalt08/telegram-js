@@ -19,14 +19,14 @@ export const categories = Object.keys(titles);
 /**
  * Emoji category
  */
-export default function emojiCategory(key: string) {
+export default function emojiCategory(key: string, onSelect?: (emoji: string) => void) {
   if (!categoryItems[key]) throw new Error(`Unknown emoji category: ${key}`);
 
   return (
     div`.emoji-category`(
       div`.emoji-category__title`(text(titles[key])),
       div`.emoji-category__items`(
-        ...categoryItems[key].map((emojiCode: string) => div`.emoji-category__item`(emoji(emojiCode))),
+        ...categoryItems[key].map((emojiCode: string) => div`.emoji-category__item`(emoji(emojiCode, onSelect))),
       ),
     )
   );

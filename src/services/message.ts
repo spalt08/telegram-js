@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
-import { Message, Peer, AnyUpdateMessage, AnyUpdateShortMessage, Messages, MessagesNotModified, MessageCommon } from 'cache/types';
+import { Message, Peer, AnyUpdateMessage, AnyUpdateShortMessage, Messages, MessagesNotModified, MessageCommon, MessageMedia } from 'cache/types';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import { MessagesChunkReference } from 'cache/fastStorages/indices/messageHistory';
@@ -303,6 +303,26 @@ export default class MessagesService {
 
         messageCache.indices.history.putNewestMessage(this.pendingMessages[randId]);
         delete this.pendingMessages[randId];
+      }
+
+      console.log('After sending', err, result);
+    });
+  };
+
+  sendMediaMessage = (inputMedia: any) => {
+    if (!this.activePeer.value) return;
+
+    const randId = Math.ceil(Math.random() * 0xFFFFFF).toString(16) + Math.ceil(Math.random() * 0xFFFFFF).toString(16);
+    const params = {
+      peer: peerToInputPeer(this.activePeer.value),
+      message: '',
+      media: inputMedia,
+      random_id: randId,
+    };
+
+    client.call('messages.sendMedia', params, (err, result) => {
+      if (err) {
+        // todo handling errors
       }
 
       console.log('After sending', err, result);
