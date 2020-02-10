@@ -1,0 +1,25 @@
+
+textarea.message-text {
+  appearance: none;
+  border: none;
+  font-family: 'Roboto';
+  font-size: 15PX;
+  background: #FFFFFF;
+  margin: 16px 0;
+  box-sizing: border-box;
+  padding: 0;
+  outline: none;
+  flex: 1 50%;
+  height: 20PX;
+  line-height: 20PX;
+  resize: none;
+  overflow: hidden;
+
+  &:active {
+    outline: none;
+  }
+
+  &::placeholder {
+    color: #a4aeb5;
+  }
+}

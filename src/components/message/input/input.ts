@@ -1,12 +1,15 @@
-import { div, input } from 'core/html';
+import { div } from 'core/html';
 import { mount, listen } from 'core/dom';
-import { smile } from 'components/icons';
+import { smile, attach } from 'components/icons';
 import stickMojiPanel from './input_stickmoji';
+import messageTextarea from './input_textarea';
+import { message } from 'services';
 import './input.scss';
 
 export default function messageInput() {
   const element = div`.msginput`();
   const emojiIcon = div`.msginput__emoji`(smile());
+  const attchIcon = div`.msginput__attach`(attach());
   const stickmojiPanelEl = stickMojiPanel();
 
   const container = div`.msginput__container`(
@@ -14,8 +17,8 @@ export default function messageInput() {
       stickmojiPanelEl,
       div`.msginput__bubble`(
         emojiIcon,
-        input({ placeholder: 'Message', disabled: true }),
-        div`.msginput__icon_attach`(),
+        messageTextarea({ onSend: message.sendMessage }),
+        attchIcon,
       ),
     ),
     div`.msginput__btn`(),

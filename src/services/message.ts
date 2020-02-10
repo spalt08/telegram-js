@@ -231,4 +231,19 @@ export default class MessagesService {
 
     messageCache.indices.history.putNewestMessage(message);
   }
+
+  sendMessage = (message: string) => {
+    if (!this.activePeer.value) return;
+
+    const randId = Math.ceil(Math.random() * 0xFFFFFF).toString(16) + Math.ceil(Math.random() * 0xFFFFFF).toString(16);
+    const params = {
+      peer: peerToInputPeer(this.activePeer.value),
+      message,
+      random_id: randId,
+    };
+
+    client.call('messages.sendMessage', params, (err, result) => {
+      console.log('After sending', err, result);
+    });
+  };
 }
