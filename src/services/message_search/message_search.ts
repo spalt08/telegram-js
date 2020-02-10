@@ -5,11 +5,11 @@ import makeSearchSession, {
   SearchResult,
   SearchRequest,
   emptySearchResult,
-} from './dialog_search_session';
+} from './message_search_session';
 import MessagesService from '../message';
 import { Peer } from '../../cache/types';
 
-export default class DialogSearchService {
+export default class MessageSearchService {
   public readonly result = new BehaviorSubject<SearchResult>(emptySearchResult);
 
   public readonly isSearching = new BehaviorSubject(false);
