@@ -413,3 +413,34 @@ export type MessageFilter = {
   _: 'inputMessagesFilterPhoneCalls';
   missed: boolean;
 };
+
+/**
+ * Ref: https://core.telegram.org/constructor/messages.messagesNotModified
+ */
+export type MessagesNotModified = {
+  _: 'messages.messagesNotModified',
+  count: number,
+};
+
+/**
+ * Ref: https://core.telegram.org/type/messages.Messages
+ */
+export type Messages = ({
+  // You get it when the whole messages list fits to the single response
+  _: 'messages.messages',
+} | {
+  // You get it when there are more messages to paginate
+  _: 'messages.messagesSlice',
+  inexact: boolean,
+  count: number, // Total number of messages in all the slices
+  next_rate?: number,
+} | {
+  _: 'messages.channelMessages',
+  inexact: boolean,
+  pts: number,
+  count: number, // Total number of messages on all the pages
+}) & {
+  messages: Message[],
+  chats: Chat[],
+  users: User[],
+} | MessagesNotModified;
