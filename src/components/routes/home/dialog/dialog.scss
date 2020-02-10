@@ -43,6 +43,10 @@
     }
   }
 
+  &__clickable:hover &__status, &__clickable.-selected &__status {
+    border-color: #F1F3F4;
+  }
+
   &__picture {
     width: 54px;
     height: 54px;
