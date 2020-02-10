@@ -3,8 +3,8 @@
   appearance: none;
   border: none;
   margin: 0;
-  width: 33px;
-  height: 33px;
+  width: 48px;
+  height: 48px;
   color: #707579;
   background: transparent;
   text-align: center;
@@ -13,10 +13,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: .2s ease;
-  outline: none;
+  outline: 0;
   cursor: pointer;
-  padding: 5px 10px;
 
   svg {
     width: 24px;
