@@ -16,6 +16,7 @@ type Props = {
   batch?: number,
   scrollBatch?: number,
   compare?: (left: string, right: string) => boolean,
+  onFocus?: (item: string) => void,
   onReachTop?: () => void,
   onReachBottom?: () => void,
 };
@@ -64,8 +65,9 @@ export class VirtualizedList {
     batch: number,
     pivotBottom: boolean,
     threshold: number,
-    scrollBatch?: number,
+    scrollBatch: number,
     compare?: (left: string, right: string) => boolean,
+    onFocus?: (item: string) => void,
     onReachTop?: () => void,
     onReachBottom?: () => void,
   };
@@ -78,6 +80,9 @@ export class VirtualizedList {
 
   /** Virtualized elements heights */
   heights: Record<string, number> = {};
+
+  /** Virtualized elements offsets */
+  offsets: Record<string, number> = {};
 
   /** Current elements ids before update */
   current: string[] = [];
@@ -101,6 +106,9 @@ export class VirtualizedList {
   /** Element that should be focused */
   focused?: string;
 
+  /** Virst visible element at viewport */
+  topElement?: string;
+
   constructor({
     tag,
     className,
@@ -111,6 +119,7 @@ export class VirtualizedList {
     batch = 20,
     scrollBatch = batch,
     pivotBottom = false,
+    onFocus,
     onReachTop,
     onReachBottom,
   }: Props) {
@@ -125,6 +134,7 @@ export class VirtualizedList {
       pivotBottom,
       threshold,
       compare,
+      onFocus,
       onReachTop,
       onReachBottom,
     };
@@ -226,6 +236,15 @@ export class VirtualizedList {
     this.pendingRecalculate = [];
   };
 
+  updateOffsets = () => {
+    let offset = 0;
+    for (let i = this.first; i <= this.last; i++) {
+      const item = this.current[i];
+      this.offsets[item] = offset;
+      offset += this.heights[item] || this.elements[item].offsetHeight;
+    }
+  };
+
   // hard update only keys without rendering
   updateData = (next: readonly string[]) => {
     this.current = next.slice(0);
@@ -304,20 +323,14 @@ export class VirtualizedList {
     const nextVisible = [];
     const flipFrom: Record<string, LocalPosition> = {};
     const flipTo: Record<string, LocalPosition> = {};
-    let offset = 0;
 
     // keep start position for flip
     for (let i = 0; i < visible.length; i += 1) {
-      const height = this.heights[visible[i]];
-
-      // force slowdown
       // flipFrom[visible[i]] = this.elements[visible[i]].getBoundingClientRect();
       flipFrom[visible[i]] = {
-        top: offset - this.scrollTop,
-        height,
+        top: this.offsets[visible[i]] - this.scrollTop,
+        height: this.heights[visible[i]],
       };
-
-      offset += height;
     }
 
     const renderedItems: string[] = [];
@@ -375,20 +388,18 @@ export class VirtualizedList {
 
     this.container.scrollTop = this.scrollTop -= (this.scrollHeight - this.container.scrollHeight);
     this.scrollHeight = this.container.scrollHeight;
+    this.updateOffsets();
 
+    let offset = 0;
     // get position of nextVisible elements
-    offset = 0;
     for (let i = 0; i < nextVisible.length; i += 1) {
-      const height = this.heights[nextVisible[i]];
-
-      // force slowdown
       // flipTo[nextVisible[i]] = this.elements[nextVisible[i]].getBoundingClientRect();
       flipTo[nextVisible[i]] = {
         top: offset - this.scrollTop,
-        height,
+        height: this.heights[nextVisible[i]],
       };
 
-      offset += height;
+      offset += this.heights[nextVisible[i]];
     }
 
     // prepare flipping elements
@@ -437,8 +448,27 @@ export class VirtualizedList {
     this.updateData(next);
     this.first = nextFirst;
     this.last = nextLast;
+    this.updateOffsets();
     this.isLocked = false;
     this.virtualize();
+  };
+
+  updateTopElement = () => {
+    const prevTop = this.topElement;
+    // if (this.topElement
+    //   && this.offsets[this.topElement] < this.scrollTop
+    //   && this.offsets[this.topElement] + this.heights[this.topElement] > this.scrollTop) return;
+
+    for (let i = this.first; i <= this.last; i++) {
+      const item = this.current[i];
+      if (this.offsets[item] <= this.scrollTop) {
+        this.topElement = this.current[i];
+      } else {
+        break;
+      }
+    }
+
+    if (this.cfg.onFocus && this.topElement && this.topElement !== prevTop) this.cfg.onFocus(this.topElement);
   };
 
   // virtualize scroll elements
@@ -466,6 +496,7 @@ export class VirtualizedList {
       for (let i = 0; i < count; i += 1) this.mount(this.current[++this.last]);
 
       this.scrollHeight = this.container.scrollHeight;
+      this.updateOffsets();
 
       // set initial scroll position
       if (this.cfg.pivotBottom) this.container.scrollTop = this.scrollTop = this.scrollHeight - this.viewport.height;
@@ -521,7 +552,10 @@ export class VirtualizedList {
     }
 
     // update scroll inner content height
-    if (prevFirst !== this.first || prevLast !== this.last) this.scrollHeight = this.container.scrollHeight;
+    if (prevFirst !== this.first || prevLast !== this.last) {
+      this.updateOffsets();
+      this.scrollHeight = this.container.scrollHeight;
+    }
 
     if (this.pendingRecalculate.length > 0) this.updateHeigths();
 
@@ -551,6 +585,7 @@ export class VirtualizedList {
       this.forceScrollTopChange = true;
     }
 
+    this.updateTopElement();
     this.unlock();
     this.container.scrollTop = this.scrollTop;
   };
@@ -567,7 +602,7 @@ export class VirtualizedList {
   }
 
   // scrollTo(item)
-  focus = (item: string) => {
+  focus = (item: string, _direction: number = -1) => {
     const index = this.current.indexOf(item);
 
     // data wasn't loaded yet
@@ -578,8 +613,7 @@ export class VirtualizedList {
 
     // make transition
     if (index < this.first || index > this.last) {
-      this.focused = item;
-      // update(current);
+      this.scrollVirtualizedTo(item, index < this.first ? 1 : -1);
       return;
     }
 
@@ -600,14 +634,105 @@ export class VirtualizedList {
     this.last = -2;
   };
 
-  scrollTo = (item: string) => {
+  scrollVirtualizedTo = (item: string, direction: number = -1) => {
+    if (this.current.indexOf(item) === -1) return;
+
     this.lock();
 
-    let scrollValue = this.offset(item);
-    if (this.viewport.height > this.heights[item]) scrollValue -= (this.viewport.height - this.heights[item]) / 2;
+    // shrink elements to viewport
+    let height = 0;
+    let end = this.topElement ? this.current.indexOf(this.topElement) : this.first;
+    const start = end;
+
+    while (height < this.viewport.height && end <= this.last) {
+      height += this.heights[this.current[end]];
+      end++;
+    }
+
+    if (end < start) end = start;
+
+    // const rects: Record<number, DOMRect> = {};
+
+    // for (let i = start; i < end; i++) {
+    //   rects[i] = this.elements[this.current[i]].getBoundingClientRect();
+    // }
+
+    // animate shrinked elements
+    for (let i = this.first; i <= this.last; i++) {
+      const ritem = this.current[i];
+
+      this.unMount(ritem);
+      // if (i < start || i >= end) {
+      //   this.unMount(ritem);
+      // } else {
+      //   const elm = this.elements[ritem];
+      //   elm.style.top = `${rects[i].top - this.viewport.top}px`;
+      //   elm.classList.add('list__scroll-out');
+
+      //   listenOnce(elm, 'transitionend', () => {
+      //     elm.classList.remove('list__scroll-out');
+      //     elm.style.transform = '';
+      //     elm.style.top = '';
+      //     unmount(elm);
+      //   });
+
+      //   elm.style.transform = `translate(0, ${height * direction}px)`;
+      // }
+    }
+
+    // display new elements
+    this.first = Math.max((direction < 0) ? end : 0, this.current.indexOf(item) - Math.ceil(this.cfg.scrollBatch / 2));
+    this.last = Math.min((direction > 0) ? start - 1 : this.current.length - 1, this.current.indexOf(item) + Math.ceil(this.cfg.scrollBatch / 2));
+
+    for (let i = this.first; i <= this.last; i++) {
+      const nitem = this.current[i];
+      this.mount(nitem);
+    }
+
+    this.scrollHeight = this.container.scrollHeight;
+    this.updateHeigths();
+    this.updateOffsets();
+    this.container.scrollTop = this.scrollTop = this.getScrollToValue(item);
+    this.updateTopElement();
+
+    // animate new elements
+    for (let i = this.first; i <= this.last; i++) {
+      const ritem = this.current[i];
+
+      const elm = this.elements[ritem];
+      elm.style.transform = `translate(0, ${height * direction * -1}px)`;
+
+      listenOnce(elm, 'transitionend', () => {
+        elm.classList.remove('list__scroll-in');
+      });
+
+      // chrome fix for 2 frames
+      requestAnimationFrame(() => {
+        elm.classList.add('list__scroll-in');
+        elm.style.transform = '';
+      });
+    }
+
+    setTimeout(() => {
+      this.isLocked = false;
+      this.virtualize();
+    }, 300);
+  };
+
+  getScrollToValue = (item: string, centered: boolean = true) => {
+    let scrollValue = this.offsets[item];
+    if (centered && this.viewport.height > this.heights[item]) scrollValue -= (this.viewport.height - this.heights[item]) / 2;
 
     scrollValue = Math.max(0, scrollValue);
     scrollValue = Math.min(this.scrollHeight - this.viewport.height, scrollValue);
+
+    return scrollValue;
+  };
+
+  scrollTo = (item: string) => {
+    this.lock();
+
+    const scrollValue = this.getScrollToValue(item);
 
     const y = this.scrollTop;
     const dy = scrollValue - y;
@@ -632,7 +757,7 @@ export class VirtualizedList {
       } else {
         this.scrollTop = this.container.scrollTop;
         elm.classList.remove('focused');
-        this.unlock();
+        this.isLocked = false;
         this.virtualize();
       }
     };
