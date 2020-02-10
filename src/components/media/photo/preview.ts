@@ -21,7 +21,7 @@ export default function photoPreview(photo: Photo, message: MessageCommon) {
   const location = getPhotoLocation(photo, type);
   const box = getSize(photo.sizes, PHOTO_THUMBNAIL_MAX);
   // to do remove
-  const hasBackground = true; // checkDimensions(photo.sizes, PHOTO_W_DIM, PHOTO_H_DIM);
+  const hasBackground = false; // checkDimensions(photo.sizes, PHOTO_W_DIM, PHOTO_H_DIM);
 
   let thumbnail: HTMLElement | undefined;
   let background: HTMLElement | undefined;
