@@ -10,4 +10,7 @@ export const auth = new AuthService();
 export const message = new MessageService();
 export const dialog = new DialogService();
 export const media = new MediaService();
-export const dialogSearch = new DialogSearchService();
+export const dialogSearch = new DialogSearchService(message);
+
+// todo: Remove debug
+(window as any).dialogSearchService = dialogSearch;
