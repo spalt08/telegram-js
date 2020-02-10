@@ -6,6 +6,8 @@ if (!('isConnected' in Node.prototype)) {
   });
 }
 
+/*
 if (!Object.values) {
   Object.values = <T>(object: Record<keyof any, T>): T[] => Object.keys(object).map((key) => object[key]);
 }
+ */

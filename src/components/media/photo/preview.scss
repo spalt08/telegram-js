@@ -1,4 +1,4 @@
-.photo {
+.photo-preview {
   position: relative;
   max-width: 320px;
   max-height: 320px;
@@ -79,7 +79,10 @@
   &__preview {
     cursor: pointer;
     overflow: hidden;
-    animation: previewAppear .4s ease;
+
+    &.animated {
+      animation: previewAppear .4s ease;
+    }
   }
 }
 

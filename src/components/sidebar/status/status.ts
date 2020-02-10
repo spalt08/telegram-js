@@ -10,7 +10,7 @@ export default function status() {
   const label = text('Connecting...');
   const spinner = materialSpinner({ className: 'network-status__loader' });
 
-  const element = div`.network-status .hidden`(
+  const element = div`.network-status`(
     div`.network-status__container`(
       spinner,
       label,

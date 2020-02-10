@@ -20,7 +20,7 @@ export function getUserMessageId(messageId: number): string {
 }
 
 export function peerMessageToId(peer: Peer, messageId: number): string {
-  if (peer._ === 'peerUser') {
+  if (peer._ === 'peerUser' || peer._ === 'peerChat') {
     // All the dialogs with user share a single messages counter
     return getUserMessageId(messageId);
   }

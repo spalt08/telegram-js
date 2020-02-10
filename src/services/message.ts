@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
-import { Message, Peer, AnyUpdateMessage, AnyUpdateShortMessage } from 'cache/types';
+import { Message, Peer, AnyUpdateMessage, AnyUpdateShortMessage, Messages, MessagesNotModified } from 'cache/types';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import { MessagesChunkReference } from 'cache/fastStorages/indices/messageHistory';
@@ -59,7 +59,6 @@ export default class MessagesService {
     });
 
     client.updates.on('updateDeleteMessages', (update: any) => {
-      // console.log('updateDeleteMessage', update);
       update.messages.forEach((messageId: number) => messageCache.remove(getUserMessageId(messageId)));
     });
 
@@ -93,10 +92,10 @@ export default class MessagesService {
       this.cacheChunkRef.history.subscribe(({ ids }) => this.history.next(ids));
       const { ids } = this.cacheChunkRef.history.value;
       if (ids.length < LOAD_CHUNK_LENGTH) {
-        this.loadMessages(Direction.Older, ids[0] /* undefined is welcome here */);
+        this.loadMessages(this.cacheChunkRef, Direction.Older, ids[0] /* undefined is welcome here */);
       }
       if (ids.length > 0) {
-        this.loadMessages(Direction.Newer, ids[0], 0);
+        this.loadMessages(this.cacheChunkRef, Direction.Newer, ids[0], 0);
       }
     }
   }
@@ -104,7 +103,7 @@ export default class MessagesService {
   /**
    * Messages with id equal fromId and toId are not included to the result
    */
-  protected loadMessages(direction: Direction, fromId?: number, toId?: number) {
+  protected loadMessages(chunkRef: MessagesChunkReference, direction: Direction, fromId?: number, toId?: number) {
     if (!this.activePeer.value) {
       return;
     }
@@ -127,7 +126,6 @@ export default class MessagesService {
       }
     }
 
-    const cacheChunkRef = this.cacheChunkRef!; // Remember for the case when the peer or chunk changes during the loading
     const payload = {
       peer: peerToInputPeer(this.activePeer.value),
       offset_id: 0,
@@ -161,13 +159,12 @@ export default class MessagesService {
     }
 
     // console.log('loadMessages - request', payload);
-    client.call('messages.getHistory', payload, (_err: any, res: any) => {
+    client.call('messages.getHistory', payload, (_err: any, data?: Exclude<Messages, MessagesNotModified>) => {
       // Another peer or chunk is loading at the moment
-      const isLoadedChunkActual = cacheChunkRef === this.cacheChunkRef;
+      const isLoadedChunkActual = chunkRef === this.cacheChunkRef;
 
       try {
-        if (res) {
-          const data = res;
+        if (data) {
           // console.log('loadMessages - response', data);
 
           userCache.put(data.users);
@@ -199,7 +196,7 @@ export default class MessagesService {
               default:
             }
 
-            cacheChunkRef.putChunk({
+            chunkRef.putChunk({
               messages: data.messages,
               newestReached,
               oldestReached,
@@ -217,10 +214,13 @@ export default class MessagesService {
   }
 
   loadMoreHistory() {
-    const history = this.cacheChunkRef && this.cacheChunkRef.history.value;
-    if (history && !history.oldestReached) {
+    if (!this.cacheChunkRef) {
+      return;
+    }
+    const history = this.cacheChunkRef.history.value;
+    if (!history.oldestReached) {
       const offset_id = history.ids[history.ids.length - 1];
-      this.loadMessages(Direction.Older, offset_id);
+      this.loadMessages(this.cacheChunkRef, Direction.Older, offset_id);
     }
   }
 
@@ -264,4 +264,19 @@ export default class MessagesService {
 
     messageCache.indices.history.putNewestMessage(message);
   }
+
+  sendMessage = (message: string) => {
+    if (!this.activePeer.value) return;
+
+    const randId = Math.ceil(Math.random() * 0xFFFFFF).toString(16) + Math.ceil(Math.random() * 0xFFFFFF).toString(16);
+    const params = {
+      peer: peerToInputPeer(this.activePeer.value),
+      message,
+      random_id: randId,
+    };
+
+    client.call('messages.sendMessage', params, (err, result) => {
+      console.log('After sending', err, result);
+    });
+  };
 }

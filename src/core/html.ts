@@ -20,6 +20,7 @@ export const img = ElementFactory('img');
 export const h1 = ElementFactory('h1');
 export const p = ElementFactory('p');
 export const input = ElementFactory('input');
+export const textarea = ElementFactory('textarea');
 export const label = ElementFactory('label');
 export const strong = ElementFactory('strong');
 export const em = ElementFactory('em');

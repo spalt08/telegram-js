@@ -3,6 +3,7 @@ import emojiPanel from 'components/media/emoji/panel';
 import stickerPanel from 'components/media/sticker/panel';
 import './input_stickmoji.scss';
 import { listen, getAttribute, mount, listenOnce, unmount } from 'core/dom';
+import { getInterface, hasInterface } from 'core/hooks';
 
 export default function stickMojiPanel() {
   const tabs = [
@@ -59,12 +60,19 @@ export default function stickMojiPanel() {
 
   for (let i = 0; i < tabs.length; i += 1) listen(tabs[i], 'click', clickHandler);
 
-  return (
-    div`.stickmoji-panel`(
-      div`.stickmoji-panel__tabs`(
-        ...tabs,
-      ),
-      content,
-    )
+  const container = div`.stickmoji-panel`(
+    div`.stickmoji-panel__tabs`(
+      ...tabs,
+    ),
+    content,
   );
+
+  listenOnce(container, 'transitionend', () => {
+    for (let i = 0; i < panels.length; i++) {
+      const panel = panels[i];
+      if (hasInterface<{ update:() => void }>(panel)) getInterface(panel).update();
+    }
+  });
+
+  return container;
 }

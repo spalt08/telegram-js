@@ -8,8 +8,8 @@
   width: 100%;
   display: flex;
 
-  transition: background-color .3s ease;
-  transition-delay: .6s;
+  // transition: transform background-color .3s ease;
+  // transition-delay: .6s;
 
   &.focused {
     transition: none;
