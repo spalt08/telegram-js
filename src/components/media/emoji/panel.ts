@@ -31,7 +31,7 @@ export default function emojiPanel(onSelect?: (emoji: string) => void) {
     className: 'emoji-panel__content',
     items: categories,
     renderer: (key: string) => emojiCategory(key, onSelect),
-    batch: 2,
+    batch: 9,
     threshold: 1,
     onFocus,
   });
