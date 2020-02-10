@@ -8,7 +8,6 @@ import { mergeOrderedArrays } from '../../helpers/data';
 export type SearchRequest = string; // It may get other filter in future (e.g. date)
 
 export interface SearchResult {
-  // todo: Add total count
   request: SearchRequest; // For what request was this result obtained
   ids: number[]; // Message ids
   count: number; // Total found messages count
@@ -24,7 +23,7 @@ export interface SearchSession {
   destroy(): void;
 }
 
-function areSearchRequestsEqual(request1: SearchRequest, request2: SearchRequest): boolean {
+export function areSearchRequestsEqual(request1: SearchRequest, request2: SearchRequest): boolean {
   return request1 === request2;
 }
 
@@ -35,7 +34,7 @@ export const emptySearchResult: SearchResult = {
   isFull: true,
 };
 
-function isRequestEmpty(request: SearchRequest): boolean {
+export function isSearchRequestEmpty(request: SearchRequest): boolean {
   return request.length === 0;
 }
 
@@ -145,7 +144,7 @@ export default function makeSearchSession(peer: Peer): SearchSession {
 
     desiredRequest = request;
 
-    if (isRequestEmpty(request)) {
+    if (isSearchRequestEmpty(request)) {
       // Instant result when the request is empty
       if (stopSearchRequests) {
         stopSearchRequests();

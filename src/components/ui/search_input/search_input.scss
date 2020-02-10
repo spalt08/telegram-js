@@ -1,6 +1,7 @@
 .searchInput {
   $height: 44px;
   $text-color: #000;
+  $icon-color: #abb2b7;
   $active-border-color: #4EA4F5;
   $active-background: #fff;
   $transition-duration: 150ms;
@@ -73,7 +74,7 @@
     height: $size;
 
     path {
-      fill: #abb2b7;
+      fill: $icon-color;
       transition: fill ($transition-duration * $transition-final-part) $transition-timing;
     }
   }
@@ -95,7 +96,7 @@
     height: $size;
 
     circle {
-      stroke: $active-border-color;
+      stroke: $icon-color;
     }
   }
 }
