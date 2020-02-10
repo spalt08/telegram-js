@@ -21,28 +21,21 @@ interface Hooks {
   lifecycle?: LifecycleListeners;
 }
 
-interface WithHooks<T extends Hooks = Hooks> {
-  __hooks: T;
+export interface WithInterfaceHook<TInterface> {
+  __interface_dont_use_or_you_are_fired: TInterface;
 }
 
-export type WithInterfaceHook<TInterface> = WithHooks<{
-  interface: TInterface;
-}>;
+const nodesHooks = new WeakMap<Node, Hooks>();
 
-export type WithLifecycleHook = WithHooks<{
-  lifecycle: LifecycleListeners;
-}>;
+function ensureWithHooks(base: Node): Hooks {
+  let hooks = nodesHooks.get(base);
 
-function isWithHooks(base: unknown): base is WithHooks {
-  return !!(base as { __hooks?: unknown }).__hooks;
-}
-
-function ensureWithHooks<T>(base: T) {
-  if (isWithHooks(base)) {
-    return base;
+  if (hooks === undefined) {
+    hooks = {};
+    nodesHooks.set(base, hooks);
   }
-  (base as T & WithHooks).__hooks = {};
-  return base as T & WithHooks;
+
+  return hooks;
 }
 
 /**
@@ -55,24 +48,24 @@ function ensureWithHooks<T>(base: T) {
  * });
  * getInterface(elementWithInterface).foo();
  */
-export function useInterface<TBase, TInterface>(base: TBase, object: TInterface) {
-  const enhanced = ensureWithHooks(base);
-  enhanced.__hooks.interface = object;
-  return enhanced as TBase & WithInterfaceHook<TInterface>;
+export function useInterface<TBase extends Node, TInterface>(base: TBase, object: TInterface) {
+  const hooks = ensureWithHooks(base);
+  hooks.interface = object;
+  return base as Exclude<TBase, WithInterfaceHook<any>> & WithInterfaceHook<TInterface>;
 }
 
 /**
  * Gets the attached object (see useInterface). If not attached, returns undefined.
  */
-export function getInterface<TBase>(base: TBase): TBase extends WithInterfaceHook<infer TInterface> ? TInterface : undefined {
-  return isWithHooks(base) ? base.__hooks.interface as any : undefined;
+export function getInterface<TBase extends Node>(base: TBase): TBase extends WithInterfaceHook<infer TInterface> ? TInterface : undefined {
+  return nodesHooks.get(base)?.interface as any;
 }
 
 /**
  * Checks attached interface
  */
-export function hasInterface<T = unknown>(base: unknown): base is WithInterfaceHook<T> {
-  return isWithHooks(base) && !!base.__hooks.interface;
+export function hasInterface<T = unknown>(base: any): base is WithInterfaceHook<T> {
+  return nodesHooks.get(base)?.interface !== undefined;
 }
 
 /**
@@ -88,15 +81,15 @@ export function hasInterface<T = unknown>(base: unknown): base is WithInterfaceH
  * // In the real app this function is called by the `mount` and `unmount` functions
  * triggerMount(element);
  */
-export function useOnMount(base: unknown, onMount: () => void): () => void {
-  const enhanced = ensureWithHooks(base);
-  const lifecycle = enhanced.__hooks.lifecycle || {};
-  enhanced.__hooks.lifecycle = lifecycle;
+export function useOnMount(base: Node, onMount: () => void): () => void {
+  const hooks = ensureWithHooks(base);
+  const lifecycle = hooks.lifecycle || {};
+  hooks.lifecycle = lifecycle;
   lifecycle.mount = lifecycle.mount || [];
   lifecycle.mount.push(onMount);
 
   return () => {
-    const mounts = enhanced.__hooks.lifecycle && enhanced.__hooks.lifecycle.mount;
+    const mounts = nodesHooks.get(base)?.lifecycle?.mount;
     if (mounts) {
       const listenerIndex = mounts.indexOf(onMount);
       if (listenerIndex > -1) {
@@ -119,15 +112,15 @@ export function useOnMount(base: unknown, onMount: () => void): () => void {
  * // In the real app this function is called by the `unmount` functions
  * triggerUnmount(element);
  */
-export function useOnUnmount(base: unknown, onUnmount: () => void): () => void {
-  const enhanced = ensureWithHooks(base);
-  const lifecycle = enhanced.__hooks.lifecycle || {};
-  enhanced.__hooks.lifecycle = lifecycle;
+export function useOnUnmount(base: Node, onUnmount: () => void): () => void {
+  const hooks = ensureWithHooks(base);
+  const lifecycle = hooks.lifecycle || {};
+  hooks.lifecycle = lifecycle;
   lifecycle.unmount = lifecycle.unmount || [];
   lifecycle.unmount.push(onUnmount);
 
   return () => {
-    const unmounts = enhanced.__hooks.lifecycle && enhanced.__hooks.lifecycle.unmount;
+    const unmounts = nodesHooks.get(base)?.lifecycle?.unmount;
     if (unmounts) {
       const listenerIndex = unmounts.indexOf(onUnmount);
       if (listenerIndex > -1) {
@@ -140,20 +133,22 @@ export function useOnUnmount(base: unknown, onUnmount: () => void): () => void {
 /**
  * Triggers the mount event listeners on the element (does nothing if there are no listeners or it's already mounted)
  */
-export function triggerMount(base: unknown) {
-  if (isWithHooks(base) && base.__hooks.lifecycle && base.__hooks.lifecycle.mount && !base.__hooks.lifecycle.isMountTriggered) {
-    base.__hooks.lifecycle.isMountTriggered = true;
-    [...base.__hooks.lifecycle.mount].forEach((onMount) => onMount());
+export function triggerMount(base: Node) {
+  const hooks = nodesHooks.get(base);
+  if (hooks && hooks.lifecycle && hooks.lifecycle.mount && !hooks.lifecycle.isMountTriggered) {
+    hooks.lifecycle.isMountTriggered = true;
+    [...hooks.lifecycle.mount].forEach((onMount) => onMount());
   }
 }
 
 /**
  * Triggers the unmount event listeners on the element (does nothing if there are no listeners or it's already unmounted)
  */
-export function triggerUnmount(base: unknown) {
-  if (isWithHooks(base) && base.__hooks.lifecycle && base.__hooks.lifecycle.unmount && base.__hooks.lifecycle.isMountTriggered) {
-    base.__hooks.lifecycle.isMountTriggered = false;
-    [...base.__hooks.lifecycle.unmount].forEach((onUnmount) => onUnmount());
+export function triggerUnmount(base: Node) {
+  const hooks = nodesHooks.get(base);
+  if (hooks && hooks.lifecycle && hooks.lifecycle.unmount && hooks.lifecycle.isMountTriggered) {
+    hooks.lifecycle.isMountTriggered = false;
+    [...hooks.lifecycle.unmount].forEach((onUnmount) => onUnmount());
   }
 }
 
@@ -161,11 +156,12 @@ export function triggerUnmount(base: unknown) {
  * Checks if the element is in the mounted hook state (the last triggered event from mount/unmount was mount).
  * Undefined means not subscribed or never mounted before.
  */
-export function isMountTriggered(base: unknown): boolean | undefined {
-  if (!isWithHooks(base)) {
+export function isMountTriggered(base: Node): boolean | undefined {
+  const hooks = nodesHooks.get(base);
+  if (!hooks) {
     return undefined;
   }
-  return base.__hooks.lifecycle && base.__hooks.lifecycle.isMountTriggered;
+  return hooks.lifecycle && hooks.lifecycle.isMountTriggered;
 }
 
 /**
@@ -179,7 +175,7 @@ export function isMountTriggered(base: unknown): boolean | undefined {
  *   return () => clearInterval(intervalId); // Return an unmount listener
  * });
  */
-export function useWhileMounted(base: unknown, onMount: () => () => void): () => void {
+export function useWhileMounted(base: Node, onMount: () => () => void): () => void {
   let onUnmount: (() => void) | undefined;
 
   function handleMount() {
@@ -216,10 +212,10 @@ export function useWhileMounted(base: unknown, onMount: () => () => void): () =>
  *   console.log('Window resized');
  * });
  */
-export function useListenWhileMounted<K extends keyof HTMLElementEventMap>(base: unknown, target: HTMLElement, event: K, cb: (event: HTMLElementEventMap[K]) => void): () => void; // eslint-disable-line max-len
-export function useListenWhileMounted<K extends keyof SVGElementEventMap>(base: unknown, target: SVGElement, event: K, cb: (event: SVGElementEventMap[K]) => void): () => void; // eslint-disable-line max-len
-export function useListenWhileMounted(base: unknown, target: EventTarget, event: string, cb: (event: Event) => void): () => void;
-export function useListenWhileMounted(base: unknown, target: EventTarget, event: string, cb: (event: Event) => void) {
+export function useListenWhileMounted<K extends keyof HTMLElementEventMap>(base: Node, target: HTMLElement, event: K, cb: (event: HTMLElementEventMap[K]) => void): () => void; // eslint-disable-line max-len
+export function useListenWhileMounted<K extends keyof SVGElementEventMap>(base: Node, target: SVGElement, event: K, cb: (event: SVGElementEventMap[K]) => void): () => void; // eslint-disable-line max-len
+export function useListenWhileMounted(base: Node, target: EventTarget, event: string, cb: (event: Event) => void): () => void;
+export function useListenWhileMounted(base: Node, target: EventTarget, event: string, cb: (event: Event) => void) {
   return useWhileMounted(base, () => {
     listen(target, event, cb);
     return () => unlisten(target, event, cb);
@@ -235,7 +231,7 @@ export function useListenWhileMounted(base: unknown, target: EventTarget, event:
  *   element.foo = event;
  * });
  */
-export function useObservable<T>(base: unknown, observable: Observable<T>, onChange: (newValue: T) => void) {
+export function useObservable<T>(base: Node, observable: Observable<T>, onChange: (newValue: T) => void) {
   return useWhileMounted(base, () => {
     const subscription = observable.subscribe(onChange);
     return () => subscription.unsubscribe();
@@ -247,7 +243,7 @@ export function useObservable<T>(base: unknown, observable: Observable<T>, onCha
  *
  * Set `lazy` to `false` to force calling `onChange` when the element is mounted
  */
-export function useMaybeObservable<T>(base: unknown, value: MaybeObservable<T>, onChange: (newValue: T) => void, lazy = false): () => void {
+export function useMaybeObservable<T>(base: Node, value: MaybeObservable<T>, onChange: (newValue: T) => void, lazy = false): () => void {
   if (value instanceof Observable) {
     return useObservable(base, value, onChange);
   }
@@ -281,7 +277,7 @@ export function useOutsideEvent<P extends keyof HTMLElementEventMap>(base: HTMLE
  *
  * @link https://stackoverflow.com/a/58834889/1118709 Explanation
  */
-export function useToBehaviorSubject<T>(base: unknown, observable: MaybeObservable<T>, initial: T): [BehaviorSubject<T>, () => void] {
+export function useToBehaviorSubject<T>(base: Node, observable: MaybeObservable<T>, initial: T): [BehaviorSubject<T>, () => void] {
   if (observable instanceof BehaviorSubject) {
     return [observable, () => {}];
   }

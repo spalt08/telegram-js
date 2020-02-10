@@ -18,7 +18,7 @@ export default function stickerRenderer(sticker: Document, { size = '200px', aut
 
   const render = (src: string) => {
     if (sticker.mime_type === 'application/x-tgsticker') {
-      const animated = tgs({ src, className: 'sticker__tgs', autoplay, loop: true });
+      const animated = tgs({ src, className: `sticker__tgs${thumbnail ? ' animated' : ''}`, autoplay, loop: true });
       mount(container, animated);
 
       if (thumbnail) {
@@ -31,7 +31,7 @@ export default function stickerRenderer(sticker: Document, { size = '200px', aut
     }
 
     if (sticker.mime_type === 'image/webp') {
-      const stickerImage = img({ src, className: 'sticker__image' });
+      const stickerImage = img({ src, className: `sticker__image${thumbnail ? ' animated' : ''}` });
       mount(container, stickerImage);
 
       // remove thumbnail

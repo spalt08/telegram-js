@@ -1,8 +1,7 @@
 import { div } from 'core/html';
-import { listen } from 'core/dom';
-import { getInterface } from 'core/hooks';
+import { listen, listenOnce } from 'core/dom';
 import { smile, animals, recent, sport, lamp, flag, eats, car } from 'components/icons';
-import { list } from 'components/ui';
+import { VirtualizedList } from 'components/ui';
 import emojiCategory, { categories } from './category';
 import './panel.scss';
 
@@ -17,11 +16,12 @@ const categoryIcons: Record<string, SVGSVGElement> = {
 };
 
 export default function emojiPanel() {
-  const categoryList = list({
+  const categoryList = new VirtualizedList({
     className: 'emoji-panel__content',
     items: categories,
+    compare: (a: string, b: string) => categories.indexOf(a) > categories.indexOf(b),
     renderer: (key: string) => emojiCategory(key),
-    batch: 9,
+    batch: 1,
     threshold: 1,
   });
 
@@ -31,19 +31,22 @@ export default function emojiPanel() {
     const icon = div`.emoji-panel__tab`(categoryIcons[key]);
 
     listen(icon, 'click', () => {
-      getInterface(categoryList).focus(key);
+      categoryList.focus(key);
     });
 
     return icon;
   });
 
-  return (
-    div`.emoji-panel`(
-      categoryList,
-      div`.emoji-panel__tabs`(
-        recentIcon,
-        ...icons,
-      ),
-    )
+  const container = div`.emoji-panel`(
+    categoryList.wrapper,
+    div`.emoji-panel__tabs`(
+      recentIcon,
+      ...icons,
+    ),
   );
+
+  listenOnce(container, 'transitionend', () => {
+    categoryList.updateHeigths(true);
+  });
+  return container;
 }

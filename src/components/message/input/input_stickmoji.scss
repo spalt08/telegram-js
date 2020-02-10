@@ -57,8 +57,7 @@
     overflow: hidden;
 
     & > div {
-      will-change: transform;
-      transition: transform .3s ease-out;
+      transition: transform .2s ease-out;
     }
 
     & > .removing-left, & > .removing-right {

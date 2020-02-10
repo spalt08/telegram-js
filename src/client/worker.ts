@@ -39,7 +39,7 @@ const fileCache: Record<string, any> = {};
  * File managers: getFile method
  */
 function downloadFilePart(
-  location: any, cb: (f: string) => void, dc: number = client!.cfg.dc, mime = '', offset = 0, limit = 1024 * 1024, parts = '',
+  location: any, cb: (f: string) => void, dc: number = client!.cfg.dc, mime = '', offset = 0, limit = 512 * 1024, parts = '',
 ) {
   if (!client) throw new Error('Client is undefined');
 
@@ -78,7 +78,7 @@ function processFilePart(
 ) {
   // todo load parts
   if (file.bytes.length / 2 === limit) {
-    downloadFilePart(location, cb, dc, imime, offset + 4096, limit, parts + file.bytes.slice(0, 4096 * 2));
+    downloadFilePart(location, cb, dc, imime, offset + 4096, limit, parts + file.bytes);
     return;
   }
 
