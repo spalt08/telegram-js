@@ -96,6 +96,7 @@ export class VirtualizedList {
 
   /** Current scroll position */
   scrollTop: number = 0;
+  forceScrollTopChange: boolean = false;
 
   /** Element that should be focused */
   focused?: string;
@@ -145,20 +146,27 @@ export class VirtualizedList {
 
     // on container scrolled
     listen(this.container, 'scroll', () => {
+      // to do: remove this crutch
+      if (this.forceScrollTopChange) {
+        this.forceScrollTopChange = false;
+        if (Math.abs(this.container.scrollTop - this.scrollTop) > 10) this.container.scrollTop = this.scrollTop;
+      }
+
       // release focused
       if (this.focused && !this.isLocked) this.focused = undefined;
 
       const offset = this.container.scrollTop;
-
-      // prevent overscroll events
-      if (offset < 0) return;
-      if (offset + this.viewport.height > this.scrollHeight) return;
 
       // prevent repeating or disabled events
       if (offset === this.scrollTop || this.isLocked) return;
 
       // handle scroll
       this.scrollTop = offset;
+
+      // prevent overscroll events
+      if (offset < 0) return;
+      if (offset + this.viewport.height > this.scrollHeight) return;
+
       this.virtualize();
     }, { capture: true, passive: true });
   }
@@ -467,8 +475,6 @@ export class VirtualizedList {
           if (removedHeight === 0) throw new Error('height cannot be zero');
         }
 
-        console.log('removed from bottom', removedHeight);
-
         for (let i = 0; i < count; i += 1) this.mount(this.current[--this.first], this.current[this.first + 1]);
         skipNext = true;
       }
@@ -510,7 +516,9 @@ export class VirtualizedList {
         deltaHeight += this.heights[this.current[i]] || this.elements[this.current[i]].offsetHeight;
       }
 
-      this.container.scrollTop = this.scrollTop += deltaHeight;
+      this.scrollTop += deltaHeight;
+      this.container.scrollTop = this.scrollTop;
+      this.forceScrollTopChange = true;
     }
 
     // keep scroll position if top elements was added
@@ -521,10 +529,14 @@ export class VirtualizedList {
         deltaHeight += this.heights[this.current[i]] || this.elements[this.current[i]].offsetHeight;
       }
 
-      this.container.scrollTop = this.scrollTop -= deltaHeight;
+      this.scrollTop -= deltaHeight;
+      this.container.scrollTop = this.scrollTop;
+      this.forceScrollTopChange = true;
+      console.log('was removed after', this.container.scrollTop, this.scrollTop);
     }
 
     this.unlock();
+    this.container.scrollTop = this.scrollTop;
   };
 
   offset(item: string) {
