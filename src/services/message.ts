@@ -93,10 +93,10 @@ export default class MessagesService {
       this.cacheChunkRef.history.subscribe(({ ids }) => this.history.next(ids));
       const { ids } = this.cacheChunkRef.history.value;
       if (ids.length < LOAD_CHUNK_LENGTH) {
-        this.loadMessages(Direction.Older, ids[0] /* undefined is welcome here */);
+        this.loadMessages(this.cacheChunkRef, Direction.Older, ids[0] /* undefined is welcome here */);
       }
       if (ids.length > 0) {
-        this.loadMessages(Direction.Newer, ids[0], 0);
+        this.loadMessages(this.cacheChunkRef, Direction.Newer, ids[0], 0);
       }
     }
   }
@@ -104,7 +104,7 @@ export default class MessagesService {
   /**
    * Messages with id equal fromId and toId are not included to the result
    */
-  protected loadMessages(direction: Direction, fromId?: number, toId?: number) {
+  protected loadMessages(chunkRef: MessagesChunkReference, direction: Direction, fromId?: number, toId?: number) {
     if (!this.activePeer.value) {
       return;
     }
@@ -127,7 +127,6 @@ export default class MessagesService {
       }
     }
 
-    const cacheChunkRef = this.cacheChunkRef!; // Remember for the case when the peer or chunk changes during the loading
     const payload = {
       peer: peerToInputPeer(this.activePeer.value),
       offset_id: 0,
@@ -163,7 +162,7 @@ export default class MessagesService {
     // console.log('loadMessages - request', payload);
     client.call('messages.getHistory', payload, (_err: any, res: any) => {
       // Another peer or chunk is loading at the moment
-      const isLoadedChunkActual = cacheChunkRef === this.cacheChunkRef;
+      const isLoadedChunkActual = chunkRef === this.cacheChunkRef;
 
       try {
         if (res) {
@@ -199,7 +198,7 @@ export default class MessagesService {
               default:
             }
 
-            cacheChunkRef.putChunk({
+            chunkRef.putChunk({
               messages: data.messages,
               newestReached,
               oldestReached,
@@ -217,10 +216,13 @@ export default class MessagesService {
   }
 
   loadMoreHistory() {
-    const history = this.cacheChunkRef && this.cacheChunkRef.history.value;
-    if (history && !history.oldestReached) {
+    if (!this.cacheChunkRef) {
+      return;
+    }
+    const history = this.cacheChunkRef.history.value;
+    if (!history.oldestReached) {
       const offset_id = history.ids[history.ids.length - 1];
-      this.loadMessages(Direction.Older, offset_id);
+      this.loadMessages(this.cacheChunkRef, Direction.Older, offset_id);
     }
   }
 
