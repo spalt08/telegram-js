@@ -1,7 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { chatCache, messageCache, userCache } from 'cache';
-import { Message, MessageFilter, Peer } from 'cache/types';
+import { Message, MessageFilter, Messages, MessagesNotModified, Peer } from 'cache/types';
 import { peerToInputPeer } from 'cache/accessors';
 import { mergeOrderedArrays } from '../../helpers/data';
 
@@ -11,6 +11,7 @@ export interface SearchResult {
   // todo: Add total count
   request: SearchRequest; // For what request was this result obtained
   ids: number[]; // Message ids
+  count: number; // Total found messages count
   isFull: boolean;
 }
 
@@ -30,11 +31,12 @@ function areSearchRequestsEqual(request1: SearchRequest, request2: SearchRequest
 export const emptySearchResult: SearchResult = {
   request: '',
   ids: [],
+  count: 0,
   isFull: true,
 };
 
 function isRequestEmpty(request: SearchRequest): boolean {
-  return !!request;
+  return request.length === 0;
 }
 
 const LOAD_CHUNK_LENGTH = 20;
@@ -44,7 +46,7 @@ function makeSearchRequest(
   peer: Peer,
   request: SearchRequest,
   offsetMessageId: number | null,
-  onComplete: (messagesIds: number[], isEnd: boolean) => void,
+  onComplete: (messagesIds: number[], count: number, isEnd: boolean) => void,
 ) {
   const filter: MessageFilter = { _: 'inputMessagesFilterEmpty' };
   const parameters = {
@@ -62,10 +64,7 @@ function makeSearchRequest(
     hash: 0,
   };
 
-  client.call('messages.search', parameters, (_err: any, data: any) => {
-    // todo: Remove debug
-    console.log('search response', { data, _err });
-
+  client.call('messages.search', parameters, (_err: any, data?: Exclude<Messages, MessagesNotModified>) => {
     if (data) {
       userCache.put(data.users);
       chatCache.put(data.chats);
@@ -74,10 +73,13 @@ function makeSearchRequest(
 
     if (data) {
       const messageIds = data.messages.map((message: Message) => message.id);
-      const isEnd = data.messages.length < LOAD_CHUNK_LENGTH * 0.9; // Decrease just in case
-      onComplete(messageIds, isEnd);
+      const count = data._ === 'messages.messages'
+        ? data.messages.length
+        : data.count;
+      const isEnd = data._ === 'messages.messages' || data.messages.length < LOAD_CHUNK_LENGTH * 0.9; // Decrease just in case
+      onComplete(messageIds, count, isEnd);
     } else {
-      onComplete([], true);
+      onComplete([], 0, false);
     }
   });
 }
@@ -96,7 +98,7 @@ export default function makeSearchSession(peer: Peer): SearchSession {
     let isStopped = false;
     let recursiveStop: (() => void) | undefined;
 
-    makeSearchRequest(peer, request, null, (ids, isEnd) => {
+    makeSearchRequest(peer, request, null, (ids, count, isEnd) => {
       if (isStopped) {
         return;
       }
@@ -105,6 +107,7 @@ export default function makeSearchSession(peer: Peer): SearchSession {
           result.next({
             request,
             ids,
+            count,
             isFull: isEnd,
           });
         } finally {
@@ -192,16 +195,17 @@ export default function makeSearchSession(peer: Peer): SearchSession {
 
     isLoadingMore.next(true);
 
-    makeSearchRequest(peer, startRequest, startIds[startIds.length - 1], (loadedIds, isSearchEnd) => {
+    makeSearchRequest(peer, startRequest, startIds[startIds.length - 1], (loadedIds, loadedCount, isSearchEnd) => {
       if (isDestroyed) {
         return;
       }
-      const { ids: endIds, request: endRequest } = result.value;
+      const { ids: endIds, count: endCount, request: endRequest } = result.value;
       if (areSearchRequestsEqual(startRequest, endRequest)) {
         mergeOrderedArrays(endIds, loadedIds, (id1, id2) => id2 - id1);
         result.next({
-          request: startRequest,
+          request: endRequest,
           ids: endIds,
+          count: endCount, // Use the previous count for a case of a loading error (in which case the `count` will be `0`)
           isFull: isSearchEnd,
         });
         isLoadingMore.next(false);
