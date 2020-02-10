@@ -93,7 +93,7 @@ export default class Collection<TItem, TIndices extends IndicesFactories<any, an
     return this.storage.watchItem(id, onChange);
   }
 
-  public useItemBehaviorSubject(base: unknown, id: TId) {
+  public useItemBehaviorSubject(base: Node, id: TId) {
     return this.storage.useItemBehaviorSubject(base, id);
   }
 
