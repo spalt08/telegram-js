@@ -64,7 +64,11 @@ function makeSearchRequest(
     hash: 0,
   };
 
+  // console.log('search request', parameters);
+
   client.call('messages.search', parameters, (_err: any, data?: Exclude<Messages, MessagesNotModified>) => {
+    // console.log('search response', _err, data);
+
     if (data) {
       userCache.put(data.users);
       chatCache.put(data.chats);

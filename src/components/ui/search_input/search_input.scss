@@ -1,5 +1,6 @@
 .searchInput {
   $height: 44px;
+  $text-color: #000;
   $active-border-color: #4EA4F5;
   $active-background: #fff;
   $transition-duration: 150ms;
@@ -26,7 +27,7 @@
 
   input {
     appearance: none;
-    color: #000;
+    color: $text-color;
     background: none;
     border: none;
     caret-color: $active-border-color;
@@ -39,6 +40,10 @@
     &::placeholder {
       color: #8D969C;
     }
+  }
+
+  &.-loading input {
+    padding-right: 42px;
   }
 
   &__activeBG {
@@ -77,6 +82,20 @@
     path {
       fill: $active-border-color;
       transition: fill ($transition-duration * $transition-final-part) $transition-timing ($transition-duration * (1 - $transition-final-part));
+    }
+  }
+
+  &__loading {
+    $size: 18px;
+    position: absolute;
+    top: calc(50% - #{$size / 2});
+    right: (($height - $size) / 2);
+    z-index: 2;
+    width: $size;
+    height: $size;
+
+    circle {
+      stroke: $active-border-color;
     }
   }
 }
