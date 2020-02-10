@@ -53,9 +53,13 @@ export function mergeOrderedArrays<T>(
   const intersection = [];
   let hasNewItems = false;
   for (let dstI = startIndex, srcI = 0; dstI < endIndex || srcI < source.length;) {
-    const compareResult = compare(destination[dstI], source[dstI]);
+    // eslint-disable-next-line no-nested-ternary
+    const compareResult = dstI < endIndex && srcI < source.length
+      ? compare(destination[dstI], source[srcI])
+      : (dstI < endIndex ? -1 : 1);
+
     if (compareResult === 0) {
-      intersection.push(source[srcI]);
+      intersection.push(destination[dstI]);
       dstI += 1;
       srcI += 1;
     } else if (compareResult < 0) {
