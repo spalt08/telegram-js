@@ -149,7 +149,7 @@ export class VirtualizedList {
       // to do: remove this crutch
       if (this.forceScrollTopChange) {
         this.forceScrollTopChange = false;
-        if (Math.abs(this.container.scrollTop - this.scrollTop) > 10) this.container.scrollTop = this.scrollTop;
+        if (Math.abs(this.container.scrollTop - this.scrollTop) > 40) this.container.scrollTop = this.scrollTop;
       }
 
       // release focused
@@ -297,10 +297,9 @@ export class VirtualizedList {
     if (nextFirst > -1 && next.slice(nextFirst, visible.length) === visible) {
       this.updateData(next);
       this.virtualize();
+      this.isLocked = false;
       return;
     }
-
-    this.lock();
 
     const nextVisible = [];
     const flipFrom: Record<string, LocalPosition> = {};
@@ -313,58 +312,69 @@ export class VirtualizedList {
 
       // force slowdown
       // flipFrom[visible[i]] = this.elements[visible[i]].getBoundingClientRect();
-      // flipFrom[visible[i]] = this.elements[visible[i]].getBoundingClientRect();
       flipFrom[visible[i]] = {
-        top: offset,
+        top: offset - this.scrollTop,
         height,
       };
 
       offset += height;
     }
 
-    // iterate through elements and update it's position
-    let nextEl = this.container.firstChild;
-    for (let i = nextFirst; i <= nextLast; i += 1) {
-      const item = next[i];
-      const elm = this.elements[item];
-      // add new element
-      if (visible.indexOf(item) === -1) {
-        this.mount(item);
+    const renderedItems: string[] = [];
+    // remove redundant old visible elements
+    for (let i = 0; i < visible.length; i++) {
+      const item = visible[i];
+      const index = next.indexOf(item);
 
+      // remove animation artifacts
+      if (this.elements[item].classList.contains('list__flipping')) {
+        this.elements[item].style.transformOrigin = '';
+        this.elements[item].classList.remove('list__flipping');
+      }
+
+      if (index !== -1 && index >= nextFirst && index <= nextLast) {
+        renderedItems.push(item);
+      } else {
+        this.unMount(item);
+      }
+    }
+
+    let j = 0;
+    for (let i = nextFirst; i <= nextLast; i += 1) {
+      const nextItem = next[i];
+      const elm = this.elements[nextItem];
+      const nextItemIndex = renderedItems.indexOf(nextItem);
+
+      // add new element
+      if (nextItemIndex === -1) {
+        this.mount(nextItem, renderedItems[j]);
         elm.classList.add('list__appeared');
         listenOnce(elm, 'animationend', () => elm.classList.remove('list__appeared'));
 
       // swap elements
-      } else if (this.elements[item] !== nextEl) {
-        this.unMount(item);
-        this.mountBeforeNode(item, nextEl as Node);
-      }
+      } else if (nextItemIndex !== j) {
+        let item = renderedItems[j];
+        let item2 = '';
 
-      // continue
-      nextEl = elm.nextSibling;
+        renderedItems[j] = renderedItems[nextItemIndex];
+        for (let s = j + 1; s <= nextItemIndex; s++) {
+          item2 = renderedItems[s];
+          renderedItems[s] = item;
+          item = item2;
+        }
+        j++;
+
+        this.mount(item, renderedItems[j]);
+      } else {
+        j++;
+      }
 
       // update next visible shortcut
-      nextVisible.push(next[i]);
+      nextVisible.push(nextItem);
     }
 
-    // remove old elements
-    for (let i = 0; i < visible.length; i += 1) {
-      const item = visible[i];
-      const elm = this.elements[item];
-
-      if (elm.classList.contains('list__flipping')) {
-        elm.style.transformOrigin = '';
-        elm.classList.remove('list__flipping');
-      }
-
-      if (nextVisible.indexOf(item) === -1) {
-        unmount(elm);
-        delete flipFrom[item];
-      }
-    }
-
-    this.container.scrollTop = this.scrollTop;
-    this.updateHeigths();
+    this.container.scrollTop = this.scrollTop -= (this.scrollHeight - this.container.scrollHeight);
+    this.scrollHeight = this.container.scrollHeight;
 
     // get position of nextVisible elements
     offset = 0;
@@ -373,9 +383,8 @@ export class VirtualizedList {
 
       // force slowdown
       // flipTo[nextVisible[i]] = this.elements[nextVisible[i]].getBoundingClientRect();
-      // flipTo[nextVisible[i]] = this.elements[nextVisible[i]].getBoundingClientRect();
       flipTo[nextVisible[i]] = {
-        top: offset,
+        top: offset - this.scrollTop,
         height,
       };
 
@@ -383,13 +392,19 @@ export class VirtualizedList {
     }
 
     // prepare flipping elements
-    let animated = Object.keys(flipFrom);
+    let animated = Object.keys(flipTo);
     for (let i = 0; i < animated.length; i += 1) {
       const item = animated[i];
+
+      if (renderedItems.indexOf(item) === -1) {
+        delete flipTo[item];
+        continue;
+      }
+
       const dy = flipFrom[item].top - flipTo[item].top;
 
       if (dy === 0) {
-        delete flipFrom[item];
+        delete flipTo[item];
       } else {
         this.elements[item].style.transformOrigin = 'top left';
         this.elements[item].style.transform = `translate(0px, ${dy}px)`;
@@ -397,7 +412,7 @@ export class VirtualizedList {
     }
 
     // get final list of els to animate
-    animated = Object.keys(flipFrom);
+    animated = Object.keys(flipTo);
 
     const animate = () => {
       for (let i = 0; i < animated.length; i += 1) {
@@ -450,8 +465,10 @@ export class VirtualizedList {
 
       for (let i = 0; i < count; i += 1) this.mount(this.current[++this.last]);
 
+      this.scrollHeight = this.container.scrollHeight;
+
       // set initial scroll position
-      if (this.cfg.pivotBottom) this.container.scrollTop = this.scrollTop = this.container.scrollHeight - this.viewport.height;
+      if (this.cfg.pivotBottom) this.container.scrollTop = this.scrollTop = this.scrollHeight - this.viewport.height;
 
       skipNext = true;
     }
