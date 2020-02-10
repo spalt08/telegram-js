@@ -2,14 +2,14 @@ import { Photo, MessageCommon } from 'cache/types';
 import { div, img } from 'core/html';
 import { materialSpinner } from 'components/icons';
 import { mount, unmount, listenOnce, listen } from 'core/dom';
-import { getOrientation, getThumbnail, checkDimensions, getPhotoLocation, getSizeType, getSize } from 'helpers/photo';
+import { getOrientation, getThumbnail, /* checkDimensions, */ getPhotoLocation, getSizeType, getSize } from 'helpers/photo';
 import media from 'client/media';
 import { main } from 'services';
 import './preview.scss';
 import { useInterface } from 'core/hooks';
 
-const PHOTO_W_DIM = 100 / 320;
-const PHOTO_H_DIM = 48 / 320;
+// const PHOTO_W_DIM = 100 / 320;
+// const PHOTO_H_DIM = 48 / 320;
 const PHOTO_THUMBNAIL_MAX = 320;
 
 export default function photoPreview(photo: Photo, message: MessageCommon) {
@@ -20,7 +20,8 @@ export default function photoPreview(photo: Photo, message: MessageCommon) {
   const type = getSizeType(photo.sizes, PHOTO_THUMBNAIL_MAX);
   const location = getPhotoLocation(photo, type);
   const box = getSize(photo.sizes, PHOTO_THUMBNAIL_MAX);
-  const hasBackground = checkDimensions(photo.sizes, PHOTO_W_DIM, PHOTO_H_DIM);
+  // to do remove
+  const hasBackground = true; // checkDimensions(photo.sizes, PHOTO_W_DIM, PHOTO_H_DIM);
 
   let thumbnail: HTMLElement | undefined;
   let background: HTMLElement | undefined;
@@ -79,6 +80,7 @@ export default function photoPreview(photo: Photo, message: MessageCommon) {
   }
 
   return useInterface(container, {
+    needsShadow: true,
     getSize() {
       return box;
     },
