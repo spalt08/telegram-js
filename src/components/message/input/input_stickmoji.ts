@@ -4,16 +4,22 @@ import stickerPanel from 'components/media/sticker/panel';
 import './input_stickmoji.scss';
 import { listen, getAttribute, mount, listenOnce, unmount } from 'core/dom';
 import { getInterface, hasInterface } from 'core/hooks';
+import { Document } from 'cache/types';
 
-export default function stickMojiPanel() {
+type Props = {
+  onSelectEmoji: (emoji: string) => void,
+  onSelectSticker: (sticker: Document) => void,
+};
+
+export default function stickMojiPanel({ onSelectEmoji, onSelectSticker }: Props) {
   const tabs = [
     div`.stickmoji-panel__tab`({ 'data-index': '0' }, text('Emoji')),
     div`.stickmoji-panel__tab`({ 'data-index': '1' }, text('Stickers')),
   ];
 
   const panels = [
-    emojiPanel(),
-    stickerPanel(),
+    emojiPanel(onSelectEmoji),
+    stickerPanel(onSelectSticker),
   ];
 
   let selected = 0;

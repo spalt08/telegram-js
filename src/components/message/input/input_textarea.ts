@@ -2,6 +2,7 @@ import { textarea } from 'core/html';
 import { listen } from 'core/dom';
 import { KeyboardKeys } from 'const/dom';
 import './input_textarea.scss';
+import { useInterface } from 'core/hooks';
 
 type Props = {
   onSend: (message: string) => void;
@@ -15,6 +16,8 @@ export default function messageTextarea({ onSend }: Props) {
   let height = element.offsetHeight;
   let nextHeight = height;
   let frameNumber: number | undefined;
+
+  console.log(element.selectionEnd);
 
   listen(element, 'keypress', (event: KeyboardEvent) => {
     if (event.keyCode === KeyboardKeys.ENTER) {
@@ -56,5 +59,11 @@ export default function messageTextarea({ onSend }: Props) {
     }
   });
 
-  return element;
+  return useInterface(element, {
+    insertText(text: string) {
+      const selection = element.selectionStart;
+      element.value = element.value.slice(0, element.selectionStart) + text + element.value.slice(element.selectionEnd);
+      element.selectionStart = element.selectionEnd = selection + text.length;
+    },
+  });
 }

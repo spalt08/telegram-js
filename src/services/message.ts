@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
-import { Message, Peer, AnyUpdateMessage, AnyUpdateShortMessage, Messages, MessagesNotModified } from 'cache/types';
+import { Message, Peer, AnyUpdateMessage, AnyUpdateShortMessage, Messages, MessagesNotModified, MessageCommon, MessageMedia } from 'cache/types';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import { MessagesChunkReference } from 'cache/fastStorages/indices/messageHistory';
@@ -36,6 +36,8 @@ export default class MessagesService {
   focusedMessageId = new BehaviorSubject<number | undefined>(undefined);
 
   history = new BehaviorSubject<Readonly<number[]>>([]);
+
+  pendingMessages: Record<string, MessageCommon> = {};
 
   protected cacheChunkRef?: MessagesChunkReference;
 
@@ -275,7 +277,54 @@ export default class MessagesService {
       random_id: randId,
     };
 
+    this.pendingMessages[randId] = {
+      _: 'message',
+      id: 0,
+      out: true,
+      from_id: client.getUserID(),
+      to_id: this.activePeer.value,
+      date: Math.floor(Date.now() / 1000),
+      media: {
+        _: 'messageMediaEmpty',
+      },
+      entities: [],
+      message,
+    };
+
     client.call('messages.sendMessage', params, (err, result) => {
+      if (err) {
+        // todo handling errors
+      }
+
+      if (result._ === 'updateShortSentMessage') {
+        this.pendingMessages[randId].id = result.id;
+        this.pendingMessages[randId].date = result.date;
+        this.pendingMessages[randId].entities = result.entities;
+
+        messageCache.indices.history.putNewestMessage(this.pendingMessages[randId]);
+        delete this.pendingMessages[randId];
+      }
+
+      console.log('After sending', err, result);
+    });
+  };
+
+  sendMediaMessage = (inputMedia: any) => {
+    if (!this.activePeer.value) return;
+
+    const randId = Math.ceil(Math.random() * 0xFFFFFF).toString(16) + Math.ceil(Math.random() * 0xFFFFFF).toString(16);
+    const params = {
+      peer: peerToInputPeer(this.activePeer.value),
+      message: '',
+      media: inputMedia,
+      random_id: randId,
+    };
+
+    client.call('messages.sendMedia', params, (err, result) => {
+      if (err) {
+        // todo handling errors
+      }
+
       console.log('After sending', err, result);
     });
   };
