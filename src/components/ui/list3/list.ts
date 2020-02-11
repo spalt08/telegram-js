@@ -225,18 +225,15 @@ export class VirtualizedList {
     }
 
     this.pendingRecalculate = [];
-    console.log(this.heights);
   }
 
   updateOffsets() {
     let offset = 0;
     for (let i = this.first; i <= this.last; i++) {
       const item = this.current[i];
-      console.log(item, this.heights[item]);
       this.offsets[item] = offset;
       offset += this.heights[item];
     }
-    console.log(this.offsets);
   }
 
   // hard update only keys without rendering
@@ -721,10 +718,8 @@ export class VirtualizedList {
 
   getScrollToValue(item: string, centered: boolean = true) {
     let scrollValue = this.offsets[item];
-    console.log(scrollValue);
     if (centered && this.viewport.height > this.heights[item]) scrollValue -= (this.viewport.height - this.heights[item]) / 2;
 
-    console.log(scrollValue);
     scrollValue = Math.max(0, scrollValue);
     scrollValue = Math.min(this.scrollHeight - this.viewport.height, scrollValue);
 
@@ -741,7 +736,6 @@ export class VirtualizedList {
     const duration = 300;
     let start: number | undefined;
 
-    console.log('scroll', y, dy);
     const elm = this.elements[item];
     elm.classList.remove('focused');
 
