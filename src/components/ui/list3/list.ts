@@ -165,8 +165,8 @@ export class VirtualizedList {
       this.scrollTop = offset;
 
       // prevent overscroll events
-      if (offset < 0) return;
-      if (offset + this.viewport.height > this.scrollHeight) return;
+      // if (offset < 0) return;
+      // if (offset + this.viewport.height > this.scrollHeight) return;
 
       this.virtualize();
     }, { passive: true, capture: true });

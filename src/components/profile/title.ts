@@ -5,7 +5,7 @@ import { userCache, chatCache } from 'cache';
 import { Peer } from 'cache/types';
 import { auth } from 'services';
 
-const unknownTitle = 'Unknown';
+const unknownTitle = 'Deleted Account';
 
 export default function profileTitle(peer: Peer, isForDialogList = false) {
   const textNode = text(unknownTitle);
@@ -38,9 +38,14 @@ export default function profileTitle(peer: Peer, isForDialogList = false) {
     default:
   }
 
+  let prevName = '';
+
   if (nameObservable) {
     nameObservable.subscribe((name) => {
-      textNode.textContent = name;
+      if (name !== prevName) {
+        textNode.textContent = name;
+        prevName = name;
+      }
     });
   }
 

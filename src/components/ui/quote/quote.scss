@@ -1,11 +1,6 @@
-.reply {
-  padding: 4px 0 6px;
-  cursor: pointer;
-
-  &__content {
-    border-left: 2px solid #4EA4F5;
-    padding-left: 6px;
-  }
+.quote {
+  border-left: 2px solid #4EA4F5;
+  padding-left: 6px;
 
   &__title {
     color: #4EA4F5;
@@ -27,12 +22,4 @@
       color: #707579;
     }
   }
-}
-
-.message.out .quote {
-  border-left-color: #4FAE4F;
-}
-
-.message.out .quote__title {
-  color: #4FAE4F;
 }

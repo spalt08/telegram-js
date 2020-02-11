@@ -16,3 +16,4 @@ export { default as onlineStatus } from './online_status/online_status';
 export { default as infoListItem } from './info_list_item/info_list_item';
 export { default as searchInput } from './search_input/search_input';
 export { default as highlightSearchMatch } from './highlight_search_match';
+export { default as quote } from './quote/quote';
