@@ -105,6 +105,9 @@ export class VirtualizedList {
   /** Element that should be focused */
   focused?: string;
 
+  /** Element that should be focused */
+  focusedDirection: number = -1;
+
   /** Virst visible element at viewport */
   topElement?: string;
 
@@ -154,7 +157,7 @@ export class VirtualizedList {
     // on container scrolled
     listen(this.container, 'scroll', () => {
       // release focused
-      if (this.focused && !this.isLocked) this.focused = undefined;
+      // if (this.focused && !this.isLocked) this.focused = undefined;
 
       const offset = this.container.scrollTop;
 
@@ -246,10 +249,11 @@ export class VirtualizedList {
   update(next: readonly string[]) {
     const focusedIndex = this.focused ? next.indexOf(this.focused) : -1;
 
-    if (focusedIndex !== -1) {
+    if (focusedIndex !== -1 && this.focused) {
       // todo handle changes
       this.updateData(next);
-      this.virtualize();
+      this.scrollVirtualizedTo(this.focused, this.focusedDirection);
+      this.focused = undefined;
       return;
     }
 
@@ -268,7 +272,7 @@ export class VirtualizedList {
     }
 
     // fallback if current data is a part of next (lazy load)
-    if (this.cfg.pivotBottom === false && arr_contains(next, this.current)) {
+    if (arr_contains(next, this.current)) {
       this.updateData(next);
       this.virtualize();
       return;
@@ -302,6 +306,8 @@ export class VirtualizedList {
       nextLast = Math.max(-1, next.length - (this.current.length - this.last - 1) - 1);
       nextFirst = Math.max(nextLast - (this.last - this.first), 0);
     }
+
+    // console.log('flip')
 
     // no need to rerender
     if (nextFirst > -1 && next.slice(nextFirst, visible.length) === visible) {
@@ -599,11 +605,12 @@ export class VirtualizedList {
   }
 
   // scrollTo(item)
-  focus(item: string, _direction: number = -1) {
+  focus(item: string, direction: number = -1) {
     const index = this.current.indexOf(item);
 
     // data wasn't loaded yet
     if (index === -1) {
+      this.focusedDirection = direction;
       this.focused = item;
       return;
     }
