@@ -25,7 +25,7 @@ export default function messageReply(peer: Peer, id: number) {
     text(message),
   );
 
-  listen(element, 'click', () => service.focusedMessageId.next(id));
+  listen(element, 'click', () => service.selectPeer(peer, id));
 
   return element;
 }

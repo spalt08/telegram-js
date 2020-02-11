@@ -299,7 +299,7 @@ export class VirtualizedList {
 
     // keep last element visible
     } else {
-      nextLast = Math.max(0, next.length - (this.current.length - this.last - 1) - 1);
+      nextLast = Math.max(-1, next.length - (this.current.length - this.last - 1) - 1);
       nextFirst = Math.max(nextLast - (this.last - this.first), 0);
     }
 
