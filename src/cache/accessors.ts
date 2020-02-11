@@ -16,9 +16,9 @@ export function peerToInputPeer(peer: Peer, reference?: { peer: InputPeer, messa
     }
 
     case 'peerChannel': {
-      const channel = chatCache.get(peer.channel_id);
-      if (channel) {
-        return { _: 'inputPeerChannel', channel_id: peer.channel_id, access_hash: channel.access_hash };
+      const chat = chatCache.get(peer.channel_id);
+      if (chat?._ === 'channel') {
+        return { _: 'inputPeerChannel', channel_id: peer.channel_id, access_hash: chat.access_hash };
       }
       if (reference) {
         return { _: 'inputPeerChannelFromMessage', peer: reference.peer, msg_id: reference.message.id, channel_id: peer.channel_id };
