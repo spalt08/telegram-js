@@ -1,8 +1,8 @@
 .header {
   background: #FFFFFF;
-  height: 62px;
+  height: 61px;
   border-bottom: 1px solid #EDEEF0;
-  padding: 5px 20px;
+  padding: 5px 11px 5px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -40,12 +40,7 @@
     font-size: 15px;
   }
 
-  &__status {
-    font-size: 14px;
-    color: #707579;
-
-    &.online {
-      color: #1DA1F1;
-    }
+  &__actions {
+    display: flex;
   }
 }

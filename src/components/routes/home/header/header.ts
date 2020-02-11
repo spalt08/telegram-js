@@ -1,8 +1,11 @@
-import { message } from 'services';
+import { message, main, RightSidebarPanel } from 'services';
 import { useObservable } from 'core/hooks';
-import { div, text } from 'core/html';
+import { div } from 'core/html';
 import { unmountChildren, mount } from 'core/dom';
 import { profileAvatar } from 'components/profile';
+import roundButton from 'components/ui/round_button/round_button';
+import { more, search } from 'components/icons';
+import { onlineStatus } from 'components/ui';
 import peerTitle from '../dialog/peer_title';
 import './header.scss';
 
@@ -17,16 +20,30 @@ export default function header() {
       return;
     }
 
-    const status = div`.header__status.online`(text('online'));
     const profile = div`.header__profile`(
       profileAvatar(peer, undefined, true),
       div`.header__info`(
         div`.header__title`(peerTitle(peer)),
-        status,
+        onlineStatus(peer),
       ),
     );
 
     mount(container, profile);
+
+    const actions = div`.header__actions`(
+      roundButton({
+        onClick: () => {
+          main.setRightSidebarPanel(RightSidebarPanel.Search);
+        },
+      }, search()),
+      roundButton({
+        onClick: () => {
+          main.setRightSidebarPanel(RightSidebarPanel.Info);
+        },
+      }, more()),
+    );
+
+    mount(container, actions);
 
     container.classList.remove('hidden');
   });

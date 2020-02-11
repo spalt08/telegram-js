@@ -3,6 +3,7 @@
 .avatar {
   min-width: 30px;
   min-height: 30px;
+  height: 100%;
   border-radius: 50%;
   overflow: hidden;
   position: relative;
@@ -48,7 +49,7 @@
   &__picture {
     width: 100%;
     height: 100%;
-    display: block;
+    display: inline-flex;
     // animation: avatarAppeared .3s ease;
     border-radius: 50%;
     overflow: hidden;

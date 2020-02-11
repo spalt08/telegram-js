@@ -43,6 +43,10 @@
     }
   }
 
+  &__clickable:hover &__status, &__clickable.-selected &__status {
+    border-color: #F1F3F4;
+  }
+
   &__picture {
     width: 54px;
     height: 54px;
@@ -59,14 +63,16 @@
     width: 14PX;
     height: 14PX;
     border-radius: 50%;
-    display: none;
     background-color: #05C630;
     border: 2PX solid #FFFFFF;
     right: 2px;
     bottom: 0px;
+    transform: scale(0);
+    transform-origin: center;
+    transition: transform 0.2s;
 
     &.online {
-      display: block;
+      transform: scale(1);
     }
   }
 

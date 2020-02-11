@@ -1,26 +1,37 @@
 import { div } from 'core/html';
+import { useObservable, getInterface } from 'core/hooks';
+import { main, RightSidebarPanel } from 'services';
 import messages from './messages';
 import dialogs from './dialogs';
 import menu from './menu/menu';
-import messagesSearch from './messages_search/messages_search';
+import rightSidebar from './right_sidebar/right_sidebar';
 import './home.scss';
 
 /**
  * Handler for route /
  */
 export default function home() {
-  return (
-    div`.home`(
-      div`.home__sidebar`(
-        menu({ className: 'home__menu' }),
-        dialogs({ className: 'home__dialogs' }),
-      ),
-      div`.home__content`(
-        messages(),
-      ),
-      div`.home__temp-right`(
-        messagesSearch(),
-      ),
-    )
+  const rightSidebarElement = rightSidebar();
+  const rightSidebarWrapper = div`.home__right_sidebar`(rightSidebarElement);
+
+  const container = div`.home`(
+    div`.home__sidebar`(
+      menu({ className: 'home__menu' }),
+      dialogs({ className: 'home__dialogs' }),
+    ),
+    div`.home__content`(
+      messages(),
+    ),
+    rightSidebarWrapper,
   );
+
+  const width = 360;
+
+  useObservable(rightSidebarElement, main.rightSidebarPanel, (panel) => {
+    getInterface(rightSidebarElement).setWidth(width);
+    rightSidebarWrapper.style.flexBasis = `${panel ? width : 0}px`;
+    rightSidebarWrapper.classList.toggle('visible', panel !== RightSidebarPanel.None);
+  });
+
+  return container;
 }

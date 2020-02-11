@@ -14,6 +14,8 @@
   }
 
   &__sidebar {
+    flex: 0 420px;
+    overflow: hidden;
     width: 26%;
     max-width: 420px;
     min-width: 360px;
@@ -56,6 +58,7 @@
 
   &__content {
     flex: 1 50%;
+    overflow: hidden;
     background: #E6EBEE;
 
     @include respond-to(small) {
@@ -88,13 +91,25 @@
     }
   }
 
-  &__temp-right {
-    // todo: Replace it with a proper right sidebar implementation
+  &__right_sidebar {
+    flex-grow: 0;
+    flex-shrink: 0;
+    overflow: hidden;
+    max-width: 420px;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    width: 420px;
-    max-width: 25%;
-    background: #fff;
-    border-left: 1px solid #dadce0;
+    justify-content: flex-start;
+    transition-property: flex-basis;
+    transition-duration: .15s;
+
+    &.visible {
+      border-left: 1px solid #EDEEF0;
+    }
+
+    @include respond-to(small) {
+      width: 100%;
+      max-width: 100%;
+    }
   }
 }

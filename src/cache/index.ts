@@ -1,7 +1,7 @@
 import { dialogToId, isDialogArchived, messageToId, peerMessageToId } from 'helpers/api';
 import Collection, { makeGetIdFromProp } from './fastStorages/collection';
 import Dictionary from './fastStorages/dictionary';
-import { Chat, Dialog, Message, User } from './types';
+import { Chat, Dialog, Message, User, MessageMedia, UserFull } from './types';
 import { orderBy } from './fastStorages/indices';
 import messageHistory from './fastStorages/indices/messageHistory';
 
@@ -72,6 +72,11 @@ export const dialogCache = new Collection({
   },
 });
 
+export const userFullCache = new Collection<UserFull, {}, number>({
+  getId: (userFull) => userFull.user.id,
+});
+
+export const mediaCache = new Dictionary<string, MessageMedia>();
 
 /**
  * File urls cache

@@ -1,21 +1,42 @@
-import { div, input } from 'core/html';
+import { div } from 'core/html';
 import { mount, listen } from 'core/dom';
-import { smile } from 'components/icons';
+import { smile, attach } from 'components/icons';
+import { message } from 'services';
+import { getInterface } from 'core/hooks';
+import { Document } from 'cache/types';
 import stickMojiPanel from './input_stickmoji';
+import messageTextarea from './input_textarea';
 import './input.scss';
 
 export default function messageInput() {
   const element = div`.msginput`();
+  const textarea = messageTextarea({ onSend: message.sendMessage });
   const emojiIcon = div`.msginput__emoji`(smile());
-  const stickmojiPanelEl = stickMojiPanel();
+  const attchIcon = div`.msginput__attach`(attach());
+  const stickmojiPanelEl = stickMojiPanel({
+    onSelectEmoji: (emoji: string) => {
+      getInterface(textarea).insertText(emoji);
+    },
+    onSelectSticker: (sticker: Document) => {
+      message.sendMediaMessage({
+        _: 'inputMediaDocument',
+        id: {
+          _: 'inputDocument',
+          id: sticker.id,
+          access_hash: sticker.access_hash,
+          file_reference: sticker.file_reference,
+        },
+      });
+    },
+  });
 
   const container = div`.msginput__container`(
     div`.msginput__bubble_wrap`(
       stickmojiPanelEl,
       div`.msginput__bubble`(
         emojiIcon,
-        input({ placeholder: 'Message', disabled: true }),
-        div`.msginput__icon_attach`(),
+        textarea,
+        attchIcon,
       ),
     ),
     div`.msginput__btn`(),

@@ -35,7 +35,10 @@
     left: 0;
     top: 0;
     background-size: cover;
-    opacity: .3;
+    opacity: .5;
+    filter: blur(5px);
+    clip-path: inset(0);
+    transform: scale(1.1);
   }
 
   &__loader {
@@ -68,6 +71,8 @@
 
     img {
       filter: blur(6px);
+      clip-path: inset(0);
+      transform: scale(1.06);
     }
 
     &.removed {
@@ -79,6 +84,7 @@
   &__preview {
     cursor: pointer;
     overflow: hidden;
+    z-index: 1;
 
     &.animated {
       animation: previewAppear .4s ease;

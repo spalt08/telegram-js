@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
-import { Message, Peer, AnyUpdateMessage, AnyUpdateShortMessage, Messages, MessagesNotModified } from 'cache/types';
+import { Message, Peer, AnyUpdateMessage, AnyUpdateShortMessage, Messages, MessagesNotModified, MessageCommon } from 'cache/types';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import { MessagesChunkReference } from 'cache/fastStorages/indices/messageHistory';
@@ -37,6 +37,8 @@ export default class MessagesService {
 
   history = new BehaviorSubject<Readonly<number[]>>([]);
 
+  pendingMessages: Record<string, MessageCommon> = {};
+
   protected cacheChunkRef?: MessagesChunkReference;
 
   constructor() {
@@ -67,6 +69,13 @@ export default class MessagesService {
       update.messages.forEach((messageId: number) => messageCache.remove(
         peerMessageToId({ _: 'peerChannel', channel_id: update.channel_id }, messageId),
       ));
+    });
+
+    client.updates.on('updateUserStatus', (update: any) => {
+      const user = userCache.get(update.user_id);
+      if (user) {
+        userCache.put({ ...user, status: update.status });
+      }
     });
   }
 
@@ -224,6 +233,39 @@ export default class MessagesService {
     }
   }
 
+  // protected loadMedia(peer: Peer, olderThanId = 0) {
+  //   if (this.isMediaLoading.value) return;
+
+  //   this.isMediaLoading.next(true);
+
+  //   const chunk = 35;
+  //   const payload = {
+  //     peer: peerToInputPeer(peer),
+  //     q: '',
+  //     filter: { _: 'inputMessagesFilterPhotoVideo' },
+  //     offset_id: olderThanId,
+  //     add_offset: 0,
+  //     limit: chunk,
+  //     max_id: 0,
+  //     min_id: 0,
+  //     hash: 0,
+  //   };
+
+  //   client.call('messages.search', payload, (_err: any, res: any) => {
+  //     try {
+  //       if (res) {
+  //         const data = res;
+
+  //         data.messages.forEach((message: Message) => {
+  //           if (message._ === 'message' && message.media._ === 'messageMediaPhoto') {
+  //             mediaCache.put(peerToId(peer), message.media);
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
+
   protected handleMessagePush(message: Message) {
     if (message._ === 'messageEmpty') {
       return;
@@ -231,4 +273,65 @@ export default class MessagesService {
 
     messageCache.indices.history.putNewestMessage(message);
   }
+
+  sendMessage = (message: string) => {
+    if (!this.activePeer.value) return;
+
+    const randId = Math.ceil(Math.random() * 0xFFFFFF).toString(16) + Math.ceil(Math.random() * 0xFFFFFF).toString(16);
+    const params = {
+      peer: peerToInputPeer(this.activePeer.value),
+      message,
+      random_id: randId,
+    };
+
+    this.pendingMessages[randId] = {
+      _: 'message',
+      id: 0,
+      out: true,
+      from_id: client.getUserID(),
+      to_id: this.activePeer.value,
+      date: Math.floor(Date.now() / 1000),
+      media: {
+        _: 'messageMediaEmpty',
+      },
+      entities: [],
+      message,
+    };
+
+    client.call('messages.sendMessage', params, (err, result) => {
+      console.log('After sending', err, result);
+      if (err) {
+        // todo handling errors
+      }
+
+      if (result._ === 'updateShortSentMessage') {
+        this.pendingMessages[randId].id = result.id;
+        this.pendingMessages[randId].date = result.date;
+        this.pendingMessages[randId].entities = result.entities;
+
+        messageCache.indices.history.putNewestMessage(this.pendingMessages[randId]);
+        delete this.pendingMessages[randId];
+      }
+    });
+  };
+
+  sendMediaMessage = (inputMedia: any) => {
+    if (!this.activePeer.value) return;
+
+    const randId = Math.ceil(Math.random() * 0xFFFFFF).toString(16) + Math.ceil(Math.random() * 0xFFFFFF).toString(16);
+    const params = {
+      peer: peerToInputPeer(this.activePeer.value),
+      message: '',
+      media: inputMedia,
+      random_id: randId,
+    };
+
+    client.call('messages.sendMedia', params, (err, result) => {
+      if (err) {
+        // todo handling errors
+      }
+
+      console.log('After sending', err, result);
+    });
+  };
 }

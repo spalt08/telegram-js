@@ -1,0 +1,27 @@
+.searchPanel {
+  display: flex;
+  flex-direction: column;
+
+  &__name {
+    font-weight: 500;
+    font-size: 20px;
+    padding-top: 15px;
+  }
+
+  &__title {
+    font-weight: 500;
+    font-size: 20px;
+    flex: 1;
+    padding-top: 2px;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    margin: 14px 10px;
+
+    & button {
+      margin: 0 11px;
+    }
+  }
+}
