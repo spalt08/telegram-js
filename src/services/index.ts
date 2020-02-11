@@ -14,4 +14,4 @@ export const message = new MessageService();
 export const dialog = new DialogService();
 export const media = new MediaService();
 export const user = new UserService();
-export const messageSearch = new MessageSearchService(message);
+export const messageSearch = new MessageSearchService();

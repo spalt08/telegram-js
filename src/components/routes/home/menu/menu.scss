@@ -7,26 +7,16 @@
   padding: 0 20px;
   cursor: not-allowed;
 
+  > * {
+    pointer-events: none;
+  }
+
   &__burger {
-    padding: 6PX;
-    margin-right: 16px;
-    display: flex;
-    justify-content: left;
-    align-items: center;
-    cursor: not-allowed;
-
-    &_icon {
-      width: 24PX;
-
-      path {
-        fill: #707579;
-      }
-    }
+    flex: none;
+    margin: 0 12px 0 -8px;
   }
 
   &__search {
     flex: 1 50%;
-    cursor: not-allowed;
-    pointer-events: none;
   }
 }

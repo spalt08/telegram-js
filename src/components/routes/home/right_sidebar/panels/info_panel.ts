@@ -13,7 +13,7 @@ export default function infoPanel(peer: Peer) {
   return (
     div`.infoPanel`(
       div`.infoPanel__header`(
-        roundButton({ className: 'header_button close_button', onClick: () => main.setRightSidebarPanel(RightSidebarPanel.None) }, close()),
+        roundButton({ onClick: () => main.setRightSidebarPanel(RightSidebarPanel.None) }, close()),
         div`.infoPanel__title`(text('Info')),
         roundButton({ disabled: true }, edit()),
         roundButton({ disabled: true }, more())),
