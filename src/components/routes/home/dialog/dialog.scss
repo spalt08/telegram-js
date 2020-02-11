@@ -35,7 +35,7 @@
       background-color: #F1F3F4;
     }
 
-    & .ripple__content {
+    &_content {
       display: flex;
       flex-direction: row;
       width: 100%;
@@ -133,7 +133,7 @@
       color: #000000;
     }
   }
-  
+
   &__badge {
     background-color: #4CCD5E;
     color: #FFFFFF;

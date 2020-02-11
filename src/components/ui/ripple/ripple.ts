@@ -5,13 +5,14 @@ import './ripple.scss';
 
 interface Props extends Record<string, any> {
   tag?: keyof HTMLElementTagNameMap;
+  contentClass?: string;
 }
 
 /**
  * Any HTML element with click ripple animation
  */
-export default function ripple({ tag = 'div', className = '', ...props }: Props, children: Node[] = []) {
-  const contentEl = div`.ripple__content`(...children);
+export default function ripple({ tag = 'div', className = '', contentClass = '', ...props }: Props, children: Node[] = []) {
+  const contentEl = div`.ripple__content ${contentClass}`(...children);
   const element = el(tag, { className: `ripple ${className}`, ...props }, [contentEl]);
 
   listen(element, 'click', (event) => {

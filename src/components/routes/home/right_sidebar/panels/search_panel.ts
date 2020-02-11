@@ -9,6 +9,7 @@ import { searchInput, VirtualizedList } from 'components/ui';
 import { getInterface, useOnMount, useToBehaviorSubject } from 'core/hooks';
 import { mount } from 'core/dom';
 import { peerMessageToId } from 'helpers/api';
+import { foundMessage } from 'components/sidebar';
 import './search_panel.scss';
 
 export default function searchPanel(peer: Peer) {
@@ -36,9 +37,8 @@ export default function searchPanel(peer: Peer) {
     items: resultIdsSubject,
     threshold: 2,
     batch: 30,
-    renderer(id: string) {
-      // todo: Style the messages
-      return div(text(`Message #${id}`));
+    renderer(id) {
+      return foundMessage(id, messageSearch.result.value.request);
     },
     onReachBottom() {
       messageSearch.loadMore();

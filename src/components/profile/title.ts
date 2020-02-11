@@ -1,31 +1,48 @@
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { text } from 'core/html';
 import { userCache, chatCache } from 'cache';
 import { Peer } from 'cache/types';
-import './avatar.scss';
+import { auth } from 'services';
 
-export default function profileTitle(peer: Peer) {
+const unknownTitle = 'Unknown';
+
+export default function profileTitle(peer: Peer, isForDialogList = false) {
+  const textNode = text(unknownTitle);
+  let nameObservable: Observable<string> | undefined;
+
   switch (peer._) {
-    case 'peerUser': {
-      const user = userCache.get(peer.user_id);
-      if (user) return text(`${user.first_name} ${user.last_name}`);
+    case 'peerUser':
+      nameObservable = userCache.useItemBehaviorSubject(textNode, peer.user_id)
+        .pipe(map((user) => {
+          if (!user) {
+            return unknownTitle;
+          }
+          if (user.id === auth.userID && isForDialogList) {
+            return 'Saved Messages';
+          }
+          return `${user.first_name} ${user.last_name}`;
+        }));
       break;
-    }
 
-    case 'peerChat': {
-      const chat = chatCache.get(peer.chat_id);
-      if (chat) return text(`${chat.title}`);
+    case 'peerChat':
+      nameObservable = chatCache.useItemBehaviorSubject(textNode, peer.chat_id)
+        .pipe(map((chat) => chat ? chat.title : unknownTitle));
       break;
-    }
 
-    case 'peerChannel': {
-      const channel = chatCache.get(peer.channel_id);
-      if (channel) return text(`${channel.title}`);
+    case 'peerChannel':
+      nameObservable = chatCache.useItemBehaviorSubject(textNode, peer.channel_id)
+        .pipe(map((chat) => chat ? chat.title : unknownTitle));
       break;
-    }
 
     default:
-      return text('');
   }
 
-  return text('');
+  if (nameObservable) {
+    nameObservable.subscribe((name) => {
+      textNode.textContent = name;
+    });
+  }
+
+  return textNode;
 }

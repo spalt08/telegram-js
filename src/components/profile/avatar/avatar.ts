@@ -17,7 +17,7 @@ function isDeletedAccount(peer: Peer) {
   return (peer._ === 'peerUser' && (userCache.get(peer.user_id)?.deleted ?? true));
 }
 
-export default function profileAvatar(peer: Peer, message?: Message, showSavedMessagesBadge = false) {
+export default function profileAvatar(peer: Peer, message?: Message, isForDialogList = false) {
   const me = isMyself(peer);
   const deletedAccount = isDeletedAccount(peer);
   const container = div`.avatar`();
@@ -26,7 +26,7 @@ export default function profileAvatar(peer: Peer, message?: Message, showSavedMe
 
   const preview = (src: string | null) => {
     if (!src) {
-      if (me && showSavedMessagesBadge) {
+      if (me && isForDialogList) {
         defaultPicture = div`.avatar__predefined`(
           savedmessages(),
         );

@@ -8,7 +8,7 @@ import { datetime, ripple } from 'components/ui';
 import { message } from 'services';
 import { pinnedchat } from 'components/icons';
 import { peerMessageToId, peerToId } from 'helpers/api';
-import peerTitle from './peer_title';
+import { profileTitle } from 'components/profile';
 import dialogMessage from './dialog_message';
 import dialogPicture from './dialog_picture';
 import './dialog.scss';
@@ -24,11 +24,11 @@ export default function dialogPreview(id: string) {
   const date = div`.dialog__date`();
 
   const clickable = (
-    ripple({ className: 'dialog__clickable' }, [
+    ripple({ className: 'dialog__clickable', contentClass: 'dialog__clickable_content' }, [
       dialogPicture(peer),
       div`.dialog__content`(
         div`.dialog__header`(
-          div`.dialog__title`(peerTitle(peer)),
+          div`.dialog__title`(profileTitle(peer, true)),
           date,
         ),
         preview,
