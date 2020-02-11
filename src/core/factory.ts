@@ -117,7 +117,3 @@ export function svgCodeToComponent(code: string) {
     return svgCopy;
   };
 }
-
-export function createFragment() {
-  return document.createDocumentFragment();
-}

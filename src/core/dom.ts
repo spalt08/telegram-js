@@ -248,14 +248,21 @@ export function el(tag: string, props: Record<string, any> = {}, children: Node[
   }
 
   // Mounting children
-  if (children.length > 0) {
-    for (let i = 0; i < children.length; i += 1) {
-      element.appendChild(children[i]);
-    }
+  for (let i = 0; i < children.length; i += 1) {
+    element.appendChild(children[i]);
   }
 
   return element;
 }
+
+export function createFragment(children: ArrayLike<Node> = []) {
+  const fragment = document.createDocumentFragment();
+  for (let i = 0; i < children.length; i += 1) {
+    fragment.appendChild(children[i]);
+  }
+  return fragment;
+}
+
 
 export function blurAll(insideElement?: Node) {
   const focusedElement = document.activeElement;
