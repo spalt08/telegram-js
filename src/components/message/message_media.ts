@@ -13,9 +13,11 @@ export default function messageMedia(media: MessageMedia, message: MessageCommon
       if (getAttributeSticker(media.document)) {
         return mediaSticker(media.document);
       }
+      // console.log(media);
       break;
 
     default:
+      // console.log(media);
       return null;
   }
 
