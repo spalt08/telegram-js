@@ -51,7 +51,7 @@ export default function messages() {
     if (focus && service.activePeer.value) {
       scroll.focus(
         peerMessageToId(service.activePeer.value, focus.id),
-        focus.direction === MessageDirection.Newer ? 1 : -1,
+        focus.direction === MessageDirection.Newer ? -1 : 1,
       );
     }
   });

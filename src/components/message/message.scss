@@ -1,22 +1,25 @@
 @import '~styles/variables.scss';
 
 .message {
-  font-size: 15px;
-  margin: auto;
-  padding: 2.5px 20px;
-  max-width: 740px;
   width: 100%;
-  display: flex;
 
   // transition: transform background-color .3s ease;
   // transition-delay: .6s;
-
-  &.focused {
-    transition: none;
-    background-color: rgba(0, 132, 255, 0.2);
+  &.focused &__align {
+    background-color: rgba(0, 132, 255, 0.3);
   }
 
-  &.out {
+  &__align {
+    transition: background-color .4s ease;
+    padding: 2px 20px;
+    width: 100%;
+    max-width: 740px;
+    font-size: 15px;
+    margin: auto;
+    display: flex;
+  }
+
+  &.out &__align {
     flex-direction: row-reverse;
   }
 
@@ -114,7 +117,7 @@
     bottom: 1PX;
   }
 
-  &.chat {
+  &.chat &__align {
     padding-left: 58px;
   }
 
@@ -137,7 +140,7 @@
     display: none;
   }
 
-  &.last, &:last-child {
+  &.last &__align, &:last-child &__align {
     padding-left: 20PX;
 
     & .avatar {

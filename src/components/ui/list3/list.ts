@@ -106,7 +106,7 @@ export class VirtualizedList {
   focused?: string;
 
   /** Element that should be focused */
-  focusedDirection: number = -1;
+  focusedDirection?: number | undefined;
 
   /** Virst visible element at viewport */
   topElement?: string;
@@ -250,7 +250,9 @@ export class VirtualizedList {
     const focusedIndex = this.focused ? next.indexOf(this.focused) : -1;
 
     if (focusedIndex !== -1 && this.focused) {
-      // todo handle changes
+      this.scrollVirtualizedRemove();
+      this.first = -1;
+      this.last = -2;
       this.updateData(next);
       this.scrollVirtualizedTo(this.focused, this.focusedDirection);
       this.focused = undefined;
@@ -605,7 +607,7 @@ export class VirtualizedList {
   }
 
   // scrollTo(item)
-  focus(item: string, direction: number = -1) {
+  focus(item: string, direction?: number) {
     const index = this.current.indexOf(item);
 
     // data wasn't loaded yet
@@ -617,7 +619,7 @@ export class VirtualizedList {
 
     // make transition
     if (index < this.first || index > this.last) {
-      this.scrollVirtualizedTo(item, index < this.first ? 1 : -1);
+      this.scrollVirtualizedTo(item, direction || (index < this.first ? 1 : -1));
       return;
     }
 
@@ -638,11 +640,7 @@ export class VirtualizedList {
     this.last = -2;
   }
 
-  scrollVirtualizedTo(item: string, direction: number = -1) {
-    if (this.current.indexOf(item) === -1) return;
-
-    this.lock();
-
+  scrollVirtualizedRemove() {
     // shrink elements to viewport
     let height = 0;
     let end = this.topElement ? this.current.indexOf(this.topElement) : this.first;
@@ -684,9 +682,20 @@ export class VirtualizedList {
       // }
     }
 
+    return [start, end, height || this.viewport.height];
+  }
+
+  scrollVirtualizedTo(item: string, direction: number = -1) {
+    if (this.current.indexOf(item) === -1) return;
+
+    this.lock();
+    const [, end, height] = this.scrollVirtualizedRemove();
+
     // display new elements
     this.first = Math.max((direction < 0) ? end : 0, this.current.indexOf(item) - Math.ceil(this.cfg.scrollBatch / 2));
-    this.last = Math.min((direction > 0) ? start - 1 : this.current.length - 1, this.current.indexOf(item) + Math.ceil(this.cfg.scrollBatch / 2));
+    this.last = Math.min(this.current.length - 1, this.current.indexOf(item) + Math.ceil(this.cfg.scrollBatch / 2));
+
+    this.elements[item].classList.add('focused');
 
     for (let i = this.first; i <= this.last; i++) {
       const nitem = this.current[i];
@@ -719,6 +728,8 @@ export class VirtualizedList {
 
     setTimeout(() => {
       this.isLocked = false;
+      this.elements[item].classList.remove('focused');
+      this.scrollTop = this.container.scrollTop;
       this.virtualize();
     }, 300);
   }
@@ -744,7 +755,7 @@ export class VirtualizedList {
     let start: number | undefined;
 
     const elm = this.elements[item];
-    elm.classList.remove('focused');
+    elm.classList.add('focused');
 
     const animateScroll = (timestamp: number) => {
       if (!start) start = timestamp;

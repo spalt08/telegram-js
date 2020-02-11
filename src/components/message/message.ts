@@ -21,7 +21,7 @@ interface MessageHooks {
 
 export default function message(uniqueId: string, peer: Peer) {
   const inner = div`.message__inner`();
-  const container = div`.message`(inner);
+  const container = div`.message`(div`.message__align`(inner));
   const subject = messageCache.useItemBehaviorSubject(container, uniqueId);
   const msg = subject.value;
 
