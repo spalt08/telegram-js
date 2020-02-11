@@ -144,10 +144,17 @@ export default class Dictionary<TKey extends keyof any, TItem> {
     const currentItem = this.data[key];
     if (currentItem) {
       if (item !== currentItem) {
-        if (!this.considerMin || (currentItem as WithMin<TItem>).min) {
-          this.data[key] = item;
-          this.notify('update', key, item);
+        let itemToPut: Readonly<TItem>;
+
+        if (this.considerMin && (currentItem as WithMin<TItem>).min) {
+          const { min, ...itemWithoutMin } = item as WithMin<TItem>;
+          itemToPut = { ...currentItem, ...itemWithoutMin };
+        } else {
+          itemToPut = item;
         }
+
+        this.data[key] = itemToPut;
+        this.notify('update', key, itemToPut);
       }
     } else {
       this.data[key] = item;

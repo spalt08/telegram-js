@@ -30,7 +30,7 @@
     "new-cap": "off",
     "class-methods-use-this": "off",
     "function-paren-newline": "off",
-    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_", "ignoreRestSiblings": true }],
     "no-confusing-arrow": "off",
     "@typescript-eslint/camelcase": "off",
     "import/prefer-default-export": "off",
