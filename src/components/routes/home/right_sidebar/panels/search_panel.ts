@@ -5,12 +5,20 @@ import { isSearchRequestEmpty } from 'services/message_search/message_search_ses
 import roundButton from 'components/ui/round_button/round_button';
 import { Peer } from 'cache/types';
 import * as icons from 'components/icons';
-import { searchInput } from 'components/ui';
-import { getInterface, useOnMount } from 'core/hooks';
+import { searchInput, VirtualizedList } from 'components/ui';
+import { getInterface, useOnMount, useToBehaviorSubject } from 'core/hooks';
+import { mount } from 'core/dom';
 import './search_panel.scss';
 
 export default function searchPanel(peer: Peer) {
   messageSearch.setPeer(peer);
+
+  const rootEl = div`.messagesSearch`();
+  const [resultIdsSubject] = useToBehaviorSubject(
+    rootEl,
+    messageSearch.result.pipe(map((result) => result.ids.map(String))),
+    [],
+  );
 
   const searchInputEl = searchInput({
     placeholder: 'Search Messages',
@@ -20,27 +28,41 @@ export default function searchPanel(peer: Peer) {
       messageSearch.search(value);
     },
   });
-
   useOnMount(searchInputEl, () => getInterface(searchInputEl).focus());
 
-  return div`.messagesSearch`(
-    div`.messagesSearch__header`(
-      roundButton({
-        className: 'messagesSearch__close',
-        onClick: () => mainService.setRightSidebarPanel(RightSidebarPanel.None),
-      }, icons.close()),
-      searchInputEl,
-    ),
-    div`.messagesSearch__summary`(
-      text(messageSearch.result.pipe(map((result) => {
-        if (isSearchRequestEmpty(result.request)) {
-          return '\u00a0'; // Non-breaking space
-        }
-        if (result.count === 0) {
-          return 'Nothing is found';
-        }
-        return `${result.count} message${result.count === 1 ? '' : 's'} found`;
-      }))),
-    ),
-  );
+  const resultList = new VirtualizedList({
+    className: 'messagesSearch__messages',
+    items: resultIdsSubject,
+    threshold: 2,
+    batch: 30,
+    renderer(id: string) {
+      // todo: Style the messages
+      return div(text(`Message #${id}`));
+    },
+    onReachBottom() {
+      messageSearch.loadMore();
+    },
+  });
+
+  mount(rootEl, div`.messagesSearch__header`(
+    roundButton({
+      className: 'messagesSearch__close',
+      onClick: () => mainService.setRightSidebarPanel(RightSidebarPanel.None),
+    }, icons.close()),
+    searchInputEl,
+  ));
+  mount(rootEl, div`.messagesSearch__summary`(
+    text(messageSearch.result.pipe(map((result) => {
+      if (isSearchRequestEmpty(result.request)) {
+        return '\u00a0'; // Non-breaking space
+      }
+      if (result.count === 0) {
+        return 'Nothing is found';
+      }
+      return `${result.count} message${result.count === 1 ? '' : 's'} found`;
+    }))),
+  ));
+  mount(rootEl, resultList.wrapper);
+
+  return rootEl;
 }

@@ -1,5 +1,5 @@
 .messagesSearch {
-  flex: auto;
+  height: 100%;
   display: flex;
   flex-direction: column;
 
@@ -26,5 +26,11 @@
     color: #707579;
     font-size: 16px;
     font-weight: 500;
+  }
+
+  &__messages {
+    flex: auto;
+    display: flex;
+    flex-direction: column;
   }
 }
