@@ -78,3 +78,8 @@ export function mergeOrderedArrays<T>(
   destination.splice(startIndex, endIndex - startIndex, ...intersection);
   return true;
 }
+
+// From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#Escaping
+export function escapeRegExp(string: string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}

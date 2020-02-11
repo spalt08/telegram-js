@@ -21,6 +21,7 @@ export default function searchPanel(peer: Peer) {
     messageSearch.result.pipe(map((result) => result.ids.map((id) => peerMessageToId(peer, id)))),
     [],
   );
+  const resultQueryObservable = messageSearch.result.pipe(map((result) => result.request));
 
   const searchInputEl = searchInput({
     placeholder: 'Search Messages',
@@ -38,7 +39,7 @@ export default function searchPanel(peer: Peer) {
     threshold: 2,
     batch: 30,
     renderer(id) {
-      return foundMessage(id, messageSearch.result.value.request);
+      return foundMessage(id, resultQueryObservable);
     },
     onReachBottom() {
       messageSearch.loadMore();

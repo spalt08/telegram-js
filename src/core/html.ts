@@ -1,6 +1,7 @@
-import { ElementFactory, createFragment } from './factory';
+import { ElementFactory } from './factory';
 import { useMaybeObservable } from './hooks';
-import { MaybeObservable } from './types'; // eslint-disable-line import/named
+import { MaybeObservable } from './types';
+import { createFragment } from './dom';
 
 /**
  * Syntax sugar for rendering HTML tree
@@ -41,4 +42,4 @@ export function text(value: MaybeObservable<{ toString(): string; }>) {
 }
 
 export const nothing = text('');
-export const fragment = createFragment;
+export const fragment = (...nodes: Node[]) => createFragment(nodes);
