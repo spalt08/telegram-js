@@ -48,7 +48,7 @@ export default function message(uniqueId: string, peer: Peer) {
     let shouldRerender = false;
 
     // mount picture if it is first call
-    if ((!picture || !prev) && !out && peer._ !== 'peerUser') {
+    if ((!picture || !prev) && !out && peer._ !== 'peerUser' && msg.from_id !== 0) {
       const fromPeer = userIdToPeer(msg.from_id);
       picture = profileAvatar(fromPeer, next);
       title = div`.message__title${`color-${idToColorCode(next.from_id)}`}`(profileTitle(fromPeer));
