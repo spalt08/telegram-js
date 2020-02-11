@@ -225,15 +225,18 @@ export class VirtualizedList {
     }
 
     this.pendingRecalculate = [];
+    console.log(this.heights);
   }
 
   updateOffsets() {
     let offset = 0;
     for (let i = this.first; i <= this.last; i++) {
       const item = this.current[i];
+      console.log(item, this.heights[item]);
       this.offsets[item] = offset;
       offset += this.heights[item];
     }
+    console.log(this.offsets);
   }
 
   // hard update only keys without rendering
@@ -487,7 +490,6 @@ export class VirtualizedList {
       for (let i = 0; i < count; i += 1) this.mount(this.current[++this.last]);
 
       this.scrollHeight = this.container.scrollHeight;
-      this.updateOffsets();
 
       // set initial scroll position
       if (this.cfg.pivotBottom) this.container.scrollTop = this.scrollTop = this.scrollHeight - this.viewport.height;
@@ -542,13 +544,13 @@ export class VirtualizedList {
       if (this.cfg.onReachBottom && this.current.length - this.last - 1 <= this.cfg.batch * 3) this.cfg.onReachBottom();
     }
 
+    if (this.pendingRecalculate.length > 0) this.updateHeigths();
+
     // update scroll inner content height
     if (prevFirst !== this.first || prevLast !== this.last) {
       this.updateOffsets();
       this.scrollHeight = this.container.scrollHeight;
     }
-
-    if (this.pendingRecalculate.length > 0) this.updateHeigths();
 
     // keep scroll position if top elements was added
     if (prevFirst > this.first) {
@@ -719,8 +721,10 @@ export class VirtualizedList {
 
   getScrollToValue(item: string, centered: boolean = true) {
     let scrollValue = this.offsets[item];
+    console.log(scrollValue);
     if (centered && this.viewport.height > this.heights[item]) scrollValue -= (this.viewport.height - this.heights[item]) / 2;
 
+    console.log(scrollValue);
     scrollValue = Math.max(0, scrollValue);
     scrollValue = Math.min(this.scrollHeight - this.viewport.height, scrollValue);
 
@@ -737,6 +741,7 @@ export class VirtualizedList {
     const duration = 300;
     let start: number | undefined;
 
+    console.log('scroll', y, dy);
     const elm = this.elements[item];
     elm.classList.remove('focused');
 
