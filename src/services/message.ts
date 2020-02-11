@@ -6,7 +6,7 @@ import { peerToInputPeer } from 'cache/accessors';
 import { MessagesChunkReference } from 'cache/fastStorages/indices/messageHistory';
 import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage, shortChatMessageToMessage } from 'helpers/api';
 
-const enum Direction {
+export const enum Direction {
   Older,
   Newer,
   Around,
@@ -29,13 +29,13 @@ const DIRECTION_TO_SIDE: Record<Direction, LoadingSide[]> = {
  * Singleton service class for handling messages stuff
  */
 export default class MessagesService {
-  activePeer = new BehaviorSubject<Peer | null>(null);
+  readonly activePeer = new BehaviorSubject<Peer | null>(null);
 
-  loadingSides = new BehaviorSubject<LoadingSide[]>([]);
+  readonly loadingSides = new BehaviorSubject<LoadingSide[]>([]);
 
-  focusedMessageId = new BehaviorSubject<number | undefined>(undefined);
+  readonly focusedMessage = new BehaviorSubject<{ id: number, direction: Direction } | null>(null);
 
-  history = new BehaviorSubject<Readonly<number[]>>([]);
+  readonly history = new BehaviorSubject<Readonly<number[]>>([]);
 
   pendingMessages: Record<string, MessageCommon> = {};
 
@@ -79,32 +79,58 @@ export default class MessagesService {
     });
   }
 
-  selectPeer(peer: Peer | null) {
-    if (
-      (peer && this.activePeer.value && peerToId(peer) === peerToId(this.activePeer.value))
-      || (!peer && !this.activePeer.value)
-    ) {
-      return;
-    }
+  /**
+   * messageId values:
+   * - number - message sequential id to scroll to;
+   * - undefined - scroll to the start of the history;
+   */
+  selectPeer(peer: Peer | null, messageId?: number) {
+    // eslint-disable-next-line no-param-reassign
+    messageId = messageId || Infinity;
 
-    if (this.cacheChunkRef) {
-      this.cacheChunkRef.revoke();
-      this.cacheChunkRef = undefined;
-    }
+    const isPeerChanged = (this.activePeer.value && peerToId(this.activePeer.value)) !== (peer && peerToId(peer));
 
-    this.loadingSides.next([]);
-    this.activePeer.next(peer);
-    this.focusedMessageId.next(undefined);
-
-    if (peer) {
-      this.cacheChunkRef = messageCache.indices.history.makeChunkReference(peer, Infinity);
-      this.cacheChunkRef.history.subscribe(({ ids }) => this.history.next(ids));
-      const { ids } = this.cacheChunkRef.history.value;
-      if (ids.length < LOAD_CHUNK_LENGTH) {
-        this.loadMessages(this.cacheChunkRef, Direction.Older, ids[0] /* undefined is welcome here */);
+    let isChunkChanged = false;
+    let focusedMessageDirection = Direction.Around;
+    if (isPeerChanged) {
+      isChunkChanged = true;
+    } else if (this.cacheChunkRef) {
+      const messagePosition = this.cacheChunkRef.getMessagePosition(messageId || Infinity);
+      if (messagePosition !== 0) {
+        isChunkChanged = true;
+        focusedMessageDirection = messagePosition < 0 ? Direction.Older : Direction.Newer;
       }
-      if (ids.length > 0) {
-        this.loadMessages(this.cacheChunkRef, Direction.Newer, ids[0], 0);
+    }
+
+    if (isPeerChanged) {
+      this.activePeer.next(peer);
+    }
+
+    this.focusedMessage.next(peer && messageId !== Infinity ? { id: messageId, direction: focusedMessageDirection } : null);
+
+    if (isChunkChanged) {
+      if (this.cacheChunkRef) {
+        this.cacheChunkRef.revoke();
+        this.loadingSides.next([]);
+      }
+
+      if (peer) {
+        this.cacheChunkRef = messageCache.indices.history.makeChunkReference(peer, messageId);
+        this.cacheChunkRef.history.subscribe(({ ids }) => this.history.next(ids));
+
+        if (messageId !== Infinity) {
+          this.loadMessages(this.cacheChunkRef, Direction.Around, messageId);
+        } else {
+          const { ids } = this.cacheChunkRef.history.value;
+          if (ids.length < LOAD_CHUNK_LENGTH) {
+            this.loadMessages(this.cacheChunkRef, Direction.Older, ids[0] /* undefined is welcome here */);
+          }
+          if (ids.length > 0) {
+            this.loadMessages(this.cacheChunkRef, Direction.Newer, ids[0], 0);
+          }
+        }
+      } else {
+        this.cacheChunkRef = undefined;
       }
     }
   }
@@ -222,14 +248,25 @@ export default class MessagesService {
     });
   }
 
-  loadMoreHistory() {
+  loadMoreHistory(direction: Direction.Newer | Direction.Older) {
     if (!this.cacheChunkRef) {
       return;
     }
     const history = this.cacheChunkRef.history.value;
-    if (!history.oldestReached) {
-      const offset_id = history.ids[history.ids.length - 1];
-      this.loadMessages(this.cacheChunkRef, Direction.Older, offset_id);
+    switch (direction) {
+      case Direction.Newer:
+        if (!history.newestReached) {
+          const offset_id = history.ids[0];
+          this.loadMessages(this.cacheChunkRef, Direction.Newer, offset_id);
+        }
+        break;
+      case Direction.Older:
+        if (!history.oldestReached) {
+          const offset_id = history.ids[history.ids.length - 1];
+          this.loadMessages(this.cacheChunkRef, Direction.Older, offset_id);
+        }
+        break;
+      default:
     }
   }
 

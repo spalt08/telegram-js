@@ -6,6 +6,7 @@ import { profileAvatar, profileTitle } from 'components/profile';
 import { MaybeObservable } from 'core/types';
 import { mount, unmount } from 'core/dom';
 import { useMaybeObservable } from 'core/hooks';
+import { message as messageService } from 'services';
 import './found_message.scss';
 
 export default function foundMessage(messageUniqueId: string, searchQuery: MaybeObservable<string> = '') {
@@ -25,7 +26,7 @@ export default function foundMessage(messageUniqueId: string, searchQuery: Maybe
   }
 
   const dialogPeer = messageToDialogPeer(message);
-  const fromPeer = userIdToPeer(message.from_id);
+  const senderPeer = userIdToPeer(message.from_id);
 
   const messageEl = div`.foundMessage__message`();
   if (message._ === 'message') {
@@ -48,15 +49,14 @@ export default function foundMessage(messageUniqueId: string, searchQuery: Maybe
       className: 'foundMessage__ripple',
       contentClass: 'foundMessage__ripple_content',
       onClick() {
-        // todo: Implement jumping to message
-        console.log('Go to message', { peer: dialogPeer, id: message.id });
+        messageService.selectPeer(dialogPeer, message.id);
       },
     }, [
-      profileAvatar(fromPeer, message),
+      profileAvatar(senderPeer, message),
       div`.foundMessage__main`(
         div`.foundMessage__header`(
           div`.foundMessage__name`(
-            profileTitle(fromPeer),
+            profileTitle(senderPeer),
           ),
           datetime({ timestamp: message.date, className: 'foundMessage__time' }),
         ),

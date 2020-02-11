@@ -4,6 +4,7 @@ import { div } from 'core/html';
 import { mount, unmount } from 'core/dom';
 import { useObservable } from 'core/hooks';
 import { message as service } from 'services';
+import { Direction as MessageDirection } from 'services/message';
 import message from 'components/message/message';
 import { sectionSpinner, VirtualizedList } from 'components/ui';
 import messageInput from 'components/message/input/input';
@@ -38,16 +39,20 @@ export default function messages() {
     threshold: 2,
     batch: 35,
     renderer: (id: string) => message(id, service.activePeer.value!),
-    onReachTop: () => service.loadMoreHistory(),
+    onReachTop: () => service.loadMoreHistory(MessageDirection.Older),
+    onReachBottom: () => service.loadMoreHistory(MessageDirection.Newer),
   });
 
   mount(element, scroll.wrapper, element.lastElementChild!);
 
   // Make the list scroll to bottom on an active peer change
   useObservable(element, service.activePeer, () => scroll.clear());
-  useObservable(element, service.focusedMessageId, (id) => {
-    if (id && service.activePeer.value) {
-      scroll.focus(peerMessageToId(service.activePeer.value, id));
+  useObservable(element, service.focusedMessage, (focus) => {
+    if (focus && service.activePeer.value) {
+      scroll.focus(
+        peerMessageToId(service.activePeer.value, focus.id),
+        focus.direction === MessageDirection.Newer ? 1 : -1,
+      );
     }
   });
 
