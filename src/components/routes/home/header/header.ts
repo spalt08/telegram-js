@@ -3,19 +3,22 @@ import { useObservable } from 'core/hooks';
 import { div } from 'core/html';
 import { unmountChildren, mount } from 'core/dom';
 import { profileAvatar } from 'components/profile';
-import './header.scss';
 import roundButton from 'components/ui/round_button/round_button';
 import { more, search } from 'components/icons';
 import { onlineStatus } from 'components/ui';
 import peerTitle from '../dialog/peer_title';
+import './header.scss';
 
 export default function header() {
   const container = div`.header.hidden`();
 
   useObservable(container, message.activePeer, (peer) => {
-    if (!peer) return;
-
     unmountChildren(container);
+
+    if (!peer) {
+      container.classList.add('hidden');
+      return;
+    }
 
     const profile = div`.header__profile`(
       profileAvatar(peer, undefined, true),

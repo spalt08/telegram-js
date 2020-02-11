@@ -1,27 +1,36 @@
-.searchPanel {
+.messagesSearch {
+  height: 100%;
   display: flex;
   flex-direction: column;
 
-  &__name {
-    font-weight: 500;
-    font-size: 20px;
-    padding-top: 15px;
-  }
-
-  &__title {
-    font-weight: 500;
-    font-size: 20px;
-    flex: 1;
-    padding-top: 2px;
-  }
-
   &__header {
+    flex: none;
+    height: 62px;
     display: flex;
     align-items: center;
-    margin: 14px 10px;
+    padding: 0 20px;
+  }
 
-    & button {
-      margin: 0 11px;
-    }
+  &__close {
+    flex: none;
+    margin: 0 12px 0 -8px;
+  }
+
+  &__input {
+    flex: auto;
+  }
+
+  &__summary {
+    flex: none;
+    padding: 15px 24px;
+    color: #707579;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  &__messages {
+    flex: auto;
+    display: flex;
+    flex-direction: column;
   }
 }

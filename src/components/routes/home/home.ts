@@ -4,8 +4,8 @@ import { main, RightSidebarPanel } from 'services';
 import messages from './messages';
 import dialogs from './dialogs';
 import menu from './menu/menu';
-import './home.scss';
 import rightSidebar from './right_sidebar/right_sidebar';
+import './home.scss';
 
 /**
  * Handler for route /

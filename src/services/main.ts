@@ -2,7 +2,7 @@ import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { Photo, Message } from 'cache/types';
 
-export enum RightSidebarPanel {
+export const enum RightSidebarPanel {
   None,
   Info,
   Search
