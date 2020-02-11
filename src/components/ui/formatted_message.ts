@@ -1,7 +1,7 @@
 import { MessageEntity, MessageCommon } from 'cache/types';
 import { strong, text, code, pre, em, a, fragment } from 'core/html';
 import { mount } from 'core/dom';
-import { newWindowLinkAttributes } from '../../../const';
+import { newWindowLinkAttributes } from 'const';
 
 interface TreeNode {
   children: TreeNode[];

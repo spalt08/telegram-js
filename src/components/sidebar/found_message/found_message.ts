@@ -1,52 +1,14 @@
-import { div, fragment, mark, text } from 'core/html';
-import { datetime, ripple } from 'components/ui';
+import { div, text } from 'core/html';
+import { datetime, highlightSearchMatch, ripple } from 'components/ui';
 import { messageCache } from 'cache';
-import { MessageCommon } from 'cache/types';
 import { messageToDialogPeer, userIdToPeer } from 'helpers/api';
-import { escapeRegExp } from 'helpers/data';
 import { profileAvatar, profileTitle } from 'components/profile';
+import { MaybeObservable } from 'core/types';
+import { mount, unmount } from 'core/dom';
+import { useMaybeObservable } from 'core/hooks';
 import './found_message.scss';
 
-const HIGHLIGHT_MAX_LENGTH = 100;
-const HIGHLIGHT_MAX_START_OFFSET = 10;
-
-let lastSearchQuery = '';
-let lastSearchQueryRegex: RegExp | undefined;
-
-function highlightMatch({ message }: MessageCommon, searchQuery: string = ''): Node {
-  // Memoizes the regular expression
-  if (searchQuery !== lastSearchQuery) {
-    lastSearchQuery = searchQuery;
-    const regexString = searchQuery.split(/\s+/).reduce((words, word) => {
-      if (!word) {
-        return words;
-      }
-      return `${words}${words ? '\\s+' : ''}${escapeRegExp(word)}\\S*`;
-    }, '');
-    lastSearchQueryRegex = regexString ? new RegExp(regexString, 'i') : undefined;
-  }
-
-  if (lastSearchQueryRegex) {
-    const match = lastSearchQueryRegex.exec(message);
-    if (match) {
-      let start = match.index;
-      const prefixToCheck = message.slice(Math.max(0, start - HIGHLIGHT_MAX_START_OFFSET), start);
-      const prefixMatch = /(^|\s)\S+\s*$/.exec(prefixToCheck);
-      if (prefixMatch) {
-        start = start - prefixToCheck.length + prefixMatch.index + prefixMatch[1].length;
-      }
-      return fragment(
-        text(`${start === 0 ? '' : '...'}${message.slice(start, match.index)}`),
-        mark(text(match[0])),
-        text(message.slice(match.index + match[0].length, start + HIGHLIGHT_MAX_LENGTH)),
-      );
-    }
-  }
-
-  return text(message.slice(0, HIGHLIGHT_MAX_LENGTH));
-}
-
-export default function foundMessage(messageUniqueId: string, searchQuery?: string) {
+export default function foundMessage(messageUniqueId: string, searchQuery: MaybeObservable<string> = '') {
   const message = messageCache.get(messageUniqueId);
   // Message is not updated intentionally
 
@@ -65,6 +27,22 @@ export default function foundMessage(messageUniqueId: string, searchQuery?: stri
   const dialogPeer = messageToDialogPeer(message);
   const fromPeer = userIdToPeer(message.from_id);
 
+  const messageEl = div`.foundMessage__message`();
+  if (message._ === 'message') {
+    let lastSearchQuery: string | undefined;
+    useMaybeObservable(messageEl, searchQuery, (query) => {
+      if (query !== lastSearchQuery) {
+        lastSearchQuery = query;
+        while (messageEl.firstChild) {
+          unmount(messageEl.firstChild);
+        }
+        mount(messageEl, highlightSearchMatch(message.message, query));
+      }
+    });
+  } else {
+    messageEl.textContent = '(service message)';
+  }
+
   return div`.foundMessage`(
     ripple({
       className: 'foundMessage__ripple',
@@ -82,11 +60,7 @@ export default function foundMessage(messageUniqueId: string, searchQuery?: stri
           ),
           datetime({ timestamp: message.date, className: 'foundMessage__time' }),
         ),
-        div`.foundMessage__message`(
-          message._ === 'message'
-            ? highlightMatch(message, searchQuery)
-            : text('(service message)'),
-        ),
+        messageEl,
       ),
     ]),
   );
