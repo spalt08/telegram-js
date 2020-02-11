@@ -729,7 +729,7 @@ export class VirtualizedList {
     setTimeout(() => {
       this.isLocked = false;
       this.elements[item].classList.remove('focused');
-      this.scrollTop = this.container.scrollTop;
+      this.container.scrollTop = this.scrollTop = this.getScrollToValue(item);
       this.virtualize();
     }, 300);
   }
