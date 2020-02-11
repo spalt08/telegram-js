@@ -8,6 +8,7 @@ import * as icons from 'components/icons';
 import { searchInput, VirtualizedList } from 'components/ui';
 import { getInterface, useOnMount, useToBehaviorSubject } from 'core/hooks';
 import { mount } from 'core/dom';
+import { peerMessageToId } from 'helpers/api';
 import './search_panel.scss';
 
 export default function searchPanel(peer: Peer) {
@@ -16,7 +17,7 @@ export default function searchPanel(peer: Peer) {
   const rootEl = div`.messagesSearch`();
   const [resultIdsSubject] = useToBehaviorSubject(
     rootEl,
-    messageSearch.result.pipe(map((result) => result.ids.map(String))),
+    messageSearch.result.pipe(map((result) => result.ids.map((id) => peerMessageToId(peer, id)))),
     [],
   );
 
