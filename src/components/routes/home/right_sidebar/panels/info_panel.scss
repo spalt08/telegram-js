@@ -19,6 +19,14 @@
   &__avatar {
     width: 120px;
     height: 120px;
+
+    & .avatar__standard {
+      font-size: 40px;
+    }
+    
+    svg {
+      transform: scale(2.5);
+    }
   }
 
   &__name {

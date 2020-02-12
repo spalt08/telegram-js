@@ -35,21 +35,19 @@ export default function typingIndicator(peer: Peer, className: string, ...childr
       if (peer._ === 'peerUser') {
         mount(container, span`.typingIndicator__typing`(text(actionToString(actions[activeUserIds[0]]))));
       } else if (activeUserIds.length === 1) {
-        const user = userCache.get(activeUserIds[0])!;
-        mount(container, span`.typingIndicator__typing`(span(text(user.first_name!)), text(` is ${actionToString(actions[activeUserIds[0]])}`)));
+        const user = userCache.get(activeUserIds[0])?.first_name ?? '';
+        mount(container, span`.typingIndicator__typing`(span(text(user)), text(` is ${actionToString(actions[activeUserIds[0]])}`)));
       } else if (activeUserIds.length === 2) {
-        const user1 = userCache.get(activeUserIds[0])!;
-        const user2 = userCache.get(activeUserIds[0])!;
+        const user1 = userCache.get(activeUserIds[0])?.first_name ?? '';
+        const user2 = userCache.get(activeUserIds[0])?.first_name ?? '';
         mount(container, span`.typingIndicator__typing`(
-          span(text(user1.first_name!)),
+          span(text(user1)),
           text(','),
-          span(text(user2.first_name!)),
+          span(text(user2)),
           text(' are typing')));
       } else {
-        const user = userCache.get(activeUserIds[0])!;
         mount(container, span`.typingIndicator__typing`(
-          span(text(user.first_name!)),
-          text(` and ${activeUserIds.length - 1} more users are typing`)));
+          text(`${activeUserIds.length} users are typing`)));
       }
     } else {
       unmountChildren(container);
