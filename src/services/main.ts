@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
-import { Photo, Message } from 'cache/types';
+import { Photo, Message, Peer } from 'cache/types';
 
 export const enum RightSidebarPanel {
   None,
@@ -30,7 +30,7 @@ export default class MainService {
     });
   }
 
-  showPopup(type: 'photo', ctx: { rect: DOMRect, photo: Photo, message: Message }): void;
+  showPopup(type: 'photo', ctx: { rect: DOMRect, photo: Photo, peer: Peer, message: Message }): void;
   showPopup(type: string, ctx: any): void {
     this.popupCtx = ctx;
     this.popup.next(type);

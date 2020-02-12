@@ -1,4 +1,4 @@
-import { Photo, MessageCommon } from 'cache/types';
+import { Photo, MessageCommon, Peer } from 'cache/types';
 import { div, img, nothing } from 'core/html';
 import { materialSpinner } from 'components/icons';
 import { mount, unmount, listenOnce, listen } from 'core/dom';
@@ -12,7 +12,7 @@ import { useInterface } from 'core/hooks';
 // const PHOTO_H_DIM = 48 / 320;
 const PHOTO_THUMBNAIL_MAX = 320;
 
-export default function photoPreview(photo: Photo, message: MessageCommon, adjustSize = true, showSpinner = true) {
+export default function photoPreview(photo: Photo, peer: Peer, message: MessageCommon, adjustSize = true, showSpinner = true) {
   if (photo._ !== 'photo') return nothing;
 
   const orientation = getOrientation(photo.sizes);
@@ -67,7 +67,7 @@ export default function photoPreview(photo: Photo, message: MessageCommon, adjus
       if (!preview) return;
 
       const rect = preview.getBoundingClientRect();
-      main.showPopup('photo', { rect, photo, message });
+      main.showPopup('photo', { rect, photo, peer, message });
     });
 
     mount(container, preview);

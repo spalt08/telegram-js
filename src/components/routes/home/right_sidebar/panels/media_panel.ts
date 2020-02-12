@@ -20,7 +20,7 @@ export default function mediaPanel(peer: Peer) {
       unmountChildren(container);
       messages.forEach((message) => {
         if (message?._ === 'message' && message.media._ === 'messageMediaPhoto') {
-          mount(container, mediaPhoto(message.media.photo, message, false, false));
+          mount(container, mediaPhoto(message.media.photo, peer, message, false, false));
         }
       });
     }

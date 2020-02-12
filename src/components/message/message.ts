@@ -62,7 +62,7 @@ export default function message(uniqueId: string, peer: Peer) {
       shouldRerender = true;
 
       if (msg.media && msg.media._ !== 'messageMediaEmpty') {
-        media = messageMedia(msg.media, next);
+        media = messageMedia(msg.media, peer, next);
       }
     }
 
