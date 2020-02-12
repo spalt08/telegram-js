@@ -4,7 +4,7 @@ import { fragment, mark, text } from 'core/html';
 const HIGHLIGHT_MAX_INPUT_LENGTH = 1000;
 const HIGHLIGHT_MAX_OUTPUT_LENGTH = 100;
 const HIGHLIGHT_MAX_START_OFFSET = 10;
-const SEPARATOR_REGEX = '\\s.,!?\\-_+=\\\\/\\(\\)\\{\\}\\[\\]';
+const SEPARATOR_REGEX = '\\s.,!?\\-_+=\\\\/\\(\\)\\{\\}\\[\\]\'"`«»';
 
 let lastSearchQuery = '';
 let lastSearchQueryRegex: RegExp | undefined;
