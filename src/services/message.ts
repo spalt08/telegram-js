@@ -270,39 +270,6 @@ export default class MessagesService {
     }
   }
 
-  // protected loadMedia(peer: Peer, olderThanId = 0) {
-  //   if (this.isMediaLoading.value) return;
-
-  //   this.isMediaLoading.next(true);
-
-  //   const chunk = 35;
-  //   const payload = {
-  //     peer: peerToInputPeer(peer),
-  //     q: '',
-  //     filter: { _: 'inputMessagesFilterPhotoVideo' },
-  //     offset_id: olderThanId,
-  //     add_offset: 0,
-  //     limit: chunk,
-  //     max_id: 0,
-  //     min_id: 0,
-  //     hash: 0,
-  //   };
-
-  //   client.call('messages.search', payload, (_err: any, res: any) => {
-  //     try {
-  //       if (res) {
-  //         const data = res;
-
-  //         data.messages.forEach((message: Message) => {
-  //           if (message._ === 'message' && message.media._ === 'messageMediaPhoto') {
-  //             mediaCache.put(peerToId(peer), message.media);
-  //           }
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-
   protected handleMessagePush(message: Message) {
     if (message._ === 'messageEmpty') {
       return;

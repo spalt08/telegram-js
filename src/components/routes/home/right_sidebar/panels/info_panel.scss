@@ -1,6 +1,7 @@
 .infoPanel {
   display: flex;
   flex-direction: column;
+  overflow-y: hidden;
 
   &__title {
     font-weight: 500;
@@ -28,6 +29,10 @@
 
   &__status {
     margin-bottom: 10px;
+  }
+
+  &__media {
+    overflow-y: scroll;
   }
 
   &__avatar, &__name, &__status {

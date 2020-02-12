@@ -16,14 +16,14 @@ export default class ChatService {
         },
       };
       client.call('channels.getFullChannel', payload, (err, channelFull: MessagesChatFull) => {
-        chatFullCache.put(channelFull.full_chat);
+        if (channelFull) chatFullCache.put(channelFull.full_chat);
       });
     } else {
       const payload = {
         chat_id: chat.id,
       };
       client.call('messages.getFullChat', payload, (err, chatFull: MessagesChatFull) => {
-        chatFullCache.put(chatFull.full_chat);
+        if (chatFull) chatFullCache.put(chatFull.full_chat);
       });
     }
   }

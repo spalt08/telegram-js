@@ -1,5 +1,5 @@
 import { Photo, MessageCommon } from 'cache/types';
-import { div, img } from 'core/html';
+import { div, img, nothing } from 'core/html';
 import { materialSpinner } from 'components/icons';
 import { mount, unmount, listenOnce, listen } from 'core/dom';
 import { getOrientation, getThumbnail, /* checkDimensions, */ getPhotoLocation, getSizeType, getSize } from 'helpers/photo';
@@ -12,8 +12,8 @@ import { useInterface } from 'core/hooks';
 // const PHOTO_H_DIM = 48 / 320;
 const PHOTO_THUMBNAIL_MAX = 320;
 
-export default function photoPreview(photo: Photo, message: MessageCommon) {
-  if (photo._ !== 'photo') return null;
+export default function photoPreview(photo: Photo, message: MessageCommon, adjustSize = true, showSpinner = true) {
+  if (photo._ !== 'photo') return nothing;
 
   const orientation = getOrientation(photo.sizes);
   const thumbnailUrl = getThumbnail(photo.sizes);
@@ -28,7 +28,7 @@ export default function photoPreview(photo: Photo, message: MessageCommon) {
   let preview: HTMLElement | undefined;
   let loader: HTMLElement | undefined;
 
-  const container = div`.photo-preview${orientation}`();
+  const container = div`.photo-preview${adjustSize ? orientation : ''}`();
   const url = media.cached(location);
 
   if (!url && thumbnailUrl) {
@@ -43,8 +43,10 @@ export default function photoPreview(photo: Photo, message: MessageCommon) {
     }
   }
 
-  container.style.width = `${box.width}px`;
-  container.style.height = `${box.height}px`;
+  if (adjustSize) {
+    container.style.width = `${box.width}px`;
+    container.style.height = `${box.height}px`;
+  }
 
   const render = (src: string | null) => {
     if (preview) unmount(preview);
@@ -72,8 +74,10 @@ export default function photoPreview(photo: Photo, message: MessageCommon) {
   };
 
   if (url === undefined) {
-    loader = div`.photo-preview__loader`(materialSpinner());
-    mount(container, loader);
+    if (showSpinner) {
+      loader = div`.photo-preview__loader`(materialSpinner());
+      mount(container, loader);
+    }
     media.get(location, render, photo.dc_id);
   } else {
     render(url);

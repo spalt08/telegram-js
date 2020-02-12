@@ -8,6 +8,7 @@ import { onlineStatus } from 'components/ui';
 import { close, edit, more } from '../../../../icons';
 import peerInfo from './peer_info';
 import './info_panel.scss';
+import mediaPanel from './media_panel';
 
 export default function infoPanel(peer: Peer) {
   return (
@@ -20,6 +21,8 @@ export default function infoPanel(peer: Peer) {
       div`.infoPanel__avatar`(profileAvatar(peer)),
       div`.infoPanel__name`(profileTitle(peer)),
       div`.infoPanel__status`(onlineStatus(peer)),
-      peerInfo(peer))
+      peerInfo(peer),
+      div`.infoPanel__media`(mediaPanel(peer)),
+    )
   );
 }
