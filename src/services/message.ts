@@ -205,8 +205,6 @@ export default class MessagesService {
           userCache.put(data.users);
           chatCache.put(data.chats);
 
-          // todo: The replied messages are not included. Load the messages that aren't loaded.
-
           if (isLoadedChunkActual) {
             const isLoadedChunkFull = data.messages.length >= LOAD_CHUNK_LENGTH - 10; // -10 just in case
             let oldestReached = false;
