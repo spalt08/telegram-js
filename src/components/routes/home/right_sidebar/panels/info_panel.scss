@@ -1,6 +1,7 @@
 .infoPanel {
   display: flex;
   flex-direction: column;
+  overflow-y: hidden;
 
   &__title {
     font-weight: 500;

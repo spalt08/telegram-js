@@ -48,7 +48,7 @@ export function locationToString(location: InputFileLocation): string {
       return `profile_${location.local_id}_${location.volume_id}`;
 
     case 'inputPhotoFileLocation':
-      return `photo_${location.file_reference}`;
+      return `photo_${location.id}`;
 
     case 'inputDocumentFileLocation':
       return `document_${location.id}_${location.file_reference}`;

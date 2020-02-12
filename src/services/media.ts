@@ -1,7 +1,9 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { ClientError } from 'client/worker.types';
-import { Document } from 'cache/types';
+import { Document, Peer, MessageFilter } from 'cache/types';
+import { peerToInputPeer } from 'cache/accessors';
+import { messageCache } from 'cache';
 
 /**
  * Singleton service class for handling media-related queries
@@ -12,6 +14,8 @@ export default class MediaService {
 
   /** Stickers Packs */
   stickerSets = new BehaviorSubject([]);
+
+  mediaLoading = false;
 
   /** Hash values for sticker syc */
   stickerSetsHash = 0;
@@ -49,6 +53,36 @@ export default class MediaService {
         this.recentStickersHash = result.hash;
         this.recentStickers.next(result.stickers);
       }
+    });
+  }
+
+  loadMedia(peer: Peer, offsetMessageId = 0) {
+    if (this.mediaLoading) return;
+
+    this.mediaLoading = true;
+
+    const chunk = 40;
+    const filter: MessageFilter = { _: 'inputMessagesFilterPhotoVideo' };
+    const payload = {
+      peer: peerToInputPeer(peer),
+      q: '',
+      from_id: 0,
+      filter,
+      min_date: 0,
+      max_date: 0,
+      offset_id: offsetMessageId || 0,
+      add_offset: 0,
+      limit: chunk,
+      max_id: 0,
+      min_id: 0,
+      hash: 0,
+    };
+
+    client.call('messages.search', payload, (_err: any, res: any) => {
+      if (res) {
+        messageCache.indices.sharedMedia.putMediaMessages(peer, res.messages);
+      }
+      this.mediaLoading = false;
     });
   }
 }

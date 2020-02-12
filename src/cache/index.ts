@@ -1,9 +1,10 @@
 import { dialogToId, isDialogArchived, messageToId, peerMessageToId } from 'helpers/api';
 import Collection, { makeGetIdFromProp } from './fastStorages/collection';
 import Dictionary from './fastStorages/dictionary';
-import { Chat, Dialog, Message, User, MessageMedia, UserFull, ChatFull } from './types';
+import { Chat, Dialog, Message, User, UserFull, ChatFull } from './types';
 import { orderBy } from './fastStorages/indices';
 import messageHistory from './fastStorages/indices/messageHistory';
+import sharedMediaIndex from './fastStorages/indices/sharedMediaIndex';
 
 // todo: Save the main part of the cache to a persistent storage
 
@@ -25,6 +26,7 @@ export const chatCache = new Collection<Chat, {}, number>({
 
 const messageCacheIndices = {
   history: messageHistory,
+  sharedMedia: sharedMediaIndex,
 };
 
 /**
@@ -79,8 +81,6 @@ export const userFullCache = new Collection<UserFull, {}, number>({
 export const chatFullCache = new Collection<ChatFull, {}, number>({
   getId: (chatFull) => chatFull.id,
 });
-
-export const mediaCache = new Dictionary<string, MessageMedia>();
 
 /**
  * File urls cache

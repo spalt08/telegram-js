@@ -1,9 +1,39 @@
-import { Peer } from 'cache/types';
-import { nothing, div } from 'core/html';
+import { Peer, Message } from 'cache/types';
+import { div } from 'core/html';
+import { media } from 'services';
+import { messageCache } from 'cache';
+import { useObservable } from 'core/hooks';
+import { unmountChildren, mount, listen } from 'core/dom';
+import mediaPhoto from 'components/message/media/photo';
+import './media_panel.scss';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function mediaPanel(peer: Peer) {
-  return (
-    div(nothing)
-  );
+  const container = div`.mediaPanel`();
+
+  const grid = div`.mediaPanel__grid`();
+  mount(container, grid);
+
+  listen(container, 'scroll', () => {
+    if (container.scrollTop + container.offsetHeight > container.scrollHeight - 300) {
+      media.loadMedia(peer, messageCache.indices.sharedMedia.getEarliestPeerMedia(peer)?.id);
+    }
+  }, { passive: true, capture: true });
+
+  media.loadMedia(peer);
+
+  let prevMessages: Message[];
+
+  useObservable(grid, messageCache.indices.sharedMedia.getPeerMedia(peer), (messages) => {
+    if (prevMessages !== messages) {
+      prevMessages = messages;
+      unmountChildren(grid);
+      messages.forEach((message) => {
+        if (message?._ === 'message' && message.media._ === 'messageMediaPhoto') {
+          mount(grid, mediaPhoto(message.media.photo, peer, message, false, false));
+        }
+      });
+    }
+  });
+
+  return container;
 }

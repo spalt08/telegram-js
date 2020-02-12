@@ -1,5 +1,5 @@
 import { div, img, nothing, text } from 'core/html';
-import { MessageCommon, PhotoNotEmpty } from 'cache/types';
+import { MessageCommon, PhotoNotEmpty, Peer } from 'cache/types';
 import './photo.scss';
 import media from 'client/media';
 import { getSizeType, getPhotoLocation } from 'helpers/photo';
@@ -13,6 +13,7 @@ import { PopupInterface } from '../interface';
 type Props = {
   rect: DOMRect,
   photo: PhotoNotEmpty,
+  peer: Peer,
   message: MessageCommon,
 };
 
@@ -21,7 +22,7 @@ const PHOTO_THUMBNAIL_MAX = 320;
 /**
  * Media photo popup handler
  */
-export default function photoPopup({ rect, photo, message }: Props) {
+export default function photoPopup({ rect, photo, peer, message }: Props) {
   const type = getSizeType(photo.sizes, PHOTO_THUMBNAIL_MAX);
   const location = getPhotoLocation(photo, type);
   const src = media.cached(location);
@@ -30,9 +31,9 @@ export default function photoPopup({ rect, photo, message }: Props) {
   const image = img`.photofull_photo`({ src, style: { opacity: '0' } });
   const header = div`.photofull_header`(
     div`.photofull_author`(
-      profileAvatar({ _: 'peerUser', user_id: message.from_id }),
+      profileAvatar(peer, undefined, false),
       div`.photofull_author-details`(
-        profileTitle({ _: 'peerUser', user_id: message.from_id }),
+        profileTitle(peer, false),
         div`.photofull_author-date`(
           datetime({ timestamp: message.date, full: true }),
         ),
