@@ -29,6 +29,7 @@ export default function dialogMessage(dialog: Dialog) {
       case 'messageActionPinMessage': content = `${userLabel} pinned the message`; break;
       case 'messageActionCustomAction': content = msg.action.message; break;
       case 'messageActionPhoneCall': content = '🤙Incoming call'; break;
+      case 'messageActionContactSignUp': content = 'joined Telegram'; break;
       default: content = '';
     }
   } else {
