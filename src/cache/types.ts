@@ -141,6 +141,25 @@ export type UserFull = {
   about: string,
 };
 
+export type updateUserTyping = {
+  _: 'updateUserTyping',
+  user_id: number,
+  action: SendMessageAction,
+};
+
+export type updateChatUserTyping = {
+  _: 'updateChatUserTyping',
+  chat_id: number,
+  user_id: number,
+  action: SendMessageAction,
+};
+export type SendMessageAction = {
+  _: 'sendMessageTypingAction' | 'sendMessageCancelAction' | 'sendMessageRecordVideoAction' | 'sendMessageUploadVideoAction'
+  | 'sendMessageRecordAudioAction' | 'sendMessageUploadAudioAction' | 'sendMessageUploadPhotoAction' | 'sendMessageUploadDocumentAction'
+  | 'sendMessageGeoLocationAction' | 'sendMessageChooseContactAction' | 'sendMessageGamePlayAction' | 'sendMessageRecordRoundAction'
+  | 'sendMessageUploadRoundAction'
+};
+
 /**
  * Chat object
  * Ref: https://core.telegram.org/constructor/chat

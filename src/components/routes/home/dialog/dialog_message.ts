@@ -3,6 +3,7 @@ import { messageCache, userCache } from 'cache';
 import { peerMessageToId } from 'helpers/api';
 import { Dialog } from 'cache/types';
 import { getAttributeSticker } from 'helpers/files';
+import { typingIndicator } from 'components/ui';
 
 export default function dialogMessage(dialog: Dialog) {
   const msg = messageCache.get(peerMessageToId(dialog.peer, dialog.top_message));
@@ -49,16 +50,14 @@ export default function dialogMessage(dialog: Dialog) {
 
   if (dialog.peer._ !== 'peerUser' && userLabel) {
     return (
-      div`.dialog__message`(
+      typingIndicator(
+        dialog.peer,
+        'dialog__message',
         strong`.dialog__message_title`(text(`${userLabel}: `)),
         text(content),
       )
     );
   }
 
-  return (
-    div`.dialog__message`(
-      text(content),
-    )
-  );
+  return typingIndicator(dialog.peer, 'dialog__message', text(content));
 }

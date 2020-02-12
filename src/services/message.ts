@@ -5,6 +5,7 @@ import { chatCache, messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import { MessagesChunkReference } from 'cache/fastStorages/indices/messageHistory';
 import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage, shortChatMessageToMessage } from 'helpers/api';
+import UserTyping from './user_typing';
 
 export const enum Direction {
   Older,
@@ -41,7 +42,7 @@ export default class MessagesService {
 
   protected cacheChunkRef?: MessagesChunkReference;
 
-  constructor() {
+  constructor(userTyping: UserTyping) {
     client.updates.on('updateNewMessage', (update: AnyUpdateMessage) => {
       this.handleMessagePush(update.message);
     });
@@ -76,6 +77,14 @@ export default class MessagesService {
       if (user) {
         userCache.put({ ...user, status: update.status });
       }
+    });
+
+    client.updates.on('updateUserTyping', (update: any) => {
+      userTyping.notify(update);
+    });
+
+    client.updates.on('updateChatUserTyping', (update: any) => {
+      userTyping.notify(update);
     });
   }
 

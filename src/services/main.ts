@@ -28,6 +28,8 @@ export default class MainService {
     client.on('networkChanged', (state: string) => {
       this.network.next(state);
     });
+
+    client.call('account.updateStatus', { offline: false }, () => {});
   }
 
   showPopup(type: 'photo', ctx: { rect: DOMRect, photo: Photo, peer: Peer, message: Message }): void;
