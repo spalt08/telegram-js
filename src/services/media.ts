@@ -15,6 +15,8 @@ export default class MediaService {
   /** Stickers Packs */
   stickerSets = new BehaviorSubject([]);
 
+  mediaLoading = false;
+
   /** Hash values for sticker syc */
   stickerSetsHash = 0;
   recentStickersHash = 0;
@@ -55,6 +57,10 @@ export default class MediaService {
   }
 
   loadMedia(peer: Peer, offsetMessageId = 0) {
+    if (this.mediaLoading) return;
+
+    this.mediaLoading = true;
+
     const chunk = 40;
     const filter: MessageFilter = { _: 'inputMessagesFilterPhotoVideo' };
     const payload = {
@@ -76,6 +82,7 @@ export default class MediaService {
       if (res) {
         messageCache.indices.sharedMedia.putMediaMessages(peer, res.messages);
       }
+      this.mediaLoading = false;
     });
   }
 }

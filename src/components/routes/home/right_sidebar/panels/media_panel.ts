@@ -3,24 +3,33 @@ import { div } from 'core/html';
 import { media } from 'services';
 import { messageCache } from 'cache';
 import { useObservable } from 'core/hooks';
-import { unmountChildren, mount } from 'core/dom';
+import { unmountChildren, mount, listen } from 'core/dom';
 import mediaPhoto from 'components/message/media/photo';
 import './media_panel.scss';
 
 export default function mediaPanel(peer: Peer) {
   const container = div`.mediaPanel`();
 
+  const grid = div`.mediaPanel__grid`();
+  mount(container, grid);
+
+  listen(container, 'scroll', () => {
+    if (container.scrollTop + container.offsetHeight > container.scrollHeight - 300) {
+      media.loadMedia(peer, messageCache.indices.sharedMedia.getEarliestPeerMedia(peer)?.id);
+    }
+  }, { passive: true, capture: true });
+
   media.loadMedia(peer);
 
   let prevMessages: Message[];
 
-  useObservable(container, messageCache.indices.sharedMedia.getPeerMedia(peer), (messages) => {
+  useObservable(grid, messageCache.indices.sharedMedia.getPeerMedia(peer), (messages) => {
     if (prevMessages !== messages) {
       prevMessages = messages;
-      unmountChildren(container);
+      unmountChildren(grid);
       messages.forEach((message) => {
         if (message?._ === 'message' && message.media._ === 'messageMediaPhoto') {
-          mount(container, mediaPhoto(message.media.photo, peer, message, false, false));
+          mount(grid, mediaPhoto(message.media.photo, peer, message, false, false));
         }
       });
     }

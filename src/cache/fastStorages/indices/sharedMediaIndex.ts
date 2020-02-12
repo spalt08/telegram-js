@@ -51,5 +51,10 @@ export default function sharedMediaIndex(collection: Collection<Message, any>, f
     getPeerMedia(peer: Peer): Observable<Message[]> {
       return getCacheLine(peer).subject;
     },
+
+    getEarliestPeerMedia(peer: Peer): Message | undefined {
+      const cacheLine = getCacheLine(peer);
+      return cacheLine.snapshot.getAll()[0];
+    },
   };
 }

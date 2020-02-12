@@ -22,7 +22,7 @@ export default function infoPanel(peer: Peer) {
       div`.infoPanel__name`(profileTitle(peer)),
       div`.infoPanel__status`(onlineStatus(peer)),
       peerInfo(peer),
-      div`.infoPanel__media`(mediaPanel(peer)),
+      mediaPanel(peer),
     )
   );
 }
