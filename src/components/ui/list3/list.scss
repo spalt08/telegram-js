@@ -2,12 +2,36 @@
   height: 100%;
   overflow-x: auto;
   overflow-y: scroll; // To prevent a horizontal shift when more items are added
+  overflow-y: overlay; // safari and chrome
   position: relative;
   display: flex;
   flex-direction: column;
   padding-bottom: 10px;
   transform: translateZ(0); // https://stackoverflow.com/a/30533339/1118709
   min-height: 0; // To force the content to scroll
+  scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  /* Track */
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  /* Handle */
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  
+  /* Handle on hover */
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.6)
+  }
 
   > * {
     flex: none;
