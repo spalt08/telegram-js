@@ -43,7 +43,7 @@ export default function messages() {
     onReachBottom: () => service.loadMoreHistory(MessageDirection.Newer),
   });
 
-  mount(element, scroll.wrapper, element.lastElementChild!);
+  mount(element, scroll.container, element.lastElementChild!);
 
   useObservable(element, service.activePeer, () => scroll.clear());
 

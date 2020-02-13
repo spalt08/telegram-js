@@ -1,34 +1,22 @@
 .list {
-  overflow: hidden;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: scroll; // To prevent a horizontal shift when more items are added
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 10px;
+  transform: translateZ(0); // https://stackoverflow.com/a/30533339/1118709
+  min-height: 0; // To force the content to scroll
 
-  .list__container {
-    height: 100%;
-    overflow: auto;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-
-    /** https://stackoverflow.com/a/30533339/1118709 */
-    transform: translateZ(0);
-
-    > * {
-      flex: none;
-      // will-change: transform;
-    }
-
-    &:last-child {
-      padding-bottom: 10px;
-    }
+  > * {
+    flex: none;
+    // will-change: transform;
   }
 
-  &.reversed {
-    justify-content: flex-end;
-    display: flex;
-    flex-direction: column;
-
-    .list__container {
-      max-height: 100%;
-      height: auto;
+  &.-reversed {
+    > :first-child {
+      margin-top: auto;
     }
   }
 

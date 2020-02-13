@@ -64,7 +64,7 @@ export default function searchPanel(peer: Peer) {
       return `${result.count} message${result.count === 1 ? '' : 's'} found`;
     }))),
   ));
-  mount(rootEl, resultList.wrapper);
+  mount(rootEl, resultList.container);
 
   return rootEl;
 }
