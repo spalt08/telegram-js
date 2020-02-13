@@ -67,7 +67,7 @@ const renderMessage = (msg: MessageCommon, peer: Peer) => {
   if (msg.media._ === 'messageMediaPhoto') {
     const extraClass = msg.message ? 'with-photo' : 'only-photo';
     const photoEl = photoPreview(msg.media.photo, peer, msg, {
-      fit: 'contain', width: 320, height: 320, minHeight: 100, minWidth: msg.message ? 320 : undefined });
+      fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined });
     const messageEl = msg.message ? div`.message__text`(formattedMessage(msg)) : nothing;
 
     return (
@@ -148,7 +148,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     }
 
     // re-rendering
-    if (aligner.childElementCount > 0) unmountChildren(aligner);
+    if (bubble) unmount(bubble);
 
     bubble = renderMessage(msg, peer);
     mount(aligner, bubble);
@@ -183,6 +183,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     if (profilePicture && !element.classList.contains('last')) {
       unmount(profilePicture);
       profilePicture = undefined;
+      console.log('remove pic');
     }
 
     // display picture
@@ -190,6 +191,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     && !profilePicture && cached && cached._ !== 'messageEmpty') {
       profilePicture = div`.message__profile`(profileAvatar(userIdToPeer(cached.from_id)));
       mount(aligner, profilePicture, bubble);
+      console.log('add pic');
     }
   };
 

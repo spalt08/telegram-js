@@ -46,12 +46,12 @@ export default function photoRenderer(photo: Photo,
 
   if (fit === 'contain') {
     if (orientation === 'landscape' && width) {
-      container.style.width = `${width}px`;
-      container.style.height = `${dim / width}px`;
+      container.style.width = `${Math.min(width, size.w)}px`;
+      container.style.height = `${Math.min(size.h, width / dim)}px`;
     }
     if (orientation === 'portrait' && height) {
-      container.style.height = `${height}px`;
-      container.style.width = `${height * dim}px`;
+      container.style.height = `${Math.min(size.h, height)}px`;
+      container.style.width = `${Math.min(size.w, height * dim)}px`;
     }
   } else {
     container.style.width = `${width}px`;
@@ -69,7 +69,7 @@ export default function photoRenderer(photo: Photo,
   }
 
   // show background
-  if (thumbSrc && fit === 'contain' && ((width && minHeight && dim / width < minHeight) || (height && minWidth && height * dim < minWidth))) {
+  if (thumbSrc && fit === 'contain' && ((width && minHeight && width / dim < minHeight) || (height && minWidth && height * dim < minWidth))) {
     background = div({ className: 'photo__background', style: { backgroundImage: `url(${thumbSrc}` } });
     mount(container, background);
 

@@ -192,6 +192,7 @@ $messageDistance: 4PX;
   &__text + &__media-padded {
     padding-top: 0;
   }
+
   &__title {
     font-size: 14px;
     font-weight: 500;
@@ -286,6 +287,10 @@ $messageDistance: 4PX;
   &.last.out .message {
     &__bubble {
       border-bottom-right-radius: 0;
+
+      &.only-photo {
+        border-bottom-right-radius: 12.5px;
+      }
 
       &::after {
         background-image: url(~assets/message_corner-out@2x.png);
