@@ -3,7 +3,7 @@ import { userCache, chatCache, chatFullCache } from 'cache';
 import { text, span } from 'core/html';
 import { useObservable } from 'core/hooks';
 import { timer, combineLatest } from 'rxjs';
-import { chat as chatService } from 'services';
+import { auth as authService, chat as chatService } from 'services';
 import './online_status.scss';
 
 export function areSameDays(date1: Date, date2: Date) {
@@ -58,21 +58,25 @@ export default function onlineStatus(peer: Peer) {
   const container = span`.onlineStatus`(statusText);
 
   if (peer._ === 'peerUser') {
-    let prevStatus: UserStatus;
-    let prevTime: number;
-    const userSubject = userCache.useItemBehaviorSubject(container, peer.user_id);
-    const minuteTimer = timer(0, 60 * 1000);
-    const periodicUserObservable = combineLatest(userSubject, minuteTimer);
-    useObservable(container, periodicUserObservable, (update) => {
-      const [u, time] = update;
-      if (!u || !u.status) return;
-      if (prevStatus !== u.status || (prevTime !== time && u.status._ === 'userStatusOffline')) {
-        statusText.textContent = formatStatus(u.status);
-        container.classList.toggle('online', u.status._ === 'userStatusOnline');
-      }
-      prevStatus = u.status;
-      prevTime = time;
-    });
+    if (peer.user_id === authService.userID) {
+      statusText.textContent = '';
+    } else {
+      let prevStatus: UserStatus;
+      let prevTime: number;
+      const userSubject = userCache.useItemBehaviorSubject(container, peer.user_id);
+      const minuteTimer = timer(0, 60 * 1000);
+      const periodicUserObservable = combineLatest(userSubject, minuteTimer);
+      useObservable(container, periodicUserObservable, (update) => {
+        const [u, time] = update;
+        if (!u || !u.status) return;
+        if (prevStatus !== u.status || (prevTime !== time && u.status._ === 'userStatusOffline')) {
+          statusText.textContent = formatStatus(u.status);
+          container.classList.toggle('online', u.status._ === 'userStatusOnline');
+        }
+        prevStatus = u.status;
+        prevTime = time;
+      });
+    }
   } else if (peer._ === 'peerChannel') {
     const channel = chatCache.get(peer.channel_id);
     if (channel) {

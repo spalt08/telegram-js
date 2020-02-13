@@ -13,7 +13,7 @@ export { RightSidebarPanel } from './main';
 export const main = new MainService();
 export const auth = new AuthService();
 export const userTyping = new UserTyping();
-export const message = new MessageService(userTyping);
+export const message = new MessageService();
 export const dialog = new DialogService();
 export const media = new MediaService();
 export const user = new UserService();

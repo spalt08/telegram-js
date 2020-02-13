@@ -34,6 +34,8 @@ export default class DialogsService {
         top_message: messageId,
       });
     });
+
+    // todo: Subscribe to new and removed dialogs
   }
 
   updateDialogs(offsetDate = 0) {

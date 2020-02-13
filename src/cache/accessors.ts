@@ -1,5 +1,8 @@
+import { Observable, of } from 'rxjs';
+import { distinctUntilChanged, map } from 'rxjs/operators';
 import { chatCache, userCache } from 'cache';
-import { InputPeer, Message, Peer, FileLocation } from './types';
+import { InputPeer, Message, Peer, FileLocation, User, Chat } from './types';
+import { getFirstLetters } from '../helpers/data';
 
 // Convert Peer to InputPeer
 export function peerToInputPeer(peer: Peer, reference?: { peer: InputPeer, message: Message }): InputPeer {
@@ -34,29 +37,70 @@ export function peerToInputPeer(peer: Peer, reference?: { peer: InputPeer, messa
   }
 }
 
-export function peerToTitle(peer: Peer) {
+// Pass myUserId to return "Saved messages" for the currently authorized user
+export function userToTitle(user: User | undefined, myUserId?: number) {
+  if (!user) {
+    return 'Unknown user';
+  }
+  if (user.deleted) {
+    return 'Deleted Account';
+  }
+  if (myUserId && user.id === myUserId) {
+    return 'Saved Messages';
+  }
+  return `${user.first_name} ${user.last_name}`;
+}
+
+export function chatToTitle(chat: Chat | undefined) {
+  if (!chat) {
+    return 'Unknown chat';
+  }
+  return chat.title;
+}
+
+export function channelToTitle(channel: Chat | undefined) {
+  if (!channel) {
+    return 'Unknown channel';
+  }
+  return channel.title;
+}
+
+// Pass myUserId to return "Saved messages" for the currently authorized user
+export function peerToTitle(peer: Peer, myUserId?: number): [string, Observable<string>] {
+  let currentValue: string;
+  let valueObservable: Observable<string>;
+
   switch (peer._) {
-    case 'peerUser': {
-      const user = userCache.get(peer.user_id);
-      if (user) return `${user.first_name} ${user.last_name}`;
-      return 'Deleted Account';
-    }
+    case 'peerUser':
+      currentValue = userToTitle(userCache.get(peer.user_id), myUserId);
+      valueObservable = new Observable((subscriber) => {
+        subscriber.next(userToTitle(userCache.get(peer.user_id), myUserId));
+        return userCache.watchItem(peer.user_id, (user) => subscriber.next(userToTitle(user, myUserId)));
+      });
+      break;
 
-    case 'peerChat': {
-      const chat = chatCache.get(peer.chat_id);
-      if (chat) return chat.title;
-      return 'Group';
-    }
+    case 'peerChat':
+      currentValue = chatToTitle(chatCache.get(peer.chat_id));
+      valueObservable = new Observable((subscriber) => {
+        subscriber.next(chatToTitle(chatCache.get(peer.chat_id)));
+        return chatCache.watchItem(peer.chat_id, (chat) => subscriber.next(chatToTitle(chat)));
+      });
+      break;
 
-    case 'peerChannel': {
-      const channel = chatCache.get(peer.channel_id);
-      if (channel) return channel.title;
-      return 'Channel';
-    }
+    case 'peerChannel':
+      currentValue = channelToTitle(chatCache.get(peer.channel_id));
+      valueObservable = new Observable((subscriber) => {
+        subscriber.next(channelToTitle(chatCache.get(peer.channel_id)));
+        return chatCache.watchItem(peer.channel_id, (chat) => subscriber.next(channelToTitle(chat)));
+      });
+      break;
 
     default:
-      return 'Unknown';
+      currentValue = 'Unknown peer';
+      valueObservable = of(currentValue);
   }
+
+  return [currentValue, valueObservable.pipe(distinctUntilChanged())];
 }
 
 export function getPeerPhotoLocation(peer: Peer, big?: boolean): FileLocation | null {
@@ -90,38 +134,15 @@ export function getPeerPhotoLocation(peer: Peer, big?: boolean): FileLocation | 
   }
 }
 
-function getFirstLetter(str: string) {
-  if (!str) return '';
-  for (let i = 0; i < str.length; i++) {
-    if (str[i].toUpperCase() !== str[i].toLowerCase()) {
-      return str[i];
-    }
-    if (str[i] >= '0' && str[i] <= '9') {
-      return str[i];
-    }
-  }
-
-  return '';
-}
-
-function getLetters(title: string) {
-  if (!title) return '';
-  if (title.length === 0) return '';
-
-  const split = title.split(' ');
-  if (split.length === 1) {
-    return getFirstLetter(split[0]);
-  }
-  if (split.length > 1) {
-    return getFirstLetter(split[0]) + getFirstLetter(split[1]);
-  }
-
-  return '';
-}
-
-export function peerToInitials(peer: Peer) {
-  const title = peerToTitle(peer);
-  return getLetters(title);
+export function peerToInitials(peer: Peer): [string, Observable<string>] {
+  const [currentTitle, titleObservable] = peerToTitle(peer);
+  return [
+    getFirstLetters(currentTitle),
+    titleObservable.pipe(
+      map(getFirstLetters),
+      distinctUntilChanged(),
+    ),
+  ];
 }
 
 export function idToColorCode(id: number) {
