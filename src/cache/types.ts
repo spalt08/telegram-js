@@ -389,7 +389,7 @@ export type MessageCommon = {
   media: MessageMedia,
   reply_to_msg_id?: number,
   entities: MessageEntity[],
-  reply_markup: ReplyMarkup,
+  reply_markup?: ReplyMarkup,
 };
 
 export type MessageService = {
@@ -564,7 +564,7 @@ export type DocumentAttributeAnimated = {
 /**
  * Ref: https://core.telegram.org/type/DocumentAttribute
  */
-export type DocumentAttribute = DocumentAttributeSticker | DocumentAttributeFilename | DocumentAttributeVideo;
+export type DocumentAttribute = DocumentAttributeSticker | DocumentAttributeFilename | DocumentAttributeVideo | DocumentAttributeAnimated;
 
 /**
  * Ref: https://core.telegram.org/type/MessagesFilter

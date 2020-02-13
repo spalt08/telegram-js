@@ -15,8 +15,6 @@ export default function documentFile(document: Document) {
     icon = div`.document-file__thumb`(photoRenderer(document, { fit: 'cover', width: 50, height: 50, showLoader: false }));
   } else icon = div`.document-file__icon`(text(document.mime_type.split('/').pop() || ''));
 
-  console.log(document);
-
   return div`.document-file`(
     icon,
     div`.document-file__info`(

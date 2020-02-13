@@ -4,7 +4,7 @@ import { media } from 'services';
 import { messageCache } from 'cache';
 import { useObservable } from 'core/hooks';
 import { unmountChildren, mount, listen } from 'core/dom';
-import mediaPhoto from 'components/message/media/photo';
+import photoPreview from 'components/media/photo/preview';
 import './media_panel.scss';
 
 export default function mediaPanel(peer: Peer) {
@@ -29,7 +29,8 @@ export default function mediaPanel(peer: Peer) {
       unmountChildren(grid);
       messages.forEach((message) => {
         if (message?._ === 'message' && message.media._ === 'messageMediaPhoto') {
-          mount(grid, mediaPhoto(message.media.photo, peer, message, false, false));
+          const el = photoPreview(message.media.photo, peer, message, { fit: 'cover', showLoader: false, width: 100, height: 100 });
+          if (el) mount(grid, el);
         }
       });
     }

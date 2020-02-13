@@ -55,7 +55,7 @@ export type PhotoFitMode = 'contain' | 'cover';
 
 export function getSize(sizes: PhotoSize[], width?: number, height?: number, fit?: PhotoFitMode): PhotoSizeWithLocation | null {
   let diff: number | undefined;
-  let closest: PhotoSize | undefined;
+  let closest: PhotoSizeWithLocation | undefined;
 
   for (let i = 0; i < sizes.length; i += 1) {
     const size = sizes[i];

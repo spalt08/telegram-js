@@ -1,4 +1,5 @@
-import { StorageFileType, Document, InputFileLocation, DocumentAttributeSticker, DocumentAttributeFilename, DocumentAttributeVideo, DocumentAttribute } from 'cache/types';
+import { StorageFileType, Document, InputFileLocation, DocumentAttributeSticker, DocumentAttributeFilename,
+  DocumentAttributeVideo, DocumentAttribute, DocumentAttributeAnimated } from 'cache/types';
 
 export function hexToStr(hex: string): string {
   let str = '';
@@ -68,7 +69,7 @@ export function getDocumentLocation(document: Document, size: string = 'y'): Inp
   };
 }
 
-export function getAttribute(document: Document, name: 'documentAttributeAnimated'): DocumentAttributeAnimated | null
+export function getAttribute(document: Document, name: 'documentAttributeAnimated'): DocumentAttributeAnimated | null;
 export function getAttribute(document: Document, name: 'documentAttributeFilename'): DocumentAttributeFilename | null;
 export function getAttribute(document: Document, name: 'documentAttributeSticker'): DocumentAttributeSticker | null;
 export function getAttribute(document: Document, name: 'documentAttributeVideo'): DocumentAttributeVideo | null;
