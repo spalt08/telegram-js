@@ -175,6 +175,19 @@ export type Channel = WithMin<{
   photo: ChatPhoto,
 }>;
 
+export type WebPage = {
+  _: 'webPageEmpty',
+} | {
+  _: 'webPagePending',
+} | {
+  _: 'webPage',
+  type?: string,
+  site_name?: string,
+  title?: string,
+  description?: string,
+  photo: Photo,
+};
+
 export type MessageMedia = {
   _: 'messageMediaEmpty',
 } | {
@@ -189,6 +202,7 @@ export type MessageMedia = {
   document: Document,
 } | {
   _: 'messageMediaWebPage',
+  webpage: WebPage,
 } | {
   _: 'messageMediaGeoLive',
 } | {
@@ -246,16 +260,18 @@ export type PhotoNotEmpty = {
  * PhotoSize object
  * Ref: https://core.telegram.org/type/PhotoSize
  */
-export type PhotoSize = {
-  _: 'photoSizeEmpty',
-} | {
+export type PhotoSizeWithLocation = {
   _: 'photoSize',
   type: string,
   location: FileLocation,
   w: number,
   h: number,
   size: number,
-} | {
+};
+
+export type PhotoSize = {
+  _: 'photoSizeEmpty',
+} | PhotoSizeWithLocation | {
   _: 'photoStrippedSize',
   type: string,
   bytes: string,

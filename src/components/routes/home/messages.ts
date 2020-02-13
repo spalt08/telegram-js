@@ -5,7 +5,7 @@ import { mount, unmount } from 'core/dom';
 import { useObservable } from 'core/hooks';
 import { message as service } from 'services';
 import { Direction as MessageDirection } from 'services/message';
-import message from 'components/message/message';
+import message from 'components/message2/message';
 import { sectionSpinner, VirtualizedList } from 'components/ui';
 import messageInput from 'components/message/input/input';
 import { Peer } from 'cache/types';
@@ -38,7 +38,7 @@ export default function messages() {
     pivotBottom: true,
     threshold: 2,
     batch: 35,
-    renderer: (id: string) => message(id, service.activePeer.value!),
+    renderer: (id: string) => message(id, service.activePeer.value!, (mid: string) => scroll.pendingRecalculate.push(mid)),
     onReachTop: () => service.loadMoreHistory(MessageDirection.Older),
     onReachBottom: () => service.loadMoreHistory(MessageDirection.Newer),
   });

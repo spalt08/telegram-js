@@ -311,6 +311,16 @@ export default class MessagesService {
     messageCache.indices.history.putNewestMessage(message);
   }
 
+  /** Load single message */
+  loadMessage = (id: number, cb: (msg: Message) => void) => {
+    client.call('messages.getMessages', { id: [{ _: 'inputMessageID', id }] }, (err, res) => {
+      if (!err && res && res.messages && res.messages.length > 0) {
+        messageCache.put(res.messages);
+        cb(res.messages[0]);
+      }
+    });
+  };
+
   sendMessage = (message: string) => {
     if (!this.activePeer.value) return;
 

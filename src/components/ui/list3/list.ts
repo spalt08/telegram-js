@@ -222,6 +222,9 @@ export class VirtualizedList {
   updateHeigths(force: boolean = false) {
     if (force) this.pendingRecalculate = this.current;
 
+    // for (let i = this.first; i <= this.last; i += 1) {
+    //   const item = this.current[i];
+
     for (let i = 0; i < this.pendingRecalculate.length; i += 1) {
       const item = this.pendingRecalculate[i];
       this.heights[item] = this.elements[item].offsetHeight || this.heights[item] || 0;
@@ -570,7 +573,7 @@ export class VirtualizedList {
 
       // fix chrome
       requestAnimationFrame(() => {
-        if (Math.abs(this.container.scrollTop - deferred) > 20) this.container.scrollTop = deferred;
+        if (Math.abs(this.container.scrollTop - deferred) > 20) this.container.scrollTop = this.scrollTop = deferred;
       });
     }
 
@@ -730,6 +733,7 @@ export class VirtualizedList {
       this.isLocked = false;
       this.elements[item].classList.remove('focused');
       this.container.scrollTop = this.scrollTop = this.getScrollToValue(item);
+      this.updateOffsets();
       this.virtualize();
     }, 300);
   }
