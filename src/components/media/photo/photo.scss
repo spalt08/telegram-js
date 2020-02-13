@@ -1,0 +1,79 @@
+.photo {
+  position: relative;
+  background: #FFFFFF;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &__loader {
+    position: absolute;
+    left: calc(50% - 24px);
+    top: calc(50% - 24px);
+    right: auto;
+    height: auto;
+    margin: 0 auto;
+    background: rgba(0, 0, 0, 0.2);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+
+    svg {
+      width: 30px;
+      height: 30px;
+
+      circle {
+        stroke: #FFFFFF;
+      }
+    }
+  }
+
+  &__background {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-position: center;
+    background-size: cover;
+    filter: blur(6px);
+    clip-path: inset(0);
+    transform: scale(1.06);
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  &__thumbnail {
+    filter: blur(6px);
+    clip-path: inset(0);
+    transform: scale(1.06);
+    z-index: 1;
+
+    &.removed {
+      position: absolute;
+      animation: thumbRemoved .4s ease;
+    }
+  }
+
+  & img { z-index: 1; position: relative; }
+  &.contain.landscape img { width: 100%; }
+  &.contain.portrait img { height: 100%; }
+  &.cover.landscape img { height: 100%; }
+  &.cover.portrait img { width: 100%; }
+}
+
+@keyframes previewAppear {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes thumbRemoved {
+  to {
+    opacity: 0;
+  }
+}

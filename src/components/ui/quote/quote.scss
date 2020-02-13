@@ -1,6 +1,14 @@
 .quote {
   border-left: 2px solid #4EA4F5;
   padding-left: 6px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+
+  &__content {
+    overflow: hidden;
+    flex: 1 70%;
+  }
 
   &__title {
     color: #4EA4F5;
@@ -12,7 +20,7 @@
   }
 
   &__message {
-    font-size: 14px;;
+    font-size: 14px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -21,5 +29,14 @@
     &.media {
       color: #707579;
     }
+  }
+
+  &__img {
+    border-radius: 3px;
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+    overflow: hidden;
+    margin-right: 6px;
   }
 }

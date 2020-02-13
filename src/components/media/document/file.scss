@@ -1,0 +1,50 @@
+.document-file {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  max-width: 320px;
+  font-size: 15px;
+
+  &__icon, &__thumb {
+    width: 50px;
+    height: 50px;
+    border-radius: 6px;
+    margin-right: 10px;
+    overflow: hidden;
+  }
+
+  &__icon {
+    background: #1DA1F1;
+    color: #FFFFFF;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 500;
+
+    .message.out & { background: #429f47; }
+  }
+
+  &__info {
+    flex: 1 50%;
+    overflow: hidden;
+    font-size: 14px;
+  }
+
+  &__title {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 5px;
+  }
+
+  &__size {
+    color: #1DA1F1;
+
+    .message.out & { color: #429f47; }
+  }
+}

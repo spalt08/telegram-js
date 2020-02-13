@@ -49,7 +49,7 @@ export default function emojiPanel(onSelect?: (emoji: string) => void) {
   });
 
   const container = div`.emoji-panel`(
-    categoryList.wrapper,
+    categoryList.container,
     div`.emoji-panel__tabs`(
       recentIcon,
       ...icons,

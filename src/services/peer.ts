@@ -6,7 +6,9 @@ import { userFullCache, chatCache, chatFullCache, userCache } from 'cache';
  * Singleton service class for handling peers
  */
 export default class PeerService {
-  loadFullInfo(peer: Peer) {
+  loadFullInfo(peer: Peer | null) {
+    if (!peer) return;
+
     if (peer._ === 'peerChannel') {
       const chat = chatCache.get(peer.channel_id);
       if (!chat || chat._ !== 'channel') return;

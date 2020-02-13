@@ -1,6 +1,6 @@
 import AuthService from './auth';
 import DialogService from './dialog';
-import MessageService from './message';
+import MessageService from './message/message';
 import MainService from './main';
 import MediaService from './media';
 import PeerService from './peer';
@@ -13,7 +13,7 @@ export const main = new MainService();
 export const auth = new AuthService();
 export const userTyping = new UserTyping();
 export const peer = new PeerService();
-export const message = new MessageService(userTyping, peer);
+export const message = new MessageService(peer);
 export const dialog = new DialogService();
 export const media = new MediaService();
 export const messageSearch = new MessageSearchService();

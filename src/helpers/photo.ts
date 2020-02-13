@@ -1,5 +1,5 @@
 /* eslint-disable prefer-destructuring, prefer-template, max-len */
-import { PhotoSize, InputFileLocation, PhotoNotEmpty, Peer, Message } from 'cache/types';
+import { PhotoSize, InputFileLocation, PhotoNotEmpty, Peer, Message, Document, PhotoSizeWithLocation } from 'cache/types';
 import { peerToInputPeer, getPeerPhotoLocation } from 'cache/accessors';
 import { blobToUrl, hexToBlob, hexToStr, strToBlob } from './files';
 
@@ -37,7 +37,9 @@ export function getThumbnail(sizes: PhotoSize[]) {
   return null;
 }
 
-export function getOrientation(sizes: PhotoSize[]): string {
+export type PhotoOrinetation = 'landscape' | 'portrait';
+
+export function getOrientation(sizes: PhotoSize[]): PhotoOrinetation {
   for (let i = 0; i < sizes.length; i += 1) {
     const size = sizes[i];
 
@@ -49,54 +51,43 @@ export function getOrientation(sizes: PhotoSize[]): string {
   return 'landscape';
 }
 
-export function getSize(sizes: PhotoSize[], dim: number) {
-  for (let i = 0; i < sizes.length; i += 1) {
-    const csize = sizes[i];
+export type PhotoFitMode = 'contain' | 'cover';
 
-    if (csize._ === 'photoSize') {
-      const landscape = csize.w > csize.h;
-
-      if (landscape) {
-        return {
-          width: dim,
-          height: (csize.h / csize.w) * dim,
-        };
-      }
-
-      return {
-        height: dim,
-        width: (csize.w / csize.h) * dim,
-      };
-    }
-  }
-
-  return { width: 0, height: 0 };
-}
-
-export function getSizeType(sizes: PhotoSize[], max: number): string {
+export function getSize(sizes: PhotoSize[], width?: number, height?: number, fit?: PhotoFitMode): PhotoSizeWithLocation | null {
   let diff: number | undefined;
-  let type: string | undefined;
+  let closest: PhotoSizeWithLocation | undefined;
 
   for (let i = 0; i < sizes.length; i += 1) {
-    const csize = sizes[i];
+    const size = sizes[i];
 
-    if (csize._ === 'photoSize') {
-      const landscape = csize.w > csize.h;
+    if (size._ === 'photoSize') {
+      const isLandscape = size.w > size.h;
+
+      let max = isLandscape ? width : height;
+      if (fit === 'cover') max = isLandscape ? height : width;
+      if (!max) max = 320; // default;
 
       if (!diff) {
-        diff = Math.abs(max - (landscape ? csize.w : csize.h));
-        type = csize.type;
-      } else {
-        const nextDiff = Math.abs(max - (landscape ? csize.w : csize.h));
-        if (nextDiff < diff) {
-          diff = nextDiff;
-          type = csize.type;
-        }
+        diff = Math.abs(max - (isLandscape ? size.w : size.h));
+        closest = size;
+        continue;
+      }
+
+      const nextDiff = Math.abs(max - (isLandscape ? size.w : size.h));
+
+      if (nextDiff < diff) {
+        diff = nextDiff;
+        closest = size;
       }
     }
   }
 
-  return type || 'm';
+  return closest || null;
+}
+
+export function getSizeType(sizes: PhotoSize[], width?: number, height?: number, fit?: PhotoFitMode): string {
+  const size = getSize(sizes, width, height, fit);
+  return size ? size.type : 'm';
 }
 
 export function getDefaultSizeType(photo: PhotoNotEmpty): string {
@@ -122,13 +113,13 @@ export function checkDimensions(sizes: PhotoSize[], dw: number, dh: number): boo
   return false;
 }
 
-export function getPhotoLocation(photo: PhotoNotEmpty, type?: string): InputFileLocation {
+export function getPhotoLocation(photo: PhotoNotEmpty | Document, type?: string): InputFileLocation {
   return {
-    _: 'inputPhotoFileLocation',
+    _: photo._ === 'photo' ? 'inputPhotoFileLocation' : 'inputDocumentFileLocation',
     id: photo.id,
     access_hash: photo.access_hash,
     file_reference: photo.file_reference,
-    thumb_size: type || getDefaultSizeType(photo),
+    thumb_size: type || 'm', // getDefaultSizsType(photo),
   };
 }
 

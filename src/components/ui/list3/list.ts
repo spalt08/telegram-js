@@ -1,7 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
 import { el, listen, mount, unmount, listenOnce } from 'core/dom';
 import { useOnMount, useListenWhileMounted, useMaybeObservable } from 'core/hooks';
-import { div } from 'core/html';
 import './list.scss';
 
 type Props = {
@@ -45,11 +44,8 @@ const arr_contains = (a: readonly string[], b: readonly string[]): boolean => {
  * })
  */
 export class VirtualizedList {
-  /** Wrapper for calculating height */
-  public wrapper: HTMLDivElement;
-
-  /** HTML element with scroll */
-  container: HTMLElement;
+  /** HTML container: gets height and scrolls */
+  public readonly container: HTMLElement;
 
   /** Scrollable view size */
   viewport: DOMRect;
@@ -61,7 +57,7 @@ export class VirtualizedList {
   isLocked: boolean = false;
 
   /** Config */
-  cfg: {
+  public cfg: {
     batch: number,
     pivotBottom: boolean,
     threshold: number,
@@ -125,9 +121,7 @@ export class VirtualizedList {
     onReachTop,
     onReachBottom,
   }: Props) {
-    this.wrapper = div`.list${className}${pivotBottom ? 'reversed' : ''}`(
-      this.container = el(tag || 'div', { className: 'list__container' }),
-    );
+    this.container = el(tag || 'div', { className: `list ${className} ${pivotBottom ? '-reversed' : ''}` });
 
     this.renderer = renderer;
     this.cfg = {
@@ -142,9 +136,9 @@ export class VirtualizedList {
     };
 
     // set initial viewport and handle its updates
-    this.viewport = this.wrapper.getBoundingClientRect();
+    this.viewport = this.container.getBoundingClientRect();
     useOnMount(this.container, this.updateViewport);
-    useListenWhileMounted(this.wrapper, window, 'resize', this.updateViewport);
+    useListenWhileMounted(this.container, window, 'resize', this.updateViewport);
 
     // when items changed
     useMaybeObservable(this.container, items, (next: readonly string[]) => {
@@ -176,7 +170,7 @@ export class VirtualizedList {
   }
 
   updateViewport = () => {
-    this.viewport = this.wrapper.getBoundingClientRect();
+    this.viewport = this.container.getBoundingClientRect();
     this.scrollHeight = this.container.scrollHeight;
   };
 
@@ -221,6 +215,9 @@ export class VirtualizedList {
   // update heights
   updateHeigths(force: boolean = false) {
     if (force) this.pendingRecalculate = this.current;
+
+    // for (let i = this.first; i <= this.last; i += 1) {
+    //   const item = this.current[i];
 
     for (let i = 0; i < this.pendingRecalculate.length; i += 1) {
       const item = this.pendingRecalculate[i];
@@ -274,7 +271,7 @@ export class VirtualizedList {
     }
 
     // fallback if current data is a part of next (lazy load)
-    if (arr_contains(next, this.current)) {
+    if (this.cfg.pivotBottom === false && arr_contains(next, this.current)) {
       this.updateData(next);
       this.virtualize();
       return;
@@ -570,7 +567,7 @@ export class VirtualizedList {
 
       // fix chrome
       requestAnimationFrame(() => {
-        if (Math.abs(this.container.scrollTop - deferred) > 20) this.container.scrollTop = deferred;
+        if (Math.abs(this.container.scrollTop - deferred) > 20) this.container.scrollTop = this.scrollTop = deferred;
       });
     }
 
@@ -730,6 +727,7 @@ export class VirtualizedList {
       this.isLocked = false;
       this.elements[item].classList.remove('focused');
       this.container.scrollTop = this.scrollTop = this.getScrollToValue(item);
+      this.updateOffsets();
       this.virtualize();
     }, 300);
   }
@@ -786,5 +784,5 @@ export class VirtualizedList {
  */
 export default function list(props: Props) {
   const controller = new VirtualizedList(props);
-  return controller.wrapper;
+  return controller.container;
 }

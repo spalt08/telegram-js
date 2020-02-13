@@ -1,53 +1,16 @@
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { text } from 'core/html';
-import { userCache, chatCache } from 'cache';
 import { Peer } from 'cache/types';
+import { useObservable } from 'core/hooks';
+import { peerToTitle } from 'cache/accessors';
 import { auth } from 'services';
 
-const unknownTitle = 'Deleted Account';
-
 export default function profileTitle(peer: Peer, isForDialogList = false) {
-  const textNode = text(unknownTitle);
-  let nameObservable: Observable<string> | undefined;
+  const [firstTitle, titleObservable] = peerToTitle(peer, isForDialogList ? auth.userID : undefined);
+  const textNode = text(firstTitle);
 
-  switch (peer._) {
-    case 'peerUser':
-      nameObservable = userCache.useItemBehaviorSubject(textNode, peer.user_id)
-        .pipe(map((user) => {
-          if (!user || user.deleted) {
-            return unknownTitle;
-          }
-          if (user.id === auth.userID && isForDialogList) {
-            return 'Saved Messages';
-          }
-          return `${user.first_name} ${user.last_name}`;
-        }));
-      break;
-
-    case 'peerChat':
-      nameObservable = chatCache.useItemBehaviorSubject(textNode, peer.chat_id)
-        .pipe(map((chat) => chat ? chat.title : unknownTitle));
-      break;
-
-    case 'peerChannel':
-      nameObservable = chatCache.useItemBehaviorSubject(textNode, peer.channel_id)
-        .pipe(map((chat) => chat ? chat.title : unknownTitle));
-      break;
-
-    default:
-  }
-
-  let prevName = '';
-
-  if (nameObservable) {
-    nameObservable.subscribe((name) => {
-      if (name !== prevName) {
-        textNode.textContent = name;
-        prevName = name;
-      }
-    });
-  }
+  useObservable(textNode, titleObservable, (title) => {
+    textNode.textContent = title;
+  });
 
   return textNode;
 }

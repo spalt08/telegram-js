@@ -4,10 +4,10 @@ import { peerToInitials, peerToColorCode } from 'cache/accessors';
 import { getPeerPhotoInputLocation } from 'helpers/photo';
 import { unmount, mount } from 'core/dom';
 import media from 'client/media';
-import './avatar.scss';
 import { auth } from 'services';
 import { savedmessages, avatarDeletedaccount } from 'components/icons';
 import { userCache } from 'cache';
+import './avatar.scss';
 
 function isMyself(peer: Peer) {
   return peer._ === 'peerUser' && peer.user_id === auth.userID;
@@ -36,7 +36,7 @@ export default function profileAvatar(peer: Peer, message?: Message, isForDialog
         );
       } else {
         defaultPicture = div`.avatar__standard${`color-${peerToColorCode(peer)}`}`(
-          text(peerToInitials(peer)),
+          text(peerToInitials(peer)[0]),
         );
       }
 

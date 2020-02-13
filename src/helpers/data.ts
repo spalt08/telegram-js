@@ -30,6 +30,7 @@ export function modulo(dividend: number, divider: number): number {
  * order. Returns a boolean that says whether `destination` was modified.
  *
  * @see Array.prototype.sort for the `compare` description. It describes both arrays.
+ * @todo Consider using binary tree instead
  */
 export function mergeOrderedArrays<T>(
   destination: T[],
@@ -82,4 +83,33 @@ export function mergeOrderedArrays<T>(
 // From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#Escaping
 export function escapeRegExp(string: string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+export function getFirstLetter(str: string) {
+  if (!str) return '';
+  for (let i = 0; i < str.length; i++) {
+    if (str[i].toUpperCase() !== str[i].toLowerCase()) {
+      return str[i];
+    }
+    if (str[i] >= '0' && str[i] <= '9') {
+      return str[i];
+    }
+  }
+
+  return '';
+}
+
+export function getFirstLetters(title: string) {
+  if (!title) return '';
+  if (title.length === 0) return '';
+
+  const split = title.split(' ');
+  if (split.length === 1) {
+    return getFirstLetter(split[0]);
+  }
+  if (split.length > 1) {
+    return getFirstLetter(split[0]) + getFirstLetter(split[1]);
+  }
+
+  return '';
 }

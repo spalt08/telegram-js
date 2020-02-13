@@ -32,7 +32,7 @@ export default function dialogs({ className = '' }: Props = {}) {
   let spinner: Node | undefined;
   const element = div({ className },
     status(),
-    listEl.wrapper,
+    listEl.container,
   );
 
   useObservable(element, showSpinnerObservable, (show) => {

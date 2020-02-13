@@ -142,18 +142,19 @@ export type UserFull = {
   pinned_msg_id: number,
 };
 
-export type updateUserTyping = {
+export type UpdateUserTyping = {
   _: 'updateUserTyping',
   user_id: number,
   action: SendMessageAction,
 };
 
-export type updateChatUserTyping = {
+export type UpdateChatUserTyping = {
   _: 'updateChatUserTyping',
   chat_id: number,
   user_id: number,
   action: SendMessageAction,
 };
+
 export type SendMessageAction = {
   _: 'sendMessageTypingAction' | 'sendMessageCancelAction' | 'sendMessageRecordVideoAction' | 'sendMessageUploadVideoAction'
   | 'sendMessageRecordAudioAction' | 'sendMessageUploadAudioAction' | 'sendMessageUploadPhotoAction' | 'sendMessageUploadDocumentAction'
@@ -181,6 +182,7 @@ export type Chat = {
   username: string,
   photo: ChatPhoto,
   migrated_to?: InputChannel,
+  megagroup: boolean,
 };
 
 /**
@@ -223,6 +225,19 @@ export type ChatFull = {
   online_count: number,
 };
 
+export type WebPage = {
+  _: 'webPageEmpty',
+} | {
+  _: 'webPagePending',
+} | {
+  _: 'webPage',
+  type?: string,
+  site_name?: string,
+  title?: string,
+  description?: string,
+  photo: Photo,
+};
+
 export type MessageMedia = {
   _: 'messageMediaEmpty',
 } | {
@@ -237,6 +252,7 @@ export type MessageMedia = {
   document: Document,
 } | {
   _: 'messageMediaWebPage',
+  webpage: WebPage,
 } | {
   _: 'messageMediaGeoLive',
 } | {
@@ -273,6 +289,7 @@ export type Document = {
   thumbs: PhotoSize[],
   dc_id: number,
   attributes: DocumentAttribute[],
+  size: number,
 };
 
 /**
@@ -294,16 +311,18 @@ export type PhotoNotEmpty = {
  * PhotoSize object
  * Ref: https://core.telegram.org/type/PhotoSize
  */
-export type PhotoSize = {
-  _: 'photoSizeEmpty',
-} | {
+export type PhotoSizeWithLocation = {
   _: 'photoSize',
   type: string,
   location: FileLocation,
   w: number,
   h: number,
   size: number,
-} | {
+};
+
+export type PhotoSize = {
+  _: 'photoSizeEmpty',
+} | PhotoSizeWithLocation | {
   _: 'photoStrippedSize',
   type: string,
   bytes: string,
@@ -313,6 +332,45 @@ export type PhotoSize = {
   bytes: string,
   w: number,
   h: number,
+};
+
+/**
+ * Ref: https://core.telegram.org/type/KeyboardButton
+ */
+export type KeyboardButton = {
+  _: 'keyboardButton',
+  text: string,
+};
+
+/**
+ * Ref: https://core.telegram.org/type/KeyboardButtonRow
+ */
+export type KeyboardButtonRow = {
+  _: 'keyboardButtonRow',
+  buttons: KeyboardButton[],
+};
+
+/**
+ * Ref: https://core.telegram.org/constructor/replyInlineMarkup
+ */
+export type ReplyInlineMarkup = {
+  _: 'replyInlineMarkup',
+  rows: KeyboardButtonRow[],
+};
+
+export type ReplyKeyboardMarkup = {
+  _: 'replyKeyboardMarkup',
+  rows: KeyboardButtonRow[],
+};
+
+/**
+ * Reply markup
+ * Ref: https://core.telegram.org/type/ReplyMarkup
+ */
+export type ReplyMarkup = ReplyInlineMarkup | ReplyKeyboardMarkup | {
+  _: 'replyKeyboardForceReply',
+} | {
+  _: 'replyKeyboardForceReply',
 };
 
 /**
@@ -332,6 +390,7 @@ export type MessageCommon = {
   media: MessageMedia,
   reply_to_msg_id?: number,
   entities: MessageEntity[],
+  reply_markup?: ReplyMarkup,
 };
 
 export type MessageService = {
@@ -468,17 +527,45 @@ export type UploadFile = {
 };
 
 /**
- * Ref: https://core.telegram.org/type/DocumentAttribute
- */
-export type DocumentAttribute = DocumentAttributeSticker;
-
-/**
  * Ref: https://core.telegram.org/constructor/documentAttributeSticker
  */
 export type DocumentAttributeSticker = {
   _: 'documentAttributeSticker',
   alt: string,
 };
+
+/**
+ * Ref: https://core.telegram.org/constructor/documentAttributeVideo
+ */
+export type DocumentAttributeVideo = {
+  _: 'documentAttributeVideo',
+  round_message?: boolean,
+  supports_streaming?: boolean,
+  duration: number,
+  w: number,
+  height: number,
+};
+
+
+/**
+ * Ref: https://core.telegram.org/constructor/documentAttributeFilename
+ */
+export type DocumentAttributeFilename = {
+  _: 'documentAttributeFilename',
+  file_name: string,
+};
+
+/**
+ * Ref: https://core.telegram.org/constructor/documentAttributeAnimated
+ */
+export type DocumentAttributeAnimated = {
+  _: 'documentAttributeAnimated',
+};
+
+/**
+ * Ref: https://core.telegram.org/type/DocumentAttribute
+ */
+export type DocumentAttribute = DocumentAttributeSticker | DocumentAttributeFilename | DocumentAttributeVideo | DocumentAttributeAnimated;
 
 /**
  * Ref: https://core.telegram.org/type/MessagesFilter
