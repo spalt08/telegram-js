@@ -3,7 +3,7 @@ import client from 'client/client';
 import { Message, Peer, AnyUpdateMessage, AnyUpdateShortMessage, Messages, MessagesNotModified, MessageCommon } from 'cache/types';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
-import { MessagesChunkReference } from 'cache/fastStorages/indices/messageHistory';
+import { IdsChunk, MessagesChunkReference } from 'cache/fastStorages/indices/messageHistory';
 import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage, shortChatMessageToMessage } from 'helpers/api';
 
 export const enum Direction {
@@ -35,9 +35,9 @@ export default class MessagesService {
 
   readonly focusedMessage = new BehaviorSubject<{ id: number, direction: Direction } | null>(null);
 
-  readonly history = new BehaviorSubject<Readonly<number[]>>([]);
+  readonly history = new BehaviorSubject<IdsChunk>({ ids: [] });
 
-  pendingMessages: Record<string, MessageCommon> = {};
+  readonly pendingMessages: Record<string, MessageCommon> = {};
 
   protected cacheChunkRef?: MessagesChunkReference;
 
@@ -116,7 +116,7 @@ export default class MessagesService {
 
       if (peer) {
         this.cacheChunkRef = messageCache.indices.history.makeChunkReference(peer, messageId);
-        this.cacheChunkRef.history.subscribe(({ ids }) => this.history.next(ids));
+        this.cacheChunkRef.history.subscribe(this.history);
 
         if (messageId !== Infinity) {
           this.loadMessages(this.cacheChunkRef, Direction.Around, messageId);
