@@ -1,4 +1,4 @@
-import { StorageFileType, Document, InputFileLocation, DocumentAttributeSticker } from 'cache/types';
+import { StorageFileType, Document, InputFileLocation, DocumentAttributeSticker, DocumentAttributeFilename } from 'cache/types';
 
 export function hexToStr(hex: string): string {
   let str = '';
@@ -75,4 +75,27 @@ export function getAttributeSticker(document: Document): DocumentAttributeSticke
   }
 
   return null;
+}
+
+
+export function getAttributeFilename(document: Document): DocumentAttributeFilename | null {
+  for (let i = 0; i < document.attributes.length; i += 1) {
+    const attr = document.attributes[i];
+    if (attr._ === 'documentAttributeFilename') return attr;
+  }
+
+  return null;
+}
+
+const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+export function getReadableSize(document: Document): string {
+  let { size } = document;
+  let sizePostfixIndex = 0;
+
+  while (size > 1024) {
+    size /= 1024;
+    sizePostfixIndex++;
+  }
+
+  return `${size.toFixed(2).replace(/\.0+$/, '')} ${sizes[sizePostfixIndex]}`;
 }

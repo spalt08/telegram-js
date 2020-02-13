@@ -201,6 +201,9 @@ $messageDistance: 4PX;
     display: none;
     padding: $messageBubblePadding;
     padding-bottom: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
     @each $i, $color in $user-bg-colors {
       &.color-#{$i} {

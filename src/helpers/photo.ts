@@ -1,5 +1,5 @@
 /* eslint-disable prefer-destructuring, prefer-template, max-len */
-import { PhotoSize, InputFileLocation, PhotoNotEmpty, Peer, Message, Photo, PhotoSizeWithLocation } from 'cache/types';
+import { PhotoSize, InputFileLocation, PhotoNotEmpty, Peer, Message, Document, PhotoSizeWithLocation } from 'cache/types';
 import { peerToInputPeer, getPeerPhotoLocation } from 'cache/accessors';
 import { blobToUrl, hexToBlob, hexToStr, strToBlob } from './files';
 
@@ -113,13 +113,13 @@ export function checkDimensions(sizes: PhotoSize[], dw: number, dh: number): boo
   return false;
 }
 
-export function getPhotoLocation(photo: PhotoNotEmpty, type?: string): InputFileLocation {
+export function getPhotoLocation(photo: PhotoNotEmpty | Document, type?: string): InputFileLocation {
   return {
-    _: 'inputPhotoFileLocation',
+    _: photo._ === 'photo' ? 'inputPhotoFileLocation' : 'inputDocumentFileLocation',
     id: photo.id,
     access_hash: photo.access_hash,
     file_reference: photo.file_reference,
-    thumb_size: type || getDefaultSizeType(photo),
+    thumb_size: type || 'm', // getDefaultSizsType(photo),
   };
 }
 

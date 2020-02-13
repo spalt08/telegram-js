@@ -10,6 +10,7 @@ import webpagePreview from 'components/media/webpage/preview';
 import photoPreview from 'components/media/photo/preview';
 import { getAttributeSticker } from 'helpers/files';
 import stickerRenderer from 'components/media/sticker/sticker';
+import documentFile from 'components/media/document/file';
 import { idToColorCode } from 'cache/accessors';
 import { userIdToPeer } from 'helpers/api';
 import messageSerivce from './service';
@@ -92,6 +93,22 @@ const renderMessage = (msg: MessageCommon, peer: Peer) => {
     );
   }
 
+  // with document
+  if (msg.media._ === 'messageMediaDocument') {
+    const messageEl = msg.message ? div`.message__text`(formattedMessage(msg)) : nothing;
+
+    return (
+      div`.message__bubble`(
+        reply,
+        div`.message__media-padded`(documentFile(msg.media.document)),
+        messageEl,
+        date,
+      )
+    );
+  }
+
+  console.log(msg.media);
+
   // fallback
   return (
     div`.message__bubble`(
@@ -149,12 +166,14 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     }
 
     // re-rendering
-    if (bubble) unmount(bubble);
+    if (!bubble || !cached || (cached._ === 'message' && msg.message !== cached.message)) {
+      if (bubble) unmount(bubble);
 
-    bubble = renderMessage(msg, peer);
-    mount(aligner, bubble);
+      bubble = renderMessage(msg, peer);
+      mount(aligner, bubble);
 
-    if (onUpdateHeight) onUpdateHeight(id);
+      if (onUpdateHeight) onUpdateHeight(id);
+    }
 
     cached = msg;
   });
@@ -184,7 +203,6 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     if (profilePicture && !element.classList.contains('last')) {
       unmount(profilePicture);
       profilePicture = undefined;
-      console.log('remove pic');
     }
 
     // display picture
@@ -192,7 +210,6 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     && !profilePicture && cached && cached._ !== 'messageEmpty') {
       profilePicture = div`.message__profile`(profileAvatar(userIdToPeer(cached.from_id)));
       mount(aligner, profilePicture, bubble);
-      console.log('add pic');
     }
   };
 

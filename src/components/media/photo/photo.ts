@@ -1,4 +1,4 @@
-import { Photo } from 'cache/types';
+import { Photo, Document } from 'cache/types';
 import { div, img, nothing } from 'core/html';
 import { materialSpinner } from 'components/icons';
 import { mount, unmount, listenOnce } from 'core/dom';
@@ -17,11 +17,11 @@ export type PhotoOptions = {
   showLoader?: boolean,
 };
 
-export default function photoRenderer(photo: Photo,
+export default function photoRenderer(photo: Photo | Document,
   { width, height, fit = 'contain', thumb = true, minWidth, minHeight, showLoader = true }: PhotoOptions) {
-  if (photo._ !== 'photo') return nothing;
+  if (photo._ !== 'photo' && photo._ !== 'document') return nothing;
 
-  const size = getSize(photo.sizes, width, height, fit);
+  const size = getSize(photo._ === 'photo' ? photo.sizes : photo.thumbs, width, height, fit);
   if (!size) return nothing;
 
   const container = div`.photo`();
@@ -60,7 +60,7 @@ export default function photoRenderer(photo: Photo,
 
   // diplay thumbnail
   if (!url && thumb) {
-    thumbSrc = getThumbnail(photo.sizes);
+    thumbSrc = getThumbnail(photo._ === 'photo' ? photo.sizes : photo.thumbs);
 
     if (thumbSrc) {
       thumbnail = img({ className: 'photo__thumbnail', src: thumbSrc, alt: 'Message photo' });
@@ -93,7 +93,7 @@ export default function photoRenderer(photo: Photo,
   // load or render cached
   if (!url) {
     if (showLoader) {
-      loader = div`.photo-preview__loader`(materialSpinner());
+      loader = div`.photo__loader`(materialSpinner());
       mount(container, loader);
     }
 

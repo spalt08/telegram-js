@@ -287,6 +287,7 @@ export type Document = {
   thumbs: PhotoSize[],
   dc_id: number,
   attributes: DocumentAttribute[],
+  size: number,
 };
 
 /**
@@ -484,17 +485,26 @@ export type UploadFile = {
 };
 
 /**
- * Ref: https://core.telegram.org/type/DocumentAttribute
- */
-export type DocumentAttribute = DocumentAttributeSticker;
-
-/**
  * Ref: https://core.telegram.org/constructor/documentAttributeSticker
  */
 export type DocumentAttributeSticker = {
   _: 'documentAttributeSticker',
   alt: string,
 };
+
+
+/**
+ * Ref: https://core.telegram.org/constructor/documentAttributeFilename
+ */
+export type DocumentAttributeFilename = {
+  _: 'documentAttributeFilename',
+  file_name: string,
+};
+
+/**
+ * Ref: https://core.telegram.org/type/DocumentAttribute
+ */
+export type DocumentAttribute = DocumentAttributeSticker | DocumentAttributeFilename;
 
 /**
  * Ref: https://core.telegram.org/type/MessagesFilter
