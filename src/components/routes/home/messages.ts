@@ -30,9 +30,9 @@ export default function messages() {
 
   const itemsSubject = new BehaviorSubject<string[]>([]);
   const showSpinnerObservable = combineLatest([service.history, service.loadingSides])
-    .pipe(map(([messagesList, loadingDirections]) => messagesList.length < 3 && loadingDirections.length));
+    .pipe(map(([history, loadingDirections]) => history.ids.length < 3 && loadingDirections.length));
 
-  const scroll = new VirtualizedList({
+  const scroll: VirtualizedList = new VirtualizedList({
     className: 'messages__history',
     items: itemsSubject,
     pivotBottom: true,
@@ -45,8 +45,9 @@ export default function messages() {
 
   mount(element, scroll.wrapper, element.lastElementChild!);
 
-  // Make the list scroll to bottom on an active peer change
   useObservable(element, service.activePeer, () => scroll.clear());
+
+  // Handle message focus
   useObservable(element, service.focusedMessage, (focus) => {
     if (focus && service.activePeer.value) {
       scroll.focus(
@@ -60,8 +61,13 @@ export default function messages() {
     }
   });
 
+  // Makes the list stick to bottom when it shows the newest messages
+  useObservable(element, service.history, ({ newestReached }) => {
+    scroll.cfg.pivotBottom = !!newestReached;
+  });
+
   useObservable(element, service.history, (history) => itemsSubject.next(
-    service.activePeer.value ? prepareIdsList(service.activePeer.value, history) : [],
+    service.activePeer.value ? prepareIdsList(service.activePeer.value, history.ids) : [],
   ));
 
   useObservable(element, showSpinnerObservable, (show) => {
