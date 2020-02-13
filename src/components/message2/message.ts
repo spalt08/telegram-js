@@ -66,7 +66,8 @@ const renderMessage = (msg: MessageCommon, peer: Peer) => {
   // with photo
   if (msg.media._ === 'messageMediaPhoto') {
     const extraClass = msg.message ? 'with-photo' : 'only-photo';
-    const photoEl = photoPreview(msg.media.photo, peer, msg, {
+    const popupPeer = peer._ === 'peerChannel' ? peer : userIdToPeer(msg.from_id);
+    const photoEl = photoPreview(msg.media.photo, popupPeer, msg, {
       fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined });
     const messageEl = msg.message ? div`.message__text`(formattedMessage(msg)) : nothing;
 
