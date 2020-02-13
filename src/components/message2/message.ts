@@ -175,6 +175,9 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
       mount(element, container);
     }
 
+
+    if (msg && msg._ !== 'messageEmpty' && msg.from_id === client.getUserID()) element.classList.add('out');
+
     // shouldn't rerender service and empty message
     if (!msg || msg._ !== 'message') {
       cached = msg;

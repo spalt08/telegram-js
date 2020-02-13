@@ -104,7 +104,17 @@ export default function messageSerivce(msg: MessageService) {
       break;
 
     default:
-      innerContent = [nothing];
+      return (
+        div`.message__container`(
+          div`.message__align`(
+            div`.message__wrap`(
+              div`.message__bubble`(
+                div`.message__text.fallback`(text(`Service Message: ${msg.action._}`)),
+              ),
+            ),
+          ),
+        )
+      );
   }
 
   return (

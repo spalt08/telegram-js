@@ -17,13 +17,12 @@ export default function messageReply(id: number, peer: Peer) {
 
   const renderReply = (message: Message) => {
     if (message._ === 'messageEmpty') return;
-    if (message._ === 'messageService') return;
 
     if (replyQuote) unmount(replyQuote);
 
     let preview: Node | undefined;
 
-    if (message.media && message.media._ === 'messageMediaPhoto' && message.media.photo._ === 'photo') {
+    if (message._ === 'message' && message.media && message.media._ === 'messageMediaPhoto' && message.media.photo._ === 'photo') {
       preview = div`.quote__img`(photoRenderer(message.media.photo, { fit: 'cover', width: 36, height: 36 }));
     }
 

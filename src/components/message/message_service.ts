@@ -1,5 +1,5 @@
 import { MessageService, User } from 'cache/types';
-import { div, strong, text, span } from 'core/html';
+import { div, strong, text } from 'core/html';
 import { userCache } from 'cache';
 import './message_service.scss';
 
@@ -100,9 +100,9 @@ export default function serviceMessage(msg: MessageService) {
         div`.msgservice`(
           div`.msgservice__wrapper`(
             div`.msgservice__inner`(
-              (!user || user.deleted)
-                ? text('Channel created')
-                : span(userNameToHtml(user), text(' created channel '), strong(text(msg.action.title))),
+              userNameToHtml(user),
+              text(' created channel '),
+              strong(text(msg.action.title)),
             ),
           ),
         )
