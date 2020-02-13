@@ -141,18 +141,19 @@ export type UserFull = {
   about: string,
 };
 
-export type updateUserTyping = {
+export type UpdateUserTyping = {
   _: 'updateUserTyping',
   user_id: number,
   action: SendMessageAction,
 };
 
-export type updateChatUserTyping = {
+export type UpdateChatUserTyping = {
   _: 'updateChatUserTyping',
   chat_id: number,
   user_id: number,
   action: SendMessageAction,
 };
+
 export type SendMessageAction = {
   _: 'sendMessageTypingAction' | 'sendMessageCancelAction' | 'sendMessageRecordVideoAction' | 'sendMessageUploadVideoAction'
   | 'sendMessageRecordAudioAction' | 'sendMessageUploadAudioAction' | 'sendMessageUploadPhotoAction' | 'sendMessageUploadDocumentAction'
