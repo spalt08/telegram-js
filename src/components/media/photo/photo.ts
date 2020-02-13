@@ -37,7 +37,6 @@ export default function photoRenderer(photo: Photo | Document,
 
   let thumbSrc: string | null = null;
 
-
   // apply classes
   container.classList.add(orientation);
   container.classList.add(fit);

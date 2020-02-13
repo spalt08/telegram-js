@@ -181,6 +181,7 @@ export type Chat = {
   username: string,
   photo: ChatPhoto,
   migrated_to?: InputChannel,
+  megagroup: boolean,
 };
 
 /**
@@ -511,6 +512,13 @@ export type DocumentAttributeVideo = {
 export type DocumentAttributeFilename = {
   _: 'documentAttributeFilename',
   file_name: string,
+};
+
+/**
+ * Ref: https://core.telegram.org/constructor/documentAttributeAnimated
+ */
+export type DocumentAttributeAnimated = {
+  _: 'documentAttributeAnimated',
 };
 
 /**

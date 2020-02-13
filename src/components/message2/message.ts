@@ -1,7 +1,7 @@
 import { div, text, nothing } from 'core/html';
 import { useObservable, useInterface, hasInterface, getInterface, useOnMount } from 'core/hooks';
 import { mount, unmount, unmountChildren } from 'core/dom';
-import { messageCache } from 'cache';
+import { messageCache, chatCache } from 'cache';
 import { Peer, Message, MessageCommon, MessageService, MessageEmpty } from 'cache/types';
 import { formattedMessage } from 'components/ui';
 import client from 'client/client';
@@ -12,7 +12,7 @@ import { getAttributeSticker, getAttributeVideo } from 'helpers/files';
 import stickerRenderer from 'components/media/sticker/sticker';
 import documentFile from 'components/media/document/file';
 import { idToColorCode } from 'cache/accessors';
-import { userIdToPeer } from 'helpers/api';
+import { userIdToPeer, peerToId } from 'helpers/api';
 import messageSerivce from './service';
 import messageReply from './reply';
 import messageDate from './date';
@@ -32,10 +32,13 @@ const timezoneOffset = now.getTimezoneOffset() * 60;
 
 // message renderer
 const renderMessage = (msg: MessageCommon, peer: Peer) => {
+  const channel = peer._ === 'peerChannel' ? chatCache.get(peer.channel_id) : undefined;
+
   const date = messageDate(msg);
   const reply = msg.reply_to_msg_id ? messageReply(msg.reply_to_msg_id, peer) : nothing;
-  const title = peer._ !== 'peerUser'
-    ? div`.message__title${`color-${idToColorCode(msg.from_id)}`}`(profileTitle(userIdToPeer(msg.from_id))) : nothing;
+  const title = channel && channel._ === 'channel' && channel.megagroup === false
+    ? div`.message__title${`color-${idToColorCode(channel.id)}`}`(profileTitle(peer))
+    : div`.message__title${`color-${idToColorCode(msg.from_id)}`}`(profileTitle(userIdToPeer(msg.from_id)));
 
   // regular message
   if (!msg.media || msg.media._ === 'messageMediaEmpty') {
@@ -59,7 +62,7 @@ const renderMessage = (msg: MessageCommon, peer: Peer) => {
         title,
         reply,
         div`.message__text`(formattedMessage(msg)),
-        div`.message__media-padded`(webpagePreview(msg.media.webpage)),
+        msg.media.webpage._ === 'webPage' ? div`.message__media-padded`(webpagePreview(msg.media.webpage)) : nothing,
         date,
       )
     );
@@ -226,7 +229,10 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     // display picture
     if (aligner && element.classList.contains('chat') && element.classList.contains('last') && !element.classList.contains('out')
     && !profilePicture && cached && cached._ !== 'messageEmpty') {
-      profilePicture = div`.message__profile`(profileAvatar(userIdToPeer(cached.from_id)));
+      const channel = peer._ === 'peerChannel' ? chatCache.get(peer.channel_id) : undefined;
+      profilePicture = channel && channel._ === 'channel' && channel.megagroup === false
+        ? div`.message__profile`(profileAvatar(peer))
+        : div`.message__profile`(profileAvatar(userIdToPeer(cached.from_id)));
       mount(aligner, profilePicture, bubble);
     }
   };

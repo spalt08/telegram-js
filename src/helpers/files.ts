@@ -68,6 +68,7 @@ export function getDocumentLocation(document: Document, size: string = 'y'): Inp
   };
 }
 
+export function getAttribute(document: Document, name: 'documentAttributeAnimated'): DocumentAttributeAnimated | null
 export function getAttribute(document: Document, name: 'documentAttributeFilename'): DocumentAttributeFilename | null;
 export function getAttribute(document: Document, name: 'documentAttributeSticker'): DocumentAttributeSticker | null;
 export function getAttribute(document: Document, name: 'documentAttributeVideo'): DocumentAttributeVideo | null;
@@ -90,6 +91,10 @@ export function getAttributeVideo(document: Document) {
 
 export function getAttributeFilename(document: Document) {
   return getAttribute(document, 'documentAttributeFilename');
+}
+
+export function getAttributeAnimated(document: Document) {
+  return getAttribute(document, 'documentAttributeAnimated');
 }
 
 const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];

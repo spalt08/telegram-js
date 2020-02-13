@@ -29,7 +29,7 @@ export default function messageReply(id: number, peer: Peer) {
 
     replyQuote = quote(
       profileTitle({ _: 'peerUser', user_id: message.from_id }),
-      messageShort(message),
+      message.message || messageShort(message),
       preview,
     );
 
