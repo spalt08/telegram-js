@@ -29,7 +29,7 @@ export default function home() {
 
   useObservable(rightSidebarElement, main.rightSidebarPanel, (panel) => {
     getInterface(rightSidebarElement).setWidth(width);
-    rightSidebarWrapper.style.flexBasis = `${panel ? width : 0}px`;
+    rightSidebarWrapper.style.width = `${panel ? width : 0}px`;
     rightSidebarWrapper.classList.toggle('visible', panel !== RightSidebarPanel.None);
   });
 
