@@ -683,14 +683,15 @@ export class VirtualizedList {
   }
 
   scrollVirtualizedTo(item: string, direction: number = -1) {
-    if (this.current.indexOf(item) === -1) return;
+    const indexOfItem = this.current.indexOf(item);
+    if (indexOfItem === -1) return;
 
     this.lock();
     const [, end, height] = this.scrollVirtualizedRemove();
 
     // display new elements
-    this.first = Math.max((direction < 0) ? end : 0, this.current.indexOf(item) - Math.ceil(this.cfg.scrollBatch / 2));
-    this.last = Math.min(this.current.length - 1, this.current.indexOf(item) + Math.ceil(this.cfg.scrollBatch / 2));
+    this.first = Math.max((direction < 0) ? end : 0, indexOfItem - Math.ceil(this.cfg.scrollBatch / 2));
+    this.last = Math.min(this.current.length - 1, indexOfItem + Math.ceil(this.cfg.scrollBatch / 2));
 
     this.elements[item].classList.add('focused');
 

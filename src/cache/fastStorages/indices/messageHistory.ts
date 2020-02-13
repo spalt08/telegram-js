@@ -8,8 +8,8 @@ import Collection from '../collection';
 interface IdsChunkReference {
   readonly history: BehaviorSubject<IdsChunk>;
 
-  // Returns <0 if the message is older than chunk, =0 if inside chunk, >0 if newer than chunk
-  getMessagePosition(messageId: number): number;
+  // Returns <0 if the message is older than chunk, =0 if inside chunk, >0 if newer than chunk, null when unknown.
+  getMessagePosition(messageId: number): number | null;
 
   // The chunk must intersect or directly touch the referenced chunk
   putChunk(chunk: IdsChunk): void;
@@ -72,13 +72,9 @@ function getChunkOldestId(chunk: IdsChunk) {
 }
 
 // id = Infinity refers to the chunk with the newest message, -Infinity to the chunk with the oldest
-function compareChunksAndIdForOrder(chunk: IdsChunk, id: number): number {
+function compareChunksAndId(chunk: IdsChunk, id: number): number | null {
   if (isChunkEmpty(chunk)) {
-    if (process.env.NODE_ENV === 'development') {
-      // eslint-disable-next-line no-console
-      console.error('Unexpected empty chunk (no ids and not oldest or newest)');
-    }
-    return -1;
+    return null;
   }
   if (compareIdsForOrder(getChunkNewestId(chunk), id) > 0) {
     return 1;
@@ -87,6 +83,20 @@ function compareChunksAndIdForOrder(chunk: IdsChunk, id: number): number {
     return -1;
   }
   return 0;
+}
+
+// id = Infinity refers to the chunk with the newest message, -Infinity to the chunk with the oldest
+function compareChunksAndIdForOrder(chunk: IdsChunk, id: number): number {
+  const result = compareChunksAndId(chunk, id);
+  if (result !== null) {
+    return result;
+  }
+
+  if (process.env.NODE_ENV === 'development') {
+    // eslint-disable-next-line no-console
+    console.error('Unexpected empty chunk (no ids and not oldest or newest)');
+  }
+  return -1;
 }
 
 // integer means the exact position, float means the position between positions floor(n) and ceil(n)
@@ -218,7 +228,7 @@ class PeerIndex {
     const chunkReference = {
       isRevoked: false,
       history: new BehaviorSubject({ ids: [] }),
-      getMessagePosition: (messageId: number) => compareChunksAndIdForOrder(chunkReference.history.value, messageId),
+      getMessagePosition: (messageId: number) => compareChunksAndId(chunkReference.history.value, messageId),
       putChunk: (chunk: IdsChunk) => {
         if (chunkReference.isRevoked) {
           if (process.env.NODE_ENV === 'development') {

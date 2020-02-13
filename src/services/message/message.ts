@@ -72,9 +72,8 @@ export default class MessagesService {
    * - number - message sequential id to scroll to;
    * - undefined - scroll to the start of the history;
    */
-  selectPeer(peer: Peer | null, messageId?: number) {
-    // eslint-disable-next-line no-param-reassign
-    messageId = messageId || Infinity;
+  selectPeer(peer: Peer | null, _messageId?: number) {
+    const messageId = _messageId || Infinity;
 
     const isPeerChanged = (this.activePeer.value && peerToId(this.activePeer.value)) !== (peer && peerToId(peer));
 
@@ -86,7 +85,9 @@ export default class MessagesService {
       const messagePosition = this.currentChunk.getMessagePosition(messageId);
       if (messagePosition !== 0) {
         isChunkChanged = true;
-        focusedMessageDirection = messagePosition < 0 ? Direction.Older : Direction.Newer;
+        if (messagePosition !== null) {
+          focusedMessageDirection = messagePosition < 0 ? Direction.Older : Direction.Newer;
+        }
       }
     }
 
@@ -94,9 +95,7 @@ export default class MessagesService {
       this.activePeer.next(peer);
     }
 
-    if (peer && messageId !== Infinity) {
-      this.focusMessage.next({ id: messageId, direction: focusedMessageDirection });
-    }
+    // When you click different found messages fast, the history becomes empty occasionally. Todo: investigate.
 
     if (isChunkChanged) {
       if (peer) {
@@ -107,14 +106,15 @@ export default class MessagesService {
             if (this.nextChunk) {
               this.nextChunk.destroy();
             }
-            this.nextChunk = makeMessageChunk(peer, messageId);
+            const nextChunk = makeMessageChunk(peer, messageId);
+            this.nextChunk = nextChunk;
             this.loadingNextChunk.next(true);
 
             // Wait until the next chunk is loaded to make it the be the current chunk
-            this.nextChunk.history
+            nextChunk.history
               .pipe(first(({ ids, loadingNewer, loadingOlder }) => (ids.length >= 3 || !(loadingNewer || loadingOlder))))
               .subscribe(() => {
-                if (!this.nextChunk) {
+                if (nextChunk !== this.nextChunk) {
                   if (process.env.NODE_ENV === 'development') {
                     // eslint-disable-next-line no-console
                     console.error(
@@ -127,10 +127,9 @@ export default class MessagesService {
                 if (this.currentChunk) {
                   this.currentChunk.destroy();
                 }
-                this.currentChunk = this.nextChunk;
                 this.nextChunk = undefined;
-                this.currentChunk.history.subscribe(this.history);
                 this.loadingNextChunk.next(false);
+                this.setCurrentChunk(nextChunk, messageId, focusedMessageDirection);
               });
           }
         } else {
@@ -143,8 +142,7 @@ export default class MessagesService {
           if (this.currentChunk) {
             this.currentChunk.destroy();
           }
-          this.currentChunk = makeMessageChunk(peer, messageId);
-          this.currentChunk.history.subscribe(this.history);
+          this.setCurrentChunk(makeMessageChunk(peer, messageId), messageId, focusedMessageDirection);
         }
       } else {
         // No peer – no chunks
@@ -159,11 +157,15 @@ export default class MessagesService {
         }
         this.history.next(emptyHistory);
       }
-    } else if (this.nextChunk) {
+    } else {
+      this.focusToMessage(messageId, focusedMessageDirection);
+
       // Remove the chunk in progress to not jump to it when it's loaded
-      this.nextChunk.destroy();
-      this.nextChunk = undefined;
-      this.loadingNextChunk.next(false);
+      if (this.nextChunk) {
+        this.nextChunk.destroy();
+        this.nextChunk = undefined;
+        this.loadingNextChunk.next(false);
+      }
     }
   }
 
@@ -179,6 +181,38 @@ export default class MessagesService {
     }
 
     messageCache.indices.history.putNewestMessage(message);
+  }
+
+  protected setCurrentChunk(chunk: MessageChunkService, focusMessageId?: number, focusDirection = Direction.Around) {
+    this.currentChunk = chunk;
+
+    if (focusMessageId) {
+      if (focusMessageId === Infinity) {
+        // Wait for the messages to load to get the newest message id
+        chunk.history
+          .pipe(first(({ ids }) => ids.length > 0))
+          .subscribe(({ ids }) => {
+            this.focusToMessage(ids[0], focusDirection);
+          });
+      } else {
+        this.focusToMessage(focusMessageId, focusDirection);
+      }
+    }
+
+    // Also takes the current history from the chunk and puts it to the service history immediately
+    chunk.history.subscribe(this.history);
+  }
+
+  // Tip: pass Infinity to scroll to the first message but only if the current chunk is the newest
+  protected focusToMessage(messageId: number, direction: Direction) {
+    const history = this.history.value;
+    if (messageId === Infinity) {
+      if (history.newestReached && history.ids.length) {
+        this.focusMessage.next({ id: history.ids[0], direction });
+      }
+    } else {
+      this.focusMessage.next({ id: messageId, direction });
+    }
   }
 
   /** Load single message */
