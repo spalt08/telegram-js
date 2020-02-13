@@ -12,7 +12,7 @@ export default function replyMarkupRenderer(markup: ReplyMarkup): Node {
     const row = div`.reply-markup__row`();
 
     for (let j = 0; j < markup.rows[i].buttons.length; j++) {
-      const button = markup.rows[i].buttons[i];
+      const button = markup.rows[i].buttons[j];
       const buttonEl = div`.reply-markup__button`(text(button.text));
 
       mount(row, buttonEl);
