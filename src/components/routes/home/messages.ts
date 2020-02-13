@@ -74,7 +74,7 @@ export default function messages() {
 
   useObservable(element, showSpinnerObservable, (show) => {
     if (show && !spinner) {
-      mount(element, spinner = sectionSpinner({ className: 'messages__spinner' }));
+      mount(element, spinner = sectionSpinner({ className: 'messages__spinner', useBackdrop: true }));
     } else if (!show && spinner) {
       unmount(spinner);
       spinner = undefined;
