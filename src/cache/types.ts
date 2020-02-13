@@ -334,6 +334,45 @@ export type PhotoSize = {
 };
 
 /**
+ * Ref: https://core.telegram.org/type/KeyboardButton
+ */
+export type KeyboardButton = {
+  _: 'keyboardButton',
+  text: string,
+};
+
+/**
+ * Ref: https://core.telegram.org/type/KeyboardButtonRow
+ */
+export type KeyboardButtonRow = {
+  _: 'keyboardButtonRow',
+  buttons: KeyboardButton[],
+};
+
+/**
+ * Ref: https://core.telegram.org/constructor/replyInlineMarkup
+ */
+export type ReplyInlineMarkup = {
+  _: 'replyInlineMarkup',
+  rows: KeyboardButtonRow[],
+};
+
+export type ReplyKeyboardMarkup = {
+  _: 'replyKeyboardMarkup',
+  rows: KeyboardButtonRow[],
+};
+
+/**
+ * Reply markup
+ * Ref: https://core.telegram.org/type/ReplyMarkup
+ */
+export type ReplyMarkup = ReplyInlineMarkup | ReplyKeyboardMarkup | {
+  _: 'replyKeyboardForceReply',
+} | {
+  _: 'replyKeyboardForceReply',
+};
+
+/**
  * Message object
  * Ref: https://core.telegram.org/type/Message
  */
@@ -350,6 +389,7 @@ export type MessageCommon = {
   media: MessageMedia,
   reply_to_msg_id?: number,
   entities: MessageEntity[],
+  reply_markup: ReplyMarkup,
 };
 
 export type MessageService = {

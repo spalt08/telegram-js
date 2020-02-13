@@ -1,0 +1,32 @@
+.reply-markup {
+  width: 100%;
+  padding-bottom: 5px;
+
+  &__row {
+    max-width: 320px;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2px;
+  } 
+
+  &__button {
+    background: rgba(0, 0, 0, 0.3);
+    color: #fff;
+    cursor: not-allowed;
+    height: 38px;
+    flex: 1 20%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    margin-right: 2px;
+    font-size: 14px;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    overflow: hidden;
+  
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}

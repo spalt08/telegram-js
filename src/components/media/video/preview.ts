@@ -14,8 +14,6 @@ export default function videoPreview(video: Document, photoOptions: PhotoOptions
   if (gifAttribute) duration = 'GIF';
   else if (videoAttribute) duration = getReadableDuration(videoAttribute.duration);
 
-  console.log(video);
-
   return div`.video-preview`(
     div`.video-preview__duration`(text(duration)),
     div`.video-preview__playbtn`(),

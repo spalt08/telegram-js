@@ -1,6 +1,6 @@
 import { div, text, nothing } from 'core/html';
 import { useObservable, useInterface, hasInterface, getInterface, useOnMount } from 'core/hooks';
-import { mount, unmount, unmountChildren } from 'core/dom';
+import { mount, unmount } from 'core/dom';
 import { messageCache, chatCache } from 'cache';
 import { Peer, Message, MessageCommon, MessageService, MessageEmpty } from 'cache/types';
 import { formattedMessage } from 'components/ui';
@@ -11,13 +11,14 @@ import photoPreview from 'components/media/photo/preview';
 import { getAttributeSticker, getAttributeVideo } from 'helpers/files';
 import stickerRenderer from 'components/media/sticker/sticker';
 import documentFile from 'components/media/document/file';
+import videoPreview from 'components/media/video/preview';
 import { idToColorCode } from 'cache/accessors';
-import { userIdToPeer, peerToId } from 'helpers/api';
+import { userIdToPeer } from 'helpers/api';
 import messageSerivce from './service';
 import messageReply from './reply';
 import messageDate from './date';
 import './message.scss';
-import videoPreview from 'components/media/video/preview';
+import replyMarkupRenderer from './reply_markup';
 
 type MessageInterface = {
   from(): number,
@@ -148,9 +149,11 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
 
   let container: HTMLElement | undefined;
   let aligner: HTMLElement | undefined;
+  let wrapper: HTMLElement | undefined;
   let bubble: HTMLElement | undefined;
   let dayLabel: HTMLElement | undefined;
   let profilePicture: HTMLElement | undefined;
+  let replyMarkup: Node | undefined;
 
   // previous message before update
   let cached: MessageCommon | MessageService | MessageEmpty | undefined;
@@ -179,8 +182,9 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     }
 
     // first render for common message
-    if (!aligner) {
-      aligner = div`.message__align`();
+    if (!aligner || !wrapper) {
+      wrapper = div`.message__wrap`();
+      aligner = div`.message__align`(wrapper);
       mount(container, aligner);
 
       if (msg.from_id === client.getUserID()) element.classList.add('out');
@@ -191,9 +195,20 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
       if (bubble) unmount(bubble);
 
       bubble = renderMessage(msg, peer);
-      mount(aligner, bubble);
+      mount(wrapper, bubble);
 
       if (onUpdateHeight) onUpdateHeight(id);
+    }
+
+    // render reply markup
+    if (msg.reply_markup && !replyMarkup) {
+      replyMarkup = replyMarkupRenderer(msg.reply_markup);
+      mount(wrapper, replyMarkup);
+
+      if (msg.reply_markup._ === 'replyKeyboardMarkup' || msg.reply_markup._ === 'replyInlineMarkup') {
+        aligner.classList.add('with-reply-markup');
+        aligner.classList.add(`rm-rows-${msg.reply_markup.rows.length}`);
+      }
     }
 
     cached = msg;
@@ -233,7 +248,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
       profilePicture = channel && channel._ === 'channel' && channel.megagroup === false
         ? div`.message__profile`(profileAvatar(peer))
         : div`.message__profile`(profileAvatar(userIdToPeer(cached.from_id)));
-      mount(aligner, profilePicture, bubble);
+      mount(aligner, profilePicture, wrapper);
     }
   };
 

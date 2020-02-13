@@ -27,8 +27,6 @@ $messageDistance: 4PX;
 
   &__container {
     width: 100%;
-    display: flex;
-    justify-content: center;
     transition: background-color .4s ease-out;
     background-color: rgba(0, 0, 0, 0);
   }
@@ -42,13 +40,18 @@ $messageDistance: 4PX;
     align-items: flex-end;
   }
 
+  &__wrap {
+    max-width: 75%;
+    display: inline-block;
+    width: auto;
+  }
+
   &__bubble {
     border-radius: 6px;
     background: #FFFFFF;
     overflow: visible;
     position: relative;
     border-radius: 6px 12.5px 12.5px 6px;
-    max-width: 75%;
 
     &.with-webpage { max-width: 440px; }
     &.with-webpage-media { width: 340px; }
@@ -309,5 +312,9 @@ $messageDistance: 4PX;
 
   &.chat &__align { padding-left: 58px; }
   &.chat.out &__align, &.chat.last &__align { padding-left: 20px; }
+  &.chat &__align.with-reply-markup.rm-rows-1 &__profile { margin-bottom: 45px; }
+  &.chat &__align.with-reply-markup.rm-rows-2 &__profile { margin-bottom: 85px; }
+  &.chat &__align.with-reply-markup.rm-rows-3 &__profile { margin-bottom: 125px; }
+  &.chat &__align.with-reply-markup.rm-rows-4 &__profile { margin-bottom: 165px; }
 
 }
