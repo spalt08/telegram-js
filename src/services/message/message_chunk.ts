@@ -18,6 +18,7 @@ export interface MessageChunkService {
 
   loadMore(direction: Direction.Newer | Direction.Older): void;
 
+  // Also makes sure that the `history` subject won't be updated
   destroy(): void;
 }
 

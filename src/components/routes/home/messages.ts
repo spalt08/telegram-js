@@ -1,4 +1,4 @@
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { div } from 'core/html';
 import { mount, unmount } from 'core/dom';
@@ -29,9 +29,10 @@ export default function messages() {
   let spinner: Node | undefined;
 
   const itemsSubject = new BehaviorSubject<string[]>([]);
-  const showSpinnerObservable = service.history.pipe(map(({ ids, loadingNewer, loadingOlder }) => (
-    (loadingNewer || loadingOlder) && ids.length < 3
-  )));
+  const showSpinnerObservable = combineLatest([service.history, service.loadingNextChunk])
+    .pipe(map(([{ ids, loadingNewer, loadingOlder }, loadingNextChunk]) => (
+      loadingNextChunk || ((loadingNewer || loadingOlder) && ids.length < 3)
+    )));
 
   const scroll: VirtualizedList = new VirtualizedList({
     className: 'messages__history',
@@ -49,7 +50,7 @@ export default function messages() {
   useObservable(element, service.activePeer, () => scroll.clear());
 
   // Handle message focus
-  useObservable(element, service.focusedMessage, (focus) => {
+  useObservable(element, service.focusMessage, (focus) => {
     if (focus && service.activePeer.value) {
       scroll.focus(
         peerMessageToId(service.activePeer.value, focus.id),

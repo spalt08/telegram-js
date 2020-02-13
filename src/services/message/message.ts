@@ -1,4 +1,5 @@
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
+import { first } from 'rxjs/operators';
 import client from 'client/client';
 import { Message, Peer, AnyUpdateMessage, AnyUpdateShortMessage, MessageCommon } from 'cache/types';
 import { messageCache, userCache } from 'cache';
@@ -7,7 +8,7 @@ import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage, sho
 import { Direction } from './types';
 import makeMessageChunk, { MessageChunkService, MessageHistoryChunk } from './message_chunk';
 
-export type MessageHistoryChunk = MessageHistoryChunk;
+const emptyHistory: MessageHistoryChunk = { ids: [] };
 
 /**
  * Singleton service class for handling messages stuff
@@ -15,13 +16,18 @@ export type MessageHistoryChunk = MessageHistoryChunk;
 export default class MessagesService {
   readonly activePeer = new BehaviorSubject<Peer | null>(null);
 
-  readonly focusedMessage = new BehaviorSubject<{ id: number, direction: Direction } | null>(null);
+  readonly focusMessage = new Subject<{ id: number, direction: Direction }>();
 
-  readonly history = new BehaviorSubject<MessageHistoryChunk>({ ids: [] });
+  readonly history = new BehaviorSubject<MessageHistoryChunk>(emptyHistory);
+
+  // True when there is one chunk showing and another one is loading to replace the current one
+  readonly loadingNextChunk = new BehaviorSubject(false);
 
   readonly pendingMessages: Record<string, MessageCommon> = {};
 
-  protected chunk?: MessageChunkService;
+  protected currentChunk?: MessageChunkService;
+
+  protected nextChunk?: MessageChunkService;
 
   constructor() {
     client.updates.on('updateNewMessage', (update: AnyUpdateMessage) => {
@@ -76,8 +82,8 @@ export default class MessagesService {
     let focusedMessageDirection = Direction.Around;
     if (isPeerChanged) {
       isChunkChanged = true;
-    } else if (this.chunk) {
-      const messagePosition = this.chunk.getMessagePosition(messageId);
+    } else if (this.currentChunk) {
+      const messagePosition = this.currentChunk.getMessagePosition(messageId);
       if (messagePosition !== 0) {
         isChunkChanged = true;
         focusedMessageDirection = messagePosition < 0 ? Direction.Older : Direction.Newer;
@@ -88,25 +94,82 @@ export default class MessagesService {
       this.activePeer.next(peer);
     }
 
-    this.focusedMessage.next(peer && messageId !== Infinity ? { id: messageId, direction: focusedMessageDirection } : null);
+    if (peer && messageId !== Infinity) {
+      this.focusMessage.next({ id: messageId, direction: focusedMessageDirection });
+    }
 
     if (isChunkChanged) {
-      if (this.chunk) {
-        this.chunk.destroy();
-      }
-
       if (peer) {
-        this.chunk = makeMessageChunk(peer, messageId);
-        this.chunk.history.subscribe(this.history);
+        if (!isPeerChanged && this.currentChunk) {
+          // Keep the current chunk until the next is loaded
+          // Don't recreate the next chunk if it contains the target message
+          if (!this.nextChunk || this.nextChunk.getMessagePosition(messageId) !== 0) {
+            if (this.nextChunk) {
+              this.nextChunk.destroy();
+            }
+            this.nextChunk = makeMessageChunk(peer, messageId);
+            this.loadingNextChunk.next(true);
+
+            // Wait until the next chunk is loaded to make it the be the current chunk
+            this.nextChunk.history
+              .pipe(first(({ ids, loadingNewer, loadingOlder }) => (ids.length >= 3 || !(loadingNewer || loadingOlder))))
+              .subscribe(() => {
+                if (!this.nextChunk) {
+                  if (process.env.NODE_ENV === 'development') {
+                    // eslint-disable-next-line no-console
+                    console.error(
+                      'The `nextChunk.history` was updated after the chunk was removed from the message service.'
+                      + ' Make sure you call `destroy()` while removing a chunk.',
+                    );
+                  }
+                  return;
+                }
+                if (this.currentChunk) {
+                  this.currentChunk.destroy();
+                }
+                this.currentChunk = this.nextChunk;
+                this.nextChunk = undefined;
+                this.currentChunk.history.subscribe(this.history);
+                this.loadingNextChunk.next(false);
+              });
+          }
+        } else {
+          // Replace all the chunks with a single chunk
+          if (this.nextChunk) {
+            this.nextChunk.destroy();
+            this.nextChunk = undefined;
+            this.loadingNextChunk.next(false);
+          }
+          if (this.currentChunk) {
+            this.currentChunk.destroy();
+          }
+          this.currentChunk = makeMessageChunk(peer, messageId);
+          this.currentChunk.history.subscribe(this.history);
+        }
       } else {
-        this.chunk = undefined;
+        // No peer – no chunks
+        if (this.nextChunk) {
+          this.nextChunk.destroy();
+          this.nextChunk = undefined;
+          this.loadingNextChunk.next(false);
+        }
+        if (this.currentChunk) {
+          this.currentChunk.destroy();
+          this.currentChunk = undefined;
+        }
+        this.history.next(emptyHistory);
       }
+    } else if (this.nextChunk) {
+      // Remove the chunk in progress to not jump to it when it's loaded
+      this.nextChunk.destroy();
+      this.nextChunk = undefined;
+      this.loadingNextChunk.next(false);
     }
   }
 
   loadMoreHistory(direction: Direction.Newer | Direction.Older) {
-    if (this.chunk) {
-      this.chunk.loadMore(direction);
+    if (this.currentChunk) {
+      this.currentChunk.loadMore(direction);
     }
   }
 
