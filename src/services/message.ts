@@ -6,6 +6,7 @@ import { peerToInputPeer } from 'cache/accessors';
 import { MessagesChunkReference } from 'cache/fastStorages/indices/messageHistory';
 import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage, shortChatMessageToMessage } from 'helpers/api';
 import UserTyping from './user_typing';
+import PeerService from './peer';
 
 export const enum Direction {
   Older,
@@ -42,7 +43,7 @@ export default class MessagesService {
 
   protected cacheChunkRef?: MessagesChunkReference;
 
-  constructor(userTyping: UserTyping) {
+  constructor(userTyping: UserTyping, private peerService: PeerService) {
     client.updates.on('updateNewMessage', (update: AnyUpdateMessage) => {
       this.handleMessagePush(update.message);
     });
@@ -142,6 +143,8 @@ export default class MessagesService {
         this.cacheChunkRef = undefined;
       }
     }
+
+    if (peer) this.peerService.loadFullInfo(peer);
   }
 
   /**

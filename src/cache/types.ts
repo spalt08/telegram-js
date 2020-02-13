@@ -139,6 +139,7 @@ export type UserStatus = {
 export type UserFull = {
   user: User,
   about: string,
+  pinned_msg_id: number,
 };
 
 export type updateUserTyping = {

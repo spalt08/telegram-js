@@ -18,10 +18,6 @@ function userInfo(userId: number) {
     infoListItem(phone(), 'Phone', phoneSubject),
   );
 
-  // fetching user information
-  const userByPeer = userCache.get(userId);
-  if (userByPeer) userService.loadFullInfo(userByPeer);
-
   const userSubject = userCache.useItemBehaviorSubject(container, userId);
   useObservable(container, userSubject, (u) => {
     if (u) {
@@ -44,10 +40,6 @@ function chatInfo(chatId: number) {
     // infoListItem(username(), 'Link', linkSubject),
   );
 
-  // fetching chat information
-  const chatByPeer = chatCache.get(chatId);
-  if (chatByPeer) chatService.loadFullInfo(chatByPeer);
-
   const chatFullObservable = chatFullCache.useItemBehaviorSubject(container, chatId);
   useObservable(container, chatFullObservable, (cf) => {
     if (cf) {
@@ -65,10 +57,6 @@ function channelInfo(channelId: number) {
     infoListItem(info(), 'About', aboutSubject),
     infoListItem(username(), 'Link', linkSubject),
   );
-
-  // fetching chat information
-  const channelByPeer = chatCache.get(channelId);
-  if (channelByPeer) chatService.loadFullInfo(channelByPeer);
 
   const channelFullObservable = chatFullCache.useItemBehaviorSubject(container, channelId);
   useObservable(container, channelFullObservable, (cf) => {

@@ -3,7 +3,6 @@ import { userCache, chatCache, chatFullCache } from 'cache';
 import { text, span } from 'core/html';
 import { useObservable } from 'core/hooks';
 import { timer, combineLatest } from 'rxjs';
-import { chat as chatService } from 'services';
 import './online_status.scss';
 
 export function areSameDays(date1: Date, date2: Date) {
@@ -75,9 +74,6 @@ export default function onlineStatus(peer: Peer) {
     });
   } else if (peer._ === 'peerChannel') {
     const channel = chatCache.get(peer.channel_id);
-    if (channel) {
-      chatService.loadFullInfo(channel);
-    }
     const channelObservable = chatFullCache.useItemBehaviorSubject(container, peer.channel_id);
     useObservable(container, channelObservable, (cf) => {
       if (cf?._ === 'channelFull') {
