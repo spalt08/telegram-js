@@ -1,7 +1,7 @@
 import { message, main, RightSidebarPanel } from 'services';
 import { useObservable } from 'core/hooks';
 import { div } from 'core/html';
-import { unmountChildren, mount } from 'core/dom';
+import { unmountChildren, mount, listen } from 'core/dom';
 import { profileAvatar, profileTitle } from 'components/profile';
 import roundButton from 'components/ui/round_button/round_button';
 import { more, search } from 'components/icons';
@@ -36,7 +36,11 @@ export default function header() {
 
     useObservable(container, pinnedMessageCache.useItemBehaviorSubject(container, peerToId(peer)), (msg) => {
       unmountChildren(pinnedMessage);
-      if (msg?._ === 'message') mount(pinnedMessage, quote('Pinned message', msg.message));
+      if (msg?._ === 'message') {
+        const messageQuote = quote('Pinned message', msg.message);
+        listen(messageQuote, 'click', () => message.selectPeer(peer, msg.id));
+        mount(pinnedMessage, messageQuote);
+      }
     });
 
     const actions = div`.header__actions`(

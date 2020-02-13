@@ -44,6 +44,7 @@
   &__pinned {
     flex-grow: 0;
     max-width: 250px;
+    cursor: pointer;
   }
 
   &__actions {
