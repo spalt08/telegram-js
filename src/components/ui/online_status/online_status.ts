@@ -3,7 +3,7 @@ import { userCache, chatCache, chatFullCache } from 'cache';
 import { text, span } from 'core/html';
 import { useObservable } from 'core/hooks';
 import { timer, combineLatest } from 'rxjs';
-import { auth as authService, peer as peerService } from 'services';
+import { auth as authService } from 'services';
 import './online_status.scss';
 
 export function areSameDays(date1: Date, date2: Date) {

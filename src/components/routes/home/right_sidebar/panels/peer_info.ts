@@ -1,5 +1,4 @@
 import { Peer } from 'cache/types';
-import { user as userService, chat as chatService } from 'services';
 import { userCache, chatCache, userFullCache, chatFullCache } from 'cache';
 import { div, nothing } from 'core/html';
 import { useObservable } from 'core/hooks';

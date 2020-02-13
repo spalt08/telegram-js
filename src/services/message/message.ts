@@ -5,9 +5,9 @@ import { Message, Peer, AnyUpdateMessage, AnyUpdateShortMessage, MessageCommon }
 import { messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage, shortChatMessageToMessage } from 'helpers/api';
+import PeerService from 'services/peer';
 import { Direction } from './types';
 import makeMessageChunk, { MessageChunkService, MessageHistoryChunk } from './message_chunk';
-import PeerService from 'services/peer';
 
 const emptyHistory: MessageHistoryChunk = { ids: [] };
 
