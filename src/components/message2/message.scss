@@ -193,6 +193,10 @@ $messageDistance: 4PX;
     padding-top: 0;
   }
 
+  &__media-padded + &__text {
+    padding-top: 0;
+  }
+
   &__title {
     font-size: 14px;
     font-weight: 500;

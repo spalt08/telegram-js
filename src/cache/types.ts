@@ -492,6 +492,18 @@ export type DocumentAttributeSticker = {
   alt: string,
 };
 
+/**
+ * Ref: https://core.telegram.org/constructor/documentAttributeVideo
+ */
+export type DocumentAttributeVideo = {
+  _: 'documentAttributeVideo',
+  round_message?: boolean,
+  supports_streaming?: boolean,
+  duration: number,
+  w: number,
+  height: number,
+};
+
 
 /**
  * Ref: https://core.telegram.org/constructor/documentAttributeFilename
@@ -504,7 +516,7 @@ export type DocumentAttributeFilename = {
 /**
  * Ref: https://core.telegram.org/type/DocumentAttribute
  */
-export type DocumentAttribute = DocumentAttributeSticker | DocumentAttributeFilename;
+export type DocumentAttribute = DocumentAttributeSticker | DocumentAttributeFilename | DocumentAttributeVideo;
 
 /**
  * Ref: https://core.telegram.org/type/MessagesFilter

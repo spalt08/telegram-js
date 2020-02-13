@@ -8,7 +8,7 @@ import client from 'client/client';
 import { profileAvatar, profileTitle } from 'components/profile';
 import webpagePreview from 'components/media/webpage/preview';
 import photoPreview from 'components/media/photo/preview';
-import { getAttributeSticker } from 'helpers/files';
+import { getAttributeSticker, getAttributeVideo } from 'helpers/files';
 import stickerRenderer from 'components/media/sticker/sticker';
 import documentFile from 'components/media/document/file';
 import { idToColorCode } from 'cache/accessors';
@@ -17,6 +17,7 @@ import messageSerivce from './service';
 import messageReply from './reply';
 import messageDate from './date';
 import './message.scss';
+import videoPreview from 'components/media/video/preview';
 
 type MessageInterface = {
   from(): number,
@@ -88,6 +89,23 @@ const renderMessage = (msg: MessageCommon, peer: Peer) => {
       div`.message__bubble.only-sticker`(
         reply,
         stickerRenderer(msg.media.document, { size: '200px', autoplay: true }),
+        date,
+      )
+    );
+  }
+
+  // with video
+  if (msg.media._ === 'messageMediaDocument' && getAttributeVideo(msg.media.document)) {
+    const extraClass = msg.message ? 'with-photo' : 'only-photo';
+    const previewEl = videoPreview(msg.media.document, {
+      fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined });
+    const messageEl = msg.message ? div`.message__text`(formattedMessage(msg)) : nothing;
+
+    return (
+      div`.message__bubble${extraClass}`(
+        reply,
+        previewEl || nothing,
+        messageEl,
         date,
       )
     );

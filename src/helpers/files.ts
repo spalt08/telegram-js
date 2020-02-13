@@ -1,4 +1,4 @@
-import { StorageFileType, Document, InputFileLocation, DocumentAttributeSticker, DocumentAttributeFilename } from 'cache/types';
+import { StorageFileType, Document, InputFileLocation, DocumentAttributeSticker, DocumentAttributeFilename, DocumentAttributeVideo, DocumentAttribute } from 'cache/types';
 
 export function hexToStr(hex: string): string {
   let str = '';
@@ -68,23 +68,28 @@ export function getDocumentLocation(document: Document, size: string = 'y'): Inp
   };
 }
 
-export function getAttributeSticker(document: Document): DocumentAttributeSticker | null {
+export function getAttribute(document: Document, name: 'documentAttributeFilename'): DocumentAttributeFilename | null;
+export function getAttribute(document: Document, name: 'documentAttributeSticker'): DocumentAttributeSticker | null;
+export function getAttribute(document: Document, name: 'documentAttributeVideo'): DocumentAttributeVideo | null;
+export function getAttribute(document: Document, name: string): DocumentAttribute | null {
   for (let i = 0; i < document.attributes.length; i += 1) {
     const attr = document.attributes[i];
-    if (attr._ === 'documentAttributeSticker') return attr;
+    if (attr._ === name) return attr;
   }
 
   return null;
 }
 
+export function getAttributeSticker(document: Document) {
+  return getAttribute(document, 'documentAttributeSticker');
+}
 
-export function getAttributeFilename(document: Document): DocumentAttributeFilename | null {
-  for (let i = 0; i < document.attributes.length; i += 1) {
-    const attr = document.attributes[i];
-    if (attr._ === 'documentAttributeFilename') return attr;
-  }
+export function getAttributeVideo(document: Document) {
+  return getAttribute(document, 'documentAttributeVideo');
+}
 
-  return null;
+export function getAttributeFilename(document: Document) {
+  return getAttribute(document, 'documentAttributeFilename');
 }
 
 const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -98,4 +103,18 @@ export function getReadableSize(document: Document): string {
   }
 
   return `${size.toFixed(2).replace(/\.0+$/, '')} ${sizes[sizePostfixIndex]}`;
+}
+
+export function getReadableDuration(duration: number) {
+  const seconds = `0${duration % 60}`.slice(-2);
+  let minutes: number | string = Math.floor(duration / 60);
+
+  if (minutes >= 60) {
+    const hours = Math.floor(minutes / 60);
+    minutes = `0${minutes % 60}`.slice(-2);
+
+    return `${hours}:${minutes}:${seconds}`;
+  }
+
+  return `${minutes}:${seconds}`;
 }
