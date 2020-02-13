@@ -32,5 +32,6 @@
     flex: auto;
     display: flex;
     flex-direction: column;
+    mask-image: linear-gradient(to bottom, transparent, #000 8px);
   }
 }

@@ -5,7 +5,7 @@ import { unmountChildren, mount } from 'core/dom';
 import { profileAvatar, profileTitle } from 'components/profile';
 import roundButton from 'components/ui/round_button/round_button';
 import { more, search } from 'components/icons';
-import { onlineStatus } from 'components/ui';
+import { onlineStatus, typingIndicator } from 'components/ui';
 import './header.scss';
 
 export default function header() {
@@ -23,7 +23,7 @@ export default function header() {
       profileAvatar(peer, undefined, true),
       div`.header__info`(
         div`.header__title`(profileTitle(peer, true)),
-        onlineStatus(peer),
+        typingIndicator(peer, 'header__typing-indicator', onlineStatus(peer)),
       ),
     );
 

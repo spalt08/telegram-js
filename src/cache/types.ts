@@ -141,14 +141,43 @@ export type UserFull = {
   about: string,
 };
 
+export type updateUserTyping = {
+  _: 'updateUserTyping',
+  user_id: number,
+  action: SendMessageAction,
+};
+
+export type updateChatUserTyping = {
+  _: 'updateChatUserTyping',
+  chat_id: number,
+  user_id: number,
+  action: SendMessageAction,
+};
+export type SendMessageAction = {
+  _: 'sendMessageTypingAction' | 'sendMessageCancelAction' | 'sendMessageRecordVideoAction' | 'sendMessageUploadVideoAction'
+  | 'sendMessageRecordAudioAction' | 'sendMessageUploadAudioAction' | 'sendMessageUploadPhotoAction' | 'sendMessageUploadDocumentAction'
+  | 'sendMessageGeoLocationAction' | 'sendMessageChooseContactAction' | 'sendMessageGamePlayAction' | 'sendMessageRecordRoundAction'
+  | 'sendMessageUploadRoundAction'
+};
+
 /**
  * Chat object
  * Ref: https://core.telegram.org/constructor/chat
  */
 export type Chat = {
+  _: 'chat'
   id: number,
   title: string,
+  photo: ChatPhoto,
+  migrated_to?: InputChannel,
+  participants_count: number,
+} | {
+  _: 'channel',
+  id: number,
+  title: string,
+  broadcast: boolean,
   access_hash: string,
+  username: string,
   photo: ChatPhoto,
   migrated_to?: InputChannel,
 };
@@ -167,13 +196,31 @@ export type ChatPhoto = {
 };
 
 /**
- * Channel object
- * Ref: https://core.telegram.org/constructor/channel
+ * Ref: https://core.telegram.org/constructor/messages.chatFull
  */
-export type Channel = WithMin<{
-  title: string,
-  photo: ChatPhoto,
-}>;
+export type MessagesChatFull = {
+  full_chat: ChatFull,
+  chats: Chat[],
+  users: User[]
+};
+
+/**
+ * Chat full info
+ * Ref: https://core.telegram.org/constructor/chatFull
+ */
+export type ChatFull = {
+  _: 'chatFull',
+  id: number,
+  about: string,
+  pinned_msg_id: number,
+} | {
+  _: 'channelFull',
+  id: number,
+  about: string,
+  pinned_msg_id: number,
+  participants_count: number,
+  online_count: number,
+};
 
 export type WebPage = {
   _: 'webPageEmpty',

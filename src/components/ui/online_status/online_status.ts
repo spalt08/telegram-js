@@ -1,8 +1,9 @@
 import { Peer, UserStatus } from 'cache/types';
-import { userCache } from 'cache';
+import { userCache, chatCache, chatFullCache } from 'cache';
 import { text, span } from 'core/html';
 import { useObservable } from 'core/hooks';
 import { timer, combineLatest } from 'rxjs';
+import { chat as chatService } from 'services';
 import './online_status.scss';
 
 export function areSameDays(date1: Date, date2: Date) {
@@ -61,8 +62,8 @@ export default function onlineStatus(peer: Peer) {
     let prevTime: number;
     const userSubject = userCache.useItemBehaviorSubject(container, peer.user_id);
     const minuteTimer = timer(0, 60 * 1000);
-    const periodicUserSubject = combineLatest(userSubject, minuteTimer);
-    useObservable(container, periodicUserSubject, (update) => {
+    const periodicUserObservable = combineLatest(userSubject, minuteTimer);
+    useObservable(container, periodicUserObservable, (update) => {
       const [u, time] = update;
       if (!u || !u.status) return;
       if (prevStatus !== u.status || (prevTime !== time && u.status._ === 'userStatusOffline')) {
@@ -71,6 +72,19 @@ export default function onlineStatus(peer: Peer) {
       }
       prevStatus = u.status;
       prevTime = time;
+    });
+  } else if (peer._ === 'peerChannel') {
+    const channel = chatCache.get(peer.channel_id);
+    if (channel) {
+      chatService.loadFullInfo(channel);
+    }
+    const channelObservable = chatFullCache.useItemBehaviorSubject(container, peer.channel_id);
+    useObservable(container, channelObservable, (cf) => {
+      if (cf?._ === 'channelFull') {
+        statusText.textContent = (channel?._ === 'channel' && channel.broadcast)
+          ? `${cf.participants_count.toLocaleString('en-US')} subscribers`
+          : `${cf.participants_count.toLocaleString('en-US')} members, ${cf.online_count.toLocaleString('en-US')} online`;
+      }
     });
   }
 

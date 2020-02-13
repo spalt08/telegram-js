@@ -15,7 +15,7 @@ export default function profileTitle(peer: Peer, isForDialogList = false) {
     case 'peerUser':
       nameObservable = userCache.useItemBehaviorSubject(textNode, peer.user_id)
         .pipe(map((user) => {
-          if (!user) {
+          if (!user || user.deleted) {
             return unknownTitle;
           }
           if (user.id === auth.userID && isForDialogList) {

@@ -2,13 +2,13 @@ import { distinctUntilChanged, map } from 'rxjs/operators';
 import { div, text } from 'core/html';
 import { listen, mount, unmountChildren } from 'core/dom';
 import { useObservable } from 'core/hooks';
-import { Dialog } from 'cache/types';
 import { dialogCache, messageCache } from 'cache';
 import { datetime, ripple } from 'components/ui';
 import { message } from 'services';
 import { pinnedchat } from 'components/icons';
 import { peerMessageToId, peerToId } from 'helpers/api';
 import { profileTitle } from 'components/profile';
+import { Dialog } from 'cache/types';
 import dialogMessage from './dialog_message';
 import dialogPicture from './dialog_picture';
 import './dialog.scss';
@@ -44,7 +44,6 @@ export default function dialogPreview(id: string) {
   // on update
   useObservable(clickable, dialog, (next: Dialog) => {
     let badge: HTMLElement | undefined;
-
     if (next.unread_count > 0) badge = div`.dialog__badge`(text(next.unread_count));
     if (next.unread_mark === true && next.unread_count === 0) badge = div`.dialog__badge`();
     if (next.unread_mentions_count > 0) badge = div`.dialog__badge`(text('@'));

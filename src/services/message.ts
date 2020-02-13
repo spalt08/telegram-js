@@ -5,6 +5,7 @@ import { chatCache, messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import { MessagesChunkReference } from 'cache/fastStorages/indices/messageHistory';
 import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage, shortChatMessageToMessage } from 'helpers/api';
+import UserTyping from './user_typing';
 
 export const enum Direction {
   Older,
@@ -41,7 +42,7 @@ export default class MessagesService {
 
   protected cacheChunkRef?: MessagesChunkReference;
 
-  constructor() {
+  constructor(userTyping: UserTyping) {
     client.updates.on('updateNewMessage', (update: AnyUpdateMessage) => {
       this.handleMessagePush(update.message);
     });
@@ -76,6 +77,14 @@ export default class MessagesService {
       if (user) {
         userCache.put({ ...user, status: update.status });
       }
+    });
+
+    client.updates.on('updateUserTyping', (update: any) => {
+      userTyping.notify(update);
+    });
+
+    client.updates.on('updateChatUserTyping', (update: any) => {
+      userTyping.notify(update);
     });
   }
 
@@ -205,8 +214,6 @@ export default class MessagesService {
           userCache.put(data.users);
           chatCache.put(data.chats);
 
-          // todo: The replied messages are not included. Load the messages that aren't loaded.
-
           if (isLoadedChunkActual) {
             const isLoadedChunkFull = data.messages.length >= LOAD_CHUNK_LENGTH - 10; // -10 just in case
             let oldestReached = false;
@@ -269,39 +276,6 @@ export default class MessagesService {
       default:
     }
   }
-
-  // protected loadMedia(peer: Peer, olderThanId = 0) {
-  //   if (this.isMediaLoading.value) return;
-
-  //   this.isMediaLoading.next(true);
-
-  //   const chunk = 35;
-  //   const payload = {
-  //     peer: peerToInputPeer(peer),
-  //     q: '',
-  //     filter: { _: 'inputMessagesFilterPhotoVideo' },
-  //     offset_id: olderThanId,
-  //     add_offset: 0,
-  //     limit: chunk,
-  //     max_id: 0,
-  //     min_id: 0,
-  //     hash: 0,
-  //   };
-
-  //   client.call('messages.search', payload, (_err: any, res: any) => {
-  //     try {
-  //       if (res) {
-  //         const data = res;
-
-  //         data.messages.forEach((message: Message) => {
-  //           if (message._ === 'message' && message.media._ === 'messageMediaPhoto') {
-  //             mediaCache.put(peerToId(peer), message.media);
-  //           }
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
 
   protected handleMessagePush(message: Message) {
     if (message._ === 'messageEmpty') {

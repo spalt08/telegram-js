@@ -1,0 +1,17 @@
+.typingIndicator {
+  &__typing::after {
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: bottom;
+    animation: ellipsis 1.5s steps(4, end) infinite;
+    content: '...';
+    width: 0;
+
+    @keyframes ellipsis {
+      to {
+        width: 15px;
+      }
+    }
+  }
+
+}
