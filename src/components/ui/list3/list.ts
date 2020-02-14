@@ -271,13 +271,14 @@ export class VirtualizedList {
     }
 
     // fallback if current data is a part of next (lazy load)
+    console.log('update', arr_contains(next, this.current), arr_contains(next.slice(-this.current.length), this.current));
     if (this.cfg.pivotBottom === false && arr_contains(next, this.current)) {
       this.updateData(next);
       this.virtualize();
       return;
     }
 
-    if (this.cfg.pivotBottom === true && arr_contains(next.slice(-this.current.length), this.current)) {
+    if (arr_contains(next.slice(-this.current.length), this.current)) {
       this.first = this.first + next.length - this.current.length;
       this.last = this.last + next.length - this.current.length;
       this.updateData(next);
