@@ -70,10 +70,12 @@ export default class MessagesService {
   /**
    * messageId values:
    * - number - message sequential id to scroll to;
-   * - undefined - scroll to the start of the history;
+   * - Infinity - scroll to the bottom of the history;
+   * - -Infinity - scroll to the top of the history;
+   * - undefined - don't scroll (stay as is);
    */
   selectPeer(peer: Peer | null, _messageId?: number) {
-    const messageId = _messageId || Infinity;
+    const messageId = _messageId === 0 ? Infinity : _messageId;
 
     const isPeerChanged = (this.activePeer.value && peerToId(this.activePeer.value)) !== (peer && peerToId(peer));
 
@@ -81,7 +83,7 @@ export default class MessagesService {
     let focusedMessageDirection = Direction.Around;
     if (isPeerChanged) {
       isChunkChanged = true;
-    } else if (this.currentChunk) {
+    } else if (this.currentChunk && messageId) {
       const messagePosition = this.currentChunk.getMessagePosition(messageId);
       if (messagePosition !== 0) {
         isChunkChanged = true;
@@ -102,11 +104,11 @@ export default class MessagesService {
         if (!isPeerChanged && this.currentChunk) {
           // Keep the current chunk until the next is loaded
           // Don't recreate the next chunk if it contains the target message
-          if (!this.nextChunk || this.nextChunk.getMessagePosition(messageId) !== 0) {
+          if (!this.nextChunk || this.nextChunk.getMessagePosition(messageId!) !== 0) {
             if (this.nextChunk) {
               this.nextChunk.destroy();
             }
-            const nextChunk = makeMessageChunk(peer, messageId);
+            const nextChunk = makeMessageChunk(peer, messageId!);
             this.nextChunk = nextChunk;
             this.loadingNextChunk.next(true);
 
@@ -142,7 +144,7 @@ export default class MessagesService {
           if (this.currentChunk) {
             this.currentChunk.destroy();
           }
-          this.setCurrentChunk(makeMessageChunk(peer, messageId), messageId, focusedMessageDirection);
+          this.setCurrentChunk(makeMessageChunk(peer, messageId || Infinity), messageId, focusedMessageDirection);
         }
       } else {
         // No peer – no chunks
@@ -158,7 +160,9 @@ export default class MessagesService {
         this.history.next(emptyHistory);
       }
     } else {
-      this.focusToMessage(messageId, focusedMessageDirection);
+      if (messageId) {
+        this.focusToMessage(messageId, focusedMessageDirection);
+      }
 
       // Remove the chunk in progress to not jump to it when it's loaded
       if (this.nextChunk) {
@@ -187,15 +191,15 @@ export default class MessagesService {
     this.currentChunk = chunk;
 
     if (focusMessageId) {
-      if (focusMessageId === Infinity) {
+      if (Number.isFinite(focusMessageId)) {
+        this.focusToMessage(focusMessageId, focusDirection);
+      } else {
         // Wait for the messages to load to get the newest message id
         chunk.history
           .pipe(first(({ ids }) => ids.length > 0))
           .subscribe(({ ids }) => {
-            this.focusToMessage(ids[0], focusDirection);
+            this.focusToMessage(focusMessageId > 0 ? ids[0] : ids[ids.length - 1], focusDirection);
           });
-      } else {
-        this.focusToMessage(focusMessageId, focusDirection);
       }
     }
 
@@ -203,12 +207,15 @@ export default class MessagesService {
     chunk.history.subscribe(this.history);
   }
 
-  // Tip: pass Infinity to scroll to the first message but only if the current chunk is the newest
   protected focusToMessage(messageId: number, direction: Direction) {
     const history = this.history.value;
     if (messageId === Infinity) {
       if (history.newestReached && history.ids.length) {
         this.focusMessage.next({ id: history.ids[0], direction });
+      }
+    } else if (messageId === -Infinity) {
+      if (history.oldestReached && history.ids.length) {
+        this.focusMessage.next({ id: history.ids[history.ids.length - 1], direction });
       }
     } else {
       this.focusMessage.next({ id: messageId, direction });

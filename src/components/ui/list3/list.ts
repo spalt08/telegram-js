@@ -690,11 +690,8 @@ export class VirtualizedList {
     const [, end, height] = this.scrollVirtualizedRemove();
 
     // display new elements
-    this.first = Math.max((direction < 0) ? end : 0, indexOfItem - Math.ceil(this.cfg.scrollBatch / 2));
+    this.first = Math.max(0, (direction < 0) ? end : 0, indexOfItem - Math.ceil(this.cfg.scrollBatch / 2));
     this.last = Math.min(this.current.length - 1, indexOfItem + Math.ceil(this.cfg.scrollBatch / 2));
-
-    this.first = Math.max(0, this.first);
-    this.last = Math.min(this.current.length - 1, this.last);
 
     this.elements[item].classList.add('focused');
 
