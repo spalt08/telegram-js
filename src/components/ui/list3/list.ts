@@ -181,8 +181,15 @@ export class VirtualizedList {
   }
 
   updateViewport = () => {
+    const oldWidth = this.viewport.width;
     this.viewport = this.container.getBoundingClientRect();
     this.scrollHeight = this.container.scrollHeight;
+
+    if (oldWidth !== this.viewport.width) {
+      this.heights = {};
+      this.updateHeigths(true);
+      this.updateOffsets();
+    }
   };
 
   // create dom elements inside virtial scroll
@@ -209,7 +216,8 @@ export class VirtualizedList {
   // mount item
   mount(item: string, before?: string) {
     mount(this.container, this.elements[item], before ? this.elements[before] : undefined);
-    if (!this.heights[item]) this.pendingRecalculate.push(item);
+    // if (!this.heights[item]) 
+    this.pendingRecalculate.push(item);
   }
 
   // mount before node, not data
@@ -217,7 +225,8 @@ export class VirtualizedList {
     const elm = this.elements[item];
     unmount(elm);
     mount(this.container, elm, before);
-    if (!this.heights[item]) this.pendingRecalculate.push(item);
+    // if (!this.heights[item]) 
+    this.pendingRecalculate.push(item);
   }
 
   // unmount item
@@ -225,7 +234,7 @@ export class VirtualizedList {
 
   // update heights
   updateHeigths(force: boolean = false) {
-    if (force) this.pendingRecalculate = this.current;
+    if (force) this.pendingRecalculate = this.current.slice(this.first, this.last);
 
     // for (let i = this.first; i <= this.last; i += 1) {
     //   const item = this.current[i];
@@ -774,6 +783,8 @@ export class VirtualizedList {
   scrollTo(item: string) {
     this.lock();
 
+    this.updateHeigths(true);
+    this.updateOffsets();
     const scrollValue = this.getScrollToValue(item);
 
     const y = this.scrollTop;
