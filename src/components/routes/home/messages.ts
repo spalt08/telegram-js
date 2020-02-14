@@ -70,6 +70,7 @@ export default function messages({ className = '' }: Props = {}) {
   // Handle message focus
   useObservable(element, service.focusMessage, (focus) => {
     if (service.activePeer.value) {
+      scroll.cfg.highlightFocused = focus.highlight || false;
       scroll.focus(
         peerMessageToId(service.activePeer.value, focus.id),
         {
@@ -77,7 +78,6 @@ export default function messages({ className = '' }: Props = {}) {
           [MessageDirection.Older]: 1,
           [MessageDirection.Around]: undefined,
         }[focus.direction],
-        // focus.highlight,
       );
     }
   });

@@ -14,6 +14,7 @@ type Props = {
   verticalPadding?: number,
   batch?: number,
   scrollBatch?: number,
+  highlightFocused?: boolean,
   compare?: (left: string, right: string) => boolean,
   onFocus?: (item: string) => void,
   onReachTop?: () => void,
@@ -62,6 +63,7 @@ export class VirtualizedList {
     pivotBottom: boolean | undefined,
     threshold: number,
     scrollBatch: number,
+    highlightFocused: boolean,
     compare?: (left: string, right: string) => boolean,
     onFocus?: (item: string) => void,
     onReachTop?: () => void,
@@ -120,6 +122,7 @@ export class VirtualizedList {
     batch = 20,
     scrollBatch = batch,
     pivotBottom = false,
+    highlightFocused = true,
     onFocus,
     onReachTop,
     onReachBottom,
@@ -136,6 +139,7 @@ export class VirtualizedList {
       onFocus,
       onReachTop,
       onReachBottom,
+      highlightFocused,
     };
 
     // set initial viewport and handle its updates
@@ -495,6 +499,9 @@ export class VirtualizedList {
 
       // set initial scroll position
       if (this.cfg.pivotBottom) this.container.scrollTop = this.prevScrollTop = this.scrollTop = this.scrollHeight - this.viewport.height;
+
+      this.updateHeigths();
+      this.updateOffsets();
     }
 
     const prevFirst = this.first;
@@ -544,13 +551,13 @@ export class VirtualizedList {
     if (this.cfg.onReachTop && this.first <= this.cfg.batch * 3) this.cfg.onReachTop();
     if (this.cfg.onReachBottom && this.current.length - this.last - 1 <= this.cfg.batch * 3) this.cfg.onReachBottom();
 
+    if (this.pendingRecalculate.length > 0) this.updateHeigths();
+
     // update scroll inner content height
     if (prevFirst !== this.first || prevLast !== this.last) {
       this.updateOffsets();
       this.scrollHeight = this.container.scrollHeight;
     }
-
-    if (this.pendingRecalculate.length > 0) this.updateHeigths();
 
     // keep scroll position if top elements was added
     if (prevFirst > this.first) {
@@ -693,7 +700,7 @@ export class VirtualizedList {
     this.first = Math.max(0, (direction < 0) ? end : 0, indexOfItem - Math.ceil(this.cfg.scrollBatch / 2));
     this.last = Math.min(this.current.length - 1, indexOfItem + Math.ceil(this.cfg.scrollBatch / 2));
 
-    this.elements[item].classList.add('focused');
+    if (this.cfg.highlightFocused) this.elements[item].classList.add('focused');
 
     for (let i = this.first; i <= this.last; i++) {
       const nitem = this.current[i];
@@ -735,6 +742,7 @@ export class VirtualizedList {
 
   getScrollToValue(item: string, centered: boolean = true) {
     let scrollValue = this.offsets[item];
+
     if (centered && this.viewport.height > this.heights[item]) scrollValue -= (this.viewport.height - this.heights[item]) / 2;
 
     scrollValue = Math.max(0, scrollValue);
@@ -754,7 +762,7 @@ export class VirtualizedList {
     let start: number | undefined;
 
     const elm = this.elements[item];
-    elm.classList.add('focused');
+    if (this.cfg.highlightFocused) elm.classList.add('focused');
 
     const animateScroll = (timestamp: number) => {
       if (!start) start = timestamp;

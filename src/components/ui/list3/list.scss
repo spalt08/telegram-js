@@ -1,6 +1,6 @@
 .list {
   height: 100%;
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: scroll; // To prevent a horizontal shift when more items are added
   overflow-y: overlay; // safari and chrome
   position: relative;
