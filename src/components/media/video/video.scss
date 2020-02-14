@@ -38,14 +38,23 @@
   }
 
   &__thumbnail {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+
     &.removed {
-      position: absolute;
       animation: thumbRemoved .4s ease;
     }
 
     .photo {
       width: 100% !important;
       height: 100% !important;
+
+      img {
+        height: 100%;
+      }
     }
   }
 

@@ -84,7 +84,7 @@ function downloadFile(location: InputFileLocation, options: DownloadOptions, rea
   // should download
   } else {
     requests[id] = [ready];
-    downloadingFiles[id] = { ready, progress };
+    downloadingFiles[id] = { ready: resolve(location), progress };
     task('download_file', { id, location, options }, resolve(location));
   }
 }
