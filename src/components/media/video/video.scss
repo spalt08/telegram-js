@@ -1,0 +1,56 @@
+.video {
+  position: relative;
+
+  &__progress {
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    background: rgba(0,0,0,.5);
+    color: #fff;
+    display: inline-block;
+    padding: 4px 6px 3px;
+    border-radius: 16px;
+    z-index: 2;
+    font-size: 11px;
+    line-height: 1;
+  }
+
+  &__loader {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 50px;
+    height: 50px;
+    background-color: rgba(0,0,0,.5);
+    border-radius: 25px;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    svg {
+      width: 40px;
+      height: 40px;
+
+      circle { stroke: #FFF; }
+    }
+  }
+
+  &__thumbnail {
+    &.removed {
+      position: absolute;
+      animation: thumbRemoved .4s ease;
+    }
+
+    .photo {
+      width: 100% !important;
+      height: 100% !important;
+    }
+  }
+
+  & video {
+    width: 100%;
+    height: 100%;
+  }
+}

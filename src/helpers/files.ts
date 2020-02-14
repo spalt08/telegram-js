@@ -52,7 +52,7 @@ export function locationToString(location: InputFileLocation): string {
       return `photo_${location.id}_${location.thumb_size}`;
 
     case 'inputDocumentFileLocation':
-      return `document_${location.id}_${location.file_reference}`;
+      return `document_${location.id}_${location.thumb_size}`;
 
     default:
       throw new Error(`No location hash value for ${location}`);

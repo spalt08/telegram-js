@@ -1,7 +1,8 @@
 import { InputFileLocation } from 'cache/types';
 import { locationToString } from 'helpers/files';
 import { fileCache } from 'cache';
-import { task, UploadResolver, UploadProgressResolver, uploadingFiles } from './client';
+import { task, UploadResolver, UploadProgressResolver, uploadingFiles, downloadingFiles, DownloadResolver,
+  DownloadProgressResolver, DownloadOptions } from './client';
 
 /**
  * File download callback
@@ -67,8 +68,30 @@ function uploadFile(file: File, ready: UploadResolver, progress?: UploadProgress
   uploadingFiles[id] = { ready, progress };
 }
 
+/** Download file */
+function downloadFile(location: InputFileLocation, options: DownloadOptions, ready: DownloadResolver, progress?: DownloadProgressResolver) {
+  const id = locationToString(location);
+  const cached = getCachedFile(location);
+
+  // already downloaded
+  if (cached) {
+    ready(cached);
+
+  // already processing
+  } else if (requests[id]) {
+    requests[id].push(ready);
+
+  // should download
+  } else {
+    requests[id] = [ready];
+    downloadingFiles[id] = { ready, progress };
+    task('download_file', { id, location, options }, resolve(location));
+  }
+}
+
 export default {
   get: getFile,
   cached: getCachedFile,
   upload: uploadFile,
+  download: downloadFile,
 };

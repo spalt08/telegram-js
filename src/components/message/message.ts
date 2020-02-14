@@ -8,10 +8,11 @@ import client from 'client/client';
 import { profileAvatar, profileTitle } from 'components/profile';
 import webpagePreview from 'components/media/webpage/preview';
 import photoPreview from 'components/media/photo/preview';
-import { getAttributeSticker, getAttributeVideo } from 'helpers/files';
+import { getAttributeSticker, getAttributeVideo, getAttributeAnimated } from 'helpers/files';
 import stickerRenderer from 'components/media/sticker/sticker';
 import documentFile from 'components/media/document/file';
 import videoPreview from 'components/media/video/preview';
+import videoRenderer from 'components/media/video/video';
 import { idToColorCode } from 'cache/accessors';
 import { userIdToPeer } from 'helpers/api';
 import { isEmoji } from 'helpers/message';
@@ -106,6 +107,23 @@ const renderMessage = (msg: MessageCommon, peer: Peer) => {
       div`.message__bubble.only-sticker`(
         reply,
         stickerRenderer(msg.media.document, { size: '200px', autoplay: true }),
+        date,
+      )
+    );
+  }
+
+  // with video gif
+  if (msg.media._ === 'messageMediaDocument' && getAttributeAnimated(msg.media.document)) {
+    const extraClass = msg.message ? 'with-photo' : 'only-photo';
+    const video = videoRenderer(msg.media.document, {
+      fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined });
+    const messageEl = msg.message ? div`.message__text`(formattedMessage(msg)) : nothing;
+
+    return (
+      div`.message__bubble${extraClass}`(
+        reply,
+        video,
+        messageEl,
         date,
       )
     );

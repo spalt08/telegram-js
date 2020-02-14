@@ -106,6 +106,7 @@ const pendingFiles: Record<string, {
   big: boolean,
 }> = {};
 const reader = new FileReaderSync();
+
 /**
  * File managers: saveFilePart
  */
@@ -159,6 +160,84 @@ function uploadFile(id: string, file: File) {
     };
 
     send('upload_ready', { id, inputFile });
+  });
+}
+
+const downloadingFiles: Record<string, {
+  location: any,
+  options: any,
+  partSize: number,
+  parts: number,
+  downloaded: number,
+  data: string,
+}> = {};
+
+/**
+ * File managers: getFile method
+ */
+function getFilePartWithProgress(id: string, part: number, cb: (f: string) => void) {
+  if (!client) throw new Error('Client is undefined');
+  if (!downloadingFiles[id]) return;
+
+  const offset = part * downloadingFiles[id].partSize;
+  const remaining = Math.min(downloadingFiles[id].partSize, downloadingFiles[id].options.size - offset);
+
+  const params = {
+    location: downloadingFiles[id].location,
+    offset,
+    limit: downloadingFiles[id].partSize,
+  };
+
+  const headers = {
+    dc: downloadingFiles[id].options.dc_id || client.cfg.dc,
+    thread: 2,
+  };
+
+  client.call('upload.getFile', params, headers, (err, result) => {
+    // redirect to another dc
+    if (err && err.message && err.message.indexOf('FILE_MIGRATE_') > -1) {
+      downloadingFiles[id].options.dc_id = +err.message.slice(-1);
+      getFilePartWithProgress(id, part, cb);
+      return;
+    }
+
+    // todo handling errors
+    if (err) {
+      throw new Error(`Error while donwloading file: ${JSON.stringify(err)}`);
+      return;
+    }
+
+    if (!err && result) {
+      downloadingFiles[id].data += result.bytes;
+
+      send('download_progress', { id, downloaded: offset + remaining, total: downloadingFiles[id].options.size });
+
+      if (part < downloadingFiles[id].parts - 1) getFilePartWithProgress(id, part + 1, cb);
+      else {
+        const mime = downloadingFiles[id].options.mime_type || typeToMime(result.type);
+        const blob = hexToBlob(downloadingFiles[id].data, mime);
+        const url = (URL || webkitURL).createObjectURL(blob);
+
+        cb(url);
+      }
+    }
+  });
+}
+
+function downloadFile(id: string, location: any, options: any) {
+  const partSize = 512 * 1024;
+
+  downloadingFiles[id] = {
+    location,
+    options,
+    downloaded: 0,
+    partSize,
+    parts: Math.ceil(options.size / partSize),
+    data: '',
+  };
+
+  getFilePartWithProgress(id, 0, (url: string) => {
+    send('download_ready', { id, url });
   });
 }
 
@@ -302,6 +381,11 @@ function processMessage(message: WorkerMessage) {
 
     case 'upload_file': {
       uploadFile(payload.id, payload.file);
+      break;
+    }
+
+    case 'download_file': {
+      downloadFile(payload.id, payload.location, payload.options);
       break;
     }
 

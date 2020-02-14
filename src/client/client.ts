@@ -1,6 +1,6 @@
 import ClientWorker from './worker';
 import { WorkerMessage, ClientError } from './worker.types';
-import { InputFileLocation, InputFile } from '../cache/types';
+import { InputFile } from '../cache/types';
 
 /**
  * Worker callbacks
@@ -11,6 +11,9 @@ type AnyResolver = (...payload: unknown[]) => void;
 type EventResolver = (event: any) => void;
 export type UploadResolver = (input: InputFile) => void;
 export type UploadProgressResolver = (uploaded: number, total: number) => void;
+export type DownloadOptions = { dc_id?: number, mime_type?: string, size: number };
+export type DownloadResolver = (url: string) => void;
+export type DownloadProgressResolver = (downloaded: number, total: number) => void;
 
 /**
  * Vars
@@ -29,6 +32,7 @@ const svc = {
 };
 
 export const uploadingFiles: Record<string, { ready: UploadResolver, progress?: UploadProgressResolver }> = {};
+export const downloadingFiles: Record<string, { ready: DownloadResolver, progress?: DownloadProgressResolver }> = {};
 
 /**
  * Init client
@@ -164,6 +168,21 @@ worker.onmessage = (event: MessageEvent) => {
       break;
     }
 
+    case 'download_progress': {
+      const resolvers = downloadingFiles[data.payload.id];
+      if (resolvers && resolvers.progress) resolvers.progress(data.payload.downloaded, data.payload.total);
+      break;
+    }
+
+    case 'download_ready': {
+      const resolvers = downloadingFiles[data.payload.id];
+      if (resolvers) {
+        resolvers.ready(data.payload.url);
+        delete downloadingFiles[data.payload.id];
+      }
+      break;
+    }
+
     default:
       if (event.data.id && quene[event.data.id]) {
         quene[event.data.id](data.payload);
@@ -203,10 +222,6 @@ function authorize(dc_id: number, cb?: AnyResolver) {
   task('authorize', dc_id, cb);
 }
 
-function getFile(location: InputFileLocation, cb: AnyResolver, dc_id?: number, mime?: string) {
-  task('get_file', { location, dc_id, mime }, cb);
-}
-
 const client = {
   svc,
   call,
@@ -219,7 +234,6 @@ const client = {
   setBaseDC,
   getPasswordKdfAsync,
   authorize,
-  getFile,
   storage: window.localStorage,
 };
 

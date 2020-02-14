@@ -123,6 +123,16 @@ export function getPhotoLocation(photo: PhotoNotEmpty | Document, type?: string)
   };
 }
 
+export function getDocumentLocation(document: Document): InputFileLocation {
+  return {
+    _: 'inputDocumentFileLocation',
+    id: document.id,
+    access_hash: document.access_hash,
+    file_reference: document.file_reference,
+    thumb_size: '',
+  };
+}
+
 export function getPeerPhotoInputLocation(peer: Peer, message?: Message): InputFileLocation | null {
   const location = getPeerPhotoLocation(peer);
 

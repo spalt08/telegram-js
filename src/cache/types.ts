@@ -543,7 +543,7 @@ export type DocumentAttributeVideo = {
   supports_streaming?: boolean,
   duration: number,
   w: number,
-  height: number,
+  h: number,
 };
 
 
