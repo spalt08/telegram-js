@@ -25,6 +25,7 @@ export default function dialogs({ className = '' }: Props = {}) {
     items: service.dialogs,
     threshold: 2,
     batch: 30,
+    pivotBottom: false,
     renderer: dialog,
     onReachBottom: () => service.loadMoreDialogs(),
   });

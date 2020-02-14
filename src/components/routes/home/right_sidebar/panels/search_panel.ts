@@ -37,6 +37,7 @@ export default function searchPanel(peer: Peer) {
     className: 'messagesSearch__messages',
     items: resultIdsSubject,
     threshold: 2,
+    pivotBottom: false,
     batch: 30,
     renderer(id) {
       return foundMessage(id, resultQueryObservable);

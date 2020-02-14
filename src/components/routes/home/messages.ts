@@ -65,8 +65,7 @@ export default function messages() {
 
   // Makes the list stick to bottom when it shows the newest messages
   useObservable(element, service.history, ({ newestReached }) => {
-    console.log('history newestReached', newestReached);
-    scroll.cfg.pivotBottom = !!newestReached;
+    scroll.cfg.pivotBottom = newestReached ? true : undefined;
   });
 
   useObservable(element, service.history, (history) => itemsSubject.next(

@@ -10,7 +10,7 @@ type Props = {
   tag?: keyof HTMLElementTagNameMap,
   className?: string,
   threshold?: number,
-  pivotBottom?: boolean,
+  pivotBottom: boolean | undefined,
   verticalPadding?: number,
   batch?: number,
   scrollBatch?: number,
@@ -59,7 +59,7 @@ export class VirtualizedList {
   /** Config */
   public cfg: {
     batch: number,
-    pivotBottom: boolean,
+    pivotBottom: boolean | undefined,
     threshold: number,
     scrollBatch: number,
     compare?: (left: string, right: string) => boolean,
@@ -97,6 +97,9 @@ export class VirtualizedList {
 
   /** Current scroll position */
   scrollTop: number = 0;
+
+  /** Current scroll position */
+  prevScrollTop: number = 0;
 
   /** Element that should be focused */
   focused?: string;
@@ -271,18 +274,17 @@ export class VirtualizedList {
     }
 
     // fallback if current data is a part of next (lazy load)
-    console.log('update', arr_contains(next, this.current), arr_contains(next.slice(-this.current.length), this.current));
-    if (this.cfg.pivotBottom === false && arr_contains(next, this.current)) {
+    if (this.cfg.pivotBottom !== true && arr_contains(next, this.current)) {
       this.updateData(next);
-      this.virtualize();
+      this.virtualize(1);
       return;
     }
 
-    if (arr_contains(next.slice(-this.current.length), this.current)) {
+    if (this.cfg.pivotBottom !== false && arr_contains(next.slice(-this.current.length), this.current)) {
       this.first = this.first + next.length - this.current.length;
       this.last = this.last + next.length - this.current.length;
       this.updateData(next);
-      this.virtualize();
+      this.virtualize(-1);
       return;
     }
 
@@ -306,8 +308,6 @@ export class VirtualizedList {
       nextLast = Math.max(-1, next.length - (this.current.length - this.last - 1) - 1);
       nextFirst = Math.max(nextLast - (this.last - this.first), 0);
     }
-
-    // console.log('flip')
 
     // no need to rerender
     if (nextFirst > -1 && next.slice(nextFirst, visible.length) === visible) {
@@ -383,7 +383,7 @@ export class VirtualizedList {
       nextVisible.push(nextItem);
     }
 
-    this.container.scrollTop = this.scrollTop -= (this.scrollHeight - this.container.scrollHeight);
+    this.container.scrollTop = this.prevScrollTop = this.scrollTop -= (this.scrollHeight - this.container.scrollHeight);
     this.scrollHeight = this.container.scrollHeight;
     this.updateOffsets();
 
@@ -469,7 +469,7 @@ export class VirtualizedList {
   }
 
   // virtualize scroll elements
-  virtualize() {
+  virtualize(direction?: number) {
     // nothing to virtualize
     if (this.current.length === 0) return;
 
@@ -477,7 +477,6 @@ export class VirtualizedList {
     if (this.isLocked) return;
 
     this.lock();
-    let skipNext = false;
 
     // render initial elements, first min(batch, current.length) elements
     if (this.last - this.first < 0) {
@@ -495,16 +494,15 @@ export class VirtualizedList {
       this.scrollHeight = this.container.scrollHeight;
 
       // set initial scroll position
-      if (this.cfg.pivotBottom) this.container.scrollTop = this.scrollTop = this.scrollHeight - this.viewport.height;
-
-      skipNext = true;
+      if (this.cfg.pivotBottom) this.container.scrollTop = this.prevScrollTop = this.scrollTop = this.scrollHeight - this.viewport.height;
     }
 
     const prevFirst = this.first;
     const prevLast = this.last;
 
     // apply top elements and shrink bottom
-    if (!skipNext && this.scrollTop < this.cfg.threshold * this.viewport.height) {
+    if ((this.prevScrollTop > this.scrollTop || this.scrollHeight < this.viewport.height || direction === -1)
+    && this.scrollTop < this.cfg.threshold * this.viewport.height) {
       const count = Math.min(this.cfg.batch, this.first);
 
       if (count > 0) {
@@ -520,14 +518,12 @@ export class VirtualizedList {
         }
 
         for (let i = 0; i < count; i += 1) this.mount(this.current[--this.first], this.current[this.first + 1]);
-        skipNext = true;
       }
-
-      if (this.cfg.onReachTop && this.first <= this.cfg.batch * 3) this.cfg.onReachTop();
     }
 
     // apply bottom elements and shrink top
-    if (!skipNext && this.scrollHeight - (this.scrollTop + this.viewport.height) < this.cfg.threshold * this.viewport.height) {
+    if ((this.prevScrollTop < this.scrollTop || this.scrollHeight < this.viewport.height || direction === 1)
+      && this.scrollHeight - (this.scrollTop + this.viewport.height) < this.cfg.threshold * this.viewport.height) {
       const count = Math.min(this.cfg.batch, this.current.length - this.last - 1);
 
       if (count > 0) {
@@ -543,17 +539,18 @@ export class VirtualizedList {
         // apply bottom
         for (let i = 0; i < count; i += 1) this.mount(this.current[++this.last]);
       }
-
-      if (this.cfg.onReachBottom && this.current.length - this.last - 1 <= this.cfg.batch * 3) this.cfg.onReachBottom();
     }
 
-    if (this.pendingRecalculate.length > 0) this.updateHeigths();
+    if (this.cfg.onReachTop && this.first <= this.cfg.batch * 3) this.cfg.onReachTop();
+    if (this.cfg.onReachBottom && this.current.length - this.last - 1 <= this.cfg.batch * 3) this.cfg.onReachBottom();
 
     // update scroll inner content height
     if (prevFirst !== this.first || prevLast !== this.last) {
       this.updateOffsets();
       this.scrollHeight = this.container.scrollHeight;
     }
+
+    if (this.pendingRecalculate.length > 0) this.updateHeigths();
 
     // keep scroll position if top elements was added
     if (prevFirst > this.first) {
@@ -563,12 +560,12 @@ export class VirtualizedList {
         deltaHeight += this.heights[this.current[i]];
       }
 
-      this.scrollTop += deltaHeight;
-      const deferred = this.container.scrollTop = this.scrollTop;
+      this.scrollTop = Math.floor(this.scrollTop + deltaHeight);
+      const deferred = this.container.scrollTop = this.prevScrollTop = this.scrollTop;
 
       // fix chrome
       requestAnimationFrame(() => {
-        if (Math.abs(this.container.scrollTop - deferred) > 20) this.container.scrollTop = this.scrollTop = deferred;
+        if (Math.abs(this.container.scrollTop - deferred) > 20) this.container.scrollTop = this.prevScrollTop = this.scrollTop = deferred;
       });
     }
 
@@ -580,14 +577,16 @@ export class VirtualizedList {
         deltaHeight += this.heights[this.current[i]];
       }
 
-      this.scrollTop -= deltaHeight;
-      const deferred = this.container.scrollTop = this.scrollTop;
+      this.scrollTop = Math.floor(this.scrollTop - deltaHeight);
+      const deferred = this.container.scrollTop = this.prevScrollTop = this.scrollTop;
 
       // fix chrome
       requestAnimationFrame(() => {
-        if (Math.abs(this.container.scrollTop - deferred) > 20) this.container.scrollTop = deferred;
+        if (Math.abs(this.container.scrollTop - deferred) > 20) this.container.scrollTop = this.prevScrollTop = this.scrollTop = deferred;
       });
     }
+
+    if (this.scrollTop !== this.prevScrollTop) this.prevScrollTop = this.scrollTop;
 
     this.updateTopElement();
     this.unlock();
@@ -703,7 +702,7 @@ export class VirtualizedList {
     this.scrollHeight = this.container.scrollHeight;
     this.updateHeigths();
     this.updateOffsets();
-    this.container.scrollTop = this.scrollTop = this.getScrollToValue(item);
+    this.container.scrollTop = this.prevScrollTop = this.scrollTop = this.getScrollToValue(item);
     this.updateTopElement();
 
     // animate new elements
@@ -727,7 +726,7 @@ export class VirtualizedList {
     setTimeout(() => {
       this.isLocked = false;
       this.elements[item].classList.remove('focused');
-      this.container.scrollTop = this.scrollTop = this.getScrollToValue(item);
+      this.container.scrollTop = this.prevScrollTop = this.scrollTop = this.getScrollToValue(item);
       this.updateOffsets();
       this.virtualize();
     }, 300);
@@ -740,7 +739,7 @@ export class VirtualizedList {
     scrollValue = Math.max(0, scrollValue);
     scrollValue = Math.min(this.scrollHeight - this.viewport.height, scrollValue);
 
-    return scrollValue;
+    return Math.floor(scrollValue);
   }
 
   scrollTo(item: string) {
