@@ -1,8 +1,9 @@
 import { Observable, of } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { chatCache, userCache } from 'cache';
-import { InputPeer, Message, Peer, FileLocation, User, Chat } from './types';
-import { getFirstLetters } from '../helpers/data';
+import { getFirstLetters } from 'helpers/data';
+import { messageToDialogPeer } from 'helpers/api';
+import { InputPeer, Message, Peer, FileLocation, User, Chat, MessageEmpty, InputUser } from './types';
 
 // Convert Peer to InputPeer
 export function peerToInputPeer(peer: Peer, reference?: { peer: InputPeer, message: Message }): InputPeer {
@@ -35,6 +36,15 @@ export function peerToInputPeer(peer: Peer, reference?: { peer: InputPeer, messa
     default:
       return { _: 'inputPeerEmpty' };
   }
+}
+
+export function messageSenderToInputUser(message: Exclude<Message, MessageEmpty>): InputUser {
+  return {
+    _: 'inputUserFromMessage',
+    peer: peerToInputPeer(messageToDialogPeer(message)),
+    msg_id: message.id,
+    user_id: message.from_id,
+  };
 }
 
 // Pass myUserId to return "Saved messages" for the currently authorized user

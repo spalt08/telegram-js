@@ -6,14 +6,16 @@ import MediaService from './media';
 import PeerService from './peer';
 import MessageSearchService from './message_search/message_search';
 import UserTyping from './user_typing';
+import UserService from './user';
 
 export { RightSidebarPanel } from './main';
 
 export const main = new MainService();
 export const auth = new AuthService();
+export const user = new UserService();
 export const userTyping = new UserTyping();
-export const peer = new PeerService();
-export const message = new MessageService(peer);
-export const dialog = new DialogService();
+export const message = new MessageService();
+export const peer = new PeerService(message);
+export const dialog = new DialogService(message);
 export const media = new MediaService(main);
 export const messageSearch = new MessageSearchService();

@@ -49,6 +49,23 @@ export type InputPeer = {
 };
 
 /**
+ * Peer Reference
+ * Ref: https://core.telegram.org/type/InputUser
+ */
+export type InputUser = {
+  _: 'inputUserEmpty' | 'inputUserSelf',
+} | {
+  _: 'inputUser',
+  user_id: number,
+  access_hash: string,
+} | {
+  _: 'inputUserFromMessage',
+  peer: InputPeer, // message peer
+  msg_id: number,
+  user_id: number,
+};
+
+/**
  * Input channel data
  * Ref: https://core.telegram.org/type/InputChannel
  */
