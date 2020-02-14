@@ -1,21 +1,19 @@
-.msgservice {
+.message-service {
+  padding: 6PX 0px 3PX;
   text-align: center;
 
-  &__wrapper {
-    padding-bottom: 10px;
-  }
-
-  &__inner {
+  &__label {
     display: inline-block;
     margin: 0 auto;
     width: auto;
     max-width: 70%;
     color: #FFFFFF;
-    background: rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.20);
     height: 26px;
     border-radius: 13px;
     line-height: 20px;
     padding: 3px 10px;
+    position: sticky;
   }
 
   strong {

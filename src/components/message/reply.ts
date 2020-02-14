@@ -28,7 +28,7 @@ export default function messageReply(id: number, peer: Peer) {
 
     replyQuote = quote(
       profileTitle({ _: 'peerUser', user_id: message.from_id }),
-      message.message || messageShort(message),
+      message._ === 'message' && message.message ? message.message : messageShort(message),
       preview,
     );
 

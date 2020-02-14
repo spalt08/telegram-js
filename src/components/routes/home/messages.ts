@@ -5,7 +5,7 @@ import { mount, unmount } from 'core/dom';
 import { useObservable } from 'core/hooks';
 import { message as service } from 'services';
 import { Direction as MessageDirection } from 'services/message/types';
-import message from 'components/message2/message';
+import message from 'components/message/message';
 import { sectionSpinner, VirtualizedList } from 'components/ui';
 import messageInput from 'components/message/input/input';
 import { Peer } from 'cache/types';

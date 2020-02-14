@@ -10,7 +10,7 @@ import './input.scss';
 
 export default function messageInput() {
   const element = div`.msginput`();
-  const textarea = messageTextarea({ onSend: message.sendMessage });
+  const textarea = messageTextarea({ onSend: message.sendMessage, maxHeight: 400 });
   const emojiIcon = div`.msginput__emoji`(smile());
   const attchIcon = div`.msginput__attach`(attach());
   const stickmojiPanelEl = stickMojiPanel({

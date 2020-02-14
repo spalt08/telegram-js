@@ -1,204 +1,325 @@
 import { div, text, nothing } from 'core/html';
-import { mount, unmountChildren } from 'core/dom';
-import { useOnMount, useObservable, useInterface, getInterface, hasInterface } from 'core/hooks';
-import { Peer, MessageCommon, Message } from 'cache/types';
-import { messageCache } from 'cache';
-import { datetime, formattedMessage, svgBaloon } from 'components/ui';
+import { useObservable, useInterface, hasInterface, getInterface, useOnMount } from 'core/hooks';
+import { mount, unmount } from 'core/dom';
+import { messageCache, chatCache } from 'cache';
+import { Peer, Message, MessageCommon, MessageService, MessageEmpty } from 'cache/types';
+import { formattedMessage } from 'components/ui';
+import client from 'client/client';
 import { profileAvatar, profileTitle } from 'components/profile';
-import { userIdToPeer } from 'helpers/api';
+import webpagePreview from 'components/media/webpage/preview';
+import photoPreview from 'components/media/photo/preview';
+import { getAttributeSticker, getAttributeVideo } from 'helpers/files';
+import stickerRenderer from 'components/media/sticker/sticker';
+import documentFile from 'components/media/document/file';
+import videoPreview from 'components/media/video/preview';
 import { idToColorCode } from 'cache/accessors';
+import { userIdToPeer } from 'helpers/api';
 import { isEmoji } from 'helpers/message';
-import { auth } from 'services';
-import serviceMessage from './message_service';
-import messageMedia from './message_media';
-import emojiMessage from './message_emoji';
-import messageReply from './message_reply';
+import messageSerivce from './service';
+import messageReply from './reply';
+import messageDate from './date';
 import './message.scss';
+import replyMarkupRenderer from './reply_markup';
 
-interface MessageHooks {
-  getFromID(): number;
-}
+type MessageInterface = {
+  from(): number,
+  day(): number,
+  update(): void,
+  updateLayout(): void,
+  id: string,
+};
 
-export default function message(uniqueId: string, peer: Peer) {
-  const inner = div`.message__inner`();
-  const container = div`.message`(div`.message__align`(inner));
-  const subject = messageCache.useItemBehaviorSubject(container, uniqueId);
-  const msg = subject.value;
+const now = new Date();
+const timezoneOffset = now.getTimezoneOffset() * 60;
 
-  // todo return null
-  if (!msg || msg._ === 'messageEmpty') return div();
-  if (msg._ === 'messageService') return serviceMessage(msg);
+// message renderer
+const renderMessage = (msg: MessageCommon, peer: Peer) => {
+  const channel = peer._ === 'peerChannel' ? chatCache.get(peer.channel_id) : undefined;
 
-  const out = msg.from_id === auth.userID ? 'out' : '';
+  const date = messageDate(msg);
+  const reply = msg.reply_to_msg_id ? messageReply(msg.reply_to_msg_id, peer) : nothing;
+  const title = channel && channel._ === 'channel' && channel.megagroup === false
+    ? div`.message__title${`color-${idToColorCode(channel.id)}`}`(profileTitle(peer))
+    : div`.message__title${`color-${idToColorCode(msg.from_id)}`}`(profileTitle(userIdToPeer(msg.from_id)));
 
-  if (out) container.classList.add('out');
-
-  let prev: MessageCommon | undefined;
-  let picture: HTMLElement | undefined;
-  let title: HTMLElement | undefined;
-  let media: ReturnType<typeof messageMedia>;
-  let reply: HTMLElement | null;
-
-  // Rerender on change
-  const rerender = (next: Message) => {
-    if (!next || next._ === 'messageEmpty') return;
-    if (next._ === 'messageService') return;
-
-    let wrapper = null;
-    let shouldRerender = false;
-
-    // mount picture if it is first call
-    if ((!picture || !prev) && !out && peer._ !== 'peerUser' && msg.from_id !== 0) {
-      const fromPeer = userIdToPeer(msg.from_id);
-      picture = profileAvatar(fromPeer, next);
-      title = div`.message__title${`color-${idToColorCode(next.from_id)}`}`(profileTitle(fromPeer));
-
-      container.classList.add('chat');
-
-      shouldRerender = true;
+  // regular message
+  if (!msg.media || msg.media._ === 'messageMediaEmpty') {
+    // Display only emoji
+    if (msg.message.length <= 6 && isEmoji(msg.message)) {
+      return (
+        div`.message__bubble.as-emoji.only-sticker`(
+          reply,
+          div`.message__emoji${`e${msg.message.length / 2}`}`(text(msg.message)),
+          date,
+        )
+      );
     }
 
-    if (!prev || prev.media !== next.media) {
-      shouldRerender = true;
+    // regular
+    return (
+      div`.message__bubble`(
+        title,
+        reply,
+        div`.message__text`(formattedMessage(msg)),
+        date,
+      )
+    );
+  }
 
-      if (msg.media && msg.media._ !== 'messageMediaEmpty') {
-        media = messageMedia(msg.media, peer, next);
+  // with webpage
+  if (msg.media._ === 'messageMediaWebPage') {
+    const type = msg.media.webpage._ === 'webPage' ? msg.media.webpage.type : '';
+    const extraClass = (type === 'video' || type === 'photo') ? 'with-webpage-media' : 'with-webpage';
+
+    return (
+      div`.message__bubble${extraClass}`(
+        title,
+        reply,
+        div`.message__text`(formattedMessage(msg)),
+        msg.media.webpage._ === 'webPage' ? div`.message__media-padded`(webpagePreview(msg.media.webpage)) : nothing,
+        date,
+      )
+    );
+  }
+
+  // with photo
+  if (msg.media._ === 'messageMediaPhoto') {
+    const extraClass = msg.message ? 'with-photo' : 'only-photo';
+    const popupPeer = peer._ === 'peerChannel' ? peer : userIdToPeer(msg.from_id);
+    const photoEl = photoPreview(msg.media.photo, popupPeer, msg, {
+      fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined });
+    const messageEl = msg.message ? div`.message__text`(formattedMessage(msg)) : nothing;
+
+    return (
+      div`.message__bubble${extraClass}`(
+        reply,
+        photoEl || nothing,
+        messageEl,
+        date,
+      )
+    );
+  }
+
+  // with sticker
+  if (msg.media._ === 'messageMediaDocument' && getAttributeSticker(msg.media.document)) {
+    return (
+      div`.message__bubble.only-sticker`(
+        reply,
+        stickerRenderer(msg.media.document, { size: '200px', autoplay: true }),
+        date,
+      )
+    );
+  }
+
+  // with video
+  if (msg.media._ === 'messageMediaDocument' && getAttributeVideo(msg.media.document)) {
+    const extraClass = msg.message ? 'with-photo' : 'only-photo';
+    const previewEl = videoPreview(msg.media.document, {
+      fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined });
+    const messageEl = msg.message ? div`.message__text`(formattedMessage(msg)) : nothing;
+
+    return (
+      div`.message__bubble${extraClass}`(
+        reply,
+        previewEl || nothing,
+        messageEl,
+        date,
+      )
+    );
+  }
+
+  // with document
+  if (msg.media._ === 'messageMediaDocument') {
+    const messageEl = msg.message ? div`.message__text`(formattedMessage(msg)) : nothing;
+
+    return (
+      div`.message__bubble`(
+        reply,
+        div`.message__media-padded`(documentFile(msg.media.document)),
+        messageEl,
+        date,
+      )
+    );
+  }
+
+  console.log(msg.media);
+
+  // fallback
+  return (
+    div`.message__bubble`(
+      title,
+      reply,
+      div`.message__text.fallback`(
+        text('This type of message is not implemented yet'),
+      ),
+    )
+  );
+};
+
+export default function message(id: string, peer: Peer, onUpdateHeight?: (id: string) => void) {
+  const element = div`.message`();
+  const subject = messageCache.useItemBehaviorSubject(element, id);
+
+  let container: HTMLElement | undefined;
+  let aligner: HTMLElement | undefined;
+  let wrapper: HTMLElement | undefined;
+  let bubble: HTMLElement | undefined;
+  let dayLabel: HTMLElement | undefined; // eslint-disable-line @typescript-eslint/no-unused-vars
+  let profilePicture: HTMLElement | undefined;
+  let replyMarkup: Node | undefined;
+
+  // previous message before update
+  let cached: MessageCommon | MessageService | MessageEmpty | undefined;
+
+  // utc day number
+  const day = () => Math.ceil(((cached && cached._ !== 'messageEmpty' ? cached.date : 0) - timezoneOffset) / 3600 / 24);
+
+  // listen cache changes for auto rerendering
+  useObservable(element, subject, (msg: Message | undefined) => {
+    // first render
+    if (!container) {
+      if (!msg) return;
+      if (msg._ === 'messageEmpty') container = div`.message__empty`();
+      if (msg._ === 'messageService') container = messageSerivce(peer, msg);
+      else container = div`.message__container`();
+
+      if (peer._ !== 'peerUser') element.classList.add('chat');
+
+      mount(element, container);
+    }
+
+
+    if (msg && msg._ !== 'messageEmpty' && msg.from_id === client.getUserID()) element.classList.add('out');
+
+    // shouldn't rerender service and empty message
+    if (!msg || msg._ !== 'message') {
+      cached = msg;
+      return;
+    }
+
+    // first render for common message
+    if (!aligner || !wrapper) {
+      wrapper = div`.message__wrap`();
+      aligner = div`.message__align`(wrapper);
+      mount(container, aligner);
+
+      if (msg.from_id === client.getUserID()) element.classList.add('out');
+    }
+
+    // re-rendering
+    if (!bubble || !cached || (cached._ === 'message' && msg.message !== cached.message)) {
+      if (bubble) unmount(bubble);
+
+      bubble = renderMessage(msg, peer);
+      mount(wrapper, bubble);
+
+      if (onUpdateHeight) onUpdateHeight(id);
+    }
+
+    // render reply markup
+    if (msg.reply_markup && !replyMarkup) {
+      replyMarkup = replyMarkupRenderer(msg.reply_markup);
+      mount(wrapper, replyMarkup);
+
+      if (msg.reply_markup._ === 'replyKeyboardMarkup' || msg.reply_markup._ === 'replyInlineMarkup') {
+        aligner.classList.add('with-reply-markup');
+        aligner.classList.add(`rm-rows-${msg.reply_markup.rows.length}`);
       }
     }
 
-    // Rerender if message text changed
-    if (!prev || prev.message !== next.message) shouldRerender = true;
-
-    if (shouldRerender) {
-      // Render only media, without message text
-      if (!next.message && media) {
-        container.classList.add('media');
-
-        if (hasInterface(media) && getInterface(media).needsShadow) {
-          container.classList.add('shadowed');
-        }
-
-        if (media.classList.contains('sticker')) {
-          wrapper = media;
-        } else if (media.classList.contains('photo')) {
-          const { width, height } = getInterface(media).getSize();
-          wrapper = svgBaloon({ width, height, tail: true, incoming: !out }, [media]);
-        } else {
-          wrapper = div`.message__baloon`(media);
-        }
-      } else {
-        container.classList.remove('media');
-      }
-
-      // Display only emoji
-      if (!media && next.message.length <= 6 && isEmoji(next.message)) {
-        wrapper = emojiMessage(next.message, next.date);
-        container.classList.add('as-emoji');
-      } else {
-        container.classList.remove('as-emoji');
-      }
-
-      // Display reply
-      if (next.reply_to_msg_id) {
-        reply = messageReply(peer, next.reply_to_msg_id);
-      }
-
-      // Common message
-      if (!wrapper && next.message) {
-        wrapper = div`.message__baloon`(
-          media || nothing,
-          div`.message__content`(
-            div`.message__text`(
-              title || nothing,
-              reply || nothing,
-              formattedMessage(next),
-            ),
-          ),
-          div`.message__date`(
-            datetime({ timestamp: msg.date, date: false }),
-          ),
-        );
-
-        container.classList.add('shadowed');
-
-        if (media) container.classList.add('with-media');
-        else container.classList.remove('with-media');
-      }
-
-      // Fallback
-      if (!wrapper && !next.message) {
-        wrapper = div`.message__baloon`(
-          div`.message__content`(
-            div`.message__text.fallback`(
-              title || nothing,
-              text('This type of message is not implemented yet'),
-            ),
-          ),
-          div`.message__date`(
-            datetime({ timestamp: msg.date, date: false }),
-          ),
-        );
-      }
-
-      unmountChildren(inner);
-      if (picture) mount(inner, picture);
-      if (wrapper) mount(inner, wrapper);
-    }
-
-    prev = next;
-  };
-
-  rerender(msg);
-
-  useObservable(container, subject, (next) => next && rerender(next));
-
-  useOnMount(container, () => {
-    const prevEl = container.previousElementSibling;
-    const nextEl = container.nextElementSibling;
-    const pinterface = prevEl && hasInterface<MessageHooks>(prevEl) ? getInterface(prevEl) : null;
-    const ninterface = nextEl && hasInterface<MessageHooks>(nextEl) ? getInterface(nextEl) : null;
-
-    if (!nextEl && !prevEl) {
-      container.classList.add('first');
-      container.classList.add('last');
-    }
-
-    if (nextEl && !prevEl) {
-      container.classList.add('first');
-
-      if (ninterface && ninterface.getFromID && msg.from_id === ninterface.getFromID()) {
-        container.classList.remove('last');
-        nextEl.classList.remove('first');
-      } else {
-        container.classList.add('last');
-      }
-    }
-
-    if (prevEl && !nextEl) {
-      container.classList.add('last');
-
-      if (pinterface && pinterface.getFromID && msg.from_id === pinterface.getFromID()) {
-        prevEl.classList.remove('last');
-      } else {
-        container.classList.add('first');
-        prevEl.classList.add('last');
-      }
-    }
-
-    if (prevEl && nextEl) {
-      if (pinterface && pinterface.getFromID && msg.from_id === pinterface.getFromID()) {
-        container.classList.remove('first');
-        prevEl.classList.remove('last');
-      } else {
-        container.classList.add('first');
-        prevEl.classList.add('last');
-      }
-    }
+    cached = msg;
   });
 
-  return useInterface(container, {
-    getFromID() {
-      return msg.from_id;
-    },
+  // update meta elemens (day label, message avatar for chats) depends on classList
+  const updateLayout = () => {
+    // // remove daylabel
+    // if (dayLabel && !element.classList.contains('day')) {
+    //   unmount(dayLabel);
+    //   dayLabel = undefined;
+
+    //   if (onUpdateHeight) onUpdateHeight(id);
+    // }
+
+    // // display daylabel
+    // if (element.classList.contains('day') && !dayLabel) {
+    //   const mdate = new Date(cached && cached._ !== 'messageEmpty' ? cached.date * 1000 : 0);
+    //   const label = mdate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+
+    //   dayLabel = div`.message-day`(div`.message-day__label`(text(label)));
+    //   mount(element, dayLabel, container);
+
+    //   if (onUpdateHeight) onUpdateHeight(id);
+    // }
+
+    // remove picture
+    if (profilePicture && !element.classList.contains('last')) {
+      unmount(profilePicture);
+      profilePicture = undefined;
+    }
+
+    // display picture
+    if (aligner && element.classList.contains('chat') && element.classList.contains('last') && !element.classList.contains('out')
+    && !profilePicture && cached && cached._ !== 'messageEmpty') {
+      const channel = peer._ === 'peerChannel' ? chatCache.get(peer.channel_id) : undefined;
+      profilePicture = channel && channel._ === 'channel' && channel.megagroup === false
+        ? div`.message__profile`(profileAvatar(peer))
+        : div`.message__profile`(profileAvatar(userIdToPeer(cached.from_id)));
+      mount(aligner, profilePicture, wrapper);
+    }
+  };
+
+  // update classList for daylabel, first, last
+  const update = (recursive: boolean = false) => {
+    const nextEl = element.nextElementSibling;
+    const prevEl = element.previousElementSibling;
+
+    // check next message meta
+    if (nextEl && hasInterface<MessageInterface>(nextEl)) {
+      const next = getInterface(nextEl);
+
+      if (cached && cached._ !== 'messageEmpty' && next.from() === cached.from_id && next.day() === day()) {
+        element.classList.remove('last');
+        if (nextEl.classList.contains('first')) {
+          nextEl.classList.remove('first');
+        }
+      } else {
+        if (!nextEl.classList.contains('first')) nextEl.classList.add('first');
+        if (!element.classList.contains('last')) element.classList.add('last');
+      }
+
+      if (next.day() === day()) {
+        if (nextEl.classList.contains('day')) {
+          nextEl.classList.remove('day');
+          if (recursive) next.updateLayout();
+        }
+      } else if (!nextEl.classList.contains('day')) {
+        nextEl.classList.add('day');
+        if (recursive) next.updateLayout();
+      }
+    } else {
+      element.classList.add('last');
+    }
+
+    if (!prevEl) {
+      if (!element.classList.contains('first')) element.classList.add('first');
+      if (!element.classList.contains('day')) {
+        element.classList.add('day');
+      }
+    }
+
+    // update previous
+    if (recursive && prevEl && hasInterface<MessageInterface>(prevEl)) getInterface(prevEl).update();
+
+    updateLayout();
+  };
+
+  useOnMount(element, () => update(true));
+
+  return useInterface(element, {
+    from: () => cached && cached._ !== 'messageEmpty' ? cached.from_id : 0,
+    updateLayout,
+    day,
+    update,
+    id,
   });
 }

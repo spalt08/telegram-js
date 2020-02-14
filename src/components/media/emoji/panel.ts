@@ -30,6 +30,7 @@ export default function emojiPanel(onSelect?: (emoji: string) => void) {
   const categoryList = new VirtualizedList({
     className: 'emoji-panel__content',
     items: categories,
+    pivotBottom: false,
     renderer: (key: string) => emojiCategory(key, onSelect),
     batch: 9,
     threshold: 1,
