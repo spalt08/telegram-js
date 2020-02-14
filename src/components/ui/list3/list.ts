@@ -465,15 +465,19 @@ export class VirtualizedList {
     //   && this.offsets[this.topElement] + this.heights[this.topElement] > this.scrollTop) return;
 
     if (this.cfg.focusFromBottom) {
+      if (this.last > 0) this.topElement = this.current[this.last];
+
       for (let i = this.last; i >= this.first; i--) {
         const item = this.current[i];
-        if (this.offsets[item] >= this.scrollTop + this.viewport.height) {
+        if (this.offsets[item] + this.heights[item] >= this.scrollTop + this.viewport.height) {
           this.topElement = this.current[i];
         } else {
           break;
         }
       }
     } else {
+      if (this.first > 0) this.topElement = this.current[this.first];
+
       for (let i = this.first; i <= this.last; i++) {
         const item = this.current[i];
         if (this.offsets[item] <= this.scrollTop) {
@@ -517,6 +521,7 @@ export class VirtualizedList {
 
       this.updateHeigths();
       this.updateOffsets();
+      this.updateTopElement();
     }
 
     const prevFirst = this.first;
