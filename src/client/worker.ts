@@ -46,16 +46,9 @@ const fileCache: Record<string, any> = {};
  * File managers: getFile method
  */
 function downloadFilePart(
-  location: any, cb: (f: string) => void, dc: number = client!.cfg.dc, mime = '', offset = 0, limit = 512 * 1024, parts = '',
+  location: any, cb: (f: string, m: string) => void, dc: number = client!.cfg.dc, mime = '', offset = 0, limit = 512 * 1024, parts = '',
 ) {
   if (!client) throw new Error('Client is undefined');
-
-  const cacheKey = JSON.stringify(location);
-
-  if (fileCache[cacheKey]) {
-    cb(fileCache[cacheKey]);
-    return;
-  }
 
   client.call('upload.getFile', { location, offset, limit }, { dc, thread: 2 }, (err, result) => {
     // redirect to another dc
@@ -81,7 +74,7 @@ function downloadFilePart(
  * File part processor
  */
 function processFilePart(
-  location: any, file: UploadFile, imime: string, dc: number, offset: number, limit: number, parts: string, cb: (url: string) => void,
+  location: any, file: UploadFile, imime: string, dc: number, offset: number, limit: number, parts: string, cb: (url: string, m: string) => void,
 ) {
   // todo load parts
   if (file.bytes.length / 2 === limit) {
@@ -94,7 +87,7 @@ function processFilePart(
   const url = (URL || webkitURL).createObjectURL(blob);
 
   fileCache[JSON.stringify(location)] = url;
-  cb(url);
+  cb(url, mime);
 }
 
 const pendingFiles: Record<string, {
@@ -336,7 +329,7 @@ function processMessage(message: WorkerMessage) {
     }
 
     case 'get_file': {
-      downloadFilePart(payload.location, (url) => {
+      downloadFilePart(payload.location, (url, _mime) => {
         resolve(id, type, url);
       }, payload.dc, payload.mime);
       break;

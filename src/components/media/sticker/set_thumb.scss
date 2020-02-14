@@ -1,0 +1,16 @@
+.sticker-set-thumb {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+
+  &__animated {
+    width: 100%;
+    height: 100%;
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+  }
+}

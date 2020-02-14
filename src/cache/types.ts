@@ -484,8 +484,14 @@ export type MessageAction = {
  * Ref: https://core.telegram.org/type/FileLocation
  */
 export type FileLocation = {
-  volume_id: number,
+  volume_id: string,
   local_id: number,
+};
+
+export type InputStickerSet = {
+  _: 'inputStickerSetID',
+  id: string,
+  access_hash: string,
 };
 
 /**
@@ -501,7 +507,12 @@ export type InputFileLocation = {
 } | {
   _: 'inputPeerPhotoFileLocation',
   peer: InputPeer,
-  volume_id: number,
+  volume_id: string,
+  local_id: number,
+} | {
+  _: 'inputStickerSetThumb',
+  stickerset: InputStickerSet,
+  volume_id: string,
   local_id: number,
 };
 
@@ -626,4 +637,20 @@ export type InputFile = {
   id: string,
   parts: number,
   name: string,
+};
+
+/**
+ * Ref: https://core.telegram.org/constructor/stickerSet
+ */
+export type StickerSet = {
+  _: 'stickerSet',
+  installed_date: number,
+  id: string,
+  animated: boolean,
+  access_hash: string,
+  title: string,
+  thumb?: PhotoSize,
+  thumb_dc_id?: number,
+  count: number,
+  hash: number,
 };

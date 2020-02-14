@@ -1,5 +1,5 @@
 /* eslint-disable prefer-destructuring, prefer-template, max-len */
-import { PhotoSize, InputFileLocation, PhotoNotEmpty, Peer, Message, Document, PhotoSizeWithLocation } from 'cache/types';
+import { PhotoSize, InputFileLocation, PhotoNotEmpty, Peer, Message, Document, PhotoSizeWithLocation, StickerSet, InputStickerSet } from 'cache/types';
 import { peerToInputPeer, getPeerPhotoLocation } from 'cache/accessors';
 import { blobToUrl, hexToBlob, hexToStr, strToBlob } from './files';
 
@@ -130,6 +130,23 @@ export function getDocumentLocation(document: Document): InputFileLocation {
     access_hash: document.access_hash,
     file_reference: document.file_reference,
     thumb_size: '',
+  };
+}
+
+export function stickerSetToInput(set: StickerSet): InputStickerSet {
+  return {
+    _: 'inputStickerSetID',
+    id: set.id,
+    access_hash: set.access_hash,
+  };
+}
+
+export function getStickerSetThumbLocation(set: StickerSet, volume_id: string, local_id: number): InputFileLocation {
+  return {
+    _: 'inputStickerSetThumb',
+    stickerset: stickerSetToInput(set),
+    volume_id,
+    local_id,
   };
 }
 
