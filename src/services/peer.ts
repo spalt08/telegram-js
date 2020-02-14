@@ -1,5 +1,5 @@
 import client from 'client/client';
-import { UserFull, Peer, MessagesChatFull, Message } from 'cache/types';
+import { UserFull, Peer, MessagesChatFull } from 'cache/types';
 import { userFullCache, chatCache, chatFullCache, userCache, pinnedMessageCache } from 'cache';
 
 /**

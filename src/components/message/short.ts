@@ -9,7 +9,7 @@ export default function messageShort(msg: Message) {
 
   if (msg._ === 'messageService') {
     const user = userCache.get(msg.from_id);
-    const userLabel = user ? user.first_name : '';
+    const userLabel = user ? user.first_name : 'Someone';
 
     switch (msg.action._) {
       case 'messageActionChatCreate': content = `${userLabel} created the group`; break;

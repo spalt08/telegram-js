@@ -43,7 +43,7 @@ export default function mediaPanel(peer: Peer) {
   const container = div`.shared-media__item`(loader);
 
   const loadMore = () => {
-    media.loadMedia(peer, messageCache.indices.sharedMedia.getEarliestPeerMedia(peer)?.id);
+    media.loadMedia(peer, 'inputMessagesFilterPhotoVideo', messageCache.indices.photoVideos.getEarliestPeerMedia(peer)?.id);
   };
 
   const items = new BehaviorSubject<string[]>([]);
@@ -54,9 +54,9 @@ export default function mediaPanel(peer: Peer) {
     renderer: (id: string) => mediaRowRenderer(id, peer),
   });
 
-  media.loadMedia(peer);
+  media.loadMedia(peer, 'inputMessagesFilterPhotoVideo');
 
-  useObservable(container, messageCache.indices.sharedMedia.getPeerMedia(peer), (messages: Message[]) => {
+  useObservable(container, messageCache.indices.photoVideos.getPeerMedia(peer), (messages: Message[]) => {
     if (messages.length === 0) return;
 
     if (loader) {

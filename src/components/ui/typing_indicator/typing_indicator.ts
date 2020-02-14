@@ -35,7 +35,7 @@ export default function typingIndicator(peer: Peer, className: string, ...childr
       if (peer._ === 'peerUser') {
         mount(container, span`.typingIndicator__typing`(text(actionToString(actions[activeUserIds[0]]))));
       } else if (activeUserIds.length === 1) {
-        const user = userCache.get(activeUserIds[0])?.first_name ?? '';
+        const user = userCache.get(activeUserIds[0])?.first_name ?? 'Someone';
         mount(container, span`.typingIndicator__typing`(span(text(user)), text(` is ${actionToString(actions[activeUserIds[0]])}`)));
       } else if (activeUserIds.length === 2) {
         const user1 = userCache.get(activeUserIds[0])?.first_name ?? '';

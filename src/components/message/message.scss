@@ -48,7 +48,6 @@ $messageDistance: 4PX;
   }
 
   &__bubble {
-    border-radius: 6px;
     background: #FFFFFF;
     overflow: visible;
     position: relative;
@@ -86,6 +85,7 @@ $messageDistance: 4PX;
     .message.out &.only-sticker { flex-direction: row; }
 
     &.only-photo {
+      background: none;
       max-width: 320px;
       max-height: 320px;
       overflow: hidden;
@@ -305,6 +305,10 @@ $messageDistance: 4PX;
 
       & .quote__title, & .webpage-preview__header {
         color: #4FAE4F;
+      }
+
+      &.only-photo, &.only-sticker {
+        background: none;
       }
     }
 

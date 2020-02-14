@@ -40,7 +40,7 @@ export function peerToInputPeer(peer: Peer, reference?: { peer: InputPeer, messa
 // Pass myUserId to return "Saved messages" for the currently authorized user
 export function userToTitle(user: User | undefined, myUserId?: number) {
   if (!user) {
-    return 'Unknown user';
+    return 'Someone';
   }
   if (user.deleted) {
     return 'Deleted Account';

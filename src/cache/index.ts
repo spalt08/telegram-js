@@ -26,7 +26,8 @@ export const chatCache = new Collection<Chat, {}, number>({
 
 const messageCacheIndices = {
   history: messageHistory,
-  sharedMedia: sharedMediaIndex,
+  photoVideos: sharedMediaIndex,
+  documents: sharedMediaIndex,
 };
 
 /**

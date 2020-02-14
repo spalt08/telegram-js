@@ -3,14 +3,14 @@ import { peerToId } from 'helpers/api';
 import { Subject, ReplaySubject, Observable } from 'rxjs';
 import Collection from '../collection';
 
-export default function sharedMediaIndex(collection: Collection<Message, any>, filter: (message: Message) => boolean = () => true) {
+export default function sharedMediaIndex(collection: Collection<Message, any>) {
   const cache: Record<string, { snapshot: Collection<Message, any, number>, subject: Subject<Message[]> }> = {};
 
   collection.changes.subscribe((collectionChanges) => {
     collectionChanges.forEach(([action, item]) => {
       switch (action) {
         case 'remove': {
-          if (item._ === 'message' && filter(item)) {
+          if (item._ === 'message') {
             const cacheLine = cache[`user_${item.from_id}`];
             if (cacheLine) {
               cacheLine.snapshot.remove(item.id);
@@ -36,10 +36,10 @@ export default function sharedMediaIndex(collection: Collection<Message, any>, f
 
   return {
     putMediaMessages(peer: Peer, messages: Message[]) {
-      collection.put(messages.filter(filter));
+      collection.put(messages);
       const cacheLine = getCacheLine(peer);
       cacheLine.snapshot.batchChanges(() => {
-        messages.filter(filter)
+        messages
           .filter((m) => !cacheLine.snapshot.has(m.id))
           .forEach((m) => cacheLine.snapshot.put(m));
       });

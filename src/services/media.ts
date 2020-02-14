@@ -16,7 +16,7 @@ export default class MediaService {
   /** Stickers Packs */
   stickerSets = new BehaviorSubject([]);
 
-  mediaLoading = false;
+  mediaLoading: Record<string, boolean> = {};
 
   /** Hash values for sticker syc */
   stickerSetsHash = 0;
@@ -66,13 +66,13 @@ export default class MediaService {
     });
   }
 
-  loadMedia(peer: Peer, offsetMessageId = 0) {
-    if (this.mediaLoading) return;
+  loadMedia(peer: Peer, filterType: MessageFilter['_'], offsetMessageId = 0) {
+    if (this.mediaLoading[filterType]) return;
 
-    this.mediaLoading = true;
+    this.mediaLoading[filterType] = true;
 
     const chunk = 40;
-    const filter: MessageFilter = { _: 'inputMessagesFilterPhotoVideo' };
+    const filter = { _: filterType };
     const payload = {
       peer: peerToInputPeer(peer),
       q: '',
@@ -88,11 +88,23 @@ export default class MediaService {
       hash: 0,
     };
 
+    let index: typeof messageCache.indices.photoVideos;
+    switch (filterType) {
+      case 'inputMessagesFilterPhotoVideo':
+        index = messageCache.indices.photoVideos;
+        break;
+      case 'inputMessagesFilterDocument':
+        index = messageCache.indices.documents;
+        break;
+      default:
+        throw Error('Unknown filter');
+    }
+
     client.call('messages.search', payload, (_err: any, res: any) => {
       if (res) {
-        messageCache.indices.sharedMedia.putMediaMessages(peer, res.messages);
+        index.putMediaMessages(peer, res.messages);
       }
-      this.mediaLoading = false;
+      this.mediaLoading[filterType] = false;
     });
   }
 

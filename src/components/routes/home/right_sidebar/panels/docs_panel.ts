@@ -1,0 +1,55 @@
+import { Peer, Message } from 'cache/types';
+import { div, nothing } from 'core/html';
+import { VirtualizedList } from 'components/ui';
+import { BehaviorSubject } from 'rxjs';
+import { materialSpinner } from 'components/icons';
+import { media } from 'services';
+import { messageCache } from 'cache';
+import { useObservable } from 'core/hooks';
+import { messageToId } from 'helpers/api';
+import { unmount, mount } from 'core/dom';
+import documentFile from 'components/media/document/file';
+import './docs_panel.scss';
+
+const documentRowRenderer = (id: string) => {
+  const msg = messageCache.get(id);
+  if (msg?._ === 'message' && msg.media._ === 'messageMediaDocument') {
+    return documentFile(msg.media.document, msg);
+  }
+  return div(nothing);
+};
+
+export default function docsPanel(peer: Peer) {
+  let loader: HTMLElement | undefined = div`.shared-media__loader`(materialSpinner());
+  const container = div`.shared-media__item`(loader);
+
+  const loadMore = () => {
+    media.loadMedia(peer, 'inputMessagesFilterDocument', messageCache.indices.documents.getEarliestPeerMedia(peer)?.id);
+  };
+
+  const items = new BehaviorSubject<string[]>([]);
+  const list = new VirtualizedList({
+    items,
+    pivotBottom: false,
+    onReachBottom: loadMore,
+    renderer: documentRowRenderer,
+  });
+
+  media.loadMedia(peer, 'inputMessagesFilterDocument');
+
+  useObservable(container, messageCache.indices.documents.getPeerMedia(peer), (messages: Message[]) => {
+    if (messages.length === 0) return;
+
+    if (loader) {
+      unmount(loader);
+      mount(container, list.container);
+      loader = undefined;
+    }
+
+    const ids = messages.map((message) => messageToId(message));
+
+    items.next(ids);
+  });
+
+  return container;
+}

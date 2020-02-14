@@ -130,7 +130,7 @@ export class VirtualizedList {
     onReachTop,
     onReachBottom,
   }: Props) {
-    this.container = el(tag || 'div', { className: `list ${className} ${pivotBottom ? '-reversed' : ''}` });
+    this.container = el(tag || 'div', { className: `list ${className || ''} ${pivotBottom ? '-reversed' : ''}` });
 
     this.renderer = renderer;
     this.cfg = {
