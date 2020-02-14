@@ -5,7 +5,6 @@ import { Message, Peer, AnyUpdateMessage, AnyUpdateShortMessage, MessageCommon }
 import { messageCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage, shortChatMessageToMessage } from 'helpers/api';
-import UserService from '../user';
 import { Direction } from './types';
 import makeMessageChunk, { MessageChunkService, MessageHistoryChunk } from './message_chunk';
 
@@ -30,7 +29,7 @@ export default class MessagesService {
 
   protected nextChunk?: MessageChunkService;
 
-  constructor(private userService: UserService) {
+  constructor() {
     client.updates.on('updateNewMessage', (update: AnyUpdateMessage) => {
       this.pushMessages([update.message]);
     });
@@ -179,13 +178,11 @@ export default class MessagesService {
    * The messages may have random peers and order.
    */
   pushMessages(messages: Message[]) {
-    this.userService.loadMissingMessageSenders(messages, () => {
-      messageCache.batchChanges(() => {
-        messages.forEach((message) => {
-          if (message._ !== 'messageEmpty') {
-            messageCache.indices.history.putNewestMessage(message);
-          }
-        });
+    messageCache.batchChanges(() => {
+      messages.forEach((message) => {
+        if (message._ !== 'messageEmpty') {
+          messageCache.indices.history.putNewestMessage(message);
+        }
       });
     });
   }

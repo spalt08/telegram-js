@@ -1,6 +1,4 @@
-import { Message, User } from 'cache/types';
 import client from 'client/client';
-import { messageSenderToInputUser } from 'cache/accessors';
 import { userCache } from '../cache';
 
 export default class UsersService {
@@ -13,6 +11,7 @@ export default class UsersService {
     });
   }
 
+  /*
   loadMessageSenders(messages: Message[], onResult: (users: Array<User | undefined>) => void) {
     if (!messages.length) {
       onResult([]);
@@ -49,4 +48,5 @@ export default class UsersService {
       onComplete();
     });
   }
+   */
 }
