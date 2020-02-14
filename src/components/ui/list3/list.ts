@@ -55,6 +55,9 @@ export class VirtualizedList {
   /** Scrollable inner content height */
   scrollHeight: number = 0;
 
+  /** Scrollable inner content height */
+  scrollWidth: number = 0;
+
   /** Flag for disabling updates */
   isLocked: boolean = false;
 
@@ -171,10 +174,12 @@ export class VirtualizedList {
 
       // handle scroll
       this.scrollTop = offset;
-
       // prevent overscroll events
       // if (offset < 0) return;
       // if (offset + this.viewport.height > this.scrollHeight) return;
+
+      const width = this.container.scrollWidth;
+      if (width !== this.scrollWidth) this.updateViewport();
 
       this.virtualize();
     }, { passive: true, capture: true });
@@ -184,6 +189,7 @@ export class VirtualizedList {
     const oldWidth = this.viewport.width;
     this.viewport = this.container.getBoundingClientRect();
     this.scrollHeight = this.container.scrollHeight;
+    this.scrollWidth = this.container.scrollWidth;
 
     if (oldWidth !== this.viewport.width) {
       this.heights = {};
@@ -216,8 +222,7 @@ export class VirtualizedList {
   // mount item
   mount(item: string, before?: string) {
     mount(this.container, this.elements[item], before ? this.elements[before] : undefined);
-    // if (!this.heights[item]) 
-    this.pendingRecalculate.push(item);
+    if (!this.heights[item]) this.pendingRecalculate.push(item);
   }
 
   // mount before node, not data
@@ -225,8 +230,7 @@ export class VirtualizedList {
     const elm = this.elements[item];
     unmount(elm);
     mount(this.container, elm, before);
-    // if (!this.heights[item]) 
-    this.pendingRecalculate.push(item);
+    if (!this.heights[item]) this.pendingRecalculate.push(item);
   }
 
   // unmount item
