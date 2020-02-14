@@ -17,7 +17,7 @@ const emptyHistory: MessageHistoryChunk = { ids: [] };
 export default class MessagesService {
   readonly activePeer = new BehaviorSubject<Peer | null>(null);
 
-  readonly focusMessage = new Subject<{ id: number, direction: Direction }>();
+  readonly focusMessage = new Subject<{ id: number, direction: Direction, highlight?: boolean }>();
 
   readonly history = new BehaviorSubject<MessageHistoryChunk>(emptyHistory);
 
@@ -187,6 +187,7 @@ export default class MessagesService {
       return;
     }
 
+    // todo: Load the user if not loaded
     messageCache.indices.history.putNewestMessage(message);
   }
 
@@ -201,7 +202,7 @@ export default class MessagesService {
         chunk.history
           .pipe(first(({ ids }) => ids.length > 0))
           .subscribe(({ ids }) => {
-            this.focusToMessage(focusMessageId > 0 ? ids[0] : ids[ids.length - 1], focusDirection);
+            this.focusToMessage(focusMessageId > 0 ? ids[0] : ids[ids.length - 1], focusDirection, true);
           });
       }
     }
@@ -210,7 +211,7 @@ export default class MessagesService {
     chunk.history.subscribe(this.history);
   }
 
-  protected focusToMessage(messageId: number, direction: Direction) {
+  protected focusToMessage(messageId: number, direction: Direction, noHighlight = false) {
     const history = this.history.value;
     if (messageId === Infinity) {
       if (history.newestReached && history.ids.length) {
@@ -221,7 +222,7 @@ export default class MessagesService {
         this.focusMessage.next({ id: history.ids[history.ids.length - 1], direction });
       }
     } else {
-      this.focusMessage.next({ id: messageId, direction });
+      this.focusMessage.next({ id: messageId, direction, highlight: !noHighlight });
     }
   }
 

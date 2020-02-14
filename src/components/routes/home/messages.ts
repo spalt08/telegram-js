@@ -65,6 +65,7 @@ export default function messages({ className = '' }: Props = {}) {
           [MessageDirection.Older]: 1,
           [MessageDirection.Around]: undefined,
         }[focus.direction],
+        // focus.highlight,
       );
     }
   });
