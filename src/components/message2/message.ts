@@ -167,7 +167,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     if (!container) {
       if (!msg) return;
       if (msg._ === 'messageEmpty') container = div`.message__empty`();
-      if (msg._ === 'messageService') container = messageSerivce(msg);
+      if (msg._ === 'messageService') container = messageSerivce(peer, msg);
       else container = div`.message__container`();
 
       if (peer._ !== 'peerUser') element.classList.add('chat');

@@ -87,6 +87,16 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 50%;
+
+        svg {
+          transform: scale(0.97);
+          circle {
+            stroke: white;
+            stroke-width: 1.5;
+          }
+        }
       }
     }
   }
@@ -99,9 +109,9 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
-    transition-property: flex-basis;
-    transition-duration: .15s;
+    transition-property: width;
+    transition-duration: 0.15s;
+    width: 0;
 
     &.visible {
       border-left: 1px solid #EDEEF0;

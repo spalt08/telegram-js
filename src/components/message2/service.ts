@@ -1,10 +1,12 @@
 import { MessageService, Peer } from 'cache/types';
-import { div, strong, text, nothing } from 'core/html';
+import { div, strong, text } from 'core/html';
 import { profileTitle } from 'components/profile';
 import './service.scss';
 
-export default function messageSerivce(msg: MessageService) {
-  const peer = { _: 'peerUser', user_id: msg.from_id } as Peer;
+export default function messageSerivce(originalPeer: Peer, msg: MessageService) {
+  const peer: Peer = msg.from_id !== 0
+    ? { _: 'peerUser', user_id: msg.from_id }
+    : originalPeer;
 
   let innerContent: Node[];
 

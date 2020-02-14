@@ -13,6 +13,7 @@
   }
 
   &__profile {
+    flex-grow: 1;
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
@@ -38,6 +39,12 @@
   &__title {
     font-weight: 500;
     font-size: 15px;
+  }
+
+  &__pinned {
+    flex-grow: 0;
+    max-width: 250px;
+    cursor: pointer;
   }
 
   &__actions {

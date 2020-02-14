@@ -1,7 +1,7 @@
-import { dialogToId, isDialogArchived, messageToId, peerMessageToId } from 'helpers/api';
+import { dialogToId, isDialogArchived, messageToId, peerMessageToId, peerToId } from 'helpers/api';
 import Collection, { makeGetIdFromProp } from './fastStorages/collection';
 import Dictionary from './fastStorages/dictionary';
-import { Chat, Dialog, Message, User, UserFull, ChatFull } from './types';
+import { Chat, Dialog, Message, User, UserFull, ChatFull, MessageCommon } from './types';
 import { orderBy } from './fastStorages/indices';
 import messageHistory from './fastStorages/indices/messageHistory';
 import sharedMediaIndex from './fastStorages/indices/sharedMediaIndex';
@@ -80,6 +80,10 @@ export const userFullCache = new Collection<UserFull, {}, number>({
 
 export const chatFullCache = new Collection<ChatFull, {}, number>({
   getId: (chatFull) => chatFull.id,
+});
+
+export const pinnedMessageCache = new Collection<Message, {}, string>({
+  getId: (msg: MessageCommon) => peerToId(msg.to_id),
 });
 
 /**

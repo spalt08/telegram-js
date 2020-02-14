@@ -1,11 +1,13 @@
 import { message, main, RightSidebarPanel } from 'services';
 import { useObservable } from 'core/hooks';
 import { div } from 'core/html';
-import { unmountChildren, mount } from 'core/dom';
+import { unmountChildren, mount, listen } from 'core/dom';
 import { profileAvatar, profileTitle } from 'components/profile';
 import roundButton from 'components/ui/round_button/round_button';
 import { more, search } from 'components/icons';
-import { onlineStatus, typingIndicator } from 'components/ui';
+import { onlineStatus, typingIndicator, quote } from 'components/ui';
+import { pinnedMessageCache } from 'cache';
+import { peerToId } from 'helpers/api';
 import './header.scss';
 
 export default function header() {
@@ -28,6 +30,18 @@ export default function header() {
     );
 
     mount(container, profile);
+
+    const pinnedMessage = div`.header__pinned`();
+    mount(container, pinnedMessage);
+
+    useObservable(container, pinnedMessageCache.useItemBehaviorSubject(container, peerToId(peer)), (msg) => {
+      unmountChildren(pinnedMessage);
+      if (msg?._ === 'message') {
+        const messageQuote = quote('Pinned message', msg.message);
+        listen(messageQuote, 'click', () => message.selectPeer(peer, msg.id));
+        mount(pinnedMessage, messageQuote);
+      }
+    });
 
     const actions = div`.header__actions`(
       roundButton({

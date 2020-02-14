@@ -1,5 +1,4 @@
 import { Peer } from 'cache/types';
-import { user as userService, chat as chatService } from 'services';
 import { userCache, chatCache, userFullCache, chatFullCache } from 'cache';
 import { div, nothing } from 'core/html';
 import { useObservable } from 'core/hooks';
@@ -17,10 +16,6 @@ function userInfo(userId: number) {
     infoListItem(username(), 'Username', usernameSubject),
     infoListItem(phone(), 'Phone', phoneSubject),
   );
-
-  // fetching user information
-  const userByPeer = userCache.get(userId);
-  if (userByPeer) userService.loadFullInfo(userByPeer);
 
   const userSubject = userCache.useItemBehaviorSubject(container, userId);
   useObservable(container, userSubject, (u) => {
@@ -44,10 +39,6 @@ function chatInfo(chatId: number) {
     // infoListItem(username(), 'Link', linkSubject),
   );
 
-  // fetching chat information
-  const chatByPeer = chatCache.get(chatId);
-  if (chatByPeer) chatService.loadFullInfo(chatByPeer);
-
   const chatFullObservable = chatFullCache.useItemBehaviorSubject(container, chatId);
   useObservable(container, chatFullObservable, (cf) => {
     if (cf) {
@@ -65,10 +56,6 @@ function channelInfo(channelId: number) {
     infoListItem(info(), 'About', aboutSubject),
     infoListItem(username(), 'Link', linkSubject),
   );
-
-  // fetching chat information
-  const channelByPeer = chatCache.get(channelId);
-  if (channelByPeer) chatService.loadFullInfo(channelByPeer);
 
   const channelFullObservable = chatFullCache.useItemBehaviorSubject(container, channelId);
   useObservable(container, channelFullObservable, (cf) => {

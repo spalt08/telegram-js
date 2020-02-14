@@ -4,7 +4,7 @@ import { div } from 'core/html';
 import { mount, unmount } from 'core/dom';
 import { useObservable } from 'core/hooks';
 import { message as service } from 'services';
-import { Direction as MessageDirection } from 'services/message';
+import { Direction as MessageDirection } from 'services/message/types';
 import message from 'components/message2/message';
 import { sectionSpinner, VirtualizedList } from 'components/ui';
 import messageInput from 'components/message/input/input';
@@ -29,8 +29,10 @@ export default function messages() {
   let spinner: Node | undefined;
 
   const itemsSubject = new BehaviorSubject<string[]>([]);
-  const showSpinnerObservable = combineLatest([service.history, service.loadingSides])
-    .pipe(map(([history, loadingDirections]) => history.ids.length < 3 && loadingDirections.length));
+  const showSpinnerObservable = combineLatest([service.history, service.loadingNextChunk])
+    .pipe(map(([{ ids, loadingNewer, loadingOlder }, loadingNextChunk]) => (
+      loadingNextChunk || ((loadingNewer || loadingOlder) && ids.length < 3)
+    )));
 
   const scroll: VirtualizedList = new VirtualizedList({
     className: 'messages__history',
@@ -48,7 +50,7 @@ export default function messages() {
   useObservable(element, service.activePeer, () => scroll.clear());
 
   // Handle message focus
-  useObservable(element, service.focusedMessage, (focus) => {
+  useObservable(element, service.focusMessage, (focus) => {
     if (focus && service.activePeer.value) {
       scroll.focus(
         peerMessageToId(service.activePeer.value, focus.id),
@@ -72,7 +74,7 @@ export default function messages() {
 
   useObservable(element, showSpinnerObservable, (show) => {
     if (show && !spinner) {
-      mount(element, spinner = sectionSpinner({ className: 'messages__spinner' }));
+      mount(element, spinner = sectionSpinner({ className: 'messages__spinner', useBackdrop: true }));
     } else if (!show && spinner) {
       unmount(spinner);
       spinner = undefined;
