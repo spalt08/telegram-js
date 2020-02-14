@@ -16,6 +16,7 @@ import videoRenderer from 'components/media/video/video';
 import { idToColorCode } from 'cache/accessors';
 import { userIdToPeer } from 'helpers/api';
 import { isEmoji } from 'helpers/message';
+import { main } from 'services';
 import messageSerivce from './service';
 import messageReply from './reply';
 import messageDate from './date';
@@ -103,10 +104,12 @@ const renderMessage = (msg: MessageCommon, peer: Peer) => {
 
   // with sticker
   if (msg.media._ === 'messageMediaDocument' && getAttributeSticker(msg.media.document)) {
+    const attr = getAttributeSticker(msg.media.document);
+
     return (
       div`.message__bubble.only-sticker`(
         reply,
-        stickerRenderer(msg.media.document, { size: '200px', autoplay: true }),
+        stickerRenderer(msg.media.document, { size: '200px', autoplay: true, onClick: () => attr && main.showPopup('stickerSet', attr.stickerset) }),
         date,
       )
     );
@@ -160,7 +163,7 @@ const renderMessage = (msg: MessageCommon, peer: Peer) => {
     );
   }
 
-  console.log(msg.media);
+  // console.log(msg.media);
 
   // fallback
   return (

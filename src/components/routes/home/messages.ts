@@ -27,7 +27,7 @@ function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
 }
 
 export default function messages({ className = '' }: Props = {}) {
-  const showDownButton = new BehaviorSubject(true); // todo: False initially
+  const showDownButton = new BehaviorSubject(false);
 
   const downButton = button({
     className: showDownButton.pipe(
@@ -58,9 +58,16 @@ export default function messages({ className = '' }: Props = {}) {
     pivotBottom: true,
     threshold: 2,
     batch: 35,
+    focusFromBottom: true,
     renderer: (id: string) => message(id, service.activePeer.value!, (mid: string) => scroll.pendingRecalculate.push(mid)),
     onReachTop: () => service.loadMoreHistory(MessageDirection.Older),
     onReachBottom: () => service.loadMoreHistory(MessageDirection.Newer),
+    onFocus: (id: string) => {
+      const showDown = !service.history.value.newestReached || itemsSubject.value[itemsSubject.value.length - 1] !== id;
+      if (showDown !== showDownButton.value) {
+        showDownButton.next(showDown);
+      }
+    },
   });
 
   mount(historySection, scroll.container);

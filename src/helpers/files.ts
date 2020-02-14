@@ -54,6 +54,9 @@ export function locationToString(location: InputFileLocation): string {
     case 'inputDocumentFileLocation':
       return `document_${location.id}_${location.thumb_size}`;
 
+    case 'inputStickerSetThumb':
+      return `set_thumb_${location.stickerset.id}_${location.local_id}_${location.volume_id}`;
+
     default:
       throw new Error(`No location hash value for ${location}`);
   }

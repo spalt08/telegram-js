@@ -1,12 +1,17 @@
 import client from 'client/client';
-import { UserFull, Peer, MessagesChatFull } from 'cache/types';
+import { UserFull, Peer, MessagesChatFull, InputUser } from 'cache/types';
 import { userFullCache, chatCache, chatFullCache, userCache, pinnedMessageCache } from 'cache';
+import MessageService from './message/message';
 
 /**
  * Singleton service class for handling peers
  */
 export default class PeerService {
-  loadFullInfo(peer: Peer | null) {
+  constructor(messageService: MessageService) {
+    messageService.activePeer.subscribe((peer) => this.loadFullInfo(peer));
+  }
+
+  private loadFullInfo(peer: Peer | null) {
     if (!peer) return;
 
     if (peer._ === 'peerChannel') {
@@ -38,8 +43,8 @@ export default class PeerService {
     } else if (peer._ === 'peerUser') {
       const user = userCache.get(peer.user_id);
       if (!user) return;
-      const payload = {
-        id: { _: 'inputUser', user_id: peer.user_id, access_hash: user.access_hash },
+      const payload: { id: InputUser } = {
+        id: { _: 'inputUser', user_id: peer.user_id, access_hash: user.access_hash! },
       };
       client.call('users.getFullUser', payload, (err, userFull: UserFull) => {
         if (userFull) {

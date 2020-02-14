@@ -2,7 +2,7 @@ import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { userCache, chatCache, messageCache, dialogCache } from 'cache';
 import { peerMessageToId } from 'helpers/api';
-import { Message } from 'cache/types';
+import MessageService from './message/message';
 
 /**
  * Singleton service class for handling auth flow
@@ -14,7 +14,7 @@ export default class DialogsService {
 
   protected isComplete = false;
 
-  constructor() {
+  constructor(private messageService: MessageService) {
     dialogCache.indices.order.changes.subscribe(() => {
       this.dialogs.next(dialogCache.indices.order.getIds());
     });
@@ -70,7 +70,7 @@ export default class DialogsService {
       if (err && err.message && err.message.indexOf('USER_MIGRATE_') > -1) {
         // todo store dc
         client.setBaseDC(+err.message.slice(-1));
-        this.doUpdateDialogs();
+        this.doUpdateDialogs(offsetDate, cb);
         return;
       }
 
@@ -84,10 +84,7 @@ export default class DialogsService {
 
           userCache.put(data.users);
           chatCache.put(data.chats);
-          messageCache.batchChanges(() => {
-            data.messages.forEach((message: Message) => messageCache.indices.history.putNewestMessage(message));
-          });
-          messageCache.put(data.messages);
+          this.messageService.pushMessages(data.messages);
           dialogCache.put(data.dialogs);
         }
       } finally {

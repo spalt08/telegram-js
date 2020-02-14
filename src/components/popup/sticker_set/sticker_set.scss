@@ -1,0 +1,16 @@
+.popup-sticker-set {
+  width: 400px;
+  min-height: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-height: 400px;
+  overflow: auto;
+
+  &__loading {
+    width: 30px;
+    height: 30px;
+
+    & circle { stroke: #4ea4f5; }
+  }
+}

@@ -1,7 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { ClientError } from 'client/worker.types';
-import { Document, Peer, MessageFilter } from 'cache/types';
+import { Document, Peer, MessageFilter, StickerSet } from 'cache/types';
 import { peerToInputPeer } from 'cache/accessors';
 import { messageCache } from 'cache';
 import MainService from './main';
@@ -14,7 +14,7 @@ export default class MediaService {
   recentStickers = new BehaviorSubject<Document[]>([]);
 
   /** Stickers Packs */
-  stickerSets = new BehaviorSubject([]);
+  stickerSets = new BehaviorSubject<StickerSet[]>([]);
 
   mediaLoading: Record<string, boolean> = {};
 
