@@ -5,10 +5,10 @@ import roundButton from 'components/ui/round_button/round_button';
 import { Peer } from 'cache/types';
 import { profileAvatar, profileTitle } from 'components/profile';
 import { onlineStatus } from 'components/ui';
-import { close, edit, more } from '../../../../icons';
+import { close, edit, more } from 'components/icons';
 import peerInfo from './peer_info';
 import './info_panel.scss';
-import mediaPanel from './media_panel';
+import sharedMediaPanel from './shared_media';
 
 function hideMyInfo(peer: Peer, node: Node) {
   return (peer._ === 'peerUser' && peer.user_id === auth.userID)
@@ -28,7 +28,7 @@ export default function infoPanel(peer: Peer) {
       div`.infoPanel__name`(profileTitle(peer, true)),
       hideMyInfo(peer, div`.infoPanel__status`(onlineStatus(peer))),
       hideMyInfo(peer, peerInfo(peer)),
-      mediaPanel(peer),
+      sharedMediaPanel(peer),
     )
   );
 }

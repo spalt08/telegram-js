@@ -1,39 +1,79 @@
 import { Peer, Message } from 'cache/types';
 import { div } from 'core/html';
+import { VirtualizedList } from 'components/ui';
+import { BehaviorSubject } from 'rxjs';
+import { materialSpinner } from 'components/icons';
 import { media } from 'services';
 import { messageCache } from 'cache';
 import { useObservable } from 'core/hooks';
-import { unmountChildren, mount, listen } from 'core/dom';
+import { messageToId } from 'helpers/api';
+import { unmount, mount } from 'core/dom';
 import photoPreview from 'components/media/photo/preview';
-import './media_panel.scss';
+import { getAttributeVideo } from 'helpers/files';
+import videoPreview from 'components/media/video/preview';
+
+const mediaRowRenderer = (ids: string, peer: Peer): HTMLDivElement => {
+  const messages = ids.split('+');
+  const container = div`.shared-media__mediarow`();
+
+  for (let i = 0; i < messages.length; i++) {
+    const message = messageCache.get(messages[i]);
+    const element = div`.shared-media__mediaitem`();
+
+    // photo
+    if (message && message._ === 'message' && message.media._ === 'messageMediaPhoto') {
+      const photo = photoPreview(message.media.photo, peer, message, { fit: 'cover', width: 120, height: 120 });
+      if (photo) mount(element, photo);
+    }
+
+    // video
+    if (message && message._ === 'message' && message.media._ === 'messageMediaDocument' && getAttributeVideo(message.media.document)) {
+      const photo = videoPreview(message.media.document, { fit: 'cover', width: 120, height: 120 });
+      if (photo) mount(element, photo);
+    }
+
+    mount(container, element);
+  }
+
+  return container;
+};
 
 export default function mediaPanel(peer: Peer) {
-  const container = div`.mediaPanel`();
+  let loader: HTMLElement | undefined = div`.shared-media__loader`(materialSpinner());
+  const container = div`.shared-media__item`(loader);
 
-  const grid = div`.mediaPanel__grid`();
-  mount(container, grid);
+  const loadMore = () => {
+    media.loadMedia(peer, messageCache.indices.sharedMedia.getEarliestPeerMedia(peer)?.id);
+  };
 
-  listen(container, 'scroll', () => {
-    if (container.scrollTop + container.offsetHeight > container.scrollHeight - 300) {
-      media.loadMedia(peer, messageCache.indices.sharedMedia.getEarliestPeerMedia(peer)?.id);
-    }
-  }, { passive: true, capture: true });
+  const items = new BehaviorSubject<string[]>([]);
+  const list = new VirtualizedList({
+    items,
+    pivotBottom: false,
+    onReachBottom: loadMore,
+    renderer: (id: string) => mediaRowRenderer(id, peer),
+  });
 
   media.loadMedia(peer);
 
-  let prevMessages: Message[];
+  useObservable(container, messageCache.indices.sharedMedia.getPeerMedia(peer), (messages: Message[]) => {
+    if (messages.length === 0) return;
 
-  useObservable(grid, messageCache.indices.sharedMedia.getPeerMedia(peer), (messages) => {
-    if (prevMessages !== messages) {
-      prevMessages = messages;
-      unmountChildren(grid);
-      messages.forEach((message) => {
-        if (message?._ === 'message' && message.media._ === 'messageMediaPhoto') {
-          const el = photoPreview(message.media.photo, peer, message, { fit: 'cover', showLoader: false, width: 100, height: 100 });
-          if (el) mount(grid, el);
-        }
-      });
+    if (loader) {
+      unmount(loader);
+      mount(container, list.container);
+      loader = undefined;
     }
+
+    const ids = messages.map((message) => messageToId(message));
+    const nextItems = [];
+
+    // group by 3
+    for (let i = 0; i < ids.length; i += 3) {
+      nextItems.push(ids.slice(i, i + 3).join('+'));
+    }
+
+    items.next(nextItems);
   });
 
   return container;
