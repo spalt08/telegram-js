@@ -16,12 +16,12 @@ import videoRenderer from 'components/media/video/video';
 import { idToColorCode } from 'cache/accessors';
 import { userIdToPeer } from 'helpers/api';
 import { isEmoji } from 'helpers/message';
+import { main } from 'services';
 import messageSerivce from './service';
 import messageReply from './reply';
 import messageDate from './date';
 import './message.scss';
 import replyMarkupRenderer from './reply_markup';
-import { main } from 'services';
 
 type MessageInterface = {
   from(): number,

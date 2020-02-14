@@ -1,4 +1,4 @@
-import { div } from 'core/html';
+import { div, input } from 'core/html';
 import { mount, listen } from 'core/dom';
 import { smile, attach } from 'components/icons';
 import { message, media } from 'services';
@@ -12,7 +12,8 @@ export default function messageInput() {
   const element = div`.msginput`();
   const textarea = messageTextarea({ onSend: message.sendMessage, maxHeight: 400 });
   const emojiIcon = div`.msginput__emoji`(smile());
-  const attchIcon = div`.msginput__attach`(attach());
+  const file = input({ className: 'msginput__attach-input', type: 'file', multiple: true });
+  const attchIcon = div`.msginput__attach`(attach(), file);
   const stickmojiPanelEl = stickMojiPanel({
     onSelectEmoji: (emoji: string) => {
       getInterface(textarea).insertText(emoji);
@@ -79,6 +80,12 @@ export default function messageInput() {
     }
 
     event.preventDefault();
+  });
+
+  listen(file, 'change', (event: Event) => {
+    if (event && event.target && event.target instanceof HTMLInputElement && event.target.files && event.target.files.length > 0) {
+      media.attachFiles(event.target.files);
+    }
   });
 
   return element;
