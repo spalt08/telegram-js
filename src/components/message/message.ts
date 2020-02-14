@@ -92,7 +92,7 @@ const renderMessage = (msg: MessageCommon, peer: Peer) => {
     const messageEl = msg.message ? div`.message__text`(formattedMessage(msg)) : nothing;
 
     return (
-      div`.message__bubble${extraClass}`(
+      div`.message__bubble.with-video${extraClass}`(
         reply,
         photoEl || nothing,
         messageEl,
