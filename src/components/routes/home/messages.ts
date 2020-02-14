@@ -1,12 +1,13 @@
 import { BehaviorSubject, combineLatest } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { div } from 'core/html';
-import { mount, unmount } from 'core/dom';
+import { distinctUntilChanged, map } from 'rxjs/operators';
+import { button, div } from 'core/html';
+import { listen, mount, unmount } from 'core/dom';
 import { useObservable } from 'core/hooks';
 import { message as service } from 'services';
 import { Direction as MessageDirection } from 'services/message/types';
 import message from 'components/message/message';
 import { sectionSpinner, VirtualizedList } from 'components/ui';
+import * as icons from 'components/icons';
 import messageInput from 'components/message/input/input';
 import { Peer } from 'cache/types';
 import { peerMessageToId } from 'helpers/api';
@@ -26,7 +27,18 @@ function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
 }
 
 export default function messages({ className = '' }: Props = {}) {
-  const historySection = div`.messages__history`();
+  const showDownButton = new BehaviorSubject(true); // todo: False initially
+
+  const downButton = button({
+    className: showDownButton.pipe(
+      distinctUntilChanged(),
+      map((show) => `messages__down ${show ? '' : '-hidden'}`),
+    ),
+    style: {
+      display: service.activePeer.pipe(map((peer) => peer ? '' : 'none')),
+    },
+  }, icons.down());
+  const historySection = div`.messages__history`(downButton);
   const element = div`.messages ${className}`(
     header(),
     historySection,
@@ -87,6 +99,8 @@ export default function messages({ className = '' }: Props = {}) {
       spinner = undefined;
     }
   });
+
+  listen(downButton, 'click', () => service.activePeer.value && service.selectPeer(service.activePeer.value, Infinity));
 
   return element;
 }

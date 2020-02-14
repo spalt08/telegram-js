@@ -29,6 +29,7 @@ export const pre = ElementFactory('pre');
 export const code = ElementFactory('code');
 export const a = ElementFactory('a');
 export const mark = ElementFactory('mark');
+export const button = ElementFactory('button');
 
 /**
  * Wrapper for any text children

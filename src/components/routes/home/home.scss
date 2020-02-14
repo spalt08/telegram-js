@@ -94,6 +94,7 @@
 
     &__spinner {
       position: absolute;
+      z-index: 10;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
@@ -106,6 +107,44 @@
           stroke: white;
           stroke-width: 1.5;
         }
+      }
+    }
+
+    &__down {
+      $size: 54px;
+      position: absolute;
+      bottom: 15px;
+      right: 20px;
+      z-index: 9;
+      width: $size;
+      height: $size;
+      padding: 0;
+      margin: 0;
+      background: #fff;
+      border: none;
+      border-radius: 100%;
+      cursor: pointer;
+      outline: none;
+      transition: all 550ms cubic-bezier(.44,1.59,.53,1);
+
+      > svg {
+        $icon-size: 40px;
+        width: $icon-size;
+        height: $icon-size;
+        position: absolute;
+        top: (($size - $icon-size) / 2 + 2px);
+        left: (($size - $icon-size) / 2);
+
+        path {
+          fill: #4EA4F5;
+        }
+      }
+
+      &.-hidden {
+        transition: all 250ms cubic-bezier(0.55, 0.055, 0.675, 0.19); // https://easings.net/en#easeInCubic
+        opacity: 0;
+        transform: translateY(60px);
+        pointer-events: none;
       }
     }
   }
