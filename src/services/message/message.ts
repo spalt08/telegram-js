@@ -2,10 +2,10 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import { first } from 'rxjs/operators';
 import client from 'client/client';
 import { Message, Peer, AnyUpdateMessage, AnyUpdateShortMessage, MessageCommon } from 'cache/types';
-import { messageCache, userCache } from 'cache';
+import { messageCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage, shortChatMessageToMessage } from 'helpers/api';
-import PeerService from 'services/peer';
+import UserService from '../user';
 import { Direction } from './types';
 import makeMessageChunk, { MessageChunkService, MessageHistoryChunk } from './message_chunk';
 
@@ -30,23 +30,23 @@ export default class MessagesService {
 
   protected nextChunk?: MessageChunkService;
 
-  constructor(private peerService: PeerService) {
+  constructor(private userService: UserService) {
     client.updates.on('updateNewMessage', (update: AnyUpdateMessage) => {
-      this.handleMessagePush(update.message);
+      this.pushMessages([update.message]);
     });
 
     client.updates.on('updateShortMessage', (update: AnyUpdateShortMessage) => {
       const message = shortMessageToMessage(client.getUserID(), update);
-      this.handleMessagePush(message);
+      this.pushMessages([message]);
     });
 
     client.updates.on('updateShortChatMessage', (update: AnyUpdateShortMessage) => {
       const message = shortChatMessageToMessage(update);
-      this.handleMessagePush(message);
+      this.pushMessages([message]);
     });
 
     client.updates.on('updateNewChannelMessage', (update: AnyUpdateMessage) => {
-      this.handleMessagePush(update.message);
+      this.pushMessages([update.message]);
     });
 
     client.updates.on('updateDeleteMessages', (update: any) => {
@@ -58,13 +58,6 @@ export default class MessagesService {
       update.messages.forEach((messageId: number) => messageCache.remove(
         peerMessageToId({ _: 'peerChannel', channel_id: update.channel_id }, messageId),
       ));
-    });
-
-    client.updates.on('updateUserStatus', (update: any) => {
-      const user = userCache.get(update.user_id);
-      if (user) {
-        userCache.put({ ...user, status: update.status });
-      }
     });
   }
 
@@ -172,8 +165,6 @@ export default class MessagesService {
         this.loadingNextChunk.next(false);
       }
     }
-
-    this.peerService.loadFullInfo(peer);
   }
 
   loadMoreHistory(direction: Direction.Newer | Direction.Older) {
@@ -182,13 +173,21 @@ export default class MessagesService {
     }
   }
 
-  protected handleMessagePush(message: Message) {
-    if (message._ === 'messageEmpty') {
-      return;
-    }
-
-    // todo: Load the user if not loaded
-    messageCache.indices.history.putNewestMessage(message);
+  /**
+   * Call this method instead of writing directly to messageCache.indices.history.putNewestMessage.
+   *
+   * The messages may have random peers and order.
+   */
+  pushMessages(messages: Message[]) {
+    this.userService.loadMissingMessageSenders(messages, () => {
+      messageCache.batchChanges(() => {
+        messages.forEach((message) => {
+          if (message._ !== 'messageEmpty') {
+            messageCache.indices.history.putNewestMessage(message);
+          }
+        });
+      });
+    });
   }
 
   protected setCurrentChunk(chunk: MessageChunkService, focusMessageId?: number, focusDirection = Direction.Around) {
