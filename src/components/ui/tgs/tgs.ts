@@ -1,23 +1,7 @@
 import lottiePlayer, { AnimationItem } from 'lottie-web';
-import utils from 'client/utils';
+import * as utils from 'client/utils';
 import { div } from 'core/html';
 import { useInterface, useOnUnmount, useOnMount } from 'core/hooks';
-
-const load = (url: string, cb: (json: any) => void) => {
-  const xhr = new XMLHttpRequest();
-
-  xhr.open('GET', url, true);
-  xhr.responseType = 'arraybuffer';
-  xhr.send();
-
-  xhr.onreadystatechange = () => {
-    if (xhr.readyState === 4 && xhr.status === 200) {
-      utils.ungzip(xhr.response, (data: string) => {
-        cb(JSON.parse(data));
-      });
-    }
-  };
-};
 
 interface Props {
   src: string,
@@ -33,7 +17,7 @@ export default function tgs({ src, className, autoplay = true, loop = false }: P
   const container = div({ className });
 
   if (typeof src === 'string') {
-    load(src, (animationData: any) => {
+    utils.loadTgs(src, (animationData: any) => {
       animation = lottiePlayer.loadAnimation({
         container,
         loop,

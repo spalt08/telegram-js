@@ -165,7 +165,7 @@ function uploadFile(id: string, file: File) {
 /**
  * Process worker message
  */
-function process(message: WorkerMessage) {
+function processMessage(message: WorkerMessage) {
   const { payload, type, id } = message;
 
   if (type === 'init') {
@@ -199,7 +199,7 @@ function process(message: WorkerMessage) {
     client.updates.fetch();
 
     while (pending.length > 0) {
-      process(pending.shift()!);
+      processMessage(pending.shift()!);
     }
   }
 
@@ -263,8 +263,40 @@ function process(message: WorkerMessage) {
       break;
     }
 
+    /*
     case 'ungzip': {
       resolve(id, type, inflate(payload, { to: 'string' }));
+      break;
+    }
+     */
+
+    case 'load_tgs': {
+      const xhr = new XMLHttpRequest();
+
+      xhr.open('GET', payload, true);
+      xhr.responseType = 'arraybuffer';
+      xhr.send();
+
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          let parsedData: object = {};
+          if (xhr.status === 200) {
+            try {
+              parsedData = JSON.parse(inflate(xhr.response, { to: 'string' }));
+            } catch (error) {
+              // eslint-disable-next-line no-console
+              console.error(error);
+            }
+          } else {
+            // eslint-disable-next-line no-lonely-if
+            if (process.env.NODE_ENV === 'development') {
+              // eslint-disable-next-line no-console
+              console.error(`Failed to download a TGS from ${payload}`);
+            }
+          }
+          resolve(id, type, parsedData);
+        }
+      };
       break;
     }
 
@@ -283,7 +315,7 @@ function process(message: WorkerMessage) {
 // Respond to message from parent thread
 ctx.addEventListener('message', (event) => {
   if (event.data && event.data.type) {
-    process(event.data);
+    processMessage(event.data);
   }
 });
 
