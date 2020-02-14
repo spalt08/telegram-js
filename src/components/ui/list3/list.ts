@@ -465,11 +465,9 @@ export class VirtualizedList {
     //   && this.offsets[this.topElement] + this.heights[this.topElement] > this.scrollTop) return;
 
     if (this.cfg.focusFromBottom) {
-      const scrollBottom = this.scrollHeight - this.viewport.height - this.scrollTop;
-
       for (let i = this.last; i >= this.first; i--) {
         const item = this.current[i];
-        if (this.offsets[item] >= scrollBottom) {
+        if (this.offsets[item] >= this.scrollTop + this.viewport.height) {
           this.topElement = this.current[i];
         } else {
           break;
