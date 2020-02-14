@@ -58,43 +58,53 @@
   &__content {
     flex: 1 50%;
     overflow: hidden;
-    background: #E6EBEE;
 
     @include respond-to(small) {
       display: none;
     }
+  }
 
-    .messages {
-      width: 100%;
-      height: 100%;
-      background-color: rgb(183, 191, 152);
-      background-image: url(~assets/chamomile-blurred.jpg);
-      background-size: cover;
-      background-position: center center;
+  .messages {
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: rgb(183, 191, 152);
+    background-image: url(~assets/chamomile-blurred.jpg);
+    background-size: cover;
+    background-position: center center;
+
+    > * {
+      flex: none;
+    }
+
+    &__history {
+      flex: auto;
+      min-height: 0;
       display: flex;
       flex-direction: column;
       position: relative;
+    }
 
-      &__history {
-        flex: 1 50%;
-        z-index: 0;
-        mask-image: linear-gradient(to top, transparent, #000 12px);
-      }
+    &__list {
+      flex: auto;
+      z-index: 0;
+      mask-image: linear-gradient(to top, transparent, #000 12px);
+    }
 
-      &__spinner {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(0, 0, 0, 0.3);
-        border-radius: 50%;
+    &__spinner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 50%;
 
-        svg {
-          transform: scale(0.97);
-          circle {
-            stroke: white;
-            stroke-width: 1.5;
-          }
+      svg {
+        transform: scale(0.97);
+        circle {
+          stroke: white;
+          stroke-width: 1.5;
         }
       }
     }

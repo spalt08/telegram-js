@@ -12,6 +12,10 @@ import { Peer } from 'cache/types';
 import { peerMessageToId } from 'helpers/api';
 import header from './header/header';
 
+interface Props {
+  className?: string;
+}
+
 function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
   const { length } = messageIds;
   const reversed = new Array(length);
@@ -21,9 +25,11 @@ function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
   return reversed;
 }
 
-export default function messages() {
-  const element = div`.messages`(
+export default function messages({ className = '' }: Props = {}) {
+  const historySection = div`.messages__history`();
+  const element = div`.messages ${className}`(
     header(),
+    historySection,
     messageInput(),
   );
   let spinner: Node | undefined;
@@ -35,7 +41,7 @@ export default function messages() {
     )));
 
   const scroll: VirtualizedList = new VirtualizedList({
-    className: 'messages__history',
+    className: 'messages__list',
     items: itemsSubject,
     pivotBottom: true,
     threshold: 2,
@@ -45,7 +51,7 @@ export default function messages() {
     onReachBottom: () => service.loadMoreHistory(MessageDirection.Newer),
   });
 
-  mount(element, scroll.container, element.lastElementChild!);
+  mount(historySection, scroll.container);
 
   useObservable(element, service.activePeer, () => scroll.clear());
 
@@ -74,7 +80,7 @@ export default function messages() {
 
   useObservable(element, showSpinnerObservable, (show) => {
     if (show && !spinner) {
-      mount(element, spinner = sectionSpinner({ className: 'messages__spinner', useBackdrop: true }));
+      mount(historySection, spinner = sectionSpinner({ className: 'messages__spinner', useBackdrop: true }));
     } else if (!show && spinner) {
       unmount(spinner);
       spinner = undefined;
