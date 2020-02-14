@@ -11,6 +11,10 @@ import { PopupInterface } from './interface';
 export default function popupCommon(...children: Node[]) {
   const element = div`.popup.default.animated`(...children);
 
+  let appeared = false;
+
+  listenOnce(element, 'animationend', () => appeared = true);
+
   const remove = () => {
     if (hasInterface<PopupInterface>(element.parentElement)) {
       getInterface(element.parentElement).fade();
@@ -27,6 +31,8 @@ export default function popupCommon(...children: Node[]) {
   });
 
   useListenWhileMounted(element, window, 'click', (event: MouseEvent) => {
+    if (!appeared) return;
+
     const rect = element.getBoundingClientRect();
 
     if (event.pageX < rect.left || event.pageX > rect.left + rect.width || event.pageY < rect.top || event.pageY > rect.top + rect.height) {

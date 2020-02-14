@@ -543,6 +543,7 @@ export type UploadFile = {
 export type DocumentAttributeSticker = {
   _: 'documentAttributeSticker',
   alt: string,
+  stickerset: InputStickerSet,
 };
 
 /**

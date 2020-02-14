@@ -98,7 +98,6 @@ export default class SendMediaPopup {
   };
 
   send = () => {
-    console.log('send', this.textarea.value, this.inputFiles);
     if (this.isSending) return;
     if (this.inputFiles.length !== this.count) return;
 

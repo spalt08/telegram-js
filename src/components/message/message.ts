@@ -21,6 +21,7 @@ import messageReply from './reply';
 import messageDate from './date';
 import './message.scss';
 import replyMarkupRenderer from './reply_markup';
+import { main } from 'services';
 
 type MessageInterface = {
   from(): number,
@@ -103,10 +104,12 @@ const renderMessage = (msg: MessageCommon, peer: Peer) => {
 
   // with sticker
   if (msg.media._ === 'messageMediaDocument' && getAttributeSticker(msg.media.document)) {
+    const attr = getAttributeSticker(msg.media.document);
+
     return (
       div`.message__bubble.only-sticker`(
         reply,
-        stickerRenderer(msg.media.document, { size: '200px', autoplay: true }),
+        stickerRenderer(msg.media.document, { size: '200px', autoplay: true, onClick: () => attr && main.showPopup('stickerSet', attr.stickerset) }),
         date,
       )
     );
@@ -160,7 +163,7 @@ const renderMessage = (msg: MessageCommon, peer: Peer) => {
     );
   }
 
-  console.log(msg.media);
+  // console.log(msg.media);
 
   // fallback
   return (

@@ -4,6 +4,7 @@ import { useObservable, useInterface } from 'core/hooks';
 import { unmount, mount } from 'core/dom';
 import photoPopup from './photo/photo';
 import SendMediaPopup from './send_media/send_media';
+import stickerSetPopup from './sticker_set/sticker_set';
 import './popup.scss';
 
 /**
@@ -14,6 +15,7 @@ export default function popup() {
   let element: HTMLElement | undefined;
 
   useObservable(wrapper, main.popup, (type: string) => {
+    console.log('popup', type);
     if (element) unmount(element);
     if (wrapper.classList.contains('closing')) wrapper.classList.remove('closing');
 
@@ -33,6 +35,11 @@ export default function popup() {
         mount(wrapper, element = sendMedia.container);
         break;
       }
+
+      case 'stickerSet':
+        wrapper.classList.add('opened');
+        mount(wrapper, element = stickerSetPopup(main.popupCtx));
+        break;
 
       default:
         throw new Error('Unknown popup');

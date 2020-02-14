@@ -2,7 +2,8 @@ import { Document } from 'cache/types';
 import { div, text, nothing, video } from 'core/html';
 import { getDocumentLocation, getAttributeVideo } from 'helpers/files';
 import media from 'client/media';
-import { unmount, mount, listenOnce } from 'core/dom';
+import { unmount, mount, listenOnce, listen } from 'core/dom';
+import { useOnMount } from 'core/hooks';
 import photoRenderer, { PhotoOptions } from '../photo/photo';
 import './video.scss';
 
@@ -46,7 +47,6 @@ export default function videoRenderer(document: Document, photoOptions: PhotoOpt
 
 
   const removePreload = () => {
-    console.log('loaded');
     if (progressEl) unmount(progressEl);
 
     if (thumbnailEl) {
@@ -56,6 +56,14 @@ export default function videoRenderer(document: Document, photoOptions: PhotoOpt
   };
 
   videoEl.onplay = removePreload;
+
+  useOnMount(container, () => {
+    if (videoEl.src) videoEl.play();
+  });
+
+  listen(videoEl, 'mouseenter', () => {
+    if (videoEl.src && videoEl.paused) videoEl.play();
+  });
 
   if (cached) {
     videoEl.src = cached;
