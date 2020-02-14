@@ -58,9 +58,11 @@ export default function messages({ className = '' }: Props = {}) {
     pivotBottom: true,
     threshold: 2,
     batch: 35,
+    focusFromBottom: true,
     renderer: (id: string) => message(id, service.activePeer.value!, (mid: string) => scroll.pendingRecalculate.push(mid)),
     onReachTop: () => service.loadMoreHistory(MessageDirection.Older),
     onReachBottom: () => service.loadMoreHistory(MessageDirection.Newer),
+    onFocus: (id: string) => console.log('inside focus', id),
   });
 
   mount(historySection, scroll.container);
@@ -70,6 +72,7 @@ export default function messages({ className = '' }: Props = {}) {
   // Handle message focus
   useObservable(element, service.focusMessage, (focus) => {
     if (service.activePeer.value) {
+      console.log('outside focus', focus);
       scroll.cfg.highlightFocused = focus.highlight || false;
       scroll.focus(
         peerMessageToId(service.activePeer.value, focus.id),
