@@ -9,12 +9,12 @@
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0);
-  transition: background-color .2s linear;
+  transition: background-color .2s  ease-out;
   z-index: 100;
 
   &.opened {
     display: flex;
-    animation: popupFade .2s linear;
+    animation: popupFade .2s  ease-out;
     background-color: rgba(0, 0, 0, .9);
   }
 
@@ -25,6 +25,20 @@
 }
 
 .popup {
+  &.default {
+    background-color: #ffffff;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  &.animated {
+    animation: popupShowFromBottom .2s ease-out;
+  }
+
+  &.removing {
+    animation: popupHideToBottom forwards .2s ease-out;
+  }
+
   &.fullscreen {
     width: 100%;
     height: 100%;
@@ -33,10 +47,54 @@
     align-items: center;
     position: relative;
   }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+  }
+
+  &__title {
+    font-size: 1.3rem;
+    font-weight: 500;
+  }
+
+  &__content {
+    padding: 20px;
+  }
+
+  &__header + &__content {
+    padding-top: 0;
+  }
+
+  &__close {
+    width: 30px;
+    height: 30px;
+    background-image: url(~components/icons/close.svg);
+    background-repeat: no-repeat;
+    background-size: 24px auto;
+    margin-left: 10px;
+    cursor: pointer;
+  }
 }
 
 @keyframes popupFade {
   from {
     background-color: rgba(0, 0, 0, 0);
+  }
+}
+
+@keyframes popupShowFromBottom {
+  from {
+    transform: translate(0, 100%);
+    opacity: 0;
+  }
+}
+
+@keyframes popupHideToBottom {
+  to {
+    transform: translate(0, 100%);
+    opacity: 0;
   }
 }

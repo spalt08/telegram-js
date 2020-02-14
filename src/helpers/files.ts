@@ -99,8 +99,8 @@ export function getAttributeAnimated(document: Document) {
 }
 
 const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-export function getReadableSize(document: Document): string {
-  let { size } = document;
+export function getReadableSize(fsize: number): string {
+  let size = fsize;
   let sizePostfixIndex = 0;
 
   while (size > 1024) {

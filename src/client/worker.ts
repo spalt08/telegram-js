@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-globals */
 
 import { inflate } from 'pako/lib/inflate';
-import { Client, TypeLanguage, TLConstructor } from '../../packages/mtproto-js/src';
+import { Client, TypeLanguage, TLConstructor, Bytes } from '../../packages/mtproto-js/src';
 import { API_ID, API_HASH, APP_VERSION } from '../const/api';
 import { WorkerMessage, ClientError } from './worker.types';
 import { UploadFile } from '../cache/types';
@@ -24,6 +24,13 @@ const pending: WorkerMessage[] = [];
  */
 function resolve(id: string, type: string, payload: any) {
   ctx.postMessage({ id, type, payload } as WorkerMessage);
+}
+
+/**
+ * Send event
+ */
+function send(type: string, payload: any) {
+  ctx.postMessage({ type, payload } as WorkerMessage);
 }
 
 /**
@@ -90,6 +97,70 @@ function processFilePart(
   cb(url);
 }
 
+const pendingFiles: Record<string, {
+  data: Bytes,
+  size: number,
+  name: string,
+  partSize: number,
+  total: number,
+  big: boolean,
+}> = {};
+const reader = new FileReaderSync();
+/**
+ * File managers: saveFilePart
+ */
+function saveFilePart(id: string, part: number, cb: () => void) {
+  if (!client) throw new Error('Client is undefined');
+  if (!pendingFiles[id]) return;
+
+  const uploaded = pendingFiles[id].partSize * part;
+  const remaining = Math.min(pendingFiles[id].partSize, pendingFiles[id].size - uploaded);
+
+  const payload = {
+    file_id: id,
+    file_part: part,
+    bytes: pendingFiles[id].data.slice(uploaded, uploaded + remaining).hex,
+  };
+
+  client.call(pendingFiles[id].big ? 'upload.saveFilePartBig' : 'upload.saveFilePart', payload, { thread: 2 }, (err, res) => {
+    if (err || !res) throw new Error(`Error while uploadig file: ${JSON.stringify(err)}`);
+
+    send('upload_progress', { id, uploaded: uploaded + remaining, total: pendingFiles[id].size });
+
+    if (part < pendingFiles[id].total - 1) saveFilePart(id, part + 1, cb);
+    else cb();
+  });
+}
+
+function uploadFile(id: string, file: File) {
+  let partSize = 262144; // 256 Kb
+
+  if (file.size > 67108864) {
+    partSize = 524288;
+  } else if (file.size < 102400) {
+    partSize = 32768;
+  }
+
+  pendingFiles[id] = {
+    data: new Bytes(reader.readAsArrayBuffer(file)),
+    size: file.size,
+    name: file.name,
+    partSize, // 256kb
+    total: Math.ceil(file.size / partSize),
+    big: file.size > 1024 * 1024 * 10,
+  };
+
+  saveFilePart(id, 0, () => {
+    const inputFile = {
+      _: pendingFiles[id].big ? 'inputFileBig' : 'inputFile',
+      id,
+      parts: pendingFiles[id].total,
+      name: pendingFiles[id].name,
+    };
+
+    send('upload_ready', { id, inputFile });
+  });
+}
 
 /**
  * Process worker message
@@ -194,6 +265,11 @@ function process(message: WorkerMessage) {
 
     case 'ungzip': {
       resolve(id, type, inflate(payload, { to: 'string' }));
+      break;
+    }
+
+    case 'upload_file': {
+      uploadFile(payload.id, payload.file);
       break;
     }
 

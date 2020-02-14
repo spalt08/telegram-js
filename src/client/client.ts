@@ -1,6 +1,6 @@
 import ClientWorker from './worker';
 import { WorkerMessage, ClientError } from './worker.types';
-import { InputFileLocation } from '../cache/types';
+import { InputFileLocation, InputFile } from '../cache/types';
 
 /**
  * Worker callbacks
@@ -9,6 +9,8 @@ type RequestResolver = (err: ClientError | null, res?: any) => void;
 type UpdateResolver = (res?: any) => void;
 type AnyResolver = (...payload: unknown[]) => void;
 type EventResolver = (event: any) => void;
+export type UploadResolver = (input: InputFile) => void;
+export type UploadProgressResolver = (uploaded: number, total: number) => void;
 
 /**
  * Vars
@@ -25,6 +27,8 @@ const svc = {
   baseDC: dc,
   meta: JSON.parse(localStorage.getItem('meta') || '{}'),
 };
+
+export const uploadingFiles: Record<string, { ready: UploadResolver, progress?: UploadProgressResolver }> = {};
 
 /**
  * Init client
@@ -145,8 +149,23 @@ worker.onmessage = (event: MessageEvent) => {
       emit('networkChanged', data.payload);
       break;
 
+    case 'upload_progress': {
+      const resolvers = uploadingFiles[data.payload.id];
+      if (resolvers && resolvers.progress) resolvers.progress(data.payload.uploaded, data.payload.total);
+      break;
+    }
+
+    case 'upload_ready': {
+      const resolvers = uploadingFiles[data.payload.id];
+      if (resolvers) {
+        resolvers.ready(data.payload.inputFile);
+        delete uploadingFiles[data.payload.id];
+      }
+      break;
+    }
+
     default:
-      if (quene[event.data.id]) {
+      if (event.data.id && quene[event.data.id]) {
         quene[event.data.id](data.payload);
         delete quene[event.data.id];
       }

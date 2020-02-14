@@ -5,11 +5,11 @@ import './input_textarea.scss';
 import { useInterface } from 'core/hooks';
 
 type Props = {
-  onSend: (message: string) => void;
+  onSend: (message: string) => void,
+  maxHeight: number
 };
 
-export default function messageTextarea({ onSend }: Props) {
-  const maxHeight = 400;
+export default function messageTextarea({ onSend, maxHeight = 400 }: Props) {
   const lineHeight = 20;
   const element = textarea({ className: 'message-text', placeholder: 'Message' });
 
@@ -18,7 +18,7 @@ export default function messageTextarea({ onSend }: Props) {
   let frameNumber: number | undefined;
 
   listen(element, 'keypress', (event: KeyboardEvent) => {
-    if (event.keyCode === KeyboardKeys.ENTER) {
+    if (event.keyCode === KeyboardKeys.ENTER && !event.shiftKey) {
       event.preventDefault();
       onSend(element.value.trim());
       element.value = '';

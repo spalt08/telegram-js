@@ -47,4 +47,21 @@
 
     .message.out & { color: #429f47; }
   }
+
+  &__progress {
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(0, 0, 0, 0.1);
+    margin-top: 5px;
+    background: rgb(241, 241, 241);
+
+    &-bar {
+      min-width: 4px;
+      width: 0%;
+      height: 100%;
+      border-radius: 2px;
+      background: #1DA1F1;
+      transition: width .2s linear;
+    }
+  }
 }

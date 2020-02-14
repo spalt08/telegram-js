@@ -32,11 +32,17 @@ export default class MainService {
     client.call('account.updateStatus', { offline: false }, () => {});
   }
 
+  showPopup(type: 'sendMedia'): void;
   showPopup(type: 'photo', ctx: { rect: DOMRect, photo: Photo, peer: Peer, message: Message }): void;
-  showPopup(type: string, ctx: any): void {
+  showPopup(type: string, ctx?: any): void {
     this.popupCtx = ctx;
     this.popup.next(type);
   }
+
+  closePopup = () => {
+    this.popupCtx = undefined;
+    this.popup.next('');
+  };
 
   setRightSidebarPanel(panel: RightSidebarPanel) {
     this.rightSidebarPanel.next(panel);

@@ -1,8 +1,8 @@
 import { div } from 'core/html';
 import { mount, listen } from 'core/dom';
 import { smile, attach } from 'components/icons';
-import { message } from 'services';
-import { getInterface } from 'core/hooks';
+import { message, media } from 'services';
+import { getInterface, useListenWhileMounted } from 'core/hooks';
 import { Document } from 'cache/types';
 import stickMojiPanel from './input_stickmoji';
 import messageTextarea from './input_textarea';
@@ -68,6 +68,18 @@ export default function messageInput() {
 
   mount(element, container);
   container.classList.remove('hidden');
+
+  // upload with dragndrop
+  useListenWhileMounted(element, document, 'dragenter', (event: Event) => event.preventDefault());
+  useListenWhileMounted(element, document, 'dragleave', (event: Event) => event.preventDefault());
+  useListenWhileMounted(element, document, 'dragover', (event: Event) => event.preventDefault());
+  useListenWhileMounted(element, document, 'drop', (event: DragEvent) => {
+    if (event.dataTransfer && event.dataTransfer.files.length > 0) {
+      media.attachFiles(event.dataTransfer.files);
+    }
+
+    event.preventDefault();
+  });
 
   return element;
 }

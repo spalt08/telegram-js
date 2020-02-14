@@ -2,7 +2,8 @@ import { div } from 'core/html';
 import { main } from 'services';
 import { useObservable, useInterface } from 'core/hooks';
 import { unmount, mount } from 'core/dom';
-import photo from './photo/photo';
+import photoPopup from './photo/photo';
+import SendMediaPopup from './send_media/send_media';
 import './popup.scss';
 
 /**
@@ -14,6 +15,7 @@ export default function popup() {
 
   useObservable(wrapper, main.popup, (type: string) => {
     if (element) unmount(element);
+    if (wrapper.classList.contains('closing')) wrapper.classList.remove('closing');
 
     switch (type) {
       case '':
@@ -22,8 +24,15 @@ export default function popup() {
 
       case 'photo':
         wrapper.classList.add('opened');
-        mount(wrapper, element = photo(main.popupCtx));
+        mount(wrapper, element = photoPopup(main.popupCtx));
         break;
+
+      case 'sendMedia': {
+        const sendMedia = new SendMediaPopup();
+        wrapper.classList.add('opened');
+        mount(wrapper, element = sendMedia.container);
+        break;
+      }
 
       default:
         throw new Error('Unknown popup');

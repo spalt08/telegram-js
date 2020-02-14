@@ -610,3 +610,19 @@ export type Messages = ({
   chats: Chat[],
   users: User[],
 } | MessagesNotModified;
+
+/**
+ * Ref: https://core.telegram.org/type/InputFile
+ */
+export type InputFile = {
+  _: 'inputFile',
+  id: string,
+  parts: number,
+  name: string,
+  md5_checksum: string,
+} | {
+  _: 'inputFileBig',
+  id: string,
+  parts: number,
+  name: string,
+};

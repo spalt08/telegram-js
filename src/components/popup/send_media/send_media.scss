@@ -1,0 +1,35 @@
+.popup-send-media {
+  width: 320px;
+
+  & .document-file {
+    margin-bottom: 10px;
+
+    &:last-child { margin-bottom: 0; }
+  }
+
+  &__message {
+    border-top: 1px solid #dedfe2;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding-left: 20px;
+  }
+
+  &__btn {
+    width: 64px;
+    height: 54px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+
+    & path {
+      fill: #4ea4f5;
+    }
+
+    &.disabled path {
+      fill: #dedfe2;
+      cursor: default;
+    }
+  }
+}

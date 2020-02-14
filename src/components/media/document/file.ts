@@ -19,7 +19,7 @@ export default function documentFile(document: Document) {
     icon,
     div`.document-file__info`(
       div`.document-file__title`(text(filename)),
-      div`.document-file__size`(text(getReadableSize(document))),
+      div`.document-file__size`(text(getReadableSize(document.size))),
     ),
   );
 }

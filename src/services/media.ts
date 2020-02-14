@@ -4,6 +4,7 @@ import { ClientError } from 'client/worker.types';
 import { Document, Peer, MessageFilter } from 'cache/types';
 import { peerToInputPeer } from 'cache/accessors';
 import { messageCache } from 'cache';
+import MainService from './main';
 
 /**
  * Singleton service class for handling media-related queries
@@ -20,6 +21,15 @@ export default class MediaService {
   /** Hash values for sticker syc */
   stickerSetsHash = 0;
   recentStickersHash = 0;
+
+  /** Attached files for sending */
+  attachedFiles = new BehaviorSubject<FileList | undefined>(undefined);
+
+  main: MainService;
+
+  constructor(main: MainService) {
+    this.main = main;
+  }
 
   /**
    * Load installed sticker sets
@@ -85,4 +95,9 @@ export default class MediaService {
       this.mediaLoading = false;
     });
   }
+
+  attachFiles = (files: FileList) => {
+    this.attachedFiles.next(files);
+    if (this.main.popup.value !== 'sendMedia') this.main.showPopup('sendMedia');
+  };
 }

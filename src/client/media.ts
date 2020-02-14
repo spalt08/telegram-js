@@ -1,7 +1,7 @@
 import { InputFileLocation } from 'cache/types';
 import { locationToString } from 'helpers/files';
 import { fileCache } from 'cache';
-import { task } from './client';
+import { task, UploadResolver, UploadProgressResolver, uploadingFiles } from './client';
 
 /**
  * File download callback
@@ -59,7 +59,16 @@ function getFile(location: InputFileLocation, cb: MediaResolver, dc_id?: number,
   return id;
 }
 
+/** Upload file */
+function uploadFile(file: File, ready: UploadResolver, progress?: UploadProgressResolver) {
+  const id = (Math.floor(Math.random() * 0xFFFFFFFF).toString(16) + Math.floor(Math.random() * 0xFFFFFFFF).toString(16)).slice(-8);
+  task('upload_file', { id, file }, ready);
+
+  uploadingFiles[id] = { ready, progress };
+}
+
 export default {
   get: getFile,
   cached: getCachedFile,
+  upload: uploadFile,
 };
