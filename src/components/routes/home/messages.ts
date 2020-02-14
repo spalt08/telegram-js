@@ -51,7 +51,7 @@ export default function messages() {
 
   // Handle message focus
   useObservable(element, service.focusMessage, (focus) => {
-    if (focus && service.activePeer.value) {
+    if (service.activePeer.value) {
       scroll.focus(
         peerMessageToId(service.activePeer.value, focus.id),
         {

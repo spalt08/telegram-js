@@ -71,11 +71,12 @@ export default class MessagesService {
   /**
    * messageId values:
    * - number - message sequential id to scroll to;
-   * - undefined - scroll to the start of the history;
+   * - Infinity - scroll to the bottom of the history;
+   * - -Infinity - scroll to the top of the history;
+   * - undefined - don't scroll (stay as is);
    */
-  selectPeer(peer: Peer | null, messageId?: number) {
-    // eslint-disable-next-line no-param-reassign
-    messageId = messageId || Infinity;
+  selectPeer(peer: Peer | null, _messageId?: number) {
+    const messageId = _messageId === 0 ? Infinity : _messageId;
 
     const isPeerChanged = (this.activePeer.value && peerToId(this.activePeer.value)) !== (peer && peerToId(peer));
 
@@ -83,11 +84,13 @@ export default class MessagesService {
     let focusedMessageDirection = Direction.Around;
     if (isPeerChanged) {
       isChunkChanged = true;
-    } else if (this.currentChunk) {
+    } else if (this.currentChunk && messageId) {
       const messagePosition = this.currentChunk.getMessagePosition(messageId);
       if (messagePosition !== 0) {
         isChunkChanged = true;
-        focusedMessageDirection = messagePosition < 0 ? Direction.Older : Direction.Newer;
+        if (messagePosition !== null) {
+          focusedMessageDirection = messagePosition < 0 ? Direction.Older : Direction.Newer;
+        }
       }
     }
 
@@ -95,27 +98,26 @@ export default class MessagesService {
       this.activePeer.next(peer);
     }
 
-    if (peer && messageId !== Infinity) {
-      this.focusMessage.next({ id: messageId, direction: focusedMessageDirection });
-    }
+    // When you click different found messages fast, the history becomes empty occasionally. Todo: investigate.
 
     if (isChunkChanged) {
       if (peer) {
         if (!isPeerChanged && this.currentChunk) {
           // Keep the current chunk until the next is loaded
           // Don't recreate the next chunk if it contains the target message
-          if (!this.nextChunk || this.nextChunk.getMessagePosition(messageId) !== 0) {
+          if (!this.nextChunk || this.nextChunk.getMessagePosition(messageId!) !== 0) {
             if (this.nextChunk) {
               this.nextChunk.destroy();
             }
-            this.nextChunk = makeMessageChunk(peer, messageId);
+            const nextChunk = makeMessageChunk(peer, messageId!);
+            this.nextChunk = nextChunk;
             this.loadingNextChunk.next(true);
 
             // Wait until the next chunk is loaded to make it the be the current chunk
-            this.nextChunk.history
+            nextChunk.history
               .pipe(first(({ ids, loadingNewer, loadingOlder }) => (ids.length >= 3 || !(loadingNewer || loadingOlder))))
               .subscribe(() => {
-                if (!this.nextChunk) {
+                if (nextChunk !== this.nextChunk) {
                   if (process.env.NODE_ENV === 'development') {
                     // eslint-disable-next-line no-console
                     console.error(
@@ -128,10 +130,9 @@ export default class MessagesService {
                 if (this.currentChunk) {
                   this.currentChunk.destroy();
                 }
-                this.currentChunk = this.nextChunk;
                 this.nextChunk = undefined;
-                this.currentChunk.history.subscribe(this.history);
                 this.loadingNextChunk.next(false);
+                this.setCurrentChunk(nextChunk, messageId, focusedMessageDirection);
               });
           }
         } else {
@@ -144,8 +145,7 @@ export default class MessagesService {
           if (this.currentChunk) {
             this.currentChunk.destroy();
           }
-          this.currentChunk = makeMessageChunk(peer, messageId);
-          this.currentChunk.history.subscribe(this.history);
+          this.setCurrentChunk(makeMessageChunk(peer, messageId || Infinity), messageId, focusedMessageDirection);
         }
       } else {
         // No peer – no chunks
@@ -160,11 +160,17 @@ export default class MessagesService {
         }
         this.history.next(emptyHistory);
       }
-    } else if (this.nextChunk) {
+    } else {
+      if (messageId) {
+        this.focusToMessage(messageId, focusedMessageDirection);
+      }
+
       // Remove the chunk in progress to not jump to it when it's loaded
-      this.nextChunk.destroy();
-      this.nextChunk = undefined;
-      this.loadingNextChunk.next(false);
+      if (this.nextChunk) {
+        this.nextChunk.destroy();
+        this.nextChunk = undefined;
+        this.loadingNextChunk.next(false);
+      }
     }
 
     this.peerService.loadFullInfo(peer);
@@ -182,6 +188,41 @@ export default class MessagesService {
     }
 
     messageCache.indices.history.putNewestMessage(message);
+  }
+
+  protected setCurrentChunk(chunk: MessageChunkService, focusMessageId?: number, focusDirection = Direction.Around) {
+    this.currentChunk = chunk;
+
+    if (focusMessageId) {
+      if (Number.isFinite(focusMessageId)) {
+        this.focusToMessage(focusMessageId, focusDirection);
+      } else {
+        // Wait for the messages to load to get the newest message id
+        chunk.history
+          .pipe(first(({ ids }) => ids.length > 0))
+          .subscribe(({ ids }) => {
+            this.focusToMessage(focusMessageId > 0 ? ids[0] : ids[ids.length - 1], focusDirection);
+          });
+      }
+    }
+
+    // Also takes the current history from the chunk and puts it to the service history immediately
+    chunk.history.subscribe(this.history);
+  }
+
+  protected focusToMessage(messageId: number, direction: Direction) {
+    const history = this.history.value;
+    if (messageId === Infinity) {
+      if (history.newestReached && history.ids.length) {
+        this.focusMessage.next({ id: history.ids[0], direction });
+      }
+    } else if (messageId === -Infinity) {
+      if (history.oldestReached && history.ids.length) {
+        this.focusMessage.next({ id: history.ids[history.ids.length - 1], direction });
+      }
+    } else {
+      this.focusMessage.next({ id: messageId, direction });
+    }
   }
 
   /** Load single message */

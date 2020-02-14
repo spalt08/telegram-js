@@ -13,8 +13,8 @@ export interface MessageHistoryChunk extends IdsChunk {
 export interface MessageChunkService {
   readonly history: BehaviorSubject<MessageHistoryChunk>;
 
-  // Returns <0 if the message is older than chunk, =0 if inside chunk, >0 if newer than chunk
-  getMessagePosition(messageId: number): number;
+  // Returns <0 if the message is older than chunk, =0 if inside chunk, >0 if newer than chunk, null when unknown.
+  getMessagePosition(messageId: number): number | null;
 
   loadMore(direction: Direction.Newer | Direction.Older): void;
 
