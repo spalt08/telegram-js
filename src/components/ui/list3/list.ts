@@ -15,6 +15,7 @@ type Props = {
   batch?: number,
   scrollBatch?: number,
   highlightFocused?: boolean,
+  focusFromBottom?: boolean,
   compare?: (left: string, right: string) => boolean,
   onFocus?: (item: string) => void,
   onReachTop?: () => void,
@@ -64,6 +65,7 @@ export class VirtualizedList {
     threshold: number,
     scrollBatch: number,
     highlightFocused: boolean,
+    focusFromBottom: boolean,
     compare?: (left: string, right: string) => boolean,
     onFocus?: (item: string) => void,
     onReachTop?: () => void,
@@ -123,6 +125,7 @@ export class VirtualizedList {
     scrollBatch = batch,
     pivotBottom = false,
     highlightFocused = true,
+    focusFromBottom = false,
     onFocus,
     onReachTop,
     onReachBottom,
@@ -140,6 +143,7 @@ export class VirtualizedList {
       onReachTop,
       onReachBottom,
       highlightFocused,
+      focusFromBottom,
     };
 
     // set initial viewport and handle its updates
@@ -460,12 +464,25 @@ export class VirtualizedList {
     //   && this.offsets[this.topElement] < this.scrollTop
     //   && this.offsets[this.topElement] + this.heights[this.topElement] > this.scrollTop) return;
 
-    for (let i = this.first; i <= this.last; i++) {
-      const item = this.current[i];
-      if (this.offsets[item] <= this.scrollTop) {
-        this.topElement = this.current[i];
-      } else {
-        break;
+    if (this.cfg.focusFromBottom) {
+      const scrollBottom = this.scrollHeight - this.viewport.height - this.scrollTop;
+
+      for (let i = this.last; i >= this.first; i--) {
+        const item = this.current[i];
+        if (this.offsets[item] >= scrollBottom) {
+          this.topElement = this.current[i];
+        } else {
+          break;
+        }
+      }
+    } else {
+      for (let i = this.first; i <= this.last; i++) {
+        const item = this.current[i];
+        if (this.offsets[item] <= this.scrollTop) {
+          this.topElement = this.current[i];
+        } else {
+          break;
+        }
       }
     }
 
