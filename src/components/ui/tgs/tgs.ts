@@ -1,23 +1,7 @@
 import lottiePlayer, { AnimationItem } from 'lottie-web';
-import utils from 'client/utils';
+import * as utils from 'client/utils';
 import { div } from 'core/html';
 import { useInterface, useOnUnmount, useOnMount } from 'core/hooks';
-
-const load = (url: string, cb: (json: any) => void) => {
-  const xhr = new XMLHttpRequest();
-
-  xhr.open('GET', url, true);
-  xhr.responseType = 'arraybuffer';
-  xhr.send();
-
-  xhr.onreadystatechange = () => {
-    if (xhr.readyState === 4 && xhr.status === 200) {
-      utils.ungzip(xhr.response, (data: string) => {
-        cb(JSON.parse(data));
-      });
-    }
-  };
-};
 
 interface Props {
   src: string,
@@ -27,38 +11,61 @@ interface Props {
 }
 
 export default function tgs({ src, className, autoplay = true, loop = false }: Props) {
-  let animation: AnimationItem & { currentFrame: number};
-  let delayedPlay = false;
+  let animation: AnimationItem & { currentFrame: number} | undefined;
+  let isMounted = false;
+  let shouldPlay = autoplay;
 
   const container = div({ className });
 
   if (typeof src === 'string') {
-    load(src, (animationData: any) => {
+    utils.loadTgs(src, (animationData: any) => {
       animation = lottiePlayer.loadAnimation({
         container,
         loop,
         animationData,
-        autoplay: autoplay || delayedPlay,
+        autoplay: isMounted && shouldPlay,
         renderer: 'canvas',
       }) as AnimationItem & { currentFrame: number};
     });
   }
 
-  useOnUnmount(container, () => animation && animation.stop());
-  useOnMount(container, () => autoplay && animation && animation.play());
+  useOnMount(container, () => {
+    isMounted = true;
+    if (shouldPlay && animation) {
+      animation.play();
+    }
+  });
+  useOnUnmount(container, () => {
+    isMounted = false;
+    if (animation) {
+      animation.stop();
+    }
+  });
 
   return useInterface(container, {
-    pause() { if (animation) animation.pause(); delayedPlay = false; },
-    play() { if (animation) animation.play(); else delayedPlay = true; },
+    play() {
+      shouldPlay = true;
+      if (isMounted && animation) {
+        animation.play();
+      }
+    },
+    pause() {
+      shouldPlay = false;
+      if (animation) {
+        animation.pause();
+      }
+    },
     goTo(value: number, animate: boolean = false) {
-      if (animation.currentFrame === 0) {
-        animation.playSegments([0, value + 1], true);
-      } else if (value === 0) {
-        animation.playSegments([animation.currentFrame, 0], true);
-      } else if (animate) {
-        animation.playSegments([animation.currentFrame, value], true);
-      } else {
-        animation.goToAndStop(value, true);
+      if (animation) {
+        if (animation.currentFrame === 0) {
+          animation.playSegments([0, value + 1], true);
+        } else if (value === 0) {
+          animation.playSegments([animation.currentFrame, 0], true);
+        } else if (animate) {
+          animation.playSegments([animation.currentFrame, value], true);
+        } else {
+          animation.goToAndStop(value, true);
+        }
       }
     },
   });

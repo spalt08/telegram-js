@@ -77,7 +77,12 @@ export default function dialogPreview(id: string) {
     clickable.classList.toggle('-selected', isSelected);
   });
 
-  listen(clickable, 'click', () => message.selectPeer(peer));
+  listen(clickable, 'click', () => message.selectPeer(
+    peer,
+
+    // Scroll to the bottom when a selected dialog is clicked
+    message.activePeer.value && peerToId(message.activePeer.value) === id ? Infinity : undefined,
+  ));
 
   mount(container, clickable);
 
