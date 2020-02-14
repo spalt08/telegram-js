@@ -168,13 +168,13 @@ $messageDistance: 4PX;
     & code {
       color: #4E7391;
     }
-  
+
     & pre {
       display: inline;
       white-space: pre-line;
       margin: 0;
     }
-  
+
     & pre {
       color: #4e7391;
     }
@@ -194,6 +194,8 @@ $messageDistance: 4PX;
     box-sizing: content-box;
     background: #FFFFFF;
     border-radius: 6px;
+    min-width: 0;
+    max-width: 400px;
 
     .message.out & {
       background: #EEFFDE;
@@ -203,7 +205,7 @@ $messageDistance: 4PX;
   &__reply + &__text {
     padding-top: 0;
   }
-  
+
   &__profile {
     width: 34PX;
     height: 34PX;
@@ -213,7 +215,7 @@ $messageDistance: 4PX;
       font-size: 13PX;
     }
   }
-  
+
   &__media-padded {
     padding: $messageBubblePadding;
   }
@@ -274,7 +276,7 @@ $messageDistance: 4PX;
         left: -7px;
         width: 7px;
         bottom: 0px;
-        height: 17px; 
+        height: 17px;
         z-index: 2;
         content: '';
         background-image: url(~assets/message_corner@2x.png);

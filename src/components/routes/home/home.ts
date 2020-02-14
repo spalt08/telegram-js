@@ -19,9 +19,7 @@ export default function home() {
       menu({ className: 'home__menu' }),
       dialogs({ className: 'home__dialogs' }),
     ),
-    div`.home__content`(
-      messages(),
-    ),
+    messages({ className: 'home__content' }),
     rightSidebarWrapper,
   );
 

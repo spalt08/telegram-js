@@ -58,44 +58,93 @@
   &__content {
     flex: 1 50%;
     overflow: hidden;
-    background: #E6EBEE;
 
     @include respond-to(small) {
       display: none;
     }
+  }
 
-    .messages {
-      width: 100%;
-      height: 100%;
-      background-color: rgb(183, 191, 152);
-      background-image: url(~assets/chamomile-blurred.jpg);
-      background-size: cover;
-      background-position: center center;
+  .messages {
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: rgb(183, 191, 152);
+    background-image: url(~assets/chamomile-blurred.jpg);
+    background-size: cover;
+    background-position: center center;
+
+    > * {
+      flex: none;
+    }
+
+    &__history {
+      flex: auto;
+      min-height: 0;
       display: flex;
       flex-direction: column;
       position: relative;
+    }
 
-      &__history {
-        flex: 1 50%;
-        z-index: 0;
-        mask-image: linear-gradient(to top, transparent, #000 12px);
+    &__list {
+      flex: auto;
+      z-index: 0;
+      mask-image: linear-gradient(to top, transparent, #000 12px);
+    }
+
+    &__spinner {
+      position: absolute;
+      z-index: 10;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 50%;
+
+      svg {
+        transform: scale(0.97);
+        circle {
+          stroke: white;
+          stroke-width: 1.5;
+        }
+      }
+    }
+
+    &__down {
+      $size: 54px;
+      position: absolute;
+      bottom: 15px;
+      right: 20px;
+      z-index: 9;
+      width: $size;
+      height: $size;
+      padding: 0;
+      margin: 0;
+      background: #fff;
+      border: none;
+      border-radius: 100%;
+      cursor: pointer;
+      outline: none;
+      transition: all 550ms cubic-bezier(.44,1.59,.53,1);
+
+      > svg {
+        $icon-size: 40px;
+        width: $icon-size;
+        height: $icon-size;
+        position: absolute;
+        top: (($size - $icon-size) / 2 + 2px);
+        left: (($size - $icon-size) / 2);
+
+        path {
+          fill: #4EA4F5;
+        }
       }
 
-      &__spinner {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(0, 0, 0, 0.3);
-        border-radius: 50%;
-
-        svg {
-          transform: scale(0.97);
-          circle {
-            stroke: white;
-            stroke-width: 1.5;
-          }
-        }
+      &.-hidden {
+        transition: all 250ms cubic-bezier(0.55, 0.055, 0.675, 0.19); // https://easings.net/en#easeInCubic
+        opacity: 0;
+        transform: translateY(60px);
+        pointer-events: none;
       }
     }
   }
