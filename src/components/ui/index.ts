@@ -18,3 +18,4 @@ export { default as searchInput } from './search_input/search_input';
 export { default as highlightSearchMatch } from './highlight_search_match';
 export { default as quote } from './quote/quote';
 export { default as typingIndicator } from './typing_indicator/typing_indicator';
+export { default as tabsPanel } from './tabs/tabs';

@@ -28,6 +28,7 @@ interface Props {
 
 export default function tgs({ src, className, autoplay = true, loop = false }: Props) {
   let animation: AnimationItem & { currentFrame: number};
+  let delayedPlay = false;
 
   const container = div({ className });
 
@@ -37,7 +38,7 @@ export default function tgs({ src, className, autoplay = true, loop = false }: P
         container,
         loop,
         animationData,
-        autoplay,
+        autoplay: autoplay || delayedPlay,
         renderer: 'canvas',
       }) as AnimationItem & { currentFrame: number};
     });
@@ -47,6 +48,8 @@ export default function tgs({ src, className, autoplay = true, loop = false }: P
   useOnMount(container, () => autoplay && animation && animation.play());
 
   return useInterface(container, {
+    pause() { if (animation) animation.pause(); delayedPlay = false; },
+    play() { if (animation) animation.play(); else delayedPlay = true; },
     goTo(value: number, animate: boolean = false) {
       if (animation.currentFrame === 0) {
         animation.playSegments([0, value + 1], true);

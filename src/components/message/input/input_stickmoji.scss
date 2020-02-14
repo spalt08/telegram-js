@@ -10,11 +10,6 @@
   border-radius: 10px;
   box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.3);
   z-index: 2;
-  text-align: center;
-  flex-direction: column;
-  justify-content: space-between;
-  overflow: hidden;
-  display: flex;  
   transform-origin: bottom left;
   opacity: 0;
   transform: scale(0);
@@ -23,63 +18,6 @@
   &.opened {
     opacity: 1;
     transform: scale(1);
-  }
-
-  &__tabs {
-    height: 42px;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    border-bottom: 1px solid #dedfe2;
-    width: 100%;
-  }
-
-  &__tab {
-    display: inline-block;
-    color: #7b8083;
-    font-weight: 500;
-    margin: 0px 22px;
-    line-height: 42px;
-    font-size: 1rem;
-    transition: color .2s ease;
-    cursor: pointer;
-
-    &:first-child { margin-left: 15px; }
-    &:last-child { margin-right: 15px; }
-
-    &:hover, &.active {
-      color: #4EA4F5;
-    }
-  }
-
-  &__content {
-    flex: 1 100%;
-    overflow: hidden;
-
-    & > div {
-      transition: transform .2s ease-out;
-    }
-
-    & > .removing-left, & > .removing-right {
-      position: absolute;
-      height: calc(100% - 42px);
-    }
-
-    & > .removing-left {
-      transform: translateX(-100%);
-    }
-
-    & > .removing-right {
-      transform: translateX(100%);
-    }
-
-    & > .appearing-left {
-      animation: stickmojiPanelAppearLeft .3s ease-out;
-    }
-
-    & > .appearing-right {
-      animation: stickmojiPanelAppearRight .3s ease-out;
-    }
   }
 }
 

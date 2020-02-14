@@ -1,5 +1,6 @@
 import { text, div } from 'core/html';
 import { Document } from 'cache/types';
+import { useInterface, getInterface } from 'core/hooks';
 import stickerRenderer from './sticker';
 import './set.scss';
 
@@ -7,12 +8,23 @@ import './set.scss';
  * Sticker set
  */
 export default function stickerSet(key: string, stickers: Document[], onClick?: (sticker: Document) => void) {
-  return (
+  const elements = stickers.map((sticker: Document) => stickerRenderer(sticker, { size: '100%', autoplay: false, onClick }));
+
+  const container = (
     div`.sticker-set`(
       div`.sticker-set__title`(text(key)),
       div`.sticker-set__items`(
-        ...stickers.map((sticker: Document) => div`.sticker-set__item`(stickerRenderer(sticker, { size: '100%', autoplay: true, onClick }))),
+        ...elements.map((stickerEl: HTMLElement) => div`.sticker-set__item`(stickerEl)),
       ),
     )
   );
+
+  return useInterface(container, {
+    playAll() {
+      for (let i = 0; i < elements.length; i++) getInterface(elements[i]).play();
+    },
+    pauseAll() {
+      for (let i = 0; i < elements.length; i++) getInterface(elements[i]).pause();
+    },
+  });
 }

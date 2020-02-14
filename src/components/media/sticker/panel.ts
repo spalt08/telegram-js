@@ -1,7 +1,7 @@
 import { div } from 'core/html';
 import { media } from 'services';
 import { materialSpinner } from 'components/icons';
-import { useObservable } from 'core/hooks';
+import { useObservable, useInterface, getInterface } from 'core/hooks';
 import { unmount, mount } from 'core/dom';
 import { Document } from 'cache/types';
 import stickerSet from './set';
@@ -16,17 +16,29 @@ export default function stickerPanel(onSelect?: (sticker: Document) => void) {
   );
 
   let isLoaded = false;
+  let setEl: ReturnType<typeof stickerSet> | undefined;
+
   media.loadRecentStickers();
 
   useObservable(container, media.recentStickers, (stickers: Document[]) => {
     if (stickers.length > 0 && !isLoaded) {
+      setEl = stickerSet('Recent', stickers, onSelect);
       unmount(loader);
       mount(container, div`.sticker-panel__content`(
-        stickerSet('Recent', stickers, onSelect),
+        setEl,
       ));
       isLoaded = true;
     }
   });
 
-  return container;
+
+  return useInterface(container, {
+    update() {},
+    shouldRemove() {
+      if (setEl) getInterface(setEl).pauseAll();
+    },
+    didAppear() {
+      if (setEl) getInterface(setEl).playAll();
+    },
+  });
 }
