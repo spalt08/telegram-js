@@ -28,6 +28,7 @@ const messageCacheIndices = {
   history: messageHistory,
   photoVideos: sharedMediaIndex,
   documents: sharedMediaIndex,
+  links: sharedMediaIndex,
 };
 
 /**

@@ -96,6 +96,9 @@ export default class MediaService {
       case 'inputMessagesFilterDocument':
         index = messageCache.indices.documents;
         break;
+      case 'inputMessagesFilterUrl':
+        index = messageCache.indices.links;
+        break;
       default:
         throw Error('Unknown filter');
     }

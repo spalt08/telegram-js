@@ -1,0 +1,54 @@
+import { Peer, Message } from 'cache/types';
+import { div, nothing } from 'core/html';
+import { VirtualizedList } from 'components/ui';
+import { BehaviorSubject } from 'rxjs';
+import { materialSpinner } from 'components/icons';
+import { media } from 'services';
+import { messageCache } from 'cache';
+import { useObservable } from 'core/hooks';
+import { messageToId } from 'helpers/api';
+import { unmount, mount } from 'core/dom';
+import webpagePreview from 'components/media/webpage/preview';
+
+const documentRowRenderer = (id: string) => {
+  const msg = messageCache.get(id) as any;
+  if (msg?.media?.webpage?._ === 'webPage') {
+    return webpagePreview(msg.media.webpage);
+  }
+  return div(nothing);
+};
+
+export default function linksPanel(peer: Peer) {
+  let loader: HTMLElement | undefined = div`.shared-media__loader`(materialSpinner());
+  const container = div`.shared-media__item`(loader);
+
+  const loadMore = () => {
+    media.loadMedia(peer, 'inputMessagesFilterUrl', messageCache.indices.links.getEarliestPeerMedia(peer)?.id);
+  };
+
+  const items = new BehaviorSubject<string[]>([]);
+  const list = new VirtualizedList({
+    items,
+    pivotBottom: false,
+    onReachBottom: loadMore,
+    renderer: documentRowRenderer,
+  });
+
+  media.loadMedia(peer, 'inputMessagesFilterUrl');
+
+  useObservable(container, messageCache.indices.links.getPeerMedia(peer), (messages: Message[]) => {
+    if (messages.length === 0) return;
+
+    if (loader) {
+      unmount(loader);
+      mount(container, list.container);
+      loader = undefined;
+    }
+
+    const ids = messages.map((message) => messageToId(message));
+
+    items.next(ids);
+  });
+
+  return container;
+}
