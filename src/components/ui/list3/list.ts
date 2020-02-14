@@ -240,15 +240,21 @@ export class VirtualizedList {
   updateHeigths(force: boolean = false) {
     if (force) this.pendingRecalculate = this.current.slice(this.first, this.last);
 
+    const newPending = [];
     // for (let i = this.first; i <= this.last; i += 1) {
     //   const item = this.current[i];
 
     for (let i = 0; i < this.pendingRecalculate.length; i += 1) {
       const item = this.pendingRecalculate[i];
-      this.heights[item] = this.elements[item].offsetHeight || this.heights[item] || 0;
+      const itemIndex = this.current.indexOf(item);
+
+      // recalculate only visible
+      if (itemIndex >= this.first && itemIndex <= this.last) {
+        this.heights[item] = this.elements[item].offsetHeight || this.heights[item] || 0;
+      } else newPending.push(item);
     }
 
-    this.pendingRecalculate = [];
+    this.pendingRecalculate = newPending;
   }
 
   updateOffsets() {
