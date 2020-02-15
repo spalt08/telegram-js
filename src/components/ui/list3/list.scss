@@ -6,7 +6,6 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  padding-bottom: 10px;
   transform: translateZ(0); // https://stackoverflow.com/a/30533339/1118709
   min-height: 0; // To force the content to scroll
 

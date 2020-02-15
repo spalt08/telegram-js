@@ -4,23 +4,27 @@
 
   &__item {
     height: 100%;
-    padding: 6px;
   }
 
   &__mediarow {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
-    margin-bottom: 4px;
+    padding: 6px 6px 0px;
+
+    &:last-child {
+      padding-bottom: 6px;
+    }
   }
 
   &__mediaitem {
-    flex: 1 33%;
-    margin-right: 4px;
+    width: 32%;
+    margin-right: 6px;
     overflow: hidden;
     border-radius: 4px;
     background: #fff;
     height: 100%; 
+    cursor: pointer;
 
     &:last-child { margin-right: 0; }
 
