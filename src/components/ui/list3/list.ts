@@ -195,6 +195,7 @@ export class VirtualizedList {
       this.heights = {};
       this.updateHeigths(true);
       this.updateOffsets();
+      this.updateTopElement();
     }
   };
 
@@ -238,7 +239,7 @@ export class VirtualizedList {
 
   // update heights
   updateHeigths(force: boolean = false) {
-    if (force) this.pendingRecalculate = this.current.slice(this.first, this.last);
+    if (force) this.pendingRecalculate = this.current.slice(this.first, this.last + 1);
 
     const newPending = [];
     // for (let i = this.first; i <= this.last; i += 1) {
