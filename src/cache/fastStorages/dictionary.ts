@@ -127,8 +127,11 @@ export default class Dictionary<TKey extends keyof any, TItem> {
   public useItemBehaviorSubject(base: Node, key: TKey): BehaviorSubject<Readonly<TItem> | undefined> {
     const subject = new BehaviorSubject(this.get(key));
     useWhileMounted(base, () => {
-      subject.next(this.get(key));
-      return this.watchItem(key, (item) => subject.next(item));
+      const item = this.get(key);
+      if (subject.value !== item) {
+        subject.next(item);
+      }
+      return this.watchItem(key, (newItem) => subject.next(newItem));
     });
     return subject;
   }

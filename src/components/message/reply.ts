@@ -10,13 +10,14 @@ import { message as service } from 'services';
 import messageShort from './short';
 
 export default function messageReply(id: number, peer: Peer) {
-  const element = div`.message__reply`();
-  const cached = messageCache.get(peerMessageToId(peer, id));
+  const fullId = peerMessageToId(peer, id);
 
+  const element = div`.message__reply`();
+  listen(element, 'click', () => service.selectPeer(peer, id));
   let replyQuote: HTMLElement | undefined;
 
-  const renderReply = (message: Message) => {
-    if (message._ === 'messageEmpty') return;
+  const renderReply = (message: Message | undefined) => {
+    if (!message || message._ === 'messageEmpty') return;
 
     if (replyQuote) unmount(replyQuote);
 
@@ -32,13 +33,13 @@ export default function messageReply(id: number, peer: Peer) {
       preview,
     );
 
-    listen(element, 'click', () => service.selectPeer(peer, id));
-
     mount(element, replyQuote);
   };
 
-  if (!cached) service.loadMessage(id, (msg: Message) => renderReply(msg));
-  else renderReply(cached);
+  messageCache.useItemBehaviorSubject(element, fullId).subscribe(renderReply);
+  if (!replyQuote) {
+    service.loadMessage(id);
+  }
 
   return element;
 }
