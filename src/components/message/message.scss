@@ -125,6 +125,10 @@ $messageDistance: 4PX;
       background-image: url(~assets/message-status-readed-white@2x.png);
     }
 
+    .message.unreaded &.only-photo .message__date {
+      background-image: url(~assets/message-status-unreaded-white@2x.png) !important;
+    }
+
     &::before {
       display: block;
       content: "";
@@ -330,6 +334,10 @@ $messageDistance: 4PX;
     &__title {
       display: none;
     }
+  }
+
+  &.out.unreaded .message__date {
+    background-image: url(~assets/message-status-unreaded-white@2x.png) !important;
   }
 
   &.first.out .message {

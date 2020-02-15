@@ -1,7 +1,20 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { userCache, chatCache, messageCache, dialogCache } from 'cache';
-import { peerMessageToId } from 'helpers/api';
+import { peerMessageToId, peerToId } from 'helpers/api';
+import {
+  Chat,
+  UpdateReadHistoryInbox,
+  UpdateReadChannelInbox,
+  UpdateReadHistoryOutbox,
+  UpdateReadChannelOutbox,
+  UpdateDialogPinned,
+  Peer,
+  InputDialogPeer,
+  PeerDialogs,
+  Dialog,
+} from 'cache/types';
+import { peerToInputDialogPeer } from 'cache/accessors';
 import MessageService from './message/message';
 
 /**
@@ -19,23 +32,81 @@ export default class DialogsService {
       this.dialogs.next(dialogCache.indices.order.getIds());
     });
 
-    messageCache.indices.history.newestMessages.subscribe(([peerId, messageId]) => {
-      const dialog = dialogCache.get(peerId);
-      if (!dialog) {
-        return;
-      }
+    // The client pushes it before pushing messages
+    client.updates.on('chat', (chat: Chat) => {
+      chatCache.put(chat);
+    });
 
-      if (dialog.top_message === messageId) {
-        return;
-      }
+    messageCache.indices.history.newestMessages.subscribe(([peer, messageId]) => {
+      this.changeOrLoadDialog(peer, (dialog) => {
+        if (dialog.top_message === messageId) {
+          return undefined;
+        }
 
-      dialogCache.put({
-        ...dialog,
-        top_message: messageId,
+        let unread = dialog.unread_count;
+        const message = messageCache.get(peerMessageToId(dialog.peer, messageId));
+        if (message && message._ !== 'messageEmpty' && message.out === false) {
+          if (message.id > dialog.top_message) unread++;
+          else unread = Math.max(0, unread - 1);
+        }
+
+        return {
+          ...dialog,
+          top_message: messageId,
+          unread_count: unread,
+        };
       });
     });
 
-    // todo: Subscribe to new and removed dialogs
+    // incoming message were readed
+    client.updates.on('updateReadHistoryInbox', (update: UpdateReadHistoryInbox) => {
+      this.changeOrLoadDialog(update.peer, (dialog) => ({
+        ...dialog,
+        read_inbox_max_id: update.max_id,
+        unread_count: update.still_unread_count,
+      }));
+    });
+
+    // outcoming message were readed
+    client.updates.on('updateReadHistoryOutbox', (update: UpdateReadHistoryOutbox) => {
+      this.changeOrLoadDialog(update.peer, (dialog) => ({
+        ...dialog,
+        read_outbox_max_id: update.max_id,
+      }));
+    });
+
+    // incoming message were readed (channel)
+    client.updates.on('updateReadChannelInbox', (update: UpdateReadChannelInbox) => {
+      this.changeOrLoadDialog({ _: 'peerChannel', channel_id: update.channel_id }, (dialog) => ({
+        ...dialog,
+        read_inbox_max_id: update.max_id,
+        unread_count: update.still_unread_count,
+      }));
+    });
+
+    // outcoming message were readed (channel)
+    client.updates.on('updateReadChannelOutbox', (update: UpdateReadChannelOutbox) => {
+      this.changeOrLoadDialog({ _: 'peerChannel', channel_id: update.channel_id }, (dialog) => ({
+        ...dialog,
+        read_inbox_max_id: update.max_id,
+      }));
+    });
+
+    client.updates.on('updateDialogUnreadMark', (update: any) => {
+      this.changeOrLoadDialog(update.peer.peer, (dialog) => ({
+        ...dialog,
+        unread_mark: update.unread,
+      }));
+    });
+
+    client.updates.on('updateDialogPinned', (update: UpdateDialogPinned) => {
+      if (update.peer._ === 'dialogPeer') {
+        this.changeOrLoadDialog(update.peer.peer, (dialog) => ({
+          ...dialog,
+          pinned: update.pinned,
+        }));
+      }
+    });
   }
 
   updateDialogs(offsetDate = 0) {
@@ -84,12 +155,59 @@ export default class DialogsService {
 
           userCache.put(data.users);
           chatCache.put(data.chats);
-          this.messageService.pushMessages(data.messages);
+          messageCache.put(data.messages);
           dialogCache.put(data.dialogs);
+          this.messageService.pushMessages(data.messages);
         }
       } finally {
         if (cb) cb();
       }
+    });
+  }
+
+  protected changeOrLoadDialog(peer: Peer, modify: (dialog: Dialog) => Dialog | null | undefined) {
+    const dialog = dialogCache.get(peerToId(peer));
+
+    if (dialog) {
+      const newDialog = modify(dialog);
+      if (newDialog) {
+        dialogCache.put(newDialog);
+      }
+    } else {
+      this.loadPeerDialogs([peer]);
+    }
+  }
+
+  protected loadPeerDialogs(peers: Peer[]) {
+    const inputPeers: InputDialogPeer[] = [];
+
+    peers.forEach((peer) => {
+      try {
+        inputPeers.push(peerToInputDialogPeer(peer));
+      } catch (error) {
+        // It's not a destiny to chat with this peer
+      }
+    });
+
+    this.loadInputPeerDialogs(inputPeers);
+  }
+
+  protected loadInputPeerDialogs(peers: InputDialogPeer[]) {
+    const request = { peers };
+    client.call('messages.getPeerDialogs', request, (error: any, data?: PeerDialogs) => {
+      if (error || !data) {
+        if (process.env.NODE_ENV === 'development') {
+          // eslint-disable-next-line no-console
+          console.error('Failed to load peer dialogs', { request, error });
+        }
+        return;
+      }
+
+      userCache.put(data.users);
+      chatCache.put(data.chats);
+      messageCache.put(data.messages);
+      dialogCache.put(data.dialogs);
+      this.messageService.pushMessages(data.messages);
     });
   }
 }

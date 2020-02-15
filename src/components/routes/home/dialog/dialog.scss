@@ -102,9 +102,21 @@
   &__date {
     font-size: 12px;
     font-weight: 300;
-    padding-left: 15px;
+    padding-left: 20px;
     color: #5F6369;
     margin-top: 3px;
+
+    &.out {
+      background-image: url(~assets/message-status-readed@2x.png);
+      background-position: left center;
+      background-size: 16PX auto;
+      background-repeat: no-repeat;
+    }
+
+    &.out.unreaded {
+      background-image: url(~assets/message-status-unreaded@2x.png);
+      padding-left: 16px;
+    }
   }
 
   &__preview {
@@ -146,6 +158,12 @@
     border-radius: 11PX;
     text-align: center;
     margin-left: 10px;
+    transform: scale(1);
+    transition: transform .3s ease-out;
+
+    &.hidden {
+      transform: scale(0);
+    }
 
     &.muted {
       background-color: #C4C9CC;

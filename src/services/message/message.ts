@@ -223,13 +223,11 @@ export default class MessagesService {
   }
 
   /** Load single message */
-  loadMessage = (id: number, cb?: (msg: Message) => void) => {
+  loadMessage = (id: number, cb: (msg: Message) => void) => {
     client.call('messages.getMessages', { id: [{ _: 'inputMessageID', id }] }, (err, res) => {
       if (!err && res && res.messages && res.messages.length > 0) {
         messageCache.put(res.messages);
-        if (cb) {
-          cb(res.messages[0]);
-        }
+        cb(res.messages[0]);
       }
     });
   };
@@ -259,7 +257,7 @@ export default class MessagesService {
     };
 
     client.call('messages.sendMessage', params, (err, result) => {
-      console.log('After sending', err, result);
+      // console.log('After sending', err, result);
       if (err) {
         // todo handling errors
       }
@@ -286,12 +284,12 @@ export default class MessagesService {
       random_id: randId,
     };
 
-    client.call('messages.sendMedia', params, (err, result) => {
+    client.call('messages.sendMedia', params, (err, _result) => {
       if (err) {
         // todo handling errors
       }
 
-      console.log('After sending', err, result);
+      // console.log('After sending', err, result);
     });
   };
 }

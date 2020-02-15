@@ -1,8 +1,8 @@
 import { div, text, nothing } from 'core/html';
-import { useObservable, useInterface, hasInterface, getInterface, useOnMount } from 'core/hooks';
+import { useInterface, hasInterface, getInterface, useOnMount } from 'core/hooks';
 import { mount, unmount } from 'core/dom';
-import { messageCache, chatCache } from 'cache';
-import { Peer, Message, MessageCommon, MessageService, MessageEmpty } from 'cache/types';
+import { messageCache, chatCache, dialogCache } from 'cache';
+import { Peer, Message, MessageCommon, MessageService, MessageEmpty, Dialog } from 'cache/types';
 import { formattedMessage } from 'components/ui';
 import client from 'client/client';
 import { profileAvatar, profileTitle } from 'components/profile';
@@ -14,7 +14,7 @@ import documentFile from 'components/media/document/file';
 import videoPreview from 'components/media/video/preview';
 import videoRenderer from 'components/media/video/video';
 import { idToColorCode } from 'cache/accessors';
-import { userIdToPeer } from 'helpers/api';
+import { userIdToPeer, peerToId } from 'helpers/api';
 import { isEmoji } from 'helpers/message';
 import { main } from 'services';
 import messageSerivce from './service';
@@ -40,9 +40,13 @@ const renderMessage = (msg: MessageCommon, peer: Peer) => {
 
   const date = messageDate(msg);
   const reply = msg.reply_to_msg_id ? messageReply(msg.reply_to_msg_id, peer) : nothing;
-  const title = channel && channel._ === 'channel' && channel.megagroup === false
-    ? div`.message__title${`color-${idToColorCode(channel.id)}`}`(profileTitle(peer))
-    : div`.message__title${`color-${idToColorCode(msg.from_id)}`}`(profileTitle(userIdToPeer(msg.from_id)));
+  let title: Node = nothing;
+
+  if (peer._ !== 'peerUser') {
+    title = channel && channel._ === 'channel' && channel.megagroup === false
+      ? div`.message__title${`color-${idToColorCode(channel.id)}`}`(profileTitle(peer))
+      : div`.message__title${`color-${idToColorCode(msg.from_id)}`}`(profileTitle(userIdToPeer(msg.from_id)));
+  }
 
   // regular message
   if (!msg.media || msg.media._ === 'messageMediaEmpty') {
@@ -196,7 +200,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
   const day = () => Math.ceil(((cached && cached._ !== 'messageEmpty' ? cached.date : 0) - timezoneOffset) / 3600 / 24);
 
   // listen cache changes for auto rerendering
-  useObservable(element, subject, (msg: Message | undefined) => {
+  subject.subscribe((msg: Message | undefined) => {
     // first render
     if (!container) {
       if (!msg) return;
@@ -225,6 +229,19 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
       mount(container, aligner);
 
       if (msg.from_id === client.getUserID()) element.classList.add('out');
+
+      // if unreaded
+      const dialog = dialogCache.get(peerToId(peer));
+      if (dialog && dialog.read_outbox_max_id < msg.id) {
+        element.classList.add('unreaded');
+
+        const unsubscribe = dialogCache.watchItem(peerToId(peer), (nextDialog: Dialog) => {
+          if (nextDialog.read_outbox_max_id >= msg.id) {
+            element.classList.remove('unreaded');
+            unsubscribe();
+          }
+        });
+      }
     }
 
     // re-rendering

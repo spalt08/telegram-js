@@ -279,22 +279,24 @@ class PeerIndex {
  */
 export default function messageHistory(collection: Collection<Message, any>) {
   const peers = {} as Record<string, {
+    peer: Peer,
     index: PeerIndex,
     newestRef: IdsChunkReference,
   }>;
-  const newestMessagesSubject = new Subject<[string, number]>();
+  const newestMessagesSubject = new Subject<[Peer, number]>();
   let isUpdatingByThisIndex = false;
 
-  function getOrCreatePeer(peerId: string) {
+  function getOrCreatePeer(peer: Readonly<Peer>) {
+    const peerId = peerToId(peer);
     if (!peers[peerId]) {
       const index = new PeerIndex();
       const newestRef = index.makeChunkReference(Infinity);
       newestRef.history.subscribe(({ ids }) => {
         if (ids.length) {
-          newestMessagesSubject.next([peerId, ids[0]]);
+          newestMessagesSubject.next([peer, ids[0]]);
         }
       });
-      peers[peerId] = { index, newestRef };
+      peers[peerId] = { peer, index, newestRef };
     }
     return peers[peerId];
   }
@@ -344,7 +346,7 @@ export default function messageHistory(collection: Collection<Message, any>) {
 
     /**
      * Notifies about incoming new messages in all the peers.
-     * The events are arrays [peerId, messageNumId]
+     * The events are arrays [peer, messageNumId]
      */
     newestMessages: newestMessagesSubject,
 
@@ -357,7 +359,7 @@ export default function messageHistory(collection: Collection<Message, any>) {
         return;
       }
 
-      const { newestRef } = getOrCreatePeer(peerToId(peer));
+      const { newestRef } = getOrCreatePeer(peer);
 
       try {
         isUpdatingByThisIndex = true;
@@ -381,7 +383,7 @@ export default function messageHistory(collection: Collection<Message, any>) {
      */
     makeChunkReference(peer: Peer, targetMessageId?: number): MessagesChunkReference {
       const peerId = peerToId(peer);
-      const { index: peerIndex } = getOrCreatePeer(peerId);
+      const { index: peerIndex } = getOrCreatePeer(peer);
 
       const idsChunkReference = peerIndex.makeChunkReference(targetMessageId);
 

@@ -1,7 +1,6 @@
 import { Peer } from 'cache/types';
 import { userCache, chatCache, userFullCache, chatFullCache } from 'cache';
 import { div, nothing } from 'core/html';
-import { useObservable } from 'core/hooks';
 import { info, username, phone } from 'components/icons';
 import { BehaviorSubject } from 'rxjs';
 import { infoListItem } from 'components/ui';
@@ -19,14 +18,14 @@ function userInfo(userId: number) {
   mount(container, infoListItem(container, phone(), 'Phone', phoneSubject));
 
   const userSubject = userCache.useItemBehaviorSubject(container, userId);
-  useObservable(container, userSubject, (u) => {
+  userSubject.subscribe((u) => {
     if (u) {
       usernameSubject.next(u.username || '');
       phoneSubject.next(u.phone ? `+${u.phone}` : '');
     }
   });
-  const userFullObservable = userFullCache.useItemBehaviorSubject(container, userId);
-  useObservable(container, userFullObservable, (uf) => {
+  const userFullSubject = userFullCache.useItemBehaviorSubject(container, userId);
+  userFullSubject.subscribe((uf) => {
     if (uf) bioSubject.next(uf.about);
   });
 
@@ -38,8 +37,8 @@ function chatInfo(chatId: number) {
   const container = div`.peerInfo`();
   mount(container, infoListItem(container, info(), 'About', aboutSubject));
 
-  const chatFullObservable = chatFullCache.useItemBehaviorSubject(container, chatId);
-  useObservable(container, chatFullObservable, (cf) => {
+  const chatFullSubject = chatFullCache.useItemBehaviorSubject(container, chatId);
+  chatFullSubject.subscribe((cf) => {
     if (cf) {
       aboutSubject.next(cf.about);
     }
@@ -55,8 +54,8 @@ function channelInfo(channelId: number) {
   mount(container, infoListItem(container, info(), 'About', aboutSubject));
   mount(container, infoListItem(container, username(), 'Link', linkSubject));
 
-  const channelFullObservable = chatFullCache.useItemBehaviorSubject(container, channelId);
-  useObservable(container, channelFullObservable, (cf) => {
+  const channelFullSubject = chatFullCache.useItemBehaviorSubject(container, channelId);
+  channelFullSubject.subscribe((cf) => {
     if (cf) {
       aboutSubject.next(cf.about);
       const channel = chatCache.get(cf.id);

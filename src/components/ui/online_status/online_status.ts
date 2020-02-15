@@ -65,9 +65,8 @@ export default function onlineStatus(peer: Peer) {
       let prevTime: number;
       const userSubject = userCache.useItemBehaviorSubject(container, peer.user_id);
       const minuteTimer = timer(0, 60 * 1000);
-      const periodicUserObservable = combineLatest(userSubject, minuteTimer);
-      useObservable(container, periodicUserObservable, (update) => {
-        const [u, time] = update;
+      const periodicUserObservable = combineLatest([userSubject, minuteTimer]);
+      useObservable(container, periodicUserObservable, ([u, time]) => {
         if (!u || !u.status) return;
         if (prevStatus !== u.status || (prevTime !== time && u.status._ === 'userStatusOffline')) {
           statusText.textContent = formatStatus(u.status);
@@ -79,8 +78,8 @@ export default function onlineStatus(peer: Peer) {
     }
   } else if (peer._ === 'peerChannel') {
     const channel = chatCache.get(peer.channel_id);
-    const channelObservable = chatFullCache.useItemBehaviorSubject(container, peer.channel_id);
-    useObservable(container, channelObservable, (cf) => {
+    const channelSubject = chatFullCache.useItemBehaviorSubject(container, peer.channel_id);
+    channelSubject.subscribe((cf) => {
       if (cf?._ === 'channelFull') {
         statusText.textContent = (channel?._ === 'channel' && channel.broadcast)
           ? `${cf.participants_count.toLocaleString('en-US')} subscribers`

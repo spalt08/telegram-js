@@ -12,6 +12,37 @@
     border-radius: 6px;
     margin-right: 10px;
     overflow: hidden;
+    position: relative;
+    cursor: pointer;
+
+    &::before {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url(~assets/download-icon@2x.png);
+      background-position: center;
+      background-size: 18px auto;
+      background-repeat: no-repeat;
+      display: none;
+      z-index: 2;
+    };
+
+    &:hover::before {
+      display: block;
+    } 
+  }
+
+  &__thumb::before, &__thumb &__circleprogress {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+    top: 5px;
+    left: 5px;  
+    z-index: 2;
   }
 
   &__icon {
@@ -21,8 +52,67 @@
     justify-content: center;
     align-items: center;
     font-weight: 500;
+    position: relative;
+    cursor: pointer;
+
+    &:hover::after {
+      border-width: 0;
+      border-radius: 0;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 0;
+      border-right: 8PX solid #fff;
+      border-top: 8PX solid #fff;
+      border-bottom: 8PX solid #2a7cc3;
+      border-left: 8PX solid #2a7cc3;
+      border-bottom-left-radius: 6px;
+      transition: .2s ease-out;
+    }
 
     .message.out & { background: #429f47; }
+    .message.out &::after {
+      border-bottom-color: #1b7a21;
+      border-left-color: #1b7a21;
+      border-top-color: #eeffde;
+      border-right-color: #eeffde;
+    }
+  }
+
+  &.downloading &__icon, &.downloading &__thumb {
+    &::after { content: none; }
+    &::before { content: none; }
+  }
+
+  &.downloading &__ext { display: none; }
+
+  &__icon:hover &__ext {
+    display: none;
+  }
+
+  &__ext {
+    padding-top: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90%;
+  }
+
+  &__circleprogress {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    & svg { width: 30px; height: 30px; }
+    & circle { stroke: #fff; }
   }
 
   &__info {

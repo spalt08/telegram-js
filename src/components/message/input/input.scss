@@ -1,3 +1,5 @@
+@import '~styles/variables.scss';
+
 .msginput {
   padding: 0 20px;
 
@@ -57,17 +59,21 @@
 
     &::after {
       position: absolute;
-      right: -7px;
+      left: 100%;
       width: 7px;
-      bottom: 0px;
-      height: 17px; 
+      bottom: 0;
+      height: 17px;
       z-index: 2;
       content: '';
       background-image: url(~assets/message_corner@2x.png);
       background-size: 100%;
       transform: scaleX(-1);
+
+      @include safari-only() {
+        margin-left: -1px;
+      }
     }
-  
+
     &::before {
       position: absolute;
       left: -10px;
@@ -86,7 +92,6 @@
     background: #FFFFFF;
     border-radius: 10px;
     border-bottom-right-radius: 0px;
-    box-shadow: 0px 1px 2px 0px rgba(16, 35, 47, 0.15);
     width: 100%;
     min-height: 54px;
     z-index: 1;
