@@ -1,4 +1,4 @@
-import { Peer, Message } from 'cache/types';
+import { Peer, Message, MessageFilter } from 'cache/types';
 import { div, nothing } from 'core/html';
 import { VirtualizedList } from 'components/ui';
 import { BehaviorSubject } from 'rxjs';
@@ -9,6 +9,8 @@ import { useObservable } from 'core/hooks';
 import { messageToId } from 'helpers/api';
 import { unmount, mount } from 'core/dom';
 import webpagePreview from 'components/media/webpage/preview';
+
+const SEARCH_FILTER: MessageFilter['_'] = 'inputMessagesFilterUrl';
 
 const documentRowRenderer = (id: string) => {
   const msg = messageCache.get(id) as any;
@@ -23,7 +25,7 @@ export default function linksPanel(peer: Peer) {
   const container = div`.shared-media__item`(loader);
 
   const loadMore = () => {
-    media.loadMedia(peer, 'inputMessagesFilterUrl', messageCache.indices.links.getEarliestPeerMedia(peer)?.id);
+    media.loadMedia(peer, SEARCH_FILTER, messageCache.indices.links.getEarliestPeerMedia(peer)?.id);
   };
 
   const items = new BehaviorSubject<string[]>([]);
@@ -34,10 +36,12 @@ export default function linksPanel(peer: Peer) {
     renderer: documentRowRenderer,
   });
 
-  media.loadMedia(peer, 'inputMessagesFilterUrl');
+  media.loadMedia(peer, SEARCH_FILTER);
 
   useObservable(container, messageCache.indices.links.getPeerMedia(peer), (messages: Message[]) => {
-    if (messages.length === 0) return;
+    if (!messages.length && media.isMediaLoading(peer, SEARCH_FILTER)) {
+      return;
+    }
 
     if (loader) {
       unmount(loader);

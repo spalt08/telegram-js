@@ -70,9 +70,10 @@
     z-index: 3;
     max-height: 240px;
     animation: appear .2s;
-    overflow: auto;
-    overflow-y: auto;
     overflow-x: hidden;
+    overflow-y: auto;
+    overflow-y: overlay;
+    transform: translateZ(0); // https://stackoverflow.com/a/30533339/1118709
   }
 
   &__option {

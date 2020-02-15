@@ -1,6 +1,6 @@
 
 $user-bg-colors: (
-  "1" #cc90e2, 
+  "1" #cc90e2,
   "2" #80d066,
   "3" #ecd074,
   "4" #6fb1e4,
@@ -20,5 +20,14 @@ $break-widescreen: 1680px;
 
   @if $media == widescreen {
     @media only screen and (min-width: $break-widescreen) { @content; }
+  }
+}
+
+@mixin safari-only() {
+  // https://stackoverflow.com/a/25975282/1118709
+  @media not all and (min-resolution:.001dpcm) {
+    @supports (-webkit-appearance:none) {
+      @content;
+    }
   }
 }

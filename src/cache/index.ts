@@ -93,9 +93,10 @@ export const pinnedMessageCache = new Collection<Message, {}, string>({
  */
 export const fileCache = new Dictionary<string, string | null>();
 
-// todo remove debug
-(window as any).mcache = messageCache;
-(window as any).ccache = chatCache;
-(window as any).dcache = dialogCache;
-(window as any).ucache = userCache;
-(window as any).fcache = fileCache;
+if (process.env.NODE_ENV === 'development') {
+  (window as any).mcache = messageCache;
+  (window as any).ccache = chatCache;
+  (window as any).dcache = dialogCache;
+  (window as any).ucache = userCache;
+  (window as any).fcache = fileCache;
+}

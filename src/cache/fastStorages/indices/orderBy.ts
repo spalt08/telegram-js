@@ -92,7 +92,9 @@ export default function orderBy<TItem>(compare: CompareFunction<TItem>, filter: 
     });
 
     return {
-      // todo remove debug
+      /**
+       * @deprecated For debug only
+       */
       orderCache,
 
       /**

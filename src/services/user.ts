@@ -9,6 +9,11 @@ export default class UsersService {
         userCache.put({ ...user, status: update.status });
       }
     });
+
+    // The client pushes it before pushing messages
+    client.updates.on('user', (user) => {
+      userCache.put(user);
+    });
   }
 
   /*

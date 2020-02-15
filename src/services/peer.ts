@@ -1,3 +1,4 @@
+import { debounceTime } from 'rxjs/operators';
 import client from 'client/client';
 import { UserFull, Peer, MessagesChatFull, InputUser } from 'cache/types';
 import { userFullCache, chatCache, chatFullCache, userCache, pinnedMessageCache } from 'cache';
@@ -8,7 +9,9 @@ import MessageService from './message/message';
  */
 export default class PeerService {
   constructor(messageService: MessageService) {
-    messageService.activePeer.subscribe((peer) => this.loadFullInfo(peer));
+    messageService.activePeer
+      .pipe(debounceTime(300)) // Wait a bit to not interfere the messages loading
+      .subscribe((peer) => this.loadFullInfo(peer));
   }
 
   private loadFullInfo(peer: Peer | null) {

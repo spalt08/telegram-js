@@ -1,4 +1,4 @@
-import { Peer, Message } from 'cache/types';
+import { Peer, Message, MessageFilter } from 'cache/types';
 import { div, nothing } from 'core/html';
 import { VirtualizedList } from 'components/ui';
 import { BehaviorSubject } from 'rxjs';
@@ -10,6 +10,8 @@ import { messageToId } from 'helpers/api';
 import { unmount, mount } from 'core/dom';
 import documentFile from 'components/media/document/file';
 import './docs_panel.scss';
+
+const SEARCH_FILTER: MessageFilter['_'] = 'inputMessagesFilterDocument';
 
 const documentRowRenderer = (id: string) => {
   const msg = messageCache.get(id);
@@ -24,7 +26,7 @@ export default function docsPanel(peer: Peer) {
   const container = div`.shared-media__item`(loader);
 
   const loadMore = () => {
-    media.loadMedia(peer, 'inputMessagesFilterDocument', messageCache.indices.documents.getEarliestPeerMedia(peer)?.id);
+    media.loadMedia(peer, SEARCH_FILTER, messageCache.indices.documents.getEarliestPeerMedia(peer)?.id);
   };
 
   const items = new BehaviorSubject<string[]>([]);
@@ -35,10 +37,12 @@ export default function docsPanel(peer: Peer) {
     renderer: documentRowRenderer,
   });
 
-  media.loadMedia(peer, 'inputMessagesFilterDocument');
+  media.loadMedia(peer, SEARCH_FILTER);
 
   useObservable(container, messageCache.indices.documents.getPeerMedia(peer), (messages: Message[]) => {
-    if (messages.length === 0) return;
+    if (!messages.length && media.isMediaLoading(peer, SEARCH_FILTER)) {
+      return;
+    }
 
     if (loader) {
       unmount(loader);

@@ -337,7 +337,9 @@ export default function messageHistory(collection: Collection<Message, any>) {
   });
 
   return {
-    // todo remove debug
+    /**
+     * @deprecated For debug only
+     */
     peers,
 
     /**

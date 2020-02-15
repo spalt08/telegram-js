@@ -75,3 +75,33 @@ input[type="search"] {
 strong {
   font-weight: 500;
 }
+
+* {
+  $scrollbar-color: rgba(0, 0, 0, 0.3);
+  $scrollbar-hover-color: rgba(0, 0, 0, 0.6);
+
+  scrollbar-color: $scrollbar-color transparent;
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+
+    /* Track */
+    &-track {
+      background: transparent;
+    }
+
+    /* Handle */
+    &-thumb {
+      background: $scrollbar-color;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    /* Handle on hover */
+    &-thumb:hover {
+      background: $scrollbar-hover-color;
+    }
+  }
+}

@@ -4,6 +4,7 @@ import { ClientError } from 'client/worker.types';
 import { Document, Peer, MessageFilter, StickerSet } from 'cache/types';
 import { peerToInputPeer } from 'cache/accessors';
 import { messageCache } from 'cache';
+import { peerToId } from 'helpers/api';
 import MainService from './main';
 
 /**
@@ -16,7 +17,7 @@ export default class MediaService {
   /** Stickers Packs */
   stickerSets = new BehaviorSubject<StickerSet[]>([]);
 
-  mediaLoading: Record<string, boolean> = {};
+  mediaLoading: Record<string /* peerId */, Partial<Record<MessageFilter['_'], boolean>>> = {};
 
   /** Hash values for sticker syc */
   stickerSetsHash = 0;
@@ -67,9 +68,13 @@ export default class MediaService {
   }
 
   loadMedia(peer: Peer, filterType: MessageFilter['_'], offsetMessageId = 0) {
-    if (this.mediaLoading[filterType]) return;
+    const peerId = peerToId(peer);
+    if (!this.mediaLoading[peerId]) {
+      this.mediaLoading[peerId] = {};
+    }
+    if (this.mediaLoading[peerId][filterType]) return;
 
-    this.mediaLoading[filterType] = true;
+    this.mediaLoading[peerId][filterType] = true;
 
     const chunk = 40;
     const filter = { _: filterType };
@@ -104,11 +109,15 @@ export default class MediaService {
     }
 
     client.call('messages.search', payload, (_err: any, res: any) => {
+      this.mediaLoading[peerId][filterType] = false;
       if (res) {
         index.putMediaMessages(peer, res.messages);
       }
-      this.mediaLoading[filterType] = false;
     });
+  }
+
+  isMediaLoading(peer: Peer, filterType: MessageFilter['_']) {
+    return !!this.mediaLoading[peerToId(peer)]?.[filterType];
   }
 
   attachFiles = (files: FileList) => {
