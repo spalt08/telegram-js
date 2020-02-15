@@ -35,6 +35,7 @@ export default function tgs({ src, className, autoplay = true, loop = false }: P
       animation.play();
     }
   });
+
   useOnUnmount(container, () => {
     isMounted = false;
     if (animation) {
@@ -53,6 +54,11 @@ export default function tgs({ src, className, autoplay = true, loop = false }: P
       shouldPlay = false;
       if (animation) {
         animation.pause();
+      }
+    },
+    resize() {
+      if (animation) {
+        animation.resize();
       }
     },
     goTo(value: number, animate: boolean = false) {

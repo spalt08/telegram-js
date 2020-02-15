@@ -3,9 +3,8 @@ import { Country } from 'const/country';
 import client from 'client/client';
 import { API_HASH, API_ID } from 'const/api';
 import { unformat } from 'helpers/phone';
-import { history } from 'router';
-
-let useStorage = window.localStorage;
+import { router } from 'router';
+import media from 'client/media';
 
 /**
  * Singleton service class for handling auth flow
@@ -49,13 +48,13 @@ export default class AuthService {
   /** Passwork KDF algo */
   passwordAlgo?: any;
 
-  profilePhoto?: string;
+  profilePhoto?: File;
 
   userID: number = 0;
 
   constructor() {
-    const uid = useStorage.getItem('uid');
-    if (uid && +uid > 0) {
+    const uid = client.getUserID();
+    if (uid && uid > 0) {
       this.state = new BehaviorSubject('authorized');
       this.userID = +uid;
     } else {
@@ -72,7 +71,6 @@ export default class AuthService {
 
     if (!remember) {
       client.storage = window.sessionStorage;
-      useStorage = window.sessionStorage;
     }
 
     const payload = {
@@ -101,6 +99,8 @@ export default class AuthService {
           this.sendCode(phoneNumber, remember, cb);
 
         // Display error message
+        } else if (err.message === 'AUTH_RESTART') {
+          this.sendCode(phoneNumber, remember, cb);
         } else {
           this.errPhone.next(err.message);
           cb();
@@ -249,9 +249,6 @@ export default class AuthService {
       // todo: preload data
       this.state.next('authorized');
 
-      // temp
-      useStorage.setItem('uid', response.user.id);
-
       this.userID = response.user.id;
 
       // Create keys for other dcs
@@ -259,21 +256,17 @@ export default class AuthService {
         if (i !== client.getBaseDC()) client.authorize(i);
       }
 
-      history.push('/');
+      router.fetchLocation(response.user.id);
     }
   }
 
   setProfilePhoto() {
-    // if (!this.profilePhoto) return;
+    if (!this.profilePhoto) return;
 
-    // file.uploadFile(this.profilePhoto, (id, parts) => {
-    //   if (parts === 0) return;
-
-    //   const inputFile = { _: 'inputFile', id: id.uint, parts, name: 'favicon.png', md5_checksum: '' };
-
-    //   client.call('photos.uploadProfilePhoto', { file: inputFile }, (_err, _res) => {
-    //     // console.log(err, res);
-    //   });
-    // });
+    media.upload(this.profilePhoto, (inputFile) => {
+      client.call('photos.uploadProfilePhoto', { file: inputFile }, (_err, _res) => {
+        // console.log(err, res);
+      });
+    });
   }
 }

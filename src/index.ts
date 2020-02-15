@@ -1,9 +1,7 @@
 import './polyfills';
-import * as routes from 'components/routes';
 import { mount, unmount } from 'core/dom';
-import { auth } from 'services';
 import popup from 'components/popup/popup';
-import { Router, history } from './router';
+import { router } from './router';
 import 'styles/global.scss';
 
 const loadingPlaceholder = document.querySelector('.appLoading');
@@ -11,20 +9,5 @@ if (loadingPlaceholder) {
   unmount(loadingPlaceholder);
 }
 
-// todo: check user login and redirect him
-if (auth.state.value !== 'authorized' && history.state() !== 'sandbox') {
-  history.push('/login');
-} else {
-  history.push('/');
-}
-
-const router = new Router({
-  '/': routes.home,
-  '/login': routes.login,
-  default: routes.login,
-});
-
 mount(document.body, router.element);
 mount(document.body, popup());
-
-// todo: Check that the app works from a subdirectory

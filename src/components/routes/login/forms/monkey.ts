@@ -5,26 +5,21 @@ import tracking from 'assets/monkey_tracking.tgs';
 import closing from 'assets/monkey_closing.tgs';
 import peeking from 'assets/monkey_peeking.tgs';
 import './monkey.scss';
-import { mount } from 'core/dom';
 
 export default function monkey() {
-  let monkeyClosing: ReturnType<typeof tgs>;
-  let monkeyPeeking: ReturnType<typeof tgs>;
-
-  const monkeyTracking = tgs({ className: 'monkey__state', src: tracking });
+  const monkeyTracking = tgs({ className: 'monkey__state', src: tracking, autoplay: true });
+  const monkeyClosing = tgs({ className: 'monkey__state hidden', src: closing, autoplay: true });
+  const monkeyPeeking = tgs({ className: 'monkey__state hidden', src: peeking, autoplay: true });
 
   const element = div`.monkey`(
     monkeyTracking,
+    monkeyClosing,
+    monkeyPeeking,
   );
 
   const lookAtCode = (val: string) => {
     const frame = Math.min(20 + Math.floor((val.length / 20) * 120), 175);
     getInterface(monkeyTracking).goTo(frame);
-
-    if (!monkeyClosing) {
-      monkeyClosing = tgs({ className: 'monkey__state hidden', src: closing });
-      mount(element, monkeyClosing);
-    }
   };
 
   const followCode = (val: string) => {
@@ -38,21 +33,19 @@ export default function monkey() {
   const closeEyes = () => {
     monkeyTracking.classList.add('hidden');
     monkeyClosing.classList.remove('hidden');
+    getInterface(monkeyClosing).resize();
     getInterface(monkeyClosing).goTo(50);
-
-    if (!monkeyPeeking) {
-      monkeyPeeking = tgs({ className: 'monkey__state hidden', src: peeking });
-      mount(element, monkeyPeeking);
-    }
   };
 
   const peek = () => {
     monkeyClosing.classList.add('hidden');
     monkeyPeeking.classList.remove('hidden');
+    getInterface(monkeyPeeking).resize();
     getInterface(monkeyPeeking).goTo(20);
   };
 
   const unpeek = () => {
+    getInterface(monkeyPeeking).resize();
     getInterface(monkeyPeeking).goTo(0);
   };
 
