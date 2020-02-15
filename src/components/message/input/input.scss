@@ -103,14 +103,21 @@
   }
 
   &__btn {
-    background-color: #4EA4F5;
-    background-image: url(~components/icons/microphone.svg);
-    background-repeat: no-repeat;
-    background-position: center;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border: 0;
+    outline: none;
+    background-color: #fff;
     border-radius: 50%;
     width: 54px;
     height: 54px;
     box-shadow: 0px 1px 2px 0px rgba(16, 35, 47, 0.15);
     margin-left: 8px;
+    cursor: pointer;
+    
+    svg path {
+      fill: #4EA4F5;
+    }
   }
 }

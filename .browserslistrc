@@ -3,3 +3,4 @@ last 2 years
 not IE < 12
 not IE_Mob < 12
 not Safari < 8
+not OperaMini all

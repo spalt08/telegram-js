@@ -235,7 +235,7 @@ export default class MessagesService {
   };
 
   sendMessage = (message: string) => {
-    if (!this.activePeer.value) return;
+    if (!this.activePeer.value || !message) return;
 
     const randId = Math.ceil(Math.random() * 0xFFFFFF).toString(16) + Math.ceil(Math.random() * 0xFFFFFF).toString(16);
     const params = {

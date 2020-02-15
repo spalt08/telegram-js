@@ -1,19 +1,20 @@
-import { div, input } from 'core/html';
+import { div, input, button } from 'core/html';
 import { mount, listen } from 'core/dom';
-import { smile, attach } from 'components/icons';
+import { smile, attach, send } from 'components/icons';
 import { message, media } from 'services';
-import { getInterface, useListenWhileMounted } from 'core/hooks';
+import { getInterface, useListenWhileMounted, useObservable } from 'core/hooks';
+import { chatCache } from 'cache';
 import { Document } from 'cache/types';
 import stickMojiPanel from './input_stickmoji';
 import messageTextarea from './input_textarea';
 import './input.scss';
 
 export default function messageInput() {
-  const element = div`.msginput`();
+  const element = div`.msginput.hidden`();
   const textarea = messageTextarea({ onSend: message.sendMessage, maxHeight: 400 });
   const emojiIcon = div`.msginput__emoji`(smile());
   const file = input({ className: 'msginput__attach-input', type: 'file', multiple: true });
-  const attchIcon = div`.msginput__attach`(attach(), file);
+  const attachIcon = div`.msginput__attach`(attach(), file);
   const stickmojiPanelEl = stickMojiPanel({
     onSelectEmoji: (emoji: string) => {
       getInterface(textarea).insertText(emoji);
@@ -37,10 +38,17 @@ export default function messageInput() {
       div`.msginput__bubble`(
         emojiIcon,
         textarea,
-        attchIcon,
+        attachIcon,
       ),
     ),
-    div`.msginput__btn`(),
+    button`.msginput__btn`(
+      {
+        onClick: () => {
+          getInterface(textarea).send();
+        },
+      },
+      send(),
+    ),
   );
 
   let closeTimer: number | undefined;
@@ -68,7 +76,18 @@ export default function messageInput() {
   listen(stickmojiPanelEl, 'mouseleave', closePanelDelayed);
 
   mount(element, container);
-  container.classList.remove('hidden');
+
+  useObservable(element, message.activePeer, (peer) => {
+    let hidden = !peer;
+    if (peer && peer._ === 'peerChannel') {
+      const chat = chatCache.get(peer.channel_id);
+      if (chat && chat._ === 'channel' && !chat.megagroup) {
+        hidden = true;
+      }
+    }
+
+    element.classList.toggle('hidden', hidden);
+  });
 
   // upload with dragndrop
   useListenWhileMounted(element, document, 'dragenter', (event: Event) => event.preventDefault());
