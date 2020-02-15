@@ -56,19 +56,25 @@ export default function makeMessageChunk(peer: Peer, messageId: Exclude<number, 
       loadingNewer: direction === Direction.Around || direction === Direction.Newer ? true : historySubject.value.loadingNewer,
     });
 
-    loadContinuousMessages(peer, direction, fromId, toId, (err, result) => {
+    loadContinuousMessages(peer, direction, fromId, toId, (error, result) => {
       if (isDestroyed) {
         return;
       }
 
       try {
-        if (result) {
-          try {
-            isUpdatingCacheChunk = true;
-            cacheChunkRef.putChunk(result);
-          } finally {
-            isUpdatingCacheChunk = false;
+        if (error || !result) {
+          if (process.env.NODE_ENV === 'development') {
+            // eslint-disable-next-line no-console
+            console.error('Failed to load messages history part', { peer, direction, fromId, toId, error, result });
           }
+          return;
+        }
+
+        try {
+          isUpdatingCacheChunk = true;
+          cacheChunkRef.putChunk(result);
+        } finally {
+          isUpdatingCacheChunk = false;
         }
       } finally {
         historySubject.next({

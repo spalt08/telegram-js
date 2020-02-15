@@ -15,6 +15,14 @@ export type DownloadOptions = { dc_id?: number, mime_type?: string, size: number
 export type DownloadResolver = (url: string) => void;
 export type DownloadProgressResolver = (downloaded: number, total: number) => void;
 
+let saveMetaField = 'meta';
+let test = false;
+
+if (document.location.search.indexOf('test') !== -1) {
+  test = true;
+}
+
+if (test) saveMetaField = 'metatest';
 /**
  * Vars
  */
@@ -23,12 +31,12 @@ const requests: Record<string, RequestResolver> = {};
 const quene: Record<string, AnyResolver> = {};
 const updates: Record<string, UpdateResolver[]> = {};
 const eventListeners: Record<string, EventResolver[]> = {};
-const clientDebug = localStorage.getItem('debugmt') || false;
+const clientDebug = localStorage.getItem('debugmt') || document.location.search.indexOf('debug') !== -1;
 const dc = +localStorage.getItem('dc')! || 2;
 const svc = {
-  test: false,
+  test,
   baseDC: dc,
-  meta: JSON.parse(localStorage.getItem('meta') || '{}'),
+  meta: JSON.parse(localStorage.getItem(saveMetaField) || '{}'),
 };
 
 export const uploadingFiles: Record<string, { ready: UploadResolver, progress?: UploadProgressResolver }> = {};
@@ -193,7 +201,7 @@ worker.onmessage = (event: MessageEvent) => {
 
 // Returns id of authorized user
 function getUserID(): number {
-  return svc.meta[dc].userID as number;
+  return svc.meta && svc.meta[dc] ? svc.meta[dc].userID as number : 0;
 }
 
 // Returns base datacenter
@@ -241,7 +249,7 @@ const client = {
  * Cache client meta after page closing
  */
 window.addEventListener('beforeunload', () => {
-  client.storage.setItem('meta', JSON.stringify(svc.meta));
+  client.storage.setItem(saveMetaField, JSON.stringify(svc.meta));
 });
 
 // Dev only

@@ -1,18 +1,8 @@
 import { mount, unmount } from 'core/dom';
 import { useListenWhileMounted, useOnMount } from 'core/hooks'; // eslint-disable-line import/named
 import { div } from 'core/html';
-
-const hashRouter = true;
-
-export const history = {
-  push: (path: string) => {
-    window.history.pushState({ path }, 'Telegram Web', hashRouter ? `./#${path}` : path);
-    const event = document.createEvent('Event');
-    event.initEvent('popstate', false, false);
-    window.dispatchEvent(event);
-  },
-  state: (): string => hashRouter ? window.location.hash.slice(1) : window.location.pathname,
-};
+import client from 'client/client';
+import * as route from 'components/routes';
 
 /**
  * Main router handler
@@ -42,9 +32,11 @@ export class Router {
     useOnMount(this.element, () => this.fetchLocation());
   }
 
-  fetchLocation() {
-    let newRoute = window.location.pathname;
-    if (hashRouter) newRoute = window.location.hash.slice(1);
+  fetchLocation(uid?: number) {
+    let newRoute = '';
+
+    if (client.getUserID() || uid) newRoute = '/';
+    else newRoute = '/login';
 
     if (this.currentRoute !== newRoute) {
       const routeHandler = this.routes[newRoute] || this.routes.default;
@@ -61,3 +53,9 @@ export class Router {
     }
   }
 }
+
+export const router = new Router({
+  '/': route.home,
+  '/login': route.login,
+  default: route.login,
+});

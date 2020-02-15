@@ -58,11 +58,7 @@ export default function formProfile() {
   );
 
   const saveFile = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      // auth.profilePhoto = new Bytes(reader.result);
-    };
-    reader.readAsArrayBuffer(file);
+    auth.profilePhoto = file;
   };
 
   const displayFile = (file: File) => {

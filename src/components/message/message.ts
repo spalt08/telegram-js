@@ -189,7 +189,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
   let aligner: HTMLElement | undefined;
   let wrapper: HTMLElement | undefined;
   let bubble: HTMLElement | undefined;
-  let dayLabel: HTMLElement | undefined; // eslint-disable-line @typescript-eslint/no-unused-vars
+  // let dayLabel: HTMLElement | undefined;
   let profilePicture: HTMLElement | undefined;
   let replyMarkup: Node | undefined;
 
