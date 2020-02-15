@@ -15,7 +15,6 @@ export default function popup() {
   let element: HTMLElement | undefined;
 
   useObservable(wrapper, main.popup, (type: string) => {
-    console.log('popup', type);
     if (element) unmount(element);
     if (wrapper.classList.contains('closing')) wrapper.classList.remove('closing');
 

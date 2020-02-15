@@ -1,5 +1,5 @@
 import { distinctUntilChanged, map } from 'rxjs/operators';
-import { div, text } from 'core/html';
+import { div } from 'core/html';
 import { listen, mount, unmountChildren, unmount } from 'core/dom';
 import { useObservable } from 'core/hooks';
 import { dialogCache, messageCache } from 'cache';

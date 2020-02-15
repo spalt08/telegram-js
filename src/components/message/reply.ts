@@ -37,7 +37,7 @@ export default function messageReply(id: number, peer: Peer) {
   };
 
   if (!messageCache.has(fullId)) {
-    service.loadMessage(id);
+    service.loadMessage(id, () => {});
   }
   messageCache.useItemBehaviorSubject(element, fullId).subscribe(renderReply);
 

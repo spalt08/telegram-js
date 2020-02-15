@@ -1,7 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { userCache, chatCache, messageCache, dialogCache } from 'cache';
-import { peerMessageToId, peerToId, messageToId, messageToDialogPeer } from 'helpers/api';
+import { peerMessageToId, peerToId } from 'helpers/api';
 import { UpdateReadHistoryInbox, UpdateReadChannelInbox, UpdateReadHistoryOutbox, UpdateReadChannelOutbox } from 'cache/types';
 import MessageService from './message/message';
 
