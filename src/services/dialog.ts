@@ -1,7 +1,8 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { userCache, chatCache, messageCache, dialogCache } from 'cache';
-import { peerMessageToId } from 'helpers/api';
+import { peerMessageToId, peerToId, messageToId, messageToDialogPeer } from 'helpers/api';
+import { UpdateReadHistoryInbox, UpdateReadChannelInbox } from 'cache/types';
 import MessageService from './message/message';
 
 /**
@@ -29,9 +30,49 @@ export default class DialogsService {
         return;
       }
 
+      let unread = dialog.unread_count;
+      const message = messageCache.get(peerMessageToId(dialog.peer, messageId));
+      if (message && message._ !== 'messageEmpty' && message.out === false) {
+        if (message.id > dialog.top_message) unread++;
+        else unread = Math.max(0, unread - 1);
+      }
+
       dialogCache.put({
         ...dialog,
         top_message: messageId,
+        unread_count: unread,
+      });
+    });
+
+    // incoming message were readed
+    client.updates.on('updateReadHistoryInbox', (update: UpdateReadHistoryInbox) => {
+      const dialog = dialogCache.get(peerToId(update.peer));
+
+      // to do fetch new peer
+      if (!dialog) {
+        return;
+      }
+
+      dialogCache.put({
+        ...dialog,
+        read_inbox_max_id: update.max_id,
+        unread_count: update.still_unread_count,
+      });
+    });
+
+    // incoming message were readed (channel)
+    client.updates.on('updateReadChannelInbox', (update: UpdateReadChannelInbox) => {
+      const dialog = dialogCache.get(peerToId({ _: 'peerChannel', channel_id: update.channel_id }));
+
+      // to do fetch new peer
+      if (!dialog) {
+        return;
+      }
+
+      dialogCache.put({
+        ...dialog,
+        read_inbox_max_id: update.max_id,
+        unread_count: update.still_unread_count,
       });
     });
 

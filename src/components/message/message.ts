@@ -40,9 +40,13 @@ const renderMessage = (msg: MessageCommon, peer: Peer) => {
 
   const date = messageDate(msg);
   const reply = msg.reply_to_msg_id ? messageReply(msg.reply_to_msg_id, peer) : nothing;
-  const title = channel && channel._ === 'channel' && channel.megagroup === false
-    ? div`.message__title${`color-${idToColorCode(channel.id)}`}`(profileTitle(peer))
-    : div`.message__title${`color-${idToColorCode(msg.from_id)}`}`(profileTitle(userIdToPeer(msg.from_id)));
+  let title: Node = nothing;
+
+  if (peer._ !== 'peerUser') {
+    title = channel && channel._ === 'channel' && channel.megagroup === false
+      ? div`.message__title${`color-${idToColorCode(channel.id)}`}`(profileTitle(peer))
+      : div`.message__title${`color-${idToColorCode(msg.from_id)}`}`(profileTitle(userIdToPeer(msg.from_id)));
+  }
 
   // regular message
   if (!msg.media || msg.media._ === 'messageMediaEmpty') {

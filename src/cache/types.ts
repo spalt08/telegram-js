@@ -93,6 +93,8 @@ export type Dialog = {
   unread_count: number,
   unread_mark: boolean,
   unread_mentions_count: number,
+  read_inbox_max_id: number,
+  read_outbox_max_id: number,
   notify_settings: {
     _: 'peerNotifySettings',
     silent: boolean,
@@ -671,4 +673,24 @@ export type StickerSet = {
   thumb_dc_id?: number,
   count: number,
   hash: number,
+};
+
+/**
+ * Ref: https://core.telegram.org/constructor/updateReadHistoryInbox
+ */
+export type UpdateReadHistoryInbox = {
+  _: 'updateReadHistoryInbox',
+  peer: Peer,
+  max_id: number,
+  still_unread_count: number,
+};
+
+/**
+ * Ref: https://core.telegram.org/constructor/updateReadHistoryInbox
+ */
+export type UpdateReadChannelInbox = {
+  _: 'updateReadChannelInbox',
+  channel_id: number,
+  max_id: number,
+  still_unread_count: number,
 };
