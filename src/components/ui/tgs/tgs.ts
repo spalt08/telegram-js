@@ -31,6 +31,7 @@ export default function tgs({ src, className, autoplay = true, loop = false }: P
 
   useOnMount(container, () => {
     isMounted = true;
+    if (animation) animation.resize();
     if (shouldPlay && animation) {
       animation.play();
     }
