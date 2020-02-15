@@ -14,7 +14,7 @@ const renderMeta = (document: Document, message: Message | undefined) => {
 
   if (message?._ === 'message') {
     const fileSendTime = datetime({ timestamp: message.date, date: true });
-    nodes.push(text(' ꞏ '));
+    nodes.push(text(' \u00b7 '));
     nodes.push(fileSendTime);
   }
 

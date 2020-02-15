@@ -23,13 +23,13 @@ const mediaRowRenderer = (ids: string, peer: Peer): HTMLDivElement => {
     const element = div`.shared-media__mediaitem`();
 
     // photo
-    if (message && message._ === 'message' && message.media._ === 'messageMediaPhoto') {
+    if (message && message._ === 'message' && message.media?._ === 'messageMediaPhoto') {
       const photo = photoPreview(message.media.photo, peer, message, { fit: 'cover', width: 120, height: 120 });
       if (photo) mount(element, photo);
     }
 
     // video
-    if (message && message._ === 'message' && message.media._ === 'messageMediaDocument' && getAttributeVideo(message.media.document)) {
+    if (message && message._ === 'message' && message.media?._ === 'messageMediaDocument' && getAttributeVideo(message.media.document)) {
       const photo = videoPreview(message.media.document, { fit: 'cover', width: 120, height: 120 });
       if (photo) mount(element, photo);
     }

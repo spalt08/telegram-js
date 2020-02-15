@@ -15,7 +15,7 @@ const SEARCH_FILTER: MessageFilter['_'] = 'inputMessagesFilterDocument';
 
 const documentRowRenderer = (id: string) => {
   const msg = messageCache.get(id);
-  if (msg?._ === 'message' && msg.media._ === 'messageMediaDocument') {
+  if (msg?._ === 'message' && msg.media?._ === 'messageMediaDocument') {
     return documentFile(msg.media.document, msg);
   }
   return div(nothing);
