@@ -42,7 +42,7 @@ export default function dialogPreview(id: string) {
   );
 
   // on update
-  useObservable(clickable, dialog, (next: Dialog) => {
+  dialog.subscribe((next: Dialog) => {
     let badge: HTMLElement | undefined;
     if (next.unread_count > 0) badge = div`.dialog__badge`(text(next.unread_count));
     if (next.unread_mark === true && next.unread_count === 0) badge = div`.dialog__badge`();
