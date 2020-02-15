@@ -25,6 +25,10 @@ $messageDistance: 4PX;
 .message {
   width: 100%;
 
+  & .photo {
+    background-color: #fff;
+  }
+
   &__container {
     width: 100%;
     transition: background-color .4s ease-out;

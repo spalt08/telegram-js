@@ -747,6 +747,10 @@ export class VirtualizedList {
       this.mount(nitem);
     }
 
+    this.updateViewport();
+    this.updateHeigths(true);
+    this.updateOffsets();
+
     this.scrollHeight = this.container.scrollHeight;
     this.container.scrollTop = this.prevScrollTop = this.scrollTop = this.getScrollToValue(item);
     this.updateTopElement();
@@ -784,10 +788,6 @@ export class VirtualizedList {
   }
 
   getScrollToValue(item: string, centered: boolean = true) {
-    this.updateViewport();
-    this.updateHeigths(true);
-    this.updateOffsets();
-
     let scrollValue = this.offsets[item];
 
     if (centered && this.viewport.height > this.heights[item]) scrollValue -= (this.viewport.height - this.heights[item]) / 2;
@@ -803,6 +803,9 @@ export class VirtualizedList {
   scrollTo(item: string) {
     this.lock();
 
+    this.updateViewport();
+    this.updateHeigths(true);
+    this.updateOffsets();
     const scrollValue = this.getScrollToValue(item);
 
     const y = this.scrollTop;
