@@ -106,6 +106,20 @@ export default class DialogsService {
       });
     });
 
+    client.updates.on('updateDialogUnreadMark', (update: any) => {
+      const dialog = dialogCache.get(peerToId(update.peer.peer));
+
+      // to do fetch new peer
+      if (!dialog) {
+        return;
+      }
+
+      dialogCache.put({
+        ...dialog,
+        unread_mark: update.unread,
+      });
+    });
+
     // todo: Subscribe to new and removed dialogs
   }
 
