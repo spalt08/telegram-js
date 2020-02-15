@@ -34,7 +34,7 @@ export default function header() {
     const pinnedMessage = div`.header__pinned`();
     mount(container, pinnedMessage);
 
-    useObservable(container, pinnedMessageCache.useItemBehaviorSubject(container, peerToId(peer)), (msg) => {
+    pinnedMessageCache.useItemBehaviorSubject(container, peerToId(peer)).subscribe((msg) => {
       unmountChildren(pinnedMessage);
       if (msg?._ === 'message') {
         const messageQuote = quote('Pinned message', msg.message);

@@ -1,5 +1,5 @@
 import { div, text, nothing } from 'core/html';
-import { useObservable, useInterface, hasInterface, getInterface, useOnMount } from 'core/hooks';
+import { useInterface, hasInterface, getInterface, useOnMount } from 'core/hooks';
 import { mount, unmount } from 'core/dom';
 import { messageCache, chatCache, dialogCache } from 'cache';
 import { Peer, Message, MessageCommon, MessageService, MessageEmpty, Dialog } from 'cache/types';
@@ -200,7 +200,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
   const day = () => Math.ceil(((cached && cached._ !== 'messageEmpty' ? cached.date : 0) - timezoneOffset) / 3600 / 24);
 
   // listen cache changes for auto rerendering
-  useObservable(element, subject, (msg: Message | undefined) => {
+  subject.subscribe((msg: Message | undefined) => {
     // first render
     if (!container) {
       if (!msg) return;

@@ -36,10 +36,10 @@ export default function messageReply(id: number, peer: Peer) {
     mount(element, replyQuote);
   };
 
-  messageCache.useItemBehaviorSubject(element, fullId).subscribe(renderReply);
-  if (!replyQuote) {
+  if (!messageCache.has(fullId)) {
     service.loadMessage(id);
   }
+  messageCache.useItemBehaviorSubject(element, fullId).subscribe(renderReply);
 
   return element;
 }
