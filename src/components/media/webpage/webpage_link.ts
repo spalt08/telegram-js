@@ -1,7 +1,7 @@
 import { WebPage, MessageCommon } from 'cache/types';
 import { div, text, a, nothing } from 'core/html';
 import { newWindowLinkAttributes } from 'const';
-import { ripple, highlightLinks, formattedMessage } from 'components/ui';
+import { ripple, formattedMessage } from 'components/ui';
 import { textToColorCode } from 'cache/accessors';
 import { profileAvatar, profileTitle } from 'components/profile';
 import { userIdToPeer } from 'helpers/api';

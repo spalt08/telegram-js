@@ -408,7 +408,7 @@ export type MessageCommon = {
   message: string,
   date: number,
   to_id: Peer,
-  media?: MessageMedia,
+  media: MessageMedia,
   reply_to_msg_id?: number,
   entities: MessageEntity[],
   reply_markup?: ReplyMarkup,
