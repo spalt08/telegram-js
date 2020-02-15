@@ -22,7 +22,6 @@ const mediaRowRenderer = (ids: string, peer: Peer): HTMLDivElement => {
     const message = messageCache.get(messages[i]);
     const element = div`.shared-media__mediaitem`();
 
-    console.log(peer, message);
     // photo
     if (message && message._ === 'message' && message.media._ === 'messageMediaPhoto') {
       const photo = photoPreview(message.media.photo, peer, message, { fit: 'cover', width: 120, height: 120 });
