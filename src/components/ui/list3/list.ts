@@ -589,7 +589,7 @@ export class VirtualizedList {
     }
 
     if (this.cfg.onReachTop && this.first <= this.cfg.batch * 3) this.cfg.onReachTop();
-    if (this.cfg.onReachBottom && this.current.length - this.last - 1 <= this.cfg.batch * 3) this.cfg.onReachBottom();
+    if (this.cfg.onReachBottom && this.current.length - this.last - 1 <= this.cfg.batch * 1) this.cfg.onReachBottom();
 
     if (this.pendingRecalculate.length > 0) this.updateHeigths();
 

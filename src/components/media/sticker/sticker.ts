@@ -55,6 +55,7 @@ export default function stickerRenderer(sticker: Document, { size = '200px', aut
   if (cached) {
     render(cached);
   } else {
+    // todo: Find out why the hook isn't triggered on remount
     useOnMount(container, () => {
       if (!cached) {
         const thumbnailUrl = getThumbnail(sticker.thumbs);

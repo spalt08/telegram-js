@@ -11,7 +11,7 @@ import * as icons from 'components/icons';
 import messageInput from 'components/message/input/input';
 import { Peer } from 'cache/types';
 import { peerMessageToId, peerToId } from 'helpers/api';
-import { messageCache, dialogCache } from 'cache';
+import { messageCache, dialogCache, chatCache } from 'cache';
 import client from 'client/client';
 import { peerToInputPeer } from 'cache/accessors';
 import header from './header/header';
@@ -78,18 +78,17 @@ export default function messages({ className = '' }: Props = {}) {
         const dialog = dialogCache.get(peerToId(service.activePeer.value));
 
         if (message && dialog && msg.id > dialog.read_inbox_max_id) {
-          const inputPeer = peerToInputPeer(dialog.peer);
+          // read channel
+          if (dialog.peer._ === 'peerChannel') {
+            const channel = chatCache.get(dialog.peer.channel_id);
+            if (!channel || channel._ !== 'channel') return;
 
-          if (dialog.peer._ === 'peerChannel') return;
-          //   inputPeer = {
-          //     _: 'inputPeerChannelFromMessage',
-          //     peer: inputPeer,
-          //     msg_id: msg.id,
-          //     channel_id: dialog.peer.channel_id,
-          //   };
-          // };
-
-          client.call('messages.readHistory', { peer: inputPeer, max_id: msg.id }, () => {});
+            const inputChannel = { _: 'inputChannel', channel_id: dialog.peer.channel_id, access_hash: channel.access_hash };
+            client.call('channels.readHistory', { channel: inputChannel, max_id: msg.id });
+          // read other
+          } else {
+            client.call('messages.readHistory', { peer: peerToInputPeer(dialog.peer), max_id: msg.id });
+          }
 
           let { unread_count } = dialog;
 
