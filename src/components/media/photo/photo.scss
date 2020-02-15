@@ -1,6 +1,6 @@
 .photo {
   position: relative;
-  background: #FFFFFF;
+  background: transparent;
   overflow: hidden;
   display: flex;
   justify-content: center;
@@ -52,6 +52,12 @@
     clip-path: inset(0);
     transform: scale(1.06);
     z-index: 1;
+
+    &.no-blur {
+      clip-path: none;
+      transform: none;
+      filter: none;
+    }
 
     &.removed {
       position: absolute;
