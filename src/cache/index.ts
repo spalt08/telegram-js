@@ -3,7 +3,7 @@ import {
   isDialogInRootFolder,
   messageToId,
   peerMessageToId,
-  peerToId
+  peerToId,
 } from 'helpers/api';
 import Collection, { makeGetIdFromProp } from './fastStorages/collection';
 import Dictionary from './fastStorages/dictionary';

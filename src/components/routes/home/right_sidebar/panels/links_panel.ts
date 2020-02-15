@@ -1,4 +1,4 @@
-import { Peer, Message, MessageFilter } from 'cache/types';
+import { Peer, Message, MessageFilter, MessageCommon } from 'cache/types';
 import { div } from 'core/html';
 import { VirtualizedList } from 'components/ui';
 import { BehaviorSubject } from 'rxjs';
@@ -13,7 +13,7 @@ import webpageLink from 'components/media/webpage/webpage_link';
 const SEARCH_FILTER: MessageFilter['_'] = 'inputMessagesFilterUrl';
 
 const linkRenderer = (id: string) => {
-  const msg = messageCache.get(id);
+  const msg = messageCache.get(id)! as MessageCommon;
   return webpageLink(msg);
 };
 
@@ -47,7 +47,6 @@ export default function linksPanel(peer: Peer) {
     }
 
     const ids = messages
-      .filter((message) => message._ === 'message' && message.media?._ === 'messageMediaWebPage')
       .map((message) => messageToId(message));
 
     items.next(ids);

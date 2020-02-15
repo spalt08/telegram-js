@@ -8,8 +8,8 @@
 
   &__photo {
     flex-shrink: 0;
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     overflow: hidden;
     border-radius: 6px;
     margin-right: 10px;
@@ -22,6 +22,8 @@
     justify-content: center;
     align-items: center;
     color: white;
+    font-size: 20px;
+    font-weight: 500;
 
     @each $i, $color in $user-bg-colors {
       &.color-#{$i} {
@@ -51,16 +53,22 @@
     text-overflow: ellipsis;
   }
 
+  &__message-text {
+    color: #707579;
+    font-size: 13px;
+    white-space: pre-wrap;
+  }
+
   &__link {
     font-size: 13px;
     color: #50a2e9;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
 
-    a {
-      color: #50a2e9;
-      text-decoration: none;
-    }
+  a {
+    color: #50a2e9;
+    text-decoration: none;
   }
 }
