@@ -21,7 +21,7 @@ const renderMeta = (document: Document, message: Message | undefined) => {
   return nodes;
 };
 
-export default function documentFile(document: Document, message: Message | undefined) {
+export default function documentFile(document: Document, message?: Message) {
   const filenameAttributte = getAttributeFilename(document);
 
   let filename = '';
