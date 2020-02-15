@@ -38,7 +38,6 @@ export default function tgs({ src, className, autoplay = true, loop = false }: P
     if (_isVisible) {
       isVisible = true;
       if (animation) {
-        animation.resize();
         if (shouldPlay) {
           animation.play();
         }
