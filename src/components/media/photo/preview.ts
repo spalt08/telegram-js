@@ -15,6 +15,7 @@ export default function photoPreview(photo: Photo, peer: Peer, message: MessageC
       if (!(photoEl instanceof HTMLElement)) return;
 
       const rect = getInterface(photoEl).rect();
+
       if (rect) main.showPopup('photo', { rect, peer, photo, message });
     });
   }
