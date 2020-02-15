@@ -91,7 +91,7 @@ export default class DialogsService {
     client.updates.on('updateReadChannelOutbox', (update: UpdateReadChannelOutbox) => {
       this.changeOrLoadDialog({ _: 'peerChannel', channel_id: update.channel_id }, (dialog) => ({
         ...dialog,
-        read_inbox_max_id: update.max_id,
+        read_outbox_max_id: update.max_id,
       }));
     });
 
