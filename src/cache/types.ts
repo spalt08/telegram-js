@@ -676,6 +676,28 @@ export type StickerSet = {
 };
 
 /**
+ * Ref: https://core.telegram.org/type/DialogPeer
+ */
+export type DialogPeer = {
+  _: 'dialogPeer',
+  peer: Peer,
+} | {
+  _: 'dialogPeerFolder',
+  folder_id: number,
+};
+
+/**
+ * Ref: https://core.telegram.org/constructor/messages.peerDialogs
+ */
+export type PeerDialogs = {
+  _: 'messages.peerDialogs',
+  dialogs: Dialog[],
+  messages: Message[],
+  chats: Chat[],
+  users: User[],
+};
+
+/**
  * Ref: https://core.telegram.org/constructor/updateReadHistoryInbox
  */
 export type UpdateReadHistoryInbox = {
@@ -695,7 +717,6 @@ export type UpdateReadChannelInbox = {
   still_unread_count: number,
 };
 
-
 /**
  * Ref: https://core.telegram.org/constructor/updateReadHistoryOutbox
  */
@@ -712,4 +733,42 @@ export type UpdateReadChannelOutbox = {
   _: 'updateReadChannelOutbox',
   channel_id: number,
   max_id: number,
+};
+
+/**
+ * Ref: https://core.telegram.org/constructor/updateReadChannelOutbox
+ */
+export type UpdateChannel = {
+  _: 'updateChannel',
+  channel_id: number,
+};
+
+/**
+ * Ref: https://core.telegram.org/constructor/updateDialogPinned
+ */
+export type UpdateDialogPinned = {
+  _: 'updateDialogPinned',
+  pinned: boolean,
+  folder_id: number,
+  peer: DialogPeer,
+};
+
+/**
+ * Ref: https://core.telegram.org/constructor/updatePinnedDialogs
+ */
+export type UpdatePinnedDialogs = {
+  _: 'updatePinnedDialogs',
+  folder_id?: number,
+  order: DialogPeer[],
+};
+
+/**
+ * Ref: https://core.telegram.org/type/InputDialogPeer
+ */
+export type InputDialogPeer = {
+  _: 'inputDialogPeer',
+  peer: InputPeer,
+} | {
+  _: 'inputDialogPeerFolder',
+  folder_id: number,
 };

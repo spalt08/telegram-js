@@ -1,4 +1,10 @@
-import { dialogToId, isDialogArchived, messageToId, peerMessageToId, peerToId } from 'helpers/api';
+import {
+  dialogToId,
+  isDialogInRootFolder,
+  messageToId,
+  peerMessageToId,
+  peerToId
+} from 'helpers/api';
 import Collection, { makeGetIdFromProp } from './fastStorages/collection';
 import Dictionary from './fastStorages/dictionary';
 import { Chat, Dialog, Message, User, UserFull, ChatFull, MessageCommon } from './types';
@@ -61,7 +67,7 @@ export const dialogCache = new Collection({
         return (message2 && message2._ !== 'messageEmpty' ? message2.date : 0) - (message1 && message1._ !== 'messageEmpty' ? message1.date : 0);
       },
       (dialog: Dialog) => {
-        if (isDialogArchived(dialog)) {
+        if (!isDialogInRootFolder(dialog)) {
           return false;
         }
         if (dialog.peer._ === 'peerChat') {
