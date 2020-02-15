@@ -351,10 +351,12 @@ export default function messageHistory(collection: Collection<Message, any>) {
     newestMessages: newestMessagesSubject,
 
     /**
-     * Puts a new (the most recent for a peer) message to the storage and the index
+     * Puts new (the most recent for a peer) messages to the storage and the index.
+     * The messages must be ordered from the newest to the oldest.
+     * All the messages must have the same peer.
      */
-    putNewestMessage(message: Readonly<Message>) {
-      const peer = messageToDialogPeer(message);
+    putNewestMessages(messages: Readonly<Message>[]) {
+      const peer = messageToDialogPeer(messages[0]);
       if (!peer) {
         return;
       }
@@ -363,9 +365,9 @@ export default function messageHistory(collection: Collection<Message, any>) {
 
       try {
         isUpdatingByThisIndex = true;
-        collection.put(message);
+        collection.put(messages);
         newestRef.putChunk({
-          ids: [message.id],
+          ids: messages.map((message) => message.id),
           newestReached: true,
         });
       } finally {

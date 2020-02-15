@@ -222,14 +222,13 @@ export default class DialogsService {
   preloadDialogs = (dialogs: Dialog[]) => {
     for (let i = 0; i < dialogs.length; i++) {
       if (dialogs[i].unread_count === 0) {
-        const payload = { peer: peerToInputPeer(dialogs[i].peer), offset_id: dialogs[i].read_inbox_max_id, add_offset: -10, limit: 20 };
+        const payload = { peer: peerToInputPeer(dialogs[i].peer), offset_id: 0, add_offset: -10, limit: 20 };
         client.call('messages.getHistory', payload, { thread: 2 }, (err: any, data: any) => {
           if (err || !data) return;
 
           userCache.put(data.users);
           chatCache.put(data.chats);
-          messageCache.put(data.messages);
-          this.messageService.pushMessages(data.messages);
+          messageCache.indices.history.putNewestMessages(data.messages);
         });
       }
     }

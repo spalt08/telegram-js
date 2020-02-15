@@ -252,9 +252,6 @@ window.addEventListener('beforeunload', () => {
   client.storage.setItem(saveMetaField, JSON.stringify(svc.meta));
 });
 
-// Dev only
-if (process.env.NODE_ENV === 'development') {
-  (window as any).client = client;
-}
+(window as any).client = client;
 
 export default client;

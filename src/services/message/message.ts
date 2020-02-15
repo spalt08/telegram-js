@@ -179,7 +179,7 @@ export default class MessagesService {
     messageCache.batchChanges(() => {
       messages.forEach((message) => {
         if (message._ !== 'messageEmpty') {
-          messageCache.indices.history.putNewestMessage(message);
+          messageCache.indices.history.putNewestMessages([message]);
         }
       });
     });
@@ -267,7 +267,7 @@ export default class MessagesService {
         this.pendingMessages[randId].date = result.date;
         this.pendingMessages[randId].entities = result.entities;
 
-        messageCache.indices.history.putNewestMessage(this.pendingMessages[randId]);
+        messageCache.indices.history.putNewestMessages([this.pendingMessages[randId]]);
         delete this.pendingMessages[randId];
       }
     });
