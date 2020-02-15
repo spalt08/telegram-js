@@ -12,6 +12,7 @@
   }
 
   &__header {
+    flex: none;
     display: flex;
     align-items: center;
     margin: 6px 12px;
@@ -24,7 +25,7 @@
     & .avatar__standard {
       font-size: 40px;
     }
-    
+
     svg {
       transform: scale(2.5);
     }
