@@ -143,7 +143,7 @@ worker.onmessage = (event: MessageEvent) => {
 
   switch (data.type) {
     case 'call':
-      requests[event.data.id](data.payload.err, data.payload.result);
+      if (requests[event.data.id]) requests[event.data.id](data.payload.err, data.payload.result);
       delete requests[event.data.id];
       break;
 
