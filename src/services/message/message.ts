@@ -223,8 +223,10 @@ export default class MessagesService {
   }
 
   /** Load single message */
-  loadMessage = (id: number, cb: (msg: Message) => void) => {
-    client.call('messages.getMessages', { id: [{ _: 'inputMessageID', id }] }, (err, res) => {
+  loadMessageReply = (msg: MessageCommon, cb: (msg: Message) => void) => {
+    const params = { id: [{ _: 'inputMessageReplyTo', id: msg.id }, { _: 'inputMessageID', id: msg.reply_to_msg_id }] };
+
+    client.call('messages.getMessages', params, (err, res) => {
       if (!err && res && res.messages && res.messages.length > 0) {
         messageCache.put(res.messages);
         cb(res.messages[0]);

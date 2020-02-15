@@ -5,11 +5,11 @@ import photoRenderer from 'components/media/photo/photo';
 import { listen, unmount, mount } from 'core/dom';
 import { div } from 'core/html';
 import { messageCache } from 'cache';
-import { Peer, Message } from 'cache/types';
+import { Peer, Message, MessageCommon } from 'cache/types';
 import { message as service } from 'services';
 import messageShort from './short';
 
-export default function messageReply(id: number, peer: Peer) {
+export default function messageReply(id: number, peer: Peer, original: MessageCommon) {
   const fullId = peerMessageToId(peer, id);
 
   const element = div`.message__reply`();
@@ -37,7 +37,7 @@ export default function messageReply(id: number, peer: Peer) {
   };
 
   if (!messageCache.has(fullId)) {
-    service.loadMessage(id, () => {});
+    service.loadMessageReply(original, () => {});
   }
   messageCache.useItemBehaviorSubject(element, fullId).subscribe(renderReply);
 

@@ -39,7 +39,7 @@ const renderMessage = (msg: MessageCommon, peer: Peer) => {
   const channel = peer._ === 'peerChannel' ? chatCache.get(peer.channel_id) : undefined;
 
   const date = messageDate(msg);
-  const reply = msg.reply_to_msg_id ? messageReply(msg.reply_to_msg_id, peer) : nothing;
+  const reply = msg.reply_to_msg_id ? messageReply(msg.reply_to_msg_id, peer, msg) : nothing;
   let title: Node = nothing;
 
   if (peer._ !== 'peerUser') {
