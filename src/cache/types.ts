@@ -694,3 +694,22 @@ export type UpdateReadChannelInbox = {
   max_id: number,
   still_unread_count: number,
 };
+
+
+/**
+ * Ref: https://core.telegram.org/constructor/updateReadHistoryOutbox
+ */
+export type UpdateReadHistoryOutbox = {
+  _: 'updateReadHistoryOutbox',
+  peer: Peer,
+  max_id: number,
+};
+
+/**
+ * Ref: https://core.telegram.org/constructor/updateReadChannelOutbox
+ */
+export type UpdateReadChannelOutbox = {
+  _: 'updateReadChannelOutbox',
+  channel_id: number,
+  max_id: number,
+};

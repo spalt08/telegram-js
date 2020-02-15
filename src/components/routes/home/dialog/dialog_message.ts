@@ -53,12 +53,12 @@ export default function dialogMessage(dialog: Dialog) {
     return (
       typingIndicator(
         dialog.peer,
-        'dialog__message',
+        '',
         strong`.dialog__message_title`(text(`${userLabel}: `)),
         text(content),
       )
     );
   }
 
-  return typingIndicator(dialog.peer, 'dialog__message', text(content));
+  return typingIndicator(dialog.peer, '', text(content));
 }
