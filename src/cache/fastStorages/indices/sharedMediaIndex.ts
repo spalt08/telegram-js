@@ -2,9 +2,16 @@ import { Peer, Message } from 'cache/types';
 import { peerToId } from 'helpers/api';
 import { Subject, ReplaySubject, Observable } from 'rxjs';
 import Collection from '../collection';
+import { orderBy } from '.';
 
 export default function sharedMediaIndex(collection: Collection<Message, any>) {
-  const cache: Record<string, { snapshot: Collection<Message, any, number>, subject: Subject<Message[]> }> = {};
+  const createInvertedIndex = () => ({ invertedOrder: orderBy<Message>((m1, m2) => m2.id - m1.id) });
+  const createEmptySnapshot = () => new Collection<Message, ReturnType<typeof createInvertedIndex>, number>({
+    getId: (item) => item.id,
+    indices: createInvertedIndex(),
+  });
+
+  const cache: Record<string, { snapshot: ReturnType<typeof createEmptySnapshot>, subject: Subject<Message[]> }> = {};
 
   collection.changes.subscribe((collectionChanges) => {
     collectionChanges.forEach(([action, item]) => {
@@ -28,7 +35,7 @@ export default function sharedMediaIndex(collection: Collection<Message, any>) {
   function getCacheLine(peer: Peer) {
     let cacheLine = cache[peerToId(peer)];
     if (!cacheLine) {
-      cacheLine = { snapshot: new Collection({ getId: (item) => item.id }), subject: new ReplaySubject(1) };
+      cacheLine = { snapshot: createEmptySnapshot(), subject: new ReplaySubject(1) };
       cache[peerToId(peer)] = cacheLine;
     }
     return cacheLine;
@@ -42,13 +49,8 @@ export default function sharedMediaIndex(collection: Collection<Message, any>) {
 
       collection.put(messages);
       const cacheLine = getCacheLine(peer);
-      cacheLine.snapshot.batchChanges(() => {
-        messages
-          .filter((m) => !cacheLine.snapshot.has(m.id))
-          .forEach((m) => cacheLine.snapshot.put(m));
-      });
-      const snapshot = cacheLine.snapshot.getAll();
-      snapshot.sort((i1, i2) => i2.id - i1.id);
+      cacheLine.snapshot.batchChanges(() => messages.forEach((m) => cacheLine.snapshot.put(m)));
+      const snapshot = cacheLine.snapshot.indices.invertedOrder.getItems();
       cacheLine.subject.next(snapshot);
     },
 
@@ -58,7 +60,7 @@ export default function sharedMediaIndex(collection: Collection<Message, any>) {
 
     getEarliestPeerMedia(peer: Peer): Message | undefined {
       const cacheLine = getCacheLine(peer);
-      return cacheLine.snapshot.getAll()[0];
+      return cacheLine.snapshot.indices.invertedOrder.getItemAt(cacheLine.snapshot.indices.invertedOrder.getLength() - 1);
     },
   };
 }
