@@ -10,7 +10,10 @@ import { sectionSpinner, VirtualizedList } from 'components/ui';
 import * as icons from 'components/icons';
 import messageInput from 'components/message/input/input';
 import { Peer } from 'cache/types';
-import { peerMessageToId } from 'helpers/api';
+import { peerMessageToId, peerToId } from 'helpers/api';
+import { messageCache, dialogCache } from 'cache';
+import client from 'client/client';
+import { peerToInputPeer } from 'cache/accessors';
 import header from './header/header';
 
 interface Props {
@@ -66,6 +69,42 @@ export default function messages({ className = '' }: Props = {}) {
       const showDown = !service.history.value.newestReached || itemsSubject.value[itemsSubject.value.length - 1] !== id;
       if (showDown !== showDownButton.value) {
         showDownButton.next(showDown);
+      }
+
+      const msg = messageCache.get(id);
+
+      // send read status
+      if (msg && msg._ !== 'messageEmpty' && service.activePeer.value) {
+        const dialog = dialogCache.get(peerToId(service.activePeer.value));
+
+        if (message && dialog && msg.id > dialog.read_inbox_max_id) {
+          const inputPeer = peerToInputPeer(dialog.peer);
+
+          if (dialog.peer._ === 'peerChannel') return;
+          //   inputPeer = {
+          //     _: 'inputPeerChannelFromMessage',
+          //     peer: inputPeer,
+          //     msg_id: msg.id,
+          //     channel_id: dialog.peer.channel_id,
+          //   };
+          // };
+
+          client.call('messages.readHistory', { peer: inputPeer, max_id: msg.id }, () => {});
+
+          let { unread_count } = dialog;
+
+          if (msg.id === dialog.top_message) unread_count = 0;
+          else {
+            for (let i = scroll.current.indexOf(peerMessageToId(dialog.peer, dialog.read_inbox_max_id)) + 1; i <= scroll.current.indexOf(id); i++) {
+              const next = messageCache.get(scroll.current[i]);
+              if (next && next._ !== 'messageEmpty' && next.out === false) unread_count--;
+            }
+          }
+
+          dialogCache.put({
+            ...dialog, read_inbox_max_id: msg.id, unread_count,
+          });
+        }
       }
     },
   });
