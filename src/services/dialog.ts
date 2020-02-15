@@ -12,6 +12,7 @@ import {
   Peer,
   InputDialogPeer,
   PeerDialogs,
+  Dialog,
 } from 'cache/types';
 import { peerToInputDialogPeer } from 'cache/accessors';
 import MessageService from './message/message';
@@ -31,127 +32,79 @@ export default class DialogsService {
       this.dialogs.next(dialogCache.indices.order.getIds());
     });
 
-    messageCache.indices.history.newestMessages.subscribe(([peer, messageId]) => {
-      const dialog = dialogCache.get(peerToId(peer));
-      if (!dialog) {
-        this.loadPeerDialogs([peer]);
-        return;
-      }
-
-      if (dialog.top_message === messageId) {
-        return;
-      }
-
-      let unread = dialog.unread_count;
-      const message = messageCache.get(peerMessageToId(dialog.peer, messageId));
-      if (message && message._ !== 'messageEmpty' && message.out === false) {
-        if (message.id > dialog.top_message) unread++;
-        else unread = Math.max(0, unread - 1);
-      }
-
-      dialogCache.put({
-        ...dialog,
-        top_message: messageId,
-        unread_count: unread,
-      });
-    });
-
     // The client pushes it before pushing messages
     client.updates.on('chat', (chat: Chat) => {
       chatCache.put(chat);
     });
 
+    messageCache.indices.history.newestMessages.subscribe(([peer, messageId]) => {
+      this.changeOrLoadDialog(peer, (dialog) => {
+        if (dialog.top_message === messageId) {
+          return undefined;
+        }
+
+        let unread = dialog.unread_count;
+        const message = messageCache.get(peerMessageToId(dialog.peer, messageId));
+        if (message && message._ !== 'messageEmpty' && message.out === false) {
+          if (message.id > dialog.top_message) unread++;
+          else unread = Math.max(0, unread - 1);
+        }
+
+        return {
+          ...dialog,
+          top_message: messageId,
+          unread_count: unread,
+        };
+      });
+    });
+
     // incoming message were readed
     client.updates.on('updateReadHistoryInbox', (update: UpdateReadHistoryInbox) => {
-      const dialog = dialogCache.get(peerToId(update.peer));
-
-      if (!dialog) {
-        this.loadPeerDialogs([update.peer]);
-        return;
-      }
-
-      dialogCache.put({
+      this.changeOrLoadDialog(update.peer, (dialog) => ({
         ...dialog,
         read_inbox_max_id: update.max_id,
         unread_count: update.still_unread_count,
-      });
+      }));
     });
 
     // outcoming message were readed
     client.updates.on('updateReadHistoryOutbox', (update: UpdateReadHistoryOutbox) => {
-      const dialog = dialogCache.get(peerToId(update.peer));
-
-      if (!dialog) {
-        this.loadPeerDialogs([update.peer]);
-        return;
-      }
-
-      dialogCache.put({
+      this.changeOrLoadDialog(update.peer, (dialog) => ({
         ...dialog,
         read_outbox_max_id: update.max_id,
-      });
+      }));
     });
 
     // incoming message were readed (channel)
     client.updates.on('updateReadChannelInbox', (update: UpdateReadChannelInbox) => {
-      const peer = { _: 'peerChannel', channel_id: update.channel_id } as const;
-      const dialog = dialogCache.get(peerToId(peer));
-
-      if (!dialog) {
-        this.loadPeerDialogs([peer]);
-        return;
-      }
-
-      dialogCache.put({
+      this.changeOrLoadDialog({ _: 'peerChannel', channel_id: update.channel_id }, (dialog) => ({
         ...dialog,
         read_inbox_max_id: update.max_id,
         unread_count: update.still_unread_count,
-      });
+      }));
     });
 
     // outcoming message were readed (channel)
     client.updates.on('updateReadChannelOutbox', (update: UpdateReadChannelOutbox) => {
-      const peer = { _: 'peerChannel', channel_id: update.channel_id } as const;
-      const dialog = dialogCache.get(peerToId({ _: 'peerChannel', channel_id: update.channel_id }));
-
-      if (!dialog) {
-        this.loadPeerDialogs([peer]);
-        return;
-      }
-
-      dialogCache.put({
+      this.changeOrLoadDialog({ _: 'peerChannel', channel_id: update.channel_id }, (dialog) => ({
         ...dialog,
         read_inbox_max_id: update.max_id,
-      });
+      }));
     });
 
     client.updates.on('updateDialogUnreadMark', (update: any) => {
-      const dialog = dialogCache.get(peerToId(update.peer.peer));
-
-      if (!dialog) {
-        this.loadPeerDialogs([update.peer.peer]);
-        return;
-      }
-
-      dialogCache.put({
+      this.changeOrLoadDialog(update.peer.peer, (dialog) => ({
         ...dialog,
         unread_mark: update.unread,
-      });
+      }));
     });
 
     client.updates.on('updateDialogPinned', (update: UpdateDialogPinned) => {
       if (update.peer._ === 'dialogPeer') {
-        const dialog = dialogCache.get(peerToId(update.peer.peer));
-
-        if (!dialog) {
-          this.loadPeerDialogs([update.peer.peer]);
-          return;
-        }
-
-        dialogCache.put({
+        this.changeOrLoadDialog(update.peer.peer, (dialog) => ({
           ...dialog,
           pinned: update.pinned,
-        });
+        }));
       }
     });
   }
@@ -212,6 +165,19 @@ export default class DialogsService {
     });
   }
 
+  protected changeOrLoadDialog(peer: Peer, modify: (dialog: Dialog) => Dialog | null | undefined) {
+    const dialog = dialogCache.get(peerToId(peer));
+
+    if (dialog) {
+      const newDialog = modify(dialog);
+      if (newDialog) {
+        dialogCache.put(newDialog);
+      }
+    } else {
+      this.loadPeerDialogs([peer]);
+    }
+  }
+
   protected loadPeerDialogs(peers: Peer[]) {
     const inputPeers: InputDialogPeer[] = [];
 
@@ -227,11 +193,12 @@ export default class DialogsService {
   }
 
   protected loadInputPeerDialogs(peers: InputDialogPeer[]) {
-    client.call('messages.getPeerDialogs', { peers }, (err: any, data?: PeerDialogs) => {
-      if (err || !data) {
+    const request = { peers };
+    client.call('messages.getPeerDialogs', request, (error: any, data?: PeerDialogs) => {
+      if (error || !data) {
         if (process.env.NODE_ENV === 'development') {
           // eslint-disable-next-line no-console
-          console.error('Failed to load peer dialogs', err);
+          console.error('Failed to load peer dialogs', { request, error });
         }
         return;
       }
