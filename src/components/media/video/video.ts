@@ -15,7 +15,7 @@ export default function videoRenderer(document: Document, photoOptions: PhotoOpt
   if (!videoAttribute) return nothing;
 
   const videoEl = video({ autoplay: true, loop: true });
-  const cached = media.cached(location);
+  let cached = media.cached(location);
   const container = div`.video`(videoEl);
 
   let progressTextNode: Node | undefined;
@@ -59,6 +59,24 @@ export default function videoRenderer(document: Document, photoOptions: PhotoOpt
 
   useOnMount(container, () => {
     if (videoEl.src) videoEl.play();
+
+    if (!cached) {
+      media.download(
+        location,
+        { dc_id: document.dc_id, size: document.size, mime_type: document.mime_type },
+
+        // ready
+        (url: string) => {
+          cached = url;
+          videoEl.src = url;
+        },
+
+        // progress
+        (downloaded: number, total: number) => {
+          if (progressTextNode) progressTextNode.textContent = `${((downloaded / total) * 100).toFixed(0)}%`;
+        },
+      );
+    }
   });
 
   listen(videoEl, 'mouseenter', () => {
@@ -67,19 +85,6 @@ export default function videoRenderer(document: Document, photoOptions: PhotoOpt
 
   if (cached) {
     videoEl.src = cached;
-  } else {
-    media.download(
-      location,
-      { dc_id: document.dc_id, size: document.size, mime_type: document.mime_type },
-
-      // ready
-      (url: string) => videoEl.src = url,
-
-      // progress
-      (downloaded: number, total: number) => {
-        if (progressTextNode) progressTextNode.textContent = `${((downloaded / total) * 100).toFixed(0)}%`;
-      },
-    );
   }
 
   return container;

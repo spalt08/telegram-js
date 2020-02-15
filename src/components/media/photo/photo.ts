@@ -5,7 +5,7 @@ import { mount, unmount, listenOnce } from 'core/dom';
 import { getThumbnail, getPhotoLocation, getSize, PhotoFitMode } from 'helpers/photo';
 import media from 'client/media';
 import './photo.scss';
-import { useInterface } from 'core/hooks';
+import { useInterface, useOnMount } from 'core/hooks';
 
 export type PhotoOptions = {
   fit?: PhotoFitMode,
@@ -33,7 +33,7 @@ export default function photoRenderer(photo: Photo | Document,
 
   const orientation = size.w >= size.h ? 'landscape' : 'portrait';
   const location = getPhotoLocation(photo, size.type);
-  const url = media.cached(location);
+  let url = media.cached(location);
 
   let thumbSrc: string | null = null;
 
@@ -81,6 +81,8 @@ export default function photoRenderer(photo: Photo | Document,
     if (loader) unmount(loader);
     if (image) unmount(image);
 
+    url = src;
+
     if (thumbnail) {
       thumbnail.classList.add('removed');
       listenOnce(thumbnail, 'animationend', () => thumbnail && unmount(thumbnail));
@@ -91,12 +93,16 @@ export default function photoRenderer(photo: Photo | Document,
 
   // load or render cached
   if (!url) {
-    if (showLoader) {
-      loader = div`.photo__loader`(materialSpinner());
-      mount(container, loader);
-    }
+    useOnMount(container, () => {
+      if (!url) {
+        if (showLoader) {
+          loader = div`.photo__loader`(materialSpinner());
+          mount(container, loader);
+        }
 
-    media.get(location, render, photo.dc_id);
+        media.get(location, render, photo.dc_id);
+      }
+    });
   } else {
     render(url);
   }

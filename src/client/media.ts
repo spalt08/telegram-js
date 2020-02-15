@@ -19,7 +19,7 @@ const requests: Record<string, MediaResolver[]> = {};
  */
 function resolve(location: InputFileLocation) {
   return (url: string | null) => {
-    fileCache.put(locationToString(location), url);
+    if (url) fileCache.put(locationToString(location), url);
 
     const id = locationToString(location);
 
