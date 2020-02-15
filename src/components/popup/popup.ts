@@ -12,7 +12,7 @@ import './popup.scss';
  */
 export default function popup() {
   const wrapper = div`.opaco`();
-  let element: HTMLElement | undefined;
+  let element: Node | undefined;
 
   useObservable(wrapper, main.popup, (type: string) => {
     if (element) unmount(element);

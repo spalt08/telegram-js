@@ -23,14 +23,12 @@
     overflow: hidden;
     border-radius: 4px;
     background: #fff;
-    height: 100%; 
     cursor: pointer;
 
     &:last-child { margin-right: 0; }
 
-    &.photo {
-      width: 100%;
-      height: 100%;
+    & .photo {
+      width: 100% !important;
     }
   }
 

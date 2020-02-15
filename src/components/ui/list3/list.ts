@@ -302,7 +302,7 @@ export class VirtualizedList {
     }
 
     // fallback if current data is a part of next (lazy load)
-    if (this.cfg.pivotBottom !== true && arr_contains(next, this.current)) {
+    if (arr_contains(next, this.current) && (this.cfg.pivotBottom !== true || next.length - this.current.length > 5)) {
       this.updateData(next);
       this.virtualize(1);
       return;

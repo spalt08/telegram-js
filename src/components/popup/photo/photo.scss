@@ -8,6 +8,7 @@
 }
 
 .photofull_header {
+  user-select: none;
   position: absolute;
   top: 0;
   left: 0;
@@ -25,6 +26,28 @@
   }
 }
 
+.photofull_image {
+  user-select: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  will-change: transfrom;
+  transform: translate3d();
+
+  & .photo.landscape, & .photo.landscape img {
+    height: 100% !important;
+    width: auto !important;
+    min-width: 100%;
+  }
+
+  & .photo.portrait, & .photo.portrait img {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100%;
+  }
+}
+
 @keyframes appearPhotoFullHeader {
   from {
     transform: translateY(-100%);
@@ -32,6 +55,7 @@
 }
 
 .photofull_footer {
+  user-select: none;
   position: absolute;
   bottom: 0;
   left: 0;

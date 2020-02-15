@@ -40,8 +40,12 @@ export default function dialogPreview(id: string) {
     ])
   );
 
+  function isSelected(activePeer = message.activePeer.value) {
+    return !!activePeer && peerToId(activePeer) === id;
+  }
+
   const isSelectedObservable = message.activePeer.pipe(
-    map((activePeer) => !!(activePeer && peerToId(activePeer) === id)),
+    map(isSelected),
     distinctUntilChanged(),
   );
 
@@ -115,16 +119,23 @@ export default function dialogPreview(id: string) {
     }
   });
 
-  useObservable(clickable, isSelectedObservable, (isSelected) => {
-    clickable.classList.toggle('-selected', isSelected);
+  useObservable(clickable, isSelectedObservable, (selected) => {
+    clickable.classList.toggle('-selected', selected);
   });
 
-  listen(clickable, 'click', () => message.selectPeer(
-    peer,
+  listen(clickable, 'click', () => {
+    const currentDialog = dialog.value;
+    let targetMessage: number | undefined;
 
-    // Scroll to the bottom when a selected dialog is clicked
-    message.activePeer.value && peerToId(message.activePeer.value) === id ? Infinity : undefined,
-  ));
+    if (isSelected()) {
+      // Scroll to the bottom when a selected dialog is clicked
+      targetMessage = Infinity;
+    } else if (currentDialog && currentDialog.top_message > currentDialog.read_inbox_max_id) {
+      targetMessage = currentDialog.read_inbox_max_id;
+    }
+
+    message.selectPeer(peer, targetMessage);
+  });
 
   mount(container, clickable);
 

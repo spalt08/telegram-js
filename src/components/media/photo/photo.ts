@@ -26,7 +26,7 @@ export default function photoRenderer(photo: Photo | Document,
 
   const container = div`.photo`();
 
-  let thumbnail: HTMLElement | undefined;
+  let thumbnail: HTMLImageElement | undefined;
   let loader: HTMLElement | undefined;
   let background: HTMLElement | undefined;
   let image: HTMLElement | undefined;
@@ -45,12 +45,22 @@ export default function photoRenderer(photo: Photo | Document,
 
   if (fit === 'contain') {
     if (orientation === 'landscape' && width) {
-      container.style.width = `${Math.min(width, size.w)}px`;
-      container.style.height = `${Math.min(size.h, width / dim)}px`;
+      if (height && width / dim > height) {
+        container.style.height = `${Math.min(size.h, height)}px`;
+        container.style.width = `${Math.min(size.w, height * dim)}px`;
+      } else {
+        container.style.width = `${Math.min(width, size.w)}px`;
+        container.style.height = `${Math.min(size.h, width / dim)}px`;
+      }
     }
     if (orientation === 'portrait' && height) {
-      container.style.height = `${Math.min(size.h, height)}px`;
-      container.style.width = `${Math.min(size.w, height * dim)}px`;
+      if (width && height * dim > width) {
+        container.style.width = `${Math.min(width, size.w)}px`;
+        container.style.height = `${Math.min(size.h, width / dim)}px`;
+      } else {
+        container.style.height = `${Math.min(size.h, height)}px`;
+        container.style.width = `${Math.min(size.w, height * dim)}px`;
+      }
     }
   } else {
     container.style.width = `${width}px`;
@@ -108,6 +118,12 @@ export default function photoRenderer(photo: Photo | Document,
   }
 
   return useInterface(container, {
-    rect() { return image ? image.getBoundingClientRect() : thumbnail?.getBoundingClientRect(); },
+    rect: () => fit === 'cover' ? container.getBoundingClientRect() : (image || thumbnail || container).getBoundingClientRect(),
+    setThumb: (src: string) => {
+      if (thumbnail) {
+        thumbnail.src = src;
+        thumbnail.classList.add('no-blur');
+      }
+    },
   });
 }

@@ -12,7 +12,11 @@ export default class UsersService {
 
     // The client pushes it before pushing messages
     client.updates.on('user', (user) => {
-      userCache.put(user);
+      // It may have a broken access_hash (like the `chat` push) so it shouldn't replace an existing user
+      // todo: Check it
+      if (!userCache.has(user.id)) {
+        userCache.put(user);
+      }
     });
   }
 

@@ -1,6 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { Photo, Message, Peer, InputStickerSet } from 'cache/types';
+import { PhotoOptions } from 'components/media/photo/photo';
 
 export const enum RightSidebarPanel {
   None,
@@ -34,7 +35,7 @@ export default class MainService {
 
   showPopup(type: 'sendMedia'): void;
   showPopup(type: 'stickerSet', ctx: InputStickerSet): void;
-  showPopup(type: 'photo', ctx: { rect: DOMRect, photo: Photo, peer: Peer, message: Message }): void;
+  showPopup(type: 'photo', ctx: { rect: DOMRect, options: PhotoOptions, photo: Photo, peer: Peer, message: Message }): void;
   showPopup(type: string, ctx?: any): void {
     this.popupCtx = ctx;
     this.popup.next(type);
