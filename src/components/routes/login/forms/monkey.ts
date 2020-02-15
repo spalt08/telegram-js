@@ -7,9 +7,9 @@ import peeking from 'assets/monkey_peeking.tgs';
 import './monkey.scss';
 
 export default function monkey() {
-  const monkeyTracking = tgs({ className: 'monkey__state', src: tracking, autoplay: true });
-  const monkeyClosing = tgs({ className: 'monkey__state hidden', src: closing, autoplay: true });
-  const monkeyPeeking = tgs({ className: 'monkey__state hidden', src: peeking, autoplay: true });
+  const monkeyTracking = tgs({ className: 'monkey__state', src: tracking });
+  const monkeyClosing = tgs({ className: 'monkey__state hidden', src: closing });
+  const monkeyPeeking = tgs({ className: 'monkey__state hidden', src: peeking });
 
   const element = div`.monkey`(
     monkeyTracking,
@@ -33,19 +33,18 @@ export default function monkey() {
   const closeEyes = () => {
     monkeyTracking.classList.add('hidden');
     monkeyClosing.classList.remove('hidden');
-    getInterface(monkeyClosing).resize();
-    getInterface(monkeyClosing).goTo(50);
+    getInterface(monkeyClosing).goTo(0);
+    getInterface(monkeyClosing).goTo(50, true);
   };
 
   const peek = () => {
     monkeyClosing.classList.add('hidden');
     monkeyPeeking.classList.remove('hidden');
-    getInterface(monkeyPeeking).resize();
-    getInterface(monkeyPeeking).goTo(20);
+    getInterface(monkeyClosing).goTo(0);
+    getInterface(monkeyPeeking).goTo(20, true);
   };
 
   const unpeek = () => {
-    getInterface(monkeyPeeking).resize();
     getInterface(monkeyPeeking).goTo(0);
   };
 
