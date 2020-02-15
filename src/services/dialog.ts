@@ -34,7 +34,10 @@ export default class DialogsService {
 
     // The client pushes it before pushing messages
     client.updates.on('chat', (chat: Chat) => {
-      chatCache.put(chat);
+      // It has a broken access_hash for some reason so it shouldn't replace an existing chat
+      if (!chatCache.has(chat.id)) {
+        chatCache.put(chat);
+      }
     });
 
     messageCache.indices.history.newestMessages.subscribe(([peer, messageId]) => {
