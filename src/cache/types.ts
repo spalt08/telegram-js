@@ -204,6 +204,11 @@ export type Chat = {
   megagroup: boolean,
 };
 
+export type ChatOnlines = {
+  _: 'chatOnlines',
+  onlines: number,
+};
+
 /**
  * Chat photo object
  * Ref: https://core.telegram.org/type/ChatPhoto
@@ -235,6 +240,7 @@ export type ChatFull = {
   id: number,
   about: string,
   pinned_msg_id: number,
+  participants: ChatParticipants,
 } | {
   _: 'channelFull',
   id: number,
@@ -242,6 +248,32 @@ export type ChatFull = {
   pinned_msg_id: number,
   participants_count: number,
   online_count: number,
+};
+
+export type ChatParticipants = {
+  _: 'chatParticipantsForbidden',
+  chat_id: number,
+  self_participant?: ChatParticipant,
+} | {
+  _: 'chatParticipants',
+  chat_id: number,
+  participants: ChatParticipant[],
+  version: number,
+};
+
+export type ChatParticipant = {
+  _: 'chatParticipant',
+  user_id: number,
+  inviter_id: number,
+  date: number,
+} | {
+  _: 'chatParticipantCreator',
+  user_id: number,
+} | {
+  _: 'chatParticipantAdmin',
+  user_id: number,
+  inviter_id: number,
+  date: number,
 };
 
 export type WebPage = {

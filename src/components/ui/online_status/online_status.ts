@@ -65,7 +65,7 @@ export default function onlineStatus(peer: Peer) {
       let prevTime: number;
       const userSubject = userCache.useItemBehaviorSubject(container, peer.user_id);
       const minuteTimer = timer(0, 60 * 1000);
-      const periodicUserObservable = combineLatest([userSubject, minuteTimer]);
+      const periodicUserObservable = combineLatest(userSubject, minuteTimer);
       useObservable(container, periodicUserObservable, ([u, time]) => {
         if (!u || !u.status) return;
         if (prevStatus !== u.status || (prevTime !== time && u.status._ === 'userStatusOffline')) {
@@ -76,10 +76,33 @@ export default function onlineStatus(peer: Peer) {
         prevTime = time;
       });
     }
+  } else if (peer._ === 'peerChat') {
+    const chat = chatCache.get(peer.chat_id);
+    const chatFullObservable = chatFullCache.useItemBehaviorSubject(container, peer.chat_id);
+    useObservable(container, combineLatest(chatFullObservable, userCache.changes), ([chatFull, _]) => {
+      let onlineUsers = 0;
+      let wasMe = false;
+      if (chatFull?._ === 'chatFull' && chatFull.participants._ === 'chatParticipants' && chat?._ === 'chat') {
+        chatFull.participants.participants.forEach((p) => {
+          const user = userCache.get(p.user_id);
+          if (user && user.status?._ === 'userStatusOnline') {
+            onlineUsers++;
+            if (user.id === authService.userID) wasMe = true;
+          }
+        });
+        let onlineText: string;
+        if (onlineUsers === 1 && wasMe) {
+          onlineText = '';
+        } else {
+          onlineText = `, ${onlineUsers} online`;
+        }
+        statusText.textContent = `${chat.participants_count.toLocaleString('en-US')} members${onlineText}`;
+      }
+    });
   } else if (peer._ === 'peerChannel') {
     const channel = chatCache.get(peer.channel_id);
-    const channelSubject = chatFullCache.useItemBehaviorSubject(container, peer.channel_id);
-    channelSubject.subscribe((cf) => {
+    const chatFullSubject = chatFullCache.useItemBehaviorSubject(container, peer.channel_id);
+    chatFullSubject.subscribe((cf) => {
       if (cf?._ === 'channelFull') {
         statusText.textContent = (channel?._ === 'channel' && channel.broadcast)
           ? `${cf.participants_count.toLocaleString('en-US')} subscribers`
