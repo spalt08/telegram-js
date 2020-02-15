@@ -1,4 +1,4 @@
-import { Peer, Message } from 'cache/types';
+import { Peer, Message, MessageFilter } from 'cache/types';
 import { div } from 'core/html';
 import { VirtualizedList } from 'components/ui';
 import { BehaviorSubject } from 'rxjs';
@@ -11,6 +11,8 @@ import { unmount, mount } from 'core/dom';
 import photoPreview from 'components/media/photo/preview';
 import { getAttributeVideo } from 'helpers/files';
 import videoPreview from 'components/media/video/preview';
+
+const SEARCH_FILTER: MessageFilter['_'] = 'inputMessagesFilterPhotoVideo';
 
 const mediaRowRenderer = (ids: string, peer: Peer): HTMLDivElement => {
   const messages = ids.split('+');
@@ -43,7 +45,7 @@ export default function mediaPanel(peer: Peer) {
   const container = div`.shared-media__item`(loader);
 
   const loadMore = () => {
-    media.loadMedia(peer, 'inputMessagesFilterPhotoVideo', messageCache.indices.photoVideos.getEarliestPeerMedia(peer)?.id);
+    media.loadMedia(peer, SEARCH_FILTER, messageCache.indices.photoVideos.getEarliestPeerMedia(peer)?.id);
   };
 
   const items = new BehaviorSubject<string[]>([]);
@@ -54,10 +56,12 @@ export default function mediaPanel(peer: Peer) {
     renderer: (id: string) => mediaRowRenderer(id, peer),
   });
 
-  media.loadMedia(peer, 'inputMessagesFilterPhotoVideo');
+  media.loadMedia(peer, SEARCH_FILTER);
 
   useObservable(container, messageCache.indices.photoVideos.getPeerMedia(peer), (messages: Message[]) => {
-    if (messages.length === 0) return;
+    if (!messages.length && media.isMediaLoading(peer, SEARCH_FILTER)) {
+      return;
+    }
 
     if (loader) {
       unmount(loader);
