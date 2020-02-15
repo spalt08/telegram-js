@@ -3,10 +3,15 @@ import { distinctUntilChanged, map } from 'rxjs/operators';
 import { chatCache, userCache } from 'cache';
 import { getFirstLetters } from 'helpers/data';
 import { messageToDialogPeer } from 'helpers/api';
-import { InputPeer, Message, Peer, FileLocation, User, Chat, MessageEmpty, InputUser } from './types';
+import { InputPeer, Message, Peer, FileLocation, User, Chat, MessageEmpty, InputUser, InputDialogPeer } from './types';
+
+interface PeerReference {
+  peer: InputPeer;
+  message: Message;
+}
 
 // Convert Peer to InputPeer
-export function peerToInputPeer(peer: Peer, reference?: { peer: InputPeer, message: Message }): InputPeer {
+export function peerToInputPeer(peer: Peer, reference?: PeerReference): InputPeer {
   switch (peer._) {
     case 'peerUser': {
       const user = userCache.get(peer.user_id);
@@ -44,6 +49,13 @@ export function messageSenderToInputUser(message: Exclude<Message, MessageEmpty>
     peer: peerToInputPeer(messageToDialogPeer(message)),
     msg_id: message.id,
     user_id: message.from_id,
+  };
+}
+
+export function peerToInputDialogPeer(peer: Peer, reference?: PeerReference): InputDialogPeer {
+  return {
+    _: 'inputDialogPeer',
+    peer: peerToInputPeer(peer, reference),
   };
 }
 

@@ -83,7 +83,7 @@ export default function list({ tag, className, threshold = 400, reversed = false
       while (last < current.length - 1 && viewport.height + threshold > lastRect.top - viewport.top + lastRect.height) {
         last += 1;
         const id = key(current[last]);
-        // to do replace
+        // todo: replace
         mountChild(current[last]);
         lastRect = elements[id].getBoundingClientRect();
 
