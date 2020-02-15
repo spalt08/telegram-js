@@ -1,8 +1,8 @@
 import { textarea } from 'core/html';
 import { listen } from 'core/dom';
 import { KeyboardKeys } from 'const/dom';
-import './input_textarea.scss';
 import { useInterface } from 'core/hooks';
+import './input_textarea.scss';
 
 type Props = {
   onSend: (message: string) => void,
@@ -17,13 +17,17 @@ export default function messageTextarea({ onSend, maxHeight = 400 }: Props) {
   let nextHeight = height;
   let frameNumber: number | undefined;
 
+  const sendMessage = () => {
+    onSend(element.value.trim());
+    element.value = '';
+    element.style.transition = '';
+    element.style.height = '';
+  };
+
   listen(element, 'keypress', (event: KeyboardEvent) => {
     if (event.keyCode === KeyboardKeys.ENTER && !event.shiftKey) {
       event.preventDefault();
-      onSend(element.value.trim());
-      element.value = '';
-      element.style.transition = '';
-      element.style.height = '';
+      sendMessage();
     }
   });
 
@@ -64,6 +68,9 @@ export default function messageTextarea({ onSend, maxHeight = 400 }: Props) {
       const selection = element.selectionStart;
       element.value = element.value.slice(0, element.selectionStart) + text + element.value.slice(element.selectionEnd);
       element.selectionStart = element.selectionEnd = selection + text.length;
+    },
+    send() {
+      sendMessage();
     },
   });
 }
