@@ -23,7 +23,8 @@
   },
   "authors": [
     "Konstantin Darutkin <kdarutkin@gmail.com>",
-    "Sergey Mostsevenko <finesserus@gmail.com>"
+    "Sergey Mostsevenko <finesserus@gmail.com>",
+    "Mikhail Isupov <lam0x86@gmail.com>"
   ],
   "homepage": "https://github.com/spalt08/telegram-js",
   "dependencies": {
