@@ -252,7 +252,9 @@ export type WebPage = {
   site_name?: string,
   title?: string,
   description?: string,
-  photo: Photo,
+  url: string,
+  display_url: string,
+  photo?: Photo,
 };
 
 export type MessageMedia = {
@@ -404,7 +406,7 @@ export type MessageCommon = {
   message: string,
   date: number,
   to_id: Peer,
-  media: MessageMedia,
+  media?: MessageMedia,
   reply_to_msg_id?: number,
   entities: MessageEntity[],
   reply_markup?: ReplyMarkup,

@@ -5,7 +5,7 @@ import { datetime } from 'components/ui';
 import photoRenderer from '../photo/photo';
 import './file.scss';
 
-export default function documentFile(document: Document, message: Message | undefined) {
+export default function documentFile(document: Document, message?: Message) {
   const filenameAttributte = getAttributeFilename(document);
 
   let filename = '';

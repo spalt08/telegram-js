@@ -1,5 +1,5 @@
 import { Peer, Message, MessageFilter } from 'cache/types';
-import { div, nothing } from 'core/html';
+import { div } from 'core/html';
 import { VirtualizedList } from 'components/ui';
 import { BehaviorSubject } from 'rxjs';
 import { materialSpinner } from 'components/icons';
@@ -8,16 +8,13 @@ import { messageCache } from 'cache';
 import { useObservable } from 'core/hooks';
 import { messageToId } from 'helpers/api';
 import { unmount, mount } from 'core/dom';
-import webpagePreview from 'components/media/webpage/preview';
+import webpageLink from 'components/media/webpage/webpage_link';
 
 const SEARCH_FILTER: MessageFilter['_'] = 'inputMessagesFilterUrl';
 
-const documentRowRenderer = (id: string) => {
-  const msg = messageCache.get(id) as any;
-  if (msg?.media?.webpage?._ === 'webPage') {
-    return webpagePreview(msg.media.webpage);
-  }
-  return div(nothing);
+const linkRenderer = (id: string) => {
+  const msg = messageCache.get(id);
+  return webpageLink(msg);
 };
 
 export default function linksPanel(peer: Peer) {
@@ -33,7 +30,7 @@ export default function linksPanel(peer: Peer) {
     items,
     pivotBottom: false,
     onReachBottom: loadMore,
-    renderer: documentRowRenderer,
+    renderer: linkRenderer,
   });
 
   media.loadMedia(peer, SEARCH_FILTER);
@@ -49,7 +46,9 @@ export default function linksPanel(peer: Peer) {
       loader = undefined;
     }
 
-    const ids = messages.map((message) => messageToId(message));
+    const ids = messages
+      .filter((message) => message._ === 'message' && message.media?._ === 'messageMediaWebPage')
+      .map((message) => messageToId(message));
 
     items.next(ids);
   });

@@ -54,5 +54,9 @@
   &__typing-indicator {
     font-size: 14px;
     color: #1DA1F1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    width: 200px;
   }
 }

@@ -1,5 +1,5 @@
 import { MessageEntity, MessageCommon } from 'cache/types';
-import { strong, text, code, pre, em, a, fragment } from 'core/html';
+import { strong, text, code, pre, em, a, fragment, span } from 'core/html';
 import { mount } from 'core/dom';
 import { newWindowLinkAttributes } from 'const';
 
@@ -89,7 +89,28 @@ function nodeToHtml(node: TreeNode, result: Node[]) {
   }
 }
 
-export default function formattedMessage(message: MessageCommon) {
+export function highlightLinks(message: string) {
+  const regexp = /(@\w+|#\w+|(?:https:\/\/)?t.me\/[\w/]+|https:\/\/tginfo.me\/[\w/]+)/;
+  const parts = message
+    .split(regexp)
+    .filter((part) => part)
+    .map((part) => {
+      if (part.startsWith('@')
+      || part.startsWith('#')
+      || part.startsWith('t.me/')
+      || part.startsWith('https://t.me/')
+      || part.startsWith('https://tginfo.me/')) {
+        return a({ ...newWindowLinkAttributes, href: '#' }, text(part));
+      }
+      return text(part);
+    });
+
+  return span(...parts);
+}
+
+export function formattedMessage(message: MessageCommon) {
+  if (typeof message === 'string') return highlightLinks(message);
+
   const root = createTreeNode(message.message);
   message.entities.forEach((e) => applyEntity(root, e.offset, e.length, e));
   const frag = fragment();

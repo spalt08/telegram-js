@@ -42,7 +42,7 @@ export default function typingIndicator(peer: Peer, className: string, ...childr
         const user2 = userCache.get(activeUserIds[1])?.first_name ?? '';
         mount(container, span`.typingIndicator__typing`(
           span(text(user1)),
-          text(','),
+          text(', '),
           span(text(user2)),
           text(' are typing')));
       } else {

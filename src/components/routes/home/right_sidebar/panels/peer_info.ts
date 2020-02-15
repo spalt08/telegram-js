@@ -6,16 +6,17 @@ import { info, username, phone } from 'components/icons';
 import { BehaviorSubject } from 'rxjs';
 import { infoListItem } from 'components/ui';
 import './peer_info.scss';
+import { mount } from 'core/dom';
 
 function userInfo(userId: number) {
   const bioSubject = new BehaviorSubject<string>('');
   const usernameSubject = new BehaviorSubject<string>('');
   const phoneSubject = new BehaviorSubject<string>('');
-  const container = div`.peerInfo`(
-    infoListItem(info(), 'Bio', bioSubject),
-    infoListItem(username(), 'Username', usernameSubject),
-    infoListItem(phone(), 'Phone', phoneSubject),
-  );
+
+  const container = div`.peerInfo`();
+  mount(container, infoListItem(container, info(), 'Bio', bioSubject));
+  mount(container, infoListItem(container, username(), 'Username', usernameSubject));
+  mount(container, infoListItem(container, phone(), 'Phone', phoneSubject));
 
   const userSubject = userCache.useItemBehaviorSubject(container, userId);
   useObservable(container, userSubject, (u) => {
@@ -34,10 +35,8 @@ function userInfo(userId: number) {
 
 function chatInfo(chatId: number) {
   const aboutSubject = new BehaviorSubject<string>('');
-  const container = div`.peerInfo`(
-    infoListItem(info(), 'About', aboutSubject),
-    // infoListItem(username(), 'Link', linkSubject),
-  );
+  const container = div`.peerInfo`();
+  mount(container, infoListItem(container, info(), 'About', aboutSubject));
 
   const chatFullObservable = chatFullCache.useItemBehaviorSubject(container, chatId);
   useObservable(container, chatFullObservable, (cf) => {
@@ -52,10 +51,9 @@ function chatInfo(chatId: number) {
 function channelInfo(channelId: number) {
   const aboutSubject = new BehaviorSubject<string>('');
   const linkSubject = new BehaviorSubject<string>('');
-  const container = div`.peerInfo`(
-    infoListItem(info(), 'About', aboutSubject),
-    infoListItem(username(), 'Link', linkSubject),
-  );
+  const container = div`.peerInfo`();
+  mount(container, infoListItem(container, info(), 'About', aboutSubject));
+  mount(container, infoListItem(container, username(), 'Link', linkSubject));
 
   const channelFullObservable = chatFullCache.useItemBehaviorSubject(container, channelId);
   useObservable(container, channelFullObservable, (cf) => {
