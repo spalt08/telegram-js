@@ -80,3 +80,8 @@ export function isDialogInRootFolder(dialog: Dialog) {
 export function isDialogArchived(dialog: Dialog) {
   return dialog.folder_id === ARCHIVE_FOLDER_ID;
 }
+
+export function getDialogLastReadMessageId(dialog: Dialog) {
+  // Not perfect but suitable for most cases
+  return dialog.unread_count > 0 ? dialog.read_inbox_max_id : dialog.top_message;
+}

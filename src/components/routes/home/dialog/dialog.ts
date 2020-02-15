@@ -6,7 +6,7 @@ import { dialogCache, messageCache } from 'cache';
 import { datetime, ripple } from 'components/ui';
 import { message } from 'services';
 import { pinnedchat } from 'components/icons';
-import { peerMessageToId, peerToId } from 'helpers/api';
+import { getDialogLastReadMessageId, peerMessageToId, peerToId } from 'helpers/api';
 import { profileTitle } from 'components/profile';
 import { Dialog } from 'cache/types';
 import dialogMessage from './dialog_message';
@@ -130,8 +130,9 @@ export default function dialogPreview(id: string) {
     if (isSelected()) {
       // Scroll to the bottom when a selected dialog is clicked
       targetMessage = Infinity;
-    } else if (currentDialog && currentDialog.top_message > currentDialog.read_inbox_max_id) {
-      targetMessage = currentDialog.read_inbox_max_id;
+    } else if (currentDialog) {
+      const lastReadId = getDialogLastReadMessageId(currentDialog);
+      targetMessage = lastReadId === currentDialog.top_message ? Infinity : lastReadId;
     }
 
     message.selectPeer(peer, targetMessage);

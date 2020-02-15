@@ -1,8 +1,11 @@
-import { debounceTime } from 'rxjs/operators';
+import { debounceTime, switchMap, map } from 'rxjs/operators';
+import { timer } from 'rxjs';
 import client from 'client/client';
 import { UserFull, Peer, MessagesChatFull, InputUser } from 'cache/types';
 import { userFullCache, chatCache, chatFullCache, userCache, pinnedMessageCache } from 'cache';
 import MessageService from './message/message';
+
+const UPDATE_INTERVAL = 60 * 1000; // every minute
 
 /**
  * Singleton service class for handling peers
@@ -10,7 +13,10 @@ import MessageService from './message/message';
 export default class PeerService {
   constructor(messageService: MessageService) {
     messageService.activePeer
-      .pipe(debounceTime(300)) // Wait a bit to not interfere the messages loading
+      .pipe(
+        debounceTime(300), // Wait a bit to not interfere the messages loading
+        switchMap((peer) => timer(0, UPDATE_INTERVAL).pipe(map(() => peer))), // periodically update full info about the peer
+      )
       .subscribe((peer) => this.loadFullInfo(peer));
   }
 
