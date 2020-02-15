@@ -131,6 +131,7 @@ module.exports = (env, argv) => {
     output: {
       path: path.resolve(__dirname, destinationDirectory),
       filename: '[name].[hash].js',
+      chunkFilename: '[name].[hash].js',
       publicPath: './',
     },
 

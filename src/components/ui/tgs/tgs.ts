@@ -1,4 +1,5 @@
-import lottiePlayer, { AnimationItem } from 'lottie-web';
+import lottie, { AnimationItem } from 'lottie-web';
+import loadLottie from 'lazy-modules/lottie';
 import * as utils from 'client/utils';
 import { div } from 'core/html';
 import { useInterface, useOnUnmount, useOnMount } from 'core/hooks';
@@ -18,7 +19,10 @@ export default function tgs({ src, className, autoplay = true, loop = false }: P
   const container = div({ className });
 
   if (typeof src === 'string') {
-    utils.loadTgs(src, (animationData: any) => {
+    Promise.all([
+      loadLottie(),
+      new Promise((resolve) => utils.loadTgs(src, resolve)),
+    ]).then(([lottiePlayer, animationData]: [typeof lottie, any]) => {
       animation = lottiePlayer.loadAnimation({
         container,
         loop,
