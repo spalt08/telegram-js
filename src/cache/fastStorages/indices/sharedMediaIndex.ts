@@ -36,6 +36,10 @@ export default function sharedMediaIndex(collection: Collection<Message, any>) {
 
   return {
     putMediaMessages(peer: Peer, messages: Message[]) {
+      if (!messages.length) {
+        return;
+      }
+
       collection.put(messages);
       const cacheLine = getCacheLine(peer);
       cacheLine.snapshot.batchChanges(() => {
