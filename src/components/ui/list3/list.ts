@@ -729,7 +729,7 @@ export class VirtualizedList {
     return [start, end, height || this.viewport.height];
   }
 
-  scrollVirtualizedTo(item: string, direction: number = -1) {
+  scrollVirtualizedTo(item: string, direction: number = 0) {
     const indexOfItem = this.current.indexOf(item);
     if (indexOfItem === -1) return;
 
@@ -748,7 +748,7 @@ export class VirtualizedList {
     }
 
     this.scrollHeight = this.container.scrollHeight;
-    this.updateHeigths();
+    this.updateHeigths(true);
     this.updateOffsets();
     this.container.scrollTop = this.prevScrollTop = this.scrollTop = this.getScrollToValue(item);
     this.updateTopElement();
@@ -758,26 +758,33 @@ export class VirtualizedList {
       const ritem = this.current[i];
 
       const elm = this.elements[ritem];
-      elm.style.transform = `translate(0, ${height * direction * -1}px)`;
 
-      listenOnce(elm, 'transitionend', () => {
-        elm.classList.remove('list__scroll-in');
-      });
+      if (direction !== 0) {
+        elm.style.transform = `translate(0, ${height * direction * -1}px)`;
 
-      // chrome fix for 2 frames
-      requestAnimationFrame(() => {
-        elm.classList.add('list__scroll-in');
-        elm.style.transform = '';
-      });
+        listenOnce(elm, 'transitionend', () => {
+          elm.classList.remove('list__scroll-in');
+        });
+
+        // chrome fix for 2 frames
+        requestAnimationFrame(() => {
+          elm.classList.add('list__scroll-in');
+          elm.style.transform = '';
+        });
+      }
     }
 
-    setTimeout(() => {
+    const finish = () => {
       this.isLocked = false;
       this.elements[item].classList.remove('focused');
-      this.container.scrollTop = this.prevScrollTop = this.scrollTop = this.getScrollToValue(item);
+      this.updateHeigths(true);
       this.updateOffsets();
+      this.container.scrollTop = this.prevScrollTop = this.scrollTop = this.getScrollToValue(item);
       this.virtualize();
-    }, 300);
+    };
+
+    if (direction === 0) finish();
+    else setTimeout(finish, 300);
   }
 
   getScrollToValue(item: string, centered: boolean = true) {
