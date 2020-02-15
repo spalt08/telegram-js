@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 // eslint-disable-next-line import/no-cycle
-import { isMountTriggered, triggerMount, triggerUnmount, useMaybeObservable } from './hooks';
+import { isMountTriggered, triggerMount, triggerUnmount, useMaybeObservable, useOnMount, useOnUnmount } from './hooks';
 import { MaybeObservable, MaybeObservableMap, WritableStyles } from './types';
 
 /**
@@ -296,4 +296,23 @@ export function svgFromCode(code: string, props?: Record<string, any>): SVGSVGEl
   }
 
   return element;
+}
+
+export function watchVisibility(element: Element, onChange: (isVisible: boolean) => void) {
+  if (typeof IntersectionObserver !== 'undefined') {
+    let wasVisible: boolean | undefined;
+    // eslint-disable-next-line compat/compat
+    const observer = new IntersectionObserver((entries) => {
+      const isVisible = entries[0].isIntersecting;
+      if (isVisible !== wasVisible) {
+        wasVisible = isVisible;
+        onChange(isVisible);
+      }
+    });
+    observer.observe(element);
+  } else {
+    // A workaround
+    useOnMount(element, () => onChange(true));
+    useOnUnmount(element, () => onChange(false));
+  }
 }

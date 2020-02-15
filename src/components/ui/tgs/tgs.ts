@@ -2,7 +2,8 @@ import lottie, { AnimationItem } from 'lottie-web';
 import loadLottie from 'lazy-modules/lottie';
 import * as utils from 'client/utils';
 import { div } from 'core/html';
-import { useInterface, useOnUnmount, useOnMount } from 'core/hooks';
+import { useInterface } from 'core/hooks';
+import { watchVisibility } from 'core/dom';
 
 interface Props {
   src: string,
@@ -13,7 +14,7 @@ interface Props {
 
 export default function tgs({ src, className, autoplay = true, loop = false }: Props) {
   let animation: AnimationItem & { currentFrame: number} | undefined;
-  let isMounted = false;
+  let isVisible = false;
   let shouldPlay = autoplay;
 
   const container = div({ className });
@@ -27,31 +28,33 @@ export default function tgs({ src, className, autoplay = true, loop = false }: P
         container,
         loop,
         animationData,
-        autoplay: isMounted && shouldPlay,
+        autoplay: isVisible && shouldPlay,
         renderer: 'canvas',
       }) as AnimationItem & { currentFrame: number};
     });
   }
 
-  useOnMount(container, () => {
-    isMounted = true;
-    if (animation) animation.resize();
-    if (shouldPlay && animation) {
-      animation.play();
-    }
-  });
-
-  useOnUnmount(container, () => {
-    isMounted = false;
-    if (animation) {
-      animation.stop();
+  watchVisibility(container, (_isVisible) => {
+    if (_isVisible) {
+      isVisible = true;
+      if (animation) {
+        animation.resize();
+        if (shouldPlay) {
+          animation.play();
+        }
+      }
+    } else {
+      isVisible = false;
+      if (animation) {
+        animation.stop();
+      }
     }
   });
 
   return useInterface(container, {
     play() {
       shouldPlay = true;
-      if (isMounted && animation) {
+      if (isVisible && animation) {
         animation.play();
       }
     },

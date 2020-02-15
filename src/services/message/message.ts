@@ -90,8 +90,6 @@ export default class MessagesService {
       this.activePeer.next(peer);
     }
 
-    // When you click different found messages fast, the history becomes empty occasionally. Todo: investigate.
-
     if (isChunkChanged) {
       if (peer) {
         if (!isPeerChanged && this.currentChunk) {
