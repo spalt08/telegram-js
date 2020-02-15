@@ -14,7 +14,7 @@ import {
   PeerDialogs,
   Dialog,
 } from 'cache/types';
-import { peerToInputDialogPeer } from 'cache/accessors';
+import { peerToInputDialogPeer, peerToInputPeer } from 'cache/accessors';
 import MessageService from './message/message';
 
 /**
@@ -152,6 +152,9 @@ export default class DialogsService {
         if (res && (res._ === 'messages.dialogs' || res._ === 'messages.dialogsSlice')) {
           const data = res;
 
+          let dialogsToPreload: Dialog[] | undefined;
+          if (this.dialogs.value.length === 0) dialogsToPreload = data.dialogs.slice(0, 10);
+
           if (data.dialogs.length < chunk - 10) { // -10 just in case
             this.isComplete = true;
           }
@@ -161,6 +164,8 @@ export default class DialogsService {
           messageCache.put(data.messages);
           dialogCache.put(data.dialogs);
           this.messageService.pushMessages(data.messages);
+
+          if (dialogsToPreload) this.preloadDialogs(dialogsToPreload);
         }
       } finally {
         if (cb) cb();
@@ -213,4 +218,20 @@ export default class DialogsService {
       this.messageService.pushMessages(data.messages);
     });
   }
+
+  preloadDialogs = (dialogs: Dialog[]) => {
+    for (let i = 0; i < dialogs.length; i++) {
+      if (dialogs[i].unread_count === 0) {
+        const payload = { peer: peerToInputPeer(dialogs[i].peer), offset_id: dialogs[i].read_inbox_max_id, add_offset: -10, limit: 20 };
+        client.call('messages.getHistory', payload, { thread: 2 }, (err: any, data: any) => {
+          if (err || !data) return;
+
+          userCache.put(data.users);
+          chatCache.put(data.chats);
+          messageCache.put(data.messages);
+          this.messageService.pushMessages(data.messages);
+        });
+      }
+    }
+  };
 }
