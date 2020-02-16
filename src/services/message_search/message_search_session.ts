@@ -3,7 +3,7 @@ import client from 'client/client';
 import { chatCache, messageCache, userCache } from 'cache';
 import { Message, MessageFilter, Messages, MessagesNotModified, Peer } from 'cache/types';
 import { peerToInputPeer } from 'cache/accessors';
-import { mergeOrderedArrays } from '../../helpers/data';
+import { mergeOrderedArrays } from 'helpers/data';
 
 export type SearchRequest = string; // It may get other filter in future (e.g. date)
 

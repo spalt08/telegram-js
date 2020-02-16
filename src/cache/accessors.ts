@@ -2,7 +2,7 @@ import { Observable, of } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { chatCache, userCache } from 'cache';
 import { getFirstLetters } from 'helpers/data';
-import { messageToDialogPeer } from 'helpers/api';
+import { messageToDialogPeer, userIdToPeer } from 'helpers/api';
 import { InputPeer, Message, Peer, FileLocation, User, Chat, MessageEmpty, InputUser, InputDialogPeer } from './types';
 
 interface PeerReference {
@@ -192,4 +192,10 @@ export function peerToColorCode(peer: Peer) {
     default:
       return 1;
   }
+}
+
+// todo: Handle messages sent by a channel in a chat: https://github.com/spalt08/telegram-js/issues/31
+export function messageToSenderPeer(message: Exclude<Message, MessageEmpty>): Peer {
+  const channel = message.to_id._ === 'peerChannel' ? chatCache.get(message.to_id.channel_id) : undefined;
+  return channel && channel._ === 'channel' && !channel.megagroup ? message.to_id : userIdToPeer(message.from_id);
 }

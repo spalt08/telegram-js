@@ -1,8 +1,9 @@
 import { div, text } from 'core/html';
 import { datetime, highlightSearchMatch, ripple } from 'components/ui';
-import { messageCache, chatCache } from 'cache';
-import { messageToDialogPeer, userIdToPeer } from 'helpers/api';
+import { messageCache } from 'cache';
+import { messageToDialogPeer } from 'helpers/api';
 import { profileAvatar, profileTitle } from 'components/profile';
+import { messageToSenderPeer } from 'cache/accessors';
 import { MaybeObservable } from 'core/types';
 import { mount, unmount } from 'core/dom';
 import { useMaybeObservable } from 'core/hooks';
@@ -26,8 +27,7 @@ export default function foundMessage(messageUniqueId: string, searchQuery: Maybe
   }
 
   const dialogPeer = messageToDialogPeer(message);
-  const channel = message.to_id._ === 'peerChannel' ? chatCache.get(message.to_id.channel_id) : null;
-  const senderPeer = channel && channel._ === 'channel' && channel.megagroup === false ? message.to_id : userIdToPeer(message.from_id);
+  const senderPeer = messageToSenderPeer(message);
 
   const messageEl = div`.foundMessage__message`();
   if (message._ === 'message') {

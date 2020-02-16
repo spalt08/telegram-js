@@ -2,9 +2,8 @@ import { WebPage, MessageCommon } from 'cache/types';
 import { div, text, a, nothing } from 'core/html';
 import { newWindowLinkAttributes } from 'const';
 import { ripple, formattedMessage } from 'components/ui';
-import { textToColorCode } from 'cache/accessors';
+import { messageToSenderPeer, textToColorCode } from 'cache/accessors';
 import { profileAvatar, profileTitle } from 'components/profile';
-import { userIdToPeer } from 'helpers/api';
 import photoRenderer from '../photo/photo';
 import './webpage_link.scss';
 
@@ -19,13 +18,13 @@ function emptyPhotoPlaceholder(webpage: WebPage) {
 
 export default function webpageLink(msg: MessageCommon) {
   if (msg.media?._ !== 'messageMediaWebPage' || msg.media.webpage._ !== 'webPage') {
-    const peer = userIdToPeer(msg.from_id);
+    const senderPeer = messageToSenderPeer(msg);
     return ripple({ tag: 'div' },
       [
         div`.webpageLink`(
-          div`.webpageLink__photo`(profileAvatar(userIdToPeer(msg.from_id), msg)),
+          div`.webpageLink__photo`(profileAvatar(senderPeer, msg)),
           div`.webpageLink__info`(
-            div`.webpageLink__title`(profileTitle(peer)),
+            div`.webpageLink__title`(profileTitle(senderPeer)),
             div`.webpageLink__message-text`(formattedMessage(msg)),
           ),
         ),

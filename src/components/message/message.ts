@@ -1,7 +1,7 @@
 import { div, text, nothing } from 'core/html';
 import { useInterface, hasInterface, getInterface, useOnMount } from 'core/hooks';
 import { mount, unmount } from 'core/dom';
-import { messageCache, chatCache, dialogCache } from 'cache';
+import { messageCache, dialogCache } from 'cache';
 import { Peer, Message, MessageCommon, MessageService, MessageEmpty, Dialog } from 'cache/types';
 import { formattedMessage } from 'components/ui';
 import client from 'client/client';
@@ -13,7 +13,7 @@ import stickerRenderer from 'components/media/sticker/sticker';
 import documentFile from 'components/media/document/file';
 import videoPreview from 'components/media/video/preview';
 import videoRenderer from 'components/media/video/video';
-import { idToColorCode } from 'cache/accessors';
+import { messageToSenderPeer, peerToColorCode } from 'cache/accessors';
 import { userIdToPeer, peerToId } from 'helpers/api';
 import { isEmoji } from 'helpers/message';
 import { main } from 'services';
@@ -36,16 +36,13 @@ const timezoneOffset = now.getTimezoneOffset() * 60;
 
 // message renderer
 const renderMessage = (msg: MessageCommon, peer: Peer) => {
-  const channel = peer._ === 'peerChannel' ? chatCache.get(peer.channel_id) : undefined;
-
   const date = messageDate(msg);
   const reply = msg.reply_to_msg_id ? messageReply(msg.reply_to_msg_id, peer, msg) : nothing;
   let title: Node = nothing;
 
   if (peer._ !== 'peerUser') {
-    title = channel && channel._ === 'channel' && channel.megagroup === false
-      ? div`.message__title${`color-${idToColorCode(channel.id)}`}`(profileTitle(peer))
-      : div`.message__title${`color-${idToColorCode(msg.from_id)}`}`(profileTitle(userIdToPeer(msg.from_id)));
+    const senderPeer = messageToSenderPeer(msg);
+    title = div`.message__title${`color-${peerToColorCode(senderPeer)}`}`(profileTitle(senderPeer));
   }
 
   // regular message
@@ -298,10 +295,8 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     // display picture
     if (aligner && element.classList.contains('chat') && element.classList.contains('last') && !element.classList.contains('out')
     && !profilePicture && cached && cached._ !== 'messageEmpty') {
-      const channel = peer._ === 'peerChannel' ? chatCache.get(peer.channel_id) : undefined;
-      profilePicture = channel && channel._ === 'channel' && channel.megagroup === false
-        ? div`.message__profile`(profileAvatar(peer))
-        : div`.message__profile`(profileAvatar(userIdToPeer(cached.from_id)));
+      const senderPeer = messageToSenderPeer(cached);
+      profilePicture = div`.message__profile`(profileAvatar(senderPeer));
       mount(aligner, profilePicture, wrapper);
     }
   };
