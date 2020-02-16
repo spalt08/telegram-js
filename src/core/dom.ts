@@ -303,29 +303,35 @@ export function svgFromCode(code: string, props?: Record<string, any>): SVGSVGEl
  * Also notifies immediately when called.
  */
 export function watchVisibility(element: Element, onChange: (isVisible: boolean) => void) {
-  if (typeof IntersectionObserver !== 'undefined') {
-    let wasVisible: boolean | undefined;
-    const handleChange = (entries: IntersectionObserverEntry[]) => {
-      const isVisible = entries.length > 0 && entries[0].isIntersecting;
-      if (isVisible !== wasVisible) {
-        wasVisible = isVisible;
-        onChange(isVisible);
-      }
-    };
-    // eslint-disable-next-line compat/compat
-    const observer = new IntersectionObserver(handleChange);
-    observer.observe(element);
-
-    // Chrome and Firefox don't notify about the visibility in the following synchronous case:
-    //  1. Create an element
-    //  2. Call this function
-    //  3. Mount the element
-    // The call below fixes this
-    handleChange(observer.takeRecords());
-  } else {
+  if (typeof IntersectionObserver === 'undefined') {
     // A fallback
-    useOnMount(element, () => onChange(true));
-    useOnUnmount(element, () => onChange(false));
+    const unsubscribeMount = useOnMount(element, () => onChange(true));
+    const unsubscribeUnmount = useOnUnmount(element, () => onChange(false));
     onChange(!!isMountTriggered(element));
+    return () => {
+      unsubscribeMount();
+      unsubscribeUnmount();
+    };
   }
+
+  let wasVisible: boolean | undefined;
+  const handleChange = (entries: IntersectionObserverEntry[]) => {
+    const isVisible = entries.length > 0 && entries[0].isIntersecting;
+    if (isVisible !== wasVisible) {
+      wasVisible = isVisible;
+      onChange(isVisible);
+    }
+  };
+  // eslint-disable-next-line compat/compat
+  const observer = new IntersectionObserver(handleChange);
+  observer.observe(element);
+
+  // Chrome and Firefox don't notify about the visibility in the following synchronous case:
+  //  1. Create an element
+  //  2. Call this function
+  //  3. Mount the element
+  // The call below fixes this
+  handleChange(observer.takeRecords());
+
+  return () => observer.disconnect();
 }

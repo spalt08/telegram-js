@@ -1,9 +1,9 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { ClientError } from 'client/worker.types';
-import { Document, Peer, MessageFilter, StickerSet } from 'cache/types';
+import { Document, Peer, MessageFilter, StickerSet, Messages, MessagesNotModified } from 'cache/types';
 import { peerToInputPeer } from 'cache/accessors';
-import { messageCache } from 'cache';
+import { chatCache, messageCache, userCache } from 'cache';
 import { peerToId } from 'helpers/api';
 import MainService from './main';
 
@@ -108,9 +108,11 @@ export default class MediaService {
         throw Error('Unknown filter');
     }
 
-    client.call('messages.search', payload, (_err: any, res: any) => {
+    client.call('messages.search', payload, (_err: any, res?: Exclude<Messages, MessagesNotModified>) => {
       this.mediaLoading[peerId][filterType] = false;
       if (res) {
+        userCache.put(res.users);
+        chatCache.put(res.chats);
         index.putMediaMessages(peer, res.messages);
       }
     });
