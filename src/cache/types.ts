@@ -9536,5 +9536,19 @@ export interface Client {
     on(predicate: 'updateNewScheduledMessage', cb: UpdateResolver<Update.updateNewScheduledMessage>): void;
     on(predicate: 'updateDeleteScheduledMessages', cb: UpdateResolver<Update.updateDeleteScheduledMessages>): void;
     on(predicate: 'updateTheme', cb: UpdateResolver<Update.updateTheme>): void;
+    on(predicate: 'updatesTooLong', cb: UpdateResolver<Updates.updatesTooLong>): void;
+    on(predicate: 'updateShortMessage', cb: UpdateResolver<Updates.updateShortMessage>): void;
+    on(predicate: 'updateShortChatMessage', cb: UpdateResolver<Updates.updateShortChatMessage>): void;
+    on(predicate: 'updateShort', cb: UpdateResolver<Updates.updateShort>): void;
+    on(predicate: 'updatesCombined', cb: UpdateResolver<Updates.updatesCombined>): void;
+    on(predicate: 'updates', cb: UpdateResolver<Updates.updates>): void;
+    on(predicate: 'updateShortSentMessage', cb: UpdateResolver<Updates.updateShortSentMessage>): void;
+    on(predicate: 'userEmpty', cb: UpdateResolver<User.userEmpty>): void;
+    on(predicate: 'user', cb: UpdateResolver<User.user>): void;
+    on(predicate: 'chatEmpty', cb: UpdateResolver<Chat.chatEmpty>): void;
+    on(predicate: 'chat', cb: UpdateResolver<Chat.chat>): void;
+    on(predicate: 'chatForbidden', cb: UpdateResolver<Chat.chatForbidden>): void;
+    on(predicate: 'channel', cb: UpdateResolver<Chat.channel>): void;
+    on(predicate: 'channelForbidden', cb: UpdateResolver<Chat.channelForbidden>): void;
   }
 }
