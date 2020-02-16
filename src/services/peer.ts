@@ -34,19 +34,25 @@ export default class PeerService {
         } as InputChannel,
       };
       client.call('channels.getFullChannel', payload, (_err, channelFull) => {
-        if (channelFull?.full_chat.pinned_msg_id) {
+        if (channelFull?.full_chat) {
+          userCache.put(channelFull.users);
+          chatCache.put(channelFull.chats);
           chatFullCache.put(channelFull.full_chat);
-          this.loadPinnedMessage(peer, channelFull.full_chat.pinned_msg_id);
+          if (channelFull.full_chat.pinned_msg_id) {
+            this.loadPinnedMessage(peer, channelFull.full_chat.pinned_msg_id);
+          }
         }
       });
     } else if (peer._ === 'peerChat') {
-      const payload = {
-        chat_id: peer.chat_id,
-      };
+      const payload = { chat_id: peer.chat_id };
       client.call('messages.getFullChat', payload, (_err, chatFull) => {
-        if (chatFull?.full_chat.pinned_msg_id) {
+        if (chatFull?.full_chat) {
+          userCache.put(chatFull.users);
+          chatCache.put(chatFull.chats);
           chatFullCache.put(chatFull.full_chat);
-          this.loadPinnedMessage(peer, chatFull.full_chat.pinned_msg_id);
+          if (chatFull.full_chat.pinned_msg_id) {
+            this.loadPinnedMessage(peer, chatFull.full_chat.pinned_msg_id);
+          }
         }
       });
     } else if (peer._ === 'peerUser') {
@@ -56,9 +62,11 @@ export default class PeerService {
         id: { _: 'inputUser', user_id: peer.user_id, access_hash: user.access_hash! } as InputUser,
       };
       client.call('users.getFullUser', payload, (err, userFull) => {
-        if (userFull?.pinned_msg_id) {
+        if (userFull) {
           userFullCache.put(userFull);
-          this.loadPinnedMessage(peer, userFull.pinned_msg_id);
+          if (userFull.pinned_msg_id) {
+            this.loadPinnedMessage(peer, userFull.pinned_msg_id);
+          }
         }
       });
     }
@@ -73,7 +81,7 @@ export default class PeerService {
         id: [{ _: 'inputMessageID', id: pinnedMessageId }],
       };
       client.call('channels.getMessages', payload, (_err, msg) => {
-        if (msg?._ === 'messages.messages' && msg.messages.length > 0 && msg.messages[0]._ === 'message') {
+        if (msg?._ === 'messages.channelMessages' && msg.messages.length > 0 && msg.messages[0]._ === 'message') {
           userCache.put(msg.users);
           chatCache.put(msg.chats);
           pinnedMessageCache.put(msg.messages[0]);
