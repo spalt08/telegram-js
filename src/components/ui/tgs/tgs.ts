@@ -35,16 +35,17 @@ export default function tgs({ src, className, autoplay = true, loop = false }: P
   }
 
   watchVisibility(container, (_isVisible) => {
-    if (_isVisible) {
-      isVisible = true;
-      if (animation) {
+    isVisible = _isVisible;
+    if (animation) {
+      if (isVisible) {
+        // If Lottie is initialized before the element is mounted, the TGS will have 0 size and there for be invisible.
+        // This method mustn't be called in onMount because it reads the DOM sizes that causes a layout recalculation.
+        animation.resize();
+
         if (shouldPlay) {
           animation.play();
         }
-      }
-    } else {
-      isVisible = false;
-      if (animation) {
+      } else {
         animation.stop();
       }
     }
@@ -64,7 +65,7 @@ export default function tgs({ src, className, autoplay = true, loop = false }: P
       }
     },
     resize() {
-      if (animation) {
+      if (animation && isVisible) {
         animation.resize();
       }
     },
