@@ -262,7 +262,7 @@ export default class MessagesService {
         // todo handling errors
       }
 
-      if (result._ === 'updateShortSentMessage') {
+      if (result?._ === 'updateShortSentMessage') {
         this.pendingMessages[randId].id = result.id;
         this.pendingMessages[randId].date = result.date;
         this.pendingMessages[randId].entities = result.entities;

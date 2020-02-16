@@ -1,6 +1,6 @@
 import ClientWorker from './worker';
 import { WorkerMessage, ClientError } from './worker.types';
-import { InputFile } from '../cache/types';
+import { InputFile, Client } from '../cache/types';
 
 /**
  * Worker callbacks
@@ -65,8 +65,6 @@ window.addEventListener('offline', () => worker.postMessage({ type: 'windowEvent
 /**
  * Make RPC API request
  */
-function call(method: string, data: Record<string, any>, cb?: RequestResolver): void;
-function call(method: string, data: Record<string, any>, headers: Record<string, any>, cb?: RequestResolver): void;
 function call(method: string, ...args: unknown[]): void {
   const id = method + Date.now().toString() + Math.random() * 1000;
 
@@ -230,7 +228,7 @@ function authorize(dc_id: number, cb?: AnyResolver) {
   task('authorize', dc_id, cb);
 }
 
-const client = {
+const clientInternal = {
   svc,
   call,
   on: subscribe,
@@ -244,6 +242,8 @@ const client = {
   authorize,
   storage: window.localStorage,
 };
+
+const client: ((Omit<typeof clientInternal, 'call' | 'updates'>) & Client) = clientInternal;
 
 /**
  * Cache client meta after page closing
