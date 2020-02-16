@@ -3,7 +3,8 @@ import { distinctUntilChanged, map } from 'rxjs/operators';
 import { chatCache, userCache } from 'cache';
 import { getFirstLetters } from 'helpers/data';
 import { messageToDialogPeer, userIdToPeer } from 'helpers/api';
-import { InputPeer, Message, Peer, FileLocation, User, Chat, MessageEmpty, InputUser, InputDialogPeer } from './types';
+import { todoAssertHasValue } from 'helpers/other';
+import { InputPeer, Message, Peer, FileLocation, User, Chat, InputUser, InputDialogPeer } from './types';
 
 interface PeerReference {
   peer: InputPeer;
@@ -15,7 +16,7 @@ export function peerToInputPeer(peer: Peer, reference?: PeerReference): InputPee
   switch (peer._) {
     case 'peerUser': {
       const user = userCache.get(peer.user_id);
-      if (user && user.access_hash) {
+      if (user?._ === 'user' && user.access_hash) {
         return { _: 'inputPeerUser', user_id: peer.user_id, access_hash: user.access_hash };
       }
       if (reference) {
@@ -26,7 +27,7 @@ export function peerToInputPeer(peer: Peer, reference?: PeerReference): InputPee
 
     case 'peerChannel': {
       const chat = chatCache.get(peer.channel_id);
-      if (chat?._ === 'channel') {
+      if ((chat?._ === 'channel' || chat?._ === 'channelForbidden') && chat.access_hash) {
         return { _: 'inputPeerChannel', channel_id: peer.channel_id, access_hash: chat.access_hash };
       }
       if (reference) {
@@ -43,12 +44,12 @@ export function peerToInputPeer(peer: Peer, reference?: PeerReference): InputPee
   }
 }
 
-export function messageSenderToInputUser(message: Exclude<Message, MessageEmpty>): InputUser {
+export function messageSenderToInputUser(message: Exclude<Message, Message.messageEmpty>): InputUser {
   return {
     _: 'inputUserFromMessage',
     peer: peerToInputPeer(messageToDialogPeer(message)),
     msg_id: message.id,
-    user_id: message.from_id,
+    user_id: todoAssertHasValue(message.from_id),
   };
 }
 
@@ -61,7 +62,7 @@ export function peerToInputDialogPeer(peer: Peer, reference?: PeerReference): In
 
 // Pass myUserId to return "Saved messages" for the currently authorized user
 export function userToTitle(user: User | undefined, myUserId?: number) {
-  if (!user) {
+  if (!user || user._ === 'userEmpty') {
     return 'Someone';
   }
   if (user.deleted) {
@@ -74,17 +75,10 @@ export function userToTitle(user: User | undefined, myUserId?: number) {
 }
 
 export function chatToTitle(chat: Chat | undefined) {
-  if (!chat) {
+  if (!chat || chat._ === 'chatEmpty') {
     return 'Unknown chat';
   }
-  return chat.title;
-}
-
-export function channelToTitle(channel: Chat | undefined) {
-  if (!channel) {
-    return 'Unknown channel';
-  }
-  return channel.title;
+  return todoAssertHasValue(chat.title);
 }
 
 // Pass myUserId to return "Saved messages" for the currently authorized user
@@ -110,10 +104,10 @@ export function peerToTitle(peer: Peer, myUserId?: number): [string, Observable<
       break;
 
     case 'peerChannel':
-      currentValue = channelToTitle(chatCache.get(peer.channel_id));
+      currentValue = chatToTitle(chatCache.get(peer.channel_id));
       valueObservable = new Observable((subscriber) => {
-        subscriber.next(channelToTitle(chatCache.get(peer.channel_id)));
-        return chatCache.watchItem(peer.channel_id, (chat) => subscriber.next(channelToTitle(chat)));
+        subscriber.next(chatToTitle(chatCache.get(peer.channel_id)));
+        return chatCache.watchItem(peer.channel_id, (chat) => subscriber.next(chatToTitle(chat)));
       });
       break;
 
@@ -129,7 +123,7 @@ export function getPeerPhotoLocation(peer: Peer, big?: boolean): FileLocation | 
   switch (peer._) {
     case 'peerUser': {
       const user = userCache.get(peer.user_id);
-      if (user && user.photo && user.photo._ === 'userProfilePhoto') {
+      if (user?._ === 'user' && user.photo?._ === 'userProfilePhoto') {
         return big ? user.photo.photo_big : user.photo.photo_small;
       }
       return null;
@@ -137,7 +131,7 @@ export function getPeerPhotoLocation(peer: Peer, big?: boolean): FileLocation | 
 
     case 'peerChat': {
       const chat = chatCache.get(peer.chat_id);
-      if (chat && chat.photo && chat.photo._ === 'chatPhoto') {
+      if (chat?._ === 'chat' && chat.photo?._ === 'chatPhoto') {
         return big ? chat.photo.photo_big : chat.photo.photo_small;
       }
       return null;
@@ -145,7 +139,7 @@ export function getPeerPhotoLocation(peer: Peer, big?: boolean): FileLocation | 
 
     case 'peerChannel': {
       const channel = chatCache.get(peer.channel_id);
-      if (channel && channel.photo && channel.photo._ === 'chatPhoto') {
+      if (channel?._ === 'channel' && channel.photo?._ === 'chatPhoto') {
         return big ? channel.photo.photo_big : channel.photo.photo_small;
       }
       return null;
@@ -195,7 +189,7 @@ export function peerToColorCode(peer: Peer) {
 }
 
 // todo: Handle messages sent by a channel in a chat: https://github.com/spalt08/telegram-js/issues/31
-export function messageToSenderPeer(message: Exclude<Message, MessageEmpty>): Peer {
+export function messageToSenderPeer(message: Exclude<Message, Message.messageEmpty>): Peer {
   const channel = message.to_id._ === 'peerChannel' ? chatCache.get(message.to_id.channel_id) : undefined;
-  return channel && channel._ === 'channel' && !channel.megagroup ? message.to_id : userIdToPeer(message.from_id);
+  return channel && channel._ === 'channel' && !channel.megagroup ? message.to_id : userIdToPeer(todoAssertHasValue(message.from_id));
 }

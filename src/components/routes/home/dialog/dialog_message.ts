@@ -4,14 +4,15 @@ import { peerMessageToId } from 'helpers/api';
 import { Dialog } from 'cache/types';
 import { getAttributeSticker } from 'helpers/files';
 import { typingIndicator } from 'components/ui';
+import { todoAssertHasValue } from 'helpers/other';
 
 export default function dialogMessage(dialog: Dialog) {
   const msg = messageCache.get(peerMessageToId(dialog.peer, dialog.top_message));
 
   if (!msg || msg._ === 'messageEmpty') return div`.dialog__message`();
 
-  const user = userCache.get(msg.from_id);
-  const userLabel = user ? user.first_name : '';
+  const user = userCache.get(todoAssertHasValue(msg.from_id));
+  const userLabel = user?._ === 'user' ? user.first_name : '';
 
   let content = '';
 
@@ -42,7 +43,7 @@ export default function dialogMessage(dialog: Dialog) {
     if (msg.media._ === 'messageMediaContact') content = '👤 Contact';
     if (msg.media._ === 'messageMediaGeoLive') content = '📍 Live Location';
     if (msg.media._ === 'messageMediaPoll') content = '📊 Poll';
-    if (msg.media._ === 'messageMediaDocument') {
+    if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document') {
       const isSticker = getAttributeSticker(msg.media.document);
       if (isSticker) content = `${isSticker.alt}Sticker`;
       else content = 'Document';

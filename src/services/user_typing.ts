@@ -12,12 +12,12 @@ export default class UserTyping {
   actionStates: Record<string, TypingState> = {};
 
   constructor() {
-    client.updates.on('updateUserTyping', (update: Update.updateUserTyping) => {
-      this.notifyPeer(`user_${update.user_id}`, update);
+    client.updates.on('updateUserTyping', (update) => {
+      if (update) this.notifyPeer(`user_${update.user_id}`, update);
     });
 
-    client.updates.on('updateChatUserTyping', (update: Update.updateChatUserTyping) => {
-      this.notifyPeer(`chat_${update.chat_id}`, update);
+    client.updates.on('updateChatUserTyping', (update) => {
+      if (update) this.notifyPeer(`chat_${update.chat_id}`, update);
     });
   }
 

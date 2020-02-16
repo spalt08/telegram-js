@@ -2,7 +2,7 @@ import { div, text, nothing } from 'core/html';
 import { useInterface, hasInterface, getInterface, useOnMount } from 'core/hooks';
 import { mount, unmount } from 'core/dom';
 import { messageCache, dialogCache } from 'cache';
-import { Peer, Message, MessageCommon, MessageService, MessageEmpty, Dialog } from 'cache/types';
+import { Peer, Message, Dialog } from 'cache/types';
 import { formattedMessage } from 'components/ui';
 import client from 'client/client';
 import { profileAvatar, profileTitle } from 'components/profile';
@@ -17,6 +17,7 @@ import { messageToSenderPeer, peerToColorCode } from 'cache/accessors';
 import { userIdToPeer, peerToId } from 'helpers/api';
 import { isEmoji } from 'helpers/message';
 import { main } from 'services';
+import { todoAssertHasValue } from 'helpers/other';
 import messageSerivce from './service';
 import messageReply from './reply';
 import messageDate from './date';
@@ -35,7 +36,7 @@ const now = new Date();
 const timezoneOffset = now.getTimezoneOffset() * 60;
 
 // message renderer
-const renderMessage = (msg: MessageCommon, peer: Peer) => {
+const renderMessage = (msg: Message.message, peer: Peer) => {
   const date = messageDate(msg);
   const reply = msg.reply_to_msg_id ? messageReply(msg.reply_to_msg_id, peer, msg) : nothing;
   let title: Node = nothing;
@@ -86,9 +87,9 @@ const renderMessage = (msg: MessageCommon, peer: Peer) => {
   }
 
   // with photo
-  if (msg.media._ === 'messageMediaPhoto') {
+  if (msg.media._ === 'messageMediaPhoto' && msg.media.photo?._ === 'photo') {
     const extraClass = msg.message ? 'with-photo' : 'only-photo';
-    const popupPeer = peer._ === 'peerChannel' ? peer : userIdToPeer(msg.from_id);
+    const popupPeer = peer._ === 'peerChannel' ? peer : userIdToPeer(todoAssertHasValue(msg.from_id));
     const photoEl = photoPreview(msg.media.photo, popupPeer, msg, {
       fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined });
     const messageEl = msg.message ? div`.message__text`(formattedMessage(msg)) : nothing;
@@ -104,7 +105,7 @@ const renderMessage = (msg: MessageCommon, peer: Peer) => {
   }
 
   // with sticker
-  if (msg.media._ === 'messageMediaDocument' && getAttributeSticker(msg.media.document)) {
+  if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document' && getAttributeSticker(msg.media.document)) {
     const attr = getAttributeSticker(msg.media.document);
 
     return (
@@ -117,7 +118,7 @@ const renderMessage = (msg: MessageCommon, peer: Peer) => {
   }
 
   // with video gif
-  if (msg.media._ === 'messageMediaDocument' && getAttributeAnimated(msg.media.document)) {
+  if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document' && getAttributeAnimated(msg.media.document)) {
     const extraClass = msg.message ? 'with-photo' : 'only-photo with-video';
     const video = videoRenderer(msg.media.document, {
       fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined });
@@ -134,7 +135,7 @@ const renderMessage = (msg: MessageCommon, peer: Peer) => {
   }
 
   // with video
-  if (msg.media._ === 'messageMediaDocument' && getAttributeVideo(msg.media.document)) {
+  if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document' && getAttributeVideo(msg.media.document)) {
     const extraClass = msg.message ? 'with-photo' : 'only-photo';
     const previewEl = videoPreview(msg.media.document, {
       fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined });
@@ -151,7 +152,7 @@ const renderMessage = (msg: MessageCommon, peer: Peer) => {
   }
 
   // with document
-  if (msg.media._ === 'messageMediaDocument') {
+  if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document') {
     const messageEl = msg.message ? div`.message__text`(formattedMessage(msg)) : nothing;
 
     return (
@@ -191,7 +192,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
   let replyMarkup: Node | undefined;
 
   // previous message before update
-  let cached: MessageCommon | MessageService | MessageEmpty | undefined;
+  let cached: Message | undefined;
 
   // utc day number
   const day = () => Math.ceil(((cached && cached._ !== 'messageEmpty' ? cached.date : 0) - timezoneOffset) / 3600 / 24);
@@ -229,11 +230,11 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
 
       // if unreaded
       const dialog = dialogCache.get(peerToId(peer));
-      if (dialog && dialog.read_outbox_max_id < msg.id) {
+      if (dialog?._ === 'dialog' && dialog.read_outbox_max_id < msg.id) {
         element.classList.add('unreaded');
 
         const unsubscribe = dialogCache.watchItem(peerToId(peer), (nextDialog: Dialog) => {
-          if (nextDialog.read_outbox_max_id >= msg.id) {
+          if (nextDialog._ === 'dialog' && nextDialog.read_outbox_max_id >= msg.id) {
             element.classList.remove('unreaded');
             unsubscribe();
           }

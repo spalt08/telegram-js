@@ -8,7 +8,6 @@ import { message } from 'services';
 import { pinnedchat } from 'components/icons';
 import { getDialogLastReadMessageId, peerMessageToId, peerToId } from 'helpers/api';
 import { profileTitle } from 'components/profile';
-import { Dialog } from 'cache/types';
 import dialogMessage from './dialog_message';
 import dialogPicture from './dialog_picture';
 import './dialog.scss';
@@ -50,7 +49,11 @@ export default function dialogPreview(id: string) {
   );
 
   // on update
-  useObservable(clickable, dialog, (next: Dialog) => {
+  useObservable(clickable, dialog, (next) => {
+    if (next?._ !== 'dialog') {
+      return;
+    }
+
     if (next.unread_count === 0) {
       badge.textContent = '';
       if (!badge.classList.contains('hidden')) badge.classList.add('hidden');
@@ -71,7 +74,7 @@ export default function dialogPreview(id: string) {
       if (badge.classList.contains('hidden')) badge.classList.remove('hidden');
     }
 
-    if (next.notify_settings && next.notify_settings.mute_until > 0) badge.classList.add('muted');
+    if (next.notify_settings && next.notify_settings.mute_until! > 0) badge.classList.add('muted');
     else badge.classList.remove('muted');
 
     if (next.pinned === true) {
@@ -130,7 +133,7 @@ export default function dialogPreview(id: string) {
     if (isSelected()) {
       // Scroll to the bottom when a selected dialog is clicked
       targetMessage = Infinity;
-    } else if (currentDialog) {
+    } else if (currentDialog?._ === 'dialog') {
       const lastReadId = getDialogLastReadMessageId(currentDialog);
       targetMessage = lastReadId === currentDialog.top_message ? Infinity : lastReadId;
     }

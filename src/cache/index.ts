@@ -7,7 +7,7 @@ import {
 } from 'helpers/api';
 import Collection, { makeGetIdFromProp } from './fastStorages/collection';
 import Dictionary from './fastStorages/dictionary';
-import { Chat, Dialog, Message, User, UserFull, ChatFull, MessageCommon } from './types';
+import { Chat, Dialog, Message, User, UserFull, ChatFull } from './types';
 import { orderBy } from './fastStorages/indices';
 import messageHistory from './fastStorages/indices/messageHistory';
 import sharedMediaIndex from './fastStorages/indices/sharedMediaIndex';
@@ -46,40 +46,45 @@ export const messageCache = new Collection<Message, typeof messageCacheIndices, 
   indices: messageCacheIndices,
 });
 
+const dialogCacheIndices = {
+  order: orderBy(
+    (dialog1: Dialog, dialog2: Dialog) => {
+      // Pinned first
+      if (dialog1.pinned !== dialog2.pinned) {
+        return (dialog2.pinned ? 1 : 0) - (dialog1.pinned ? 1 : 0);
+      }
+      // If both are (not) pinned, with most recent message first
+      const message1 = messageCache.get(peerMessageToId(dialog1.peer, dialog1.top_message));
+      const message2 = messageCache.get(peerMessageToId(dialog2.peer, dialog2.top_message));
+      return (message2 && message2._ !== 'messageEmpty' ? message2.date : 0) - (message1 && message1._ !== 'messageEmpty' ? message1.date : 0);
+    },
+    (dialog: Dialog) => {
+      if (dialog._ === 'dialogFolder') {
+        return false;
+      }
+      if (!isDialogInRootFolder(dialog)) {
+        return false;
+      }
+      if (dialog.peer._ === 'peerChat') {
+        const chat = chatCache.get(dialog.peer.chat_id);
+        if (chat && chat._ === 'chat' && chat.migrated_to) {
+          return false;
+        }
+      }
+      return true;
+    },
+  ),
+};
+
 /**
  * Dialog repo
  * Ref: https://core.telegram.org/type/dialog
  * @todo Leave the manual sort (fetched from the server) for the pinned dialogs
  */
-export const dialogCache = new Collection({
+export const dialogCache = new Collection<Dialog, typeof dialogCacheIndices, string>({
   considerMin: false,
   getId: dialogToId,
-  indices: {
-    order: orderBy(
-      (dialog1: Dialog, dialog2: Dialog) => {
-        // Pinned first
-        if (dialog1.pinned !== dialog2.pinned) {
-          return (dialog2.pinned ? 1 : 0) - (dialog1.pinned ? 1 : 0);
-        }
-        // If both are (not) pinned, with most recent message first
-        const message1 = messageCache.get(peerMessageToId(dialog1.peer, dialog1.top_message));
-        const message2 = messageCache.get(peerMessageToId(dialog2.peer, dialog2.top_message));
-        return (message2 && message2._ !== 'messageEmpty' ? message2.date : 0) - (message1 && message1._ !== 'messageEmpty' ? message1.date : 0);
-      },
-      (dialog: Dialog) => {
-        if (!isDialogInRootFolder(dialog)) {
-          return false;
-        }
-        if (dialog.peer._ === 'peerChat') {
-          const chat = chatCache.get(dialog.peer.chat_id);
-          if (chat && chat.migrated_to) {
-            return false;
-          }
-        }
-        return true;
-      },
-    ),
-  },
+  indices: dialogCacheIndices,
 });
 
 export const userFullCache = new Collection<UserFull, {}, number>({
@@ -90,8 +95,8 @@ export const chatFullCache = new Collection<ChatFull, {}, number>({
   getId: (chatFull) => chatFull.id,
 });
 
-export const pinnedMessageCache = new Collection<Message, {}, string>({
-  getId: (msg: MessageCommon) => peerToId(msg.to_id),
+export const pinnedMessageCache = new Collection<Message.message, {}, string>({
+  getId: (msg: Message.message) => peerToId(msg.to_id),
 });
 
 /**

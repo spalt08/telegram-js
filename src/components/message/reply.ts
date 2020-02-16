@@ -5,11 +5,12 @@ import photoRenderer from 'components/media/photo/photo';
 import { listen, unmount, mount } from 'core/dom';
 import { div } from 'core/html';
 import { messageCache } from 'cache';
-import { Peer, Message, MessageCommon } from 'cache/types';
+import { Peer, Message } from 'cache/types';
+import { todoAssertHasValue } from 'helpers/other';
 import { message as service } from 'services';
 import messageShort from './short';
 
-export default function messageReply(id: number, peer: Peer, original: MessageCommon) {
+export default function messageReply(id: number, peer: Peer, original: Message.message) {
   const fullId = peerMessageToId(peer, id);
 
   const element = div`.message__reply`();
@@ -23,12 +24,12 @@ export default function messageReply(id: number, peer: Peer, original: MessageCo
 
     let preview: Node | undefined;
 
-    if (message._ === 'message' && message.media && message.media._ === 'messageMediaPhoto' && message.media.photo._ === 'photo') {
+    if (message._ === 'message' && message.media?._ === 'messageMediaPhoto' && message.media.photo?._ === 'photo') {
       preview = div`.quote__img`(photoRenderer(message.media.photo, { fit: 'cover', width: 36, height: 36 }));
     }
 
     replyQuote = quote(
-      profileTitle({ _: 'peerUser', user_id: message.from_id }),
+      profileTitle({ _: 'peerUser', user_id: todoAssertHasValue(message.from_id) }),
       message._ === 'message' && message.message ? message.message : messageShort(message),
       preview,
     );

@@ -1,4 +1,4 @@
-import { Message, Messages, MessagesNotModified, Peer } from 'cache/types';
+import { Message, Peer } from 'cache/types';
 import { peerToInputPeer } from 'cache/accessors';
 import client from 'client/client';
 import { Direction } from './types';
@@ -67,11 +67,15 @@ export function loadContinuousMessages(
   }
 
   // console.log('loadMessages - request', payload);
-  client.call('messages.getHistory', payload, (err: any, data?: Exclude<Messages, MessagesNotModified>) => {
+  client.call('messages.getHistory', payload, (err, data) => {
     // console.log('loadMessages - response', data);
 
     if (!data) {
       onComplete(err);
+      return;
+    }
+
+    if (data._ === 'messages.messagesNotModified') {
       return;
     }
 

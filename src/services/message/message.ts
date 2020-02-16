@@ -1,10 +1,11 @@
 import { BehaviorSubject, Subject } from 'rxjs';
 import { first } from 'rxjs/operators';
 import client from 'client/client';
-import { Message, Peer, AnyUpdateMessage, AnyUpdateShortMessage, MessageCommon } from 'cache/types';
+import { Message, Peer, MessagesGetMessages } from 'cache/types';
 import { messageCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage, shortChatMessageToMessage } from 'helpers/api';
+import { todoAssertHasValue } from 'helpers/other';
 import { Direction } from './types';
 import makeMessageChunk, { MessageChunkService, MessageHistoryChunk } from './message_chunk';
 
@@ -23,40 +24,50 @@ export default class MessagesService {
   // True when there is one chunk showing and another one is loading to replace the current one
   readonly loadingNextChunk = new BehaviorSubject(false);
 
-  readonly pendingMessages: Record<string, MessageCommon> = {};
+  readonly pendingMessages: Record<string, Message.message> = {};
 
   protected currentChunk?: MessageChunkService;
 
   protected nextChunk?: MessageChunkService;
 
   constructor() {
-    client.updates.on('updateNewMessage', (update: AnyUpdateMessage) => {
-      this.pushMessages([update.message]);
+    client.updates.on('updateNewMessage', (update) => {
+      if (update) this.pushMessages([update.message]);
     });
 
-    client.updates.on('updateShortMessage', (update: AnyUpdateShortMessage) => {
-      const message = shortMessageToMessage(client.getUserID(), update);
-      this.pushMessages([message]);
+    client.updates.on('updateShortMessage', (update) => {
+      if (update) {
+        const message = shortMessageToMessage(client.getUserID(), update);
+        this.pushMessages([message]);
+      }
     });
 
-    client.updates.on('updateShortChatMessage', (update: AnyUpdateShortMessage) => {
-      const message = shortChatMessageToMessage(update);
-      this.pushMessages([message]);
+    client.updates.on('updateShortChatMessage', (update) => {
+      if (update) {
+        const message = shortChatMessageToMessage(update);
+        this.pushMessages([message]);
+      }
     });
 
-    client.updates.on('updateNewChannelMessage', (update: AnyUpdateMessage) => {
-      this.pushMessages([update.message]);
+    client.updates.on('updateNewChannelMessage', (update) => {
+      if (update) {
+        this.pushMessages([update.message]);
+      }
     });
 
-    client.updates.on('updateDeleteMessages', (update: any) => {
-      update.messages.forEach((messageId: number) => messageCache.remove(getUserMessageId(messageId)));
+    client.updates.on('updateDeleteMessages', (update) => {
+      if (update) {
+        update.messages.forEach((messageId: number) => messageCache.remove(getUserMessageId(messageId)));
+      }
     });
 
-    client.updates.on('updateDeleteChannelMessages', (update: any) => {
-      // console.log('updateDeleteChannelMessages', update);
-      update.messages.forEach((messageId: number) => messageCache.remove(
-        peerMessageToId({ _: 'peerChannel', channel_id: update.channel_id }, messageId),
-      ));
+    client.updates.on('updateDeleteChannelMessages', (update) => {
+      if (update) {
+        // console.log('updateDeleteChannelMessages', update);
+        update.messages.forEach((messageId: number) => messageCache.remove(
+          peerMessageToId({ _: 'peerChannel', channel_id: update.channel_id }, messageId),
+        ));
+      }
     });
   }
 
@@ -221,11 +232,16 @@ export default class MessagesService {
   }
 
   /** Load single message */
-  loadMessageReply = (msg: MessageCommon, cb: (msg: Message) => void) => {
-    const params = { id: [{ _: 'inputMessageReplyTo', id: msg.id }, { _: 'inputMessageID', id: msg.reply_to_msg_id }] };
+  loadMessageReply = (msg: Message.message, cb: (msg: Message) => void) => {
+    const params: MessagesGetMessages = {
+      id: [
+        { _: 'inputMessageReplyTo', id: msg.id },
+        { _: 'inputMessageID', id: todoAssertHasValue(msg.reply_to_msg_id) },
+      ],
+    };
 
     client.call('messages.getMessages', params, (err, res) => {
-      if (!err && res && res.messages && res.messages.length > 0) {
+      if (!err && res && res._ !== 'messages.messagesNotModified' && res.messages && res.messages.length > 0) {
         messageCache.put(res.messages);
         cb(res.messages[0]);
       }

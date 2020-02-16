@@ -1,4 +1,4 @@
-import { Peer, Message, MessageFilter } from 'cache/types';
+import { Peer, Message, MessagesFilter } from 'cache/types';
 import { div } from 'core/html';
 import { VirtualizedList } from 'components/ui';
 import { BehaviorSubject } from 'rxjs';
@@ -12,7 +12,7 @@ import photoPreview from 'components/media/photo/preview';
 import { getAttributeVideo } from 'helpers/files';
 import videoPreview from 'components/media/video/preview';
 
-const SEARCH_FILTER: MessageFilter['_'] = 'inputMessagesFilterPhotoVideo';
+const SEARCH_FILTER: MessagesFilter['_'] = 'inputMessagesFilterPhotoVideo';
 
 const mediaRowRenderer = (ids: string, peer: Peer): HTMLDivElement => {
   const messages = ids.split('+');
@@ -23,13 +23,16 @@ const mediaRowRenderer = (ids: string, peer: Peer): HTMLDivElement => {
     const element = div`.shared-media__mediaitem`();
 
     // photo
-    if (message && message._ === 'message' && message.media?._ === 'messageMediaPhoto') {
+    if (message?._ === 'message' && message.media?._ === 'messageMediaPhoto' && message.media.photo?._ === 'photo') {
       const photo = photoPreview(message.media.photo, peer, message, { fit: 'cover', width: 120, height: 120 });
       if (photo) mount(element, photo);
     }
 
     // video
-    if (message && message._ === 'message' && message.media?._ === 'messageMediaDocument' && getAttributeVideo(message.media.document)) {
+    if (message?._ === 'message'
+      && message.media?._ === 'messageMediaDocument'
+      && message.media.document?._ === 'document'
+      && getAttributeVideo(message.media.document)) {
       const photo = videoPreview(message.media.document, { fit: 'cover', width: 120, height: 120 });
       if (photo) mount(element, photo);
     }

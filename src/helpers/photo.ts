@@ -1,5 +1,5 @@
 /* eslint-disable prefer-destructuring, prefer-template, max-len */
-import { PhotoSize, InputFileLocation, PhotoNotEmpty, Peer, Message, Document, PhotoSizeWithLocation, StickerSet, InputStickerSet } from 'cache/types';
+import { PhotoSize, InputFileLocation, Peer, Message, Document, StickerSet, InputStickerSet, Photo } from 'cache/types';
 import { peerToInputPeer, getPeerPhotoLocation } from 'cache/accessors';
 import { blobToUrl, hexToBlob, hexToStr, strToBlob } from './files';
 
@@ -53,9 +53,9 @@ export function getOrientation(sizes: PhotoSize[]): PhotoOrinetation {
 
 export type PhotoFitMode = 'contain' | 'cover';
 
-export function getSize(sizes: PhotoSize[], width?: number, height?: number, fit?: PhotoFitMode): PhotoSizeWithLocation | null {
+export function getSize(sizes: PhotoSize[], width?: number, height?: number, fit?: PhotoFitMode): PhotoSize.photoSize | null {
   let diff: number | undefined;
-  let closest: PhotoSizeWithLocation | undefined;
+  let closest: PhotoSize.photoSize | undefined;
 
   for (let i = 0; i < sizes.length; i += 1) {
     const size = sizes[i];
@@ -90,7 +90,7 @@ export function getSizeType(sizes: PhotoSize[], width?: number, height?: number,
   return size ? size.type : 'm';
 }
 
-export function getDefaultSizeType(photo: PhotoNotEmpty): string {
+export function getDefaultSizeType(photo: Photo.photo): string {
   for (let i = photo.sizes.length - 1; i >= 0; i -= 1) {
     const size = photo.sizes[i];
     if (size._ === 'photoSize') {
@@ -113,7 +113,7 @@ export function checkDimensions(sizes: PhotoSize[], dw: number, dh: number): boo
   return false;
 }
 
-export function getPhotoLocation(photo: PhotoNotEmpty | Document, type?: string): InputFileLocation {
+export function getPhotoLocation(photo: Photo.photo | Document.document, type?: string): InputFileLocation {
   return {
     _: photo._ === 'photo' ? 'inputPhotoFileLocation' : 'inputDocumentFileLocation',
     id: photo.id,
@@ -123,7 +123,7 @@ export function getPhotoLocation(photo: PhotoNotEmpty | Document, type?: string)
   };
 }
 
-export function getDocumentLocation(document: Document): InputFileLocation {
+export function getDocumentLocation(document: Document.document): InputFileLocation {
   return {
     _: 'inputDocumentFileLocation',
     id: document.id,

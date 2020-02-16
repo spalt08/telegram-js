@@ -12,7 +12,7 @@ import MainService from './main';
  */
 export default class MediaService {
   /** Recent Stickers */
-  recentStickers = new BehaviorSubject<Document[]>([]);
+  recentStickers = new BehaviorSubject<Document.document[]>([]);
 
   /** Stickers Packs */
   stickerSets = new BehaviorSubject<StickerSet[]>([]);
@@ -56,13 +56,13 @@ export default class MediaService {
    * Ref: https://core.telegram.org/method/messages.getRecentStickers
    */
   loadRecentStickers(): void {
-    client.call('messages.getRecentStickers', { hash: this.recentStickersHash }, (err: ClientError, result: any) => {
+    client.call('messages.getRecentStickers', { hash: this.recentStickersHash }, (err, result) => {
       if (err || !result) throw new Error(JSON.stringify(err));
 
       // update recent stickers
       if (result._ === 'messages.recentStickers') {
         this.recentStickersHash = result.hash;
-        this.recentStickers.next(result.stickers);
+        this.recentStickers.next(result.stickers as Document.document[]);
       }
     });
   }

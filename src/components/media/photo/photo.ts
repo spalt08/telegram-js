@@ -6,6 +6,7 @@ import { getThumbnail, getPhotoLocation, getSize, PhotoFitMode } from 'helpers/p
 import media from 'client/media';
 import './photo.scss';
 import { useInterface, useOnMount } from 'core/hooks';
+import { todoAssertHasValue } from 'helpers/other';
 
 export type PhotoOptions = {
   fit?: PhotoFitMode,
@@ -17,11 +18,11 @@ export type PhotoOptions = {
   showLoader?: boolean,
 };
 
-export default function photoRenderer(photo: Photo | Document,
+export default function photoRenderer(photo: Photo.photo | Document.document,
   { width, height, fit = 'contain', thumb = true, minWidth, minHeight, showLoader = true }: PhotoOptions) {
-  if (photo._ !== 'photo' && photo._ !== 'document') return nothing;
+  if (photo?._ !== 'photo' && photo?._ !== 'document') return nothing;
 
-  const size = getSize(photo._ === 'photo' ? photo.sizes : photo.thumbs, width, height, fit);
+  const size = getSize(photo._ === 'photo' ? todoAssertHasValue(photo.sizes) : todoAssertHasValue(photo.thumbs), width, height, fit);
   if (!size) return nothing;
 
   const container = div`.photo`();
@@ -69,7 +70,7 @@ export default function photoRenderer(photo: Photo | Document,
 
   // diplay thumbnail
   if (!url && thumb) {
-    thumbSrc = getThumbnail(photo._ === 'photo' ? photo.sizes : photo.thumbs);
+    thumbSrc = getThumbnail(photo._ === 'photo' ? todoAssertHasValue(photo.sizes) : todoAssertHasValue(photo.thumbs));
 
     if (thumbSrc) {
       thumbnail = img({ className: 'photo__thumbnail', src: thumbSrc, alt: 'Message photo' });

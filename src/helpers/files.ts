@@ -1,5 +1,4 @@
-import { StorageFileType, Document, InputFileLocation, DocumentAttributeSticker, DocumentAttributeFilename,
-  DocumentAttributeVideo, DocumentAttribute, DocumentAttributeAnimated } from 'cache/types';
+import { StorageFileType, Document, InputFileLocation, DocumentAttribute } from 'cache/types';
 
 export function hexToStr(hex: string): string {
   let str = '';
@@ -55,14 +54,17 @@ export function locationToString(location: InputFileLocation): string {
       return `document_${location.id}_${location.thumb_size}`;
 
     case 'inputStickerSetThumb':
-      return `set_thumb_${location.stickerset.id}_${location.local_id}_${location.volume_id}`;
-
+      if (location.stickerset._ === 'inputStickerSetID') {
+        return `set_thumb_${location.stickerset.id}_${location.local_id}_${location.volume_id}`;
+      }
+      break;
     default:
-      throw new Error(`No location hash value for ${location}`);
   }
+
+  throw new Error(`No location hash value for ${location}`);
 }
 
-export function getDocumentLocation(document: Document, size: string = 'y'): InputFileLocation {
+export function getDocumentLocation(document: Document.document, size: string = 'y'): InputFileLocation {
   return {
     _: 'inputDocumentFileLocation',
     id: document.id,
@@ -72,11 +74,11 @@ export function getDocumentLocation(document: Document, size: string = 'y'): Inp
   };
 }
 
-export function getAttribute(document: Document, name: 'documentAttributeAnimated'): DocumentAttributeAnimated | null;
-export function getAttribute(document: Document, name: 'documentAttributeFilename'): DocumentAttributeFilename | null;
-export function getAttribute(document: Document, name: 'documentAttributeSticker'): DocumentAttributeSticker | null;
-export function getAttribute(document: Document, name: 'documentAttributeVideo'): DocumentAttributeVideo | null;
-export function getAttribute(document: Document, name: string): DocumentAttribute | null {
+export function getAttribute(document: Document.document, name: 'documentAttributeAnimated'): DocumentAttribute.documentAttributeAnimated | null;
+export function getAttribute(document: Document.document, name: 'documentAttributeFilename'): DocumentAttribute.documentAttributeFilename | null;
+export function getAttribute(document: Document.document, name: 'documentAttributeSticker'): DocumentAttribute.documentAttributeSticker | null;
+export function getAttribute(document: Document.document, name: 'documentAttributeVideo'): DocumentAttribute.documentAttributeVideo | null;
+export function getAttribute(document: Document.document, name: string): DocumentAttribute | null {
   for (let i = 0; i < document.attributes.length; i += 1) {
     const attr = document.attributes[i];
     if (attr._ === name) return attr;
@@ -85,19 +87,19 @@ export function getAttribute(document: Document, name: string): DocumentAttribut
   return null;
 }
 
-export function getAttributeSticker(document: Document) {
+export function getAttributeSticker(document: Document.document) {
   return getAttribute(document, 'documentAttributeSticker');
 }
 
-export function getAttributeVideo(document: Document) {
+export function getAttributeVideo(document: Document.document) {
   return getAttribute(document, 'documentAttributeVideo');
 }
 
-export function getAttributeFilename(document: Document) {
+export function getAttributeFilename(document: Document.document) {
   return getAttribute(document, 'documentAttributeFilename');
 }
 
-export function getAttributeAnimated(document: Document) {
+export function getAttributeAnimated(document: Document.document) {
   return getAttribute(document, 'documentAttributeAnimated');
 }
 

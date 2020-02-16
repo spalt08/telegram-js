@@ -1,4 +1,4 @@
-import { Peer, Message, MessageFilter } from 'cache/types';
+import { Peer, Message, MessagesFilter } from 'cache/types';
 import { div, nothing } from 'core/html';
 import { VirtualizedList } from 'components/ui';
 import { BehaviorSubject } from 'rxjs';
@@ -11,11 +11,11 @@ import { unmount, mount } from 'core/dom';
 import documentFile from 'components/media/document/file';
 import './docs_panel.scss';
 
-const SEARCH_FILTER: MessageFilter['_'] = 'inputMessagesFilterDocument';
+const SEARCH_FILTER: MessagesFilter['_'] = 'inputMessagesFilterDocument';
 
 const documentRowRenderer = (id: string) => {
   const msg = messageCache.get(id);
-  if (msg?._ === 'message' && msg.media?._ === 'messageMediaDocument') {
+  if (msg?._ === 'message' && msg.media?._ === 'messageMediaDocument' && msg.media.document?._ === 'document') {
     return documentFile(msg.media.document, msg);
   }
   return div(nothing);

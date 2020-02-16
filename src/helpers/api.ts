@@ -1,5 +1,6 @@
-import { Dialog, Peer, Message, AnyUpdateShortMessage, MessageEmpty } from 'cache/types';
+import { Dialog, Peer, Message, Updates } from 'cache/types';
 import { ARCHIVE_FOLDER_ID, ROOT_FOLDER_ID } from 'const/api';
+import { todoAssertHasValue } from './other';
 
 export function peerToId(peer: Peer): string {
   switch (peer._) {
@@ -27,12 +28,12 @@ export function peerMessageToId(peer: Peer, messageId: number): string {
   return `${peerToId(peer)}_${messageId}`;
 }
 
-export function messageToDialogPeer(message: Readonly<Exclude<Message, MessageEmpty>>): Peer;
-export function messageToDialogPeer(message: Readonly<MessageEmpty>): undefined;
+export function messageToDialogPeer(message: Readonly<Exclude<Message, Message.messageEmpty>>): Peer;
+export function messageToDialogPeer(message: Readonly<Message.messageEmpty>): undefined;
 export function messageToDialogPeer(message: Readonly<Message>): Peer | undefined;
 export function messageToDialogPeer(message: Readonly<Message>): Peer | undefined {
   if (message._ === 'messageEmpty') return undefined;
-  if (message.to_id._ === 'peerUser' && !message.out) return { _: 'peerUser', user_id: message.from_id };
+  if (message.to_id._ === 'peerUser' && !message.out) return { _: 'peerUser', user_id: todoAssertHasValue(message.from_id) };
   return message.to_id;
 }
 
@@ -45,7 +46,7 @@ export function userIdToPeer(id: number): Peer {
   return { _: 'peerUser', user_id: id };
 }
 
-export function shortMessageToMessage(self: number, message: AnyUpdateShortMessage): Message {
+export function shortMessageToMessage(self: number, message: Updates.updateShortMessage): Message {
   return {
     ...message,
     _: 'message',
@@ -59,7 +60,7 @@ export function shortMessageToMessage(self: number, message: AnyUpdateShortMessa
   };
 }
 
-export function shortChatMessageToMessage(message: any): Message {
+export function shortChatMessageToMessage(message: Updates.updateShortChatMessage): Message {
   const peer: Peer = {
     _: 'peerChat',
     chat_id: message.chat_id,
@@ -73,15 +74,15 @@ export function shortChatMessageToMessage(message: any): Message {
   };
 }
 
-export function isDialogInRootFolder(dialog: Dialog) {
+export function isDialogInRootFolder(dialog: Dialog.dialog) {
   return dialog.folder_id === ROOT_FOLDER_ID;
 }
 
-export function isDialogArchived(dialog: Dialog) {
+export function isDialogArchived(dialog: Dialog.dialog) {
   return dialog.folder_id === ARCHIVE_FOLDER_ID;
 }
 
-export function getDialogLastReadMessageId(dialog: Dialog) {
+export function getDialogLastReadMessageId(dialog: Dialog.dialog) {
   // Not perfect but suitable for most cases
   return dialog.unread_count > 0 ? dialog.read_inbox_max_id : dialog.top_message;
 }

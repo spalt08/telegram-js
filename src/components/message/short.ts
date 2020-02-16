@@ -1,6 +1,7 @@
 import { userCache } from 'cache';
 import { Message } from 'cache/types';
 import { getAttributeSticker } from 'helpers/files';
+import { todoAssertHasValue } from 'helpers/other';
 
 export default function messageShort(msg: Message) {
   let content = 'Message';
@@ -8,8 +9,8 @@ export default function messageShort(msg: Message) {
   if (msg._ === 'messageEmpty') return content;
 
   if (msg._ === 'messageService') {
-    const user = userCache.get(msg.from_id);
-    const userLabel = user ? user.first_name : 'Someone';
+    const user = userCache.get(todoAssertHasValue(msg.from_id));
+    const userLabel = user?._ === 'user' ? user.first_name : 'Someone';
 
     switch (msg.action._) {
       case 'messageActionChatCreate': content = `${userLabel} created the group`; break;
@@ -36,7 +37,7 @@ export default function messageShort(msg: Message) {
     if (msg.media._ === 'messageMediaContact') content = '👤 Contact';
     if (msg.media._ === 'messageMediaGeoLive') content = '📍 Live Location';
     if (msg.media._ === 'messageMediaPoll') content = '📊 Poll';
-    if (msg.media._ === 'messageMediaDocument') {
+    if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document') {
       const isSticker = getAttributeSticker(msg.media.document);
       if (isSticker) content = `${isSticker.alt}Sticker`;
       else content = 'Document';

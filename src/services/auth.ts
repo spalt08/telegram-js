@@ -5,6 +5,7 @@ import { API_HASH, API_ID } from 'const/api';
 import { unformat } from 'helpers/phone';
 import { router } from 'router';
 import media from 'client/media';
+import { AuthSendCode, AuthCheckPassword, InputCheckPasswordSRP } from 'cache/types';
 
 /**
  * Singleton service class for handling auth flow
@@ -73,11 +74,11 @@ export default class AuthService {
       client.storage = window.sessionStorage;
     }
 
-    const payload = {
+    const payload: AuthSendCode = {
       phone_number: unformat(this.phoneCountry.value.phone) + phoneNumber,
       api_id: API_ID,
       api_hash: API_HASH,
-      settings: {},
+      settings: { _: 'codeSettings' },
     };
 
     client.call('auth.sendCode', payload, (err, result) => {
@@ -98,7 +99,7 @@ export default class AuthService {
 
           this.sendCode(phoneNumber, remember, cb);
 
-        // Display error message
+          // Display error message
         } else if (err.message === 'AUTH_RESTART') {
           this.sendCode(phoneNumber, remember, cb);
         } else {
@@ -109,7 +110,7 @@ export default class AuthService {
       }
 
       // Success
-      if (result._ === 'auth.sentCode') {
+      if (result?._ === 'auth.sentCode') {
         this.phoneHash = result.phone_code_hash;
         this.codeType = result.type._;
         this.state.next('code');
@@ -177,8 +178,9 @@ export default class AuthService {
       return;
     }
 
-    client.getPasswordKdfAsync(this.passwordAlgo, password, (hash) => {
-      client.call('auth.checkPassword', { password: hash }, (err, res) => {
+    client.getPasswordKdfAsync(this.passwordAlgo, password, (hash: InputCheckPasswordSRP) => {
+      const payload: AuthCheckPassword = { password: hash };
+      client.call('auth.checkPassword', payload, (err, res) => {
         if (err && err.type === 'network') {
           this.errPassword.next('NETWORK_ERROR');
           cb();

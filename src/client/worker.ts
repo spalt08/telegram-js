@@ -74,7 +74,14 @@ function downloadFilePart(
  * File part processor
  */
 function processFilePart(
-  location: any, file: UploadFile, imime: string, dc: number, offset: number, limit: number, parts: string, cb: (url: string, m: string) => void,
+  location: any,
+  file: UploadFile.uploadFile,
+  imime: string,
+  dc: number,
+  offset: number,
+  limit: number,
+  parts: string,
+  cb: (url: string, m: string) => void,
 ) {
   // todo load parts
   if (file.bytes.length / 2 === limit) {

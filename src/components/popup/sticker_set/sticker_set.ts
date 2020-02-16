@@ -1,6 +1,6 @@
 import { div, text } from 'core/html';
 import { materialSpinner } from 'components/icons';
-import { InputStickerSet } from 'cache/types';
+import { Document, InputStickerSet } from 'cache/types';
 import { listen, unmount, mount } from 'core/dom';
 import { getInterface } from 'core/hooks';
 import client from 'client/client';
@@ -26,7 +26,7 @@ export default function stickerSetPopup(stickerset: InputStickerSet) {
     if (err || !result) throw new Error(`Unable to load sticker set: ${JSON.stringify(err)}`);
 
     unmount(loader);
-    mount(content, stickerSetFetched(result.set, result.documents));
+    mount(content, stickerSetFetched(result.set, result.documents as Document.document[]));
   });
   return container;
 }

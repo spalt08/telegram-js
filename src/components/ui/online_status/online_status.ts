@@ -5,6 +5,7 @@ import { useObservable } from 'core/hooks';
 import { timer, combineLatest } from 'rxjs';
 import { auth as authService } from 'services';
 import './online_status.scss';
+import { todoAssertHasValue } from 'helpers/other';
 
 export function areSameDays(date1: Date, date2: Date) {
   return date1.getDate() === date2.getDate()
@@ -67,7 +68,7 @@ export default function onlineStatus(peer: Peer) {
       const minuteTimer = timer(0, 60 * 1000);
       const periodicUserObservable = combineLatest(userSubject, minuteTimer);
       useObservable(container, periodicUserObservable, ([u, time]) => {
-        if (!u || !u.status) return;
+        if (u?._ !== 'user' || !u.status) return;
         if (prevStatus !== u.status || (prevTime !== time && u.status._ === 'userStatusOffline')) {
           statusText.textContent = formatStatus(u.status);
           container.classList.toggle('online', u.status._ === 'userStatusOnline');
@@ -85,7 +86,7 @@ export default function onlineStatus(peer: Peer) {
       if (chatFull?._ === 'chatFull' && chatFull.participants._ === 'chatParticipants' && chat?._ === 'chat') {
         chatFull.participants.participants.forEach((p) => {
           const user = userCache.get(p.user_id);
-          if (user && user.status?._ === 'userStatusOnline') {
+          if (user?._ === 'user' && user.status?._ === 'userStatusOnline') {
             onlineUsers++;
             if (user.id === authService.userID) wasMe = true;
           }
@@ -105,8 +106,9 @@ export default function onlineStatus(peer: Peer) {
     chatFullSubject.subscribe((cf) => {
       if (cf?._ === 'channelFull') {
         statusText.textContent = (channel?._ === 'channel' && channel.broadcast)
-          ? `${cf.participants_count.toLocaleString('en-US')} subscribers`
-          : `${cf.participants_count.toLocaleString('en-US')} members, ${cf.online_count.toLocaleString('en-US')} online`;
+          ? `${todoAssertHasValue(cf.participants_count).toLocaleString('en-US')} subscribers`
+          // eslint-disable-next-line max-len
+          : `${todoAssertHasValue(cf.participants_count).toLocaleString('en-US')} members, ${todoAssertHasValue(cf.online_count).toLocaleString('en-US')} online`;
       }
     });
   }

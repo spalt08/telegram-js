@@ -7,7 +7,7 @@ import { useOnMount } from 'core/hooks';
 import photoRenderer, { PhotoOptions } from '../photo/photo';
 import './video.scss';
 
-export default function videoRenderer(document: Document, photoOptions: PhotoOptions = {}) {
+export default function videoRenderer(document: Document.document, photoOptions: PhotoOptions = {}) {
   const thumbnail = photoRenderer(document, { ...photoOptions, showLoader: false });
   const location = getDocumentLocation(document, '');
   const videoAttribute = getAttributeVideo(document);

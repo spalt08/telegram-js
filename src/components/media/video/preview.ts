@@ -4,7 +4,7 @@ import { getAttributeVideo, getReadableDuration, getAttributeAnimated } from 'he
 import photoRenderer, { PhotoOptions } from '../photo/photo';
 import './preview.scss';
 
-export default function videoPreview(video: Document, photoOptions: PhotoOptions = {}) {
+export default function videoPreview(video: Document.document, photoOptions: PhotoOptions = {}) {
   const thumbnail = photoRenderer(video, photoOptions);
 
   const videoAttribute = getAttributeVideo(video);

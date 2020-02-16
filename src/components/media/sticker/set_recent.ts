@@ -8,8 +8,8 @@ import './set.scss';
 /**
  * Sticker set
  */
-export default function stickerSetRecent(onClick?: (sticker: Document) => void) {
-  const elements = media.recentStickers.value.map((sticker: Document) => stickerRenderer(sticker, { size: '100%', autoplay: false, onClick }));
+export default function stickerSetRecent(onClick?: (sticker: Document.document) => void) {
+  const elements = media.recentStickers.value.map((sticker) => stickerRenderer(sticker, { size: '100%', autoplay: false, onClick }));
 
   const container = (
     div`.sticker-set`(

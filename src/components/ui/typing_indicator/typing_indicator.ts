@@ -1,5 +1,5 @@
 import { span, text } from 'core/html';
-import { Peer, SendMessageAction } from 'cache/types';
+import { Peer, SendMessageAction, User } from 'cache/types';
 import { userTyping } from 'services';
 import { unmountChildren, mount } from 'core/dom';
 import { useObservable } from 'core/hooks';
@@ -35,11 +35,11 @@ export default function typingIndicator(peer: Peer, className: string, ...childr
       if (peer._ === 'peerUser') {
         mount(container, span`.typingIndicator__typing`(text(actionToString(actions[activeUserIds[0]]))));
       } else if (activeUserIds.length === 1) {
-        const user = userCache.get(activeUserIds[0])?.first_name ?? 'Someone';
+        const user = (userCache.get(activeUserIds[0]) as User.user)?.first_name ?? 'Someone';
         mount(container, span`.typingIndicator__typing`(span(text(user)), text(` is ${actionToString(actions[activeUserIds[0]])}`)));
       } else if (activeUserIds.length === 2) {
-        const user1 = userCache.get(activeUserIds[0])?.first_name ?? '';
-        const user2 = userCache.get(activeUserIds[1])?.first_name ?? '';
+        const user1 = (userCache.get(activeUserIds[0]) as User.user)?.first_name ?? '';
+        const user2 = (userCache.get(activeUserIds[1]) as User.user)?.first_name ?? '';
         mount(container, span`.typingIndicator__typing`(
           span(text(user1)),
           text(', '),

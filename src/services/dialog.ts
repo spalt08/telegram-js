@@ -3,16 +3,10 @@ import client from 'client/client';
 import { userCache, chatCache, messageCache, dialogCache } from 'cache';
 import { peerMessageToId, peerToId } from 'helpers/api';
 import {
-  Chat,
-  UpdateReadHistoryInbox,
-  UpdateReadChannelInbox,
-  UpdateReadHistoryOutbox,
-  UpdateReadChannelOutbox,
-  UpdateDialogPinned,
   Peer,
   InputDialogPeer,
-  PeerDialogs,
   Dialog,
+  MessagesGetDialogs,
 } from 'cache/types';
 import { peerToInputDialogPeer, peerToInputPeer } from 'cache/accessors';
 import MessageService from './message/message';
@@ -33,20 +27,20 @@ export default class DialogsService {
     });
 
     // The client pushes it before pushing messages
-    client.updates.on('chat', (chat: Chat) => {
+    client.updates.on('chat', (chat) => {
       // It has a broken access_hash for some reason so it shouldn't replace an existing chat
-      if (!chatCache.has(chat.id)) {
+      if (chat && !chatCache.has(chat.id)) {
         chatCache.put(chat);
       }
     });
 
     messageCache.indices.history.newestMessages.subscribe(([peer, messageId]) => {
       this.changeOrLoadDialog(peer, (dialog) => {
-        if (dialog.top_message === messageId) {
+        if (dialog._ !== 'dialog' && dialog.top_message === messageId) { // todo: possible bug! Should be ||
           return undefined;
         }
 
-        let unread = dialog.unread_count;
+        let unread = (dialog as Dialog.dialog).unread_count;
         const message = messageCache.get(peerMessageToId(dialog.peer, messageId));
         if (message && message._ !== 'messageEmpty' && message.out === false) {
           if (message.id > dialog.top_message) unread++;
@@ -62,48 +56,58 @@ export default class DialogsService {
     });
 
     // incoming message were readed
-    client.updates.on('updateReadHistoryInbox', (update: UpdateReadHistoryInbox) => {
-      this.changeOrLoadDialog(update.peer, (dialog) => ({
-        ...dialog,
-        read_inbox_max_id: update.max_id,
-        unread_count: update.still_unread_count,
-      }));
+    client.updates.on('updateReadHistoryInbox', (update) => {
+      if (update) {
+        this.changeOrLoadDialog(update.peer, (dialog) => ({
+          ...dialog,
+          read_inbox_max_id: update.max_id,
+          unread_count: update.still_unread_count,
+        }));
+      }
     });
 
     // outcoming message were readed
-    client.updates.on('updateReadHistoryOutbox', (update: UpdateReadHistoryOutbox) => {
-      this.changeOrLoadDialog(update.peer, (dialog) => ({
-        ...dialog,
-        read_outbox_max_id: update.max_id,
-      }));
+    client.updates.on('updateReadHistoryOutbox', (update) => {
+      if (update) {
+        this.changeOrLoadDialog(update.peer, (dialog) => ({
+          ...dialog,
+          read_outbox_max_id: update.max_id,
+        }));
+      }
     });
 
     // incoming message were readed (channel)
-    client.updates.on('updateReadChannelInbox', (update: UpdateReadChannelInbox) => {
-      this.changeOrLoadDialog({ _: 'peerChannel', channel_id: update.channel_id }, (dialog) => ({
-        ...dialog,
-        read_inbox_max_id: update.max_id,
-        unread_count: update.still_unread_count,
-      }));
+    client.updates.on('updateReadChannelInbox', (update) => {
+      if (update) {
+        this.changeOrLoadDialog({ _: 'peerChannel', channel_id: update.channel_id }, (dialog) => ({
+          ...dialog,
+          read_inbox_max_id: update.max_id,
+          unread_count: update.still_unread_count,
+        }));
+      }
     });
 
     // outcoming message were readed (channel)
-    client.updates.on('updateReadChannelOutbox', (update: UpdateReadChannelOutbox) => {
-      this.changeOrLoadDialog({ _: 'peerChannel', channel_id: update.channel_id }, (dialog) => ({
-        ...dialog,
-        read_outbox_max_id: update.max_id,
-      }));
+    client.updates.on('updateReadChannelOutbox', (update) => {
+      if (update) {
+        this.changeOrLoadDialog({ _: 'peerChannel', channel_id: update.channel_id }, (dialog) => ({
+          ...dialog,
+          read_outbox_max_id: update.max_id,
+        }));
+      }
     });
 
-    client.updates.on('updateDialogUnreadMark', (update: any) => {
-      this.changeOrLoadDialog(update.peer.peer, (dialog) => ({
-        ...dialog,
-        unread_mark: update.unread,
-      }));
+    client.updates.on('updateDialogUnreadMark', (update) => {
+      if (update?.peer._ === 'dialogPeer') {
+        this.changeOrLoadDialog(update.peer.peer, (dialog) => ({
+          ...dialog,
+          unread_mark: update.unread,
+        }));
+      }
     });
 
-    client.updates.on('updateDialogPinned', (update: UpdateDialogPinned) => {
-      if (update.peer._ === 'dialogPeer') {
+    client.updates.on('updateDialogPinned', (update) => {
+      if (update?.peer._ === 'dialogPeer') {
         this.changeOrLoadDialog(update.peer.peer, (dialog) => ({
           ...dialog,
           pinned: update.pinned,
@@ -122,7 +126,7 @@ export default class DialogsService {
 
   loadMoreDialogs() {
     if (!this.isComplete) {
-      const last = dialogCache.get(this.dialogs.value[this.dialogs.value.length - 1]);
+      const last = dialogCache.get(this.dialogs.value[this.dialogs.value.length - 1] as string);
       if (last) {
         const msg = messageCache.get(peerMessageToId(last.peer, last.top_message));
         if (msg && msg._ !== 'messageEmpty') this.updateDialogs(msg.date);
@@ -132,7 +136,7 @@ export default class DialogsService {
 
   protected doUpdateDialogs(offsetDate = 0, cb?: () => void) {
     const chunk = 30;
-    const payload = {
+    const payload: MessagesGetDialogs = {
       offset_date: offsetDate,
       offset_id: 0,
       offset_peer: { _: 'inputPeerEmpty' },
@@ -202,7 +206,7 @@ export default class DialogsService {
 
   protected loadInputPeerDialogs(peers: InputDialogPeer[]) {
     const request = { peers };
-    client.call('messages.getPeerDialogs', request, (error: any, data?: PeerDialogs) => {
+    client.call('messages.getPeerDialogs', request, (error, data) => {
       if (error || !data) {
         if (process.env.NODE_ENV === 'development') {
           // eslint-disable-next-line no-console
@@ -221,7 +225,8 @@ export default class DialogsService {
 
   preloadDialogs = (dialogs: Dialog[]) => {
     for (let i = 0; i < dialogs.length; i++) {
-      if (dialogs[i].unread_count === 0) {
+      const dialog = dialogs[i];
+      if (dialog._ === 'dialog' && dialog.unread_count === 0) {
         const payload = { peer: peerToInputPeer(dialogs[i].peer), offset_id: 0, add_offset: -10, limit: 20 };
         client.call('messages.getHistory', payload, { thread: 2 }, (err: any, data: any) => {
           if (err || !data) return;

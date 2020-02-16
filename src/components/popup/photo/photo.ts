@@ -1,5 +1,5 @@
 import { div, nothing, text } from 'core/html';
-import { MessageCommon, PhotoNotEmpty, Peer } from 'cache/types';
+import { Message, Peer, Photo } from 'cache/types';
 import './photo.scss';
 import media from 'client/media';
 import { getPhotoLocation, getOrientation, getSize } from 'helpers/photo';
@@ -15,9 +15,9 @@ import { PopupInterface } from '../interface';
 
 type Props = {
   rect: DOMRect,
-  photo: PhotoNotEmpty,
+  photo: Photo.photo,
   peer: Peer,
-  message: MessageCommon,
+  message: Message.message,
   options: PhotoOptions,
 };
 
