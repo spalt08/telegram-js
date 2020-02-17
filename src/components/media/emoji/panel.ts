@@ -59,7 +59,7 @@ export default function emojiPanel(onSelect?: (emoji: string) => void) {
 
   return useInterface(container, {
     update() {
-      categoryList.updateHeigths(true);
+      categoryList.updateHeights(true);
       categoryList.updateOffsets();
       categoryList.updateTopElement();
     },

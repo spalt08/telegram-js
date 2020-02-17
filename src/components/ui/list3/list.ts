@@ -193,7 +193,7 @@ export class VirtualizedList {
 
     if (oldWidth !== this.viewport.width) {
       this.heights = {};
-      this.updateHeigths(true);
+      this.updateHeights(true);
       this.updateOffsets();
       this.updateTopElement();
     }
@@ -238,7 +238,7 @@ export class VirtualizedList {
   unMount(item: string) { unmount(this.elements[item]); }
 
   // update heights
-  updateHeigths(force: boolean = false) {
+  updateHeights(force: boolean = false) {
     if (force) this.pendingRecalculate = this.current.slice(this.first, this.last + 1);
 
     const newPending = [];
@@ -539,7 +539,7 @@ export class VirtualizedList {
       // set initial scroll position
       if (this.cfg.pivotBottom) this.container.scrollTop = this.prevScrollTop = this.scrollTop = this.scrollHeight - this.viewport.height;
 
-      this.updateHeigths();
+      this.updateHeights();
       this.updateOffsets();
       this.updateTopElement();
     }
@@ -591,7 +591,7 @@ export class VirtualizedList {
     if (this.cfg.onReachTop && this.first <= this.cfg.batch * 3) this.cfg.onReachTop();
     if (this.cfg.onReachBottom && this.current.length - this.last - 1 <= this.cfg.batch * 1) this.cfg.onReachBottom();
 
-    if (this.pendingRecalculate.length > 0) this.updateHeigths();
+    if (this.pendingRecalculate.length > 0) this.updateHeights();
 
     // update scroll inner content height
     if (prevFirst !== this.first || prevLast !== this.last) {
@@ -748,7 +748,7 @@ export class VirtualizedList {
     }
 
     this.updateViewport();
-    this.updateHeigths(true);
+    this.updateHeights(true);
     this.updateOffsets();
 
     this.scrollHeight = this.container.scrollHeight;
@@ -804,7 +804,7 @@ export class VirtualizedList {
     this.lock();
 
     this.updateViewport();
-    this.updateHeigths(true);
+    this.updateHeights(true);
     this.updateOffsets();
     const scrollValue = this.getScrollToValue(item);
 
