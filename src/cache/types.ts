@@ -9,12 +9,6 @@
 /* the tool instead.                                                                       */
 /*******************************************************************************************/
 
-/**
- * Transform a type with required fields to type with `min` property with the corresponding meaning
- * Ref: https://core.telegram.org/api/min
- */
-export type WithMin<T> = { id: number } & ({ min: false } & T | { min: true } & Partial<T>);
-
 /* CONSTRUCTORS */
 
 /**
@@ -476,7 +470,7 @@ export namespace User {
     _: 'userEmpty',
     id: number,
   };
-  export type user = WithMin<{
+  export type user = {
     _: 'user',
     self?: boolean,
     contact?: boolean,
@@ -503,7 +497,7 @@ export namespace User {
     restriction_reason?: RestrictionReason[],
     bot_inline_placeholder?: string,
     lang_code?: string,
-  }>;
+  };
 }
 
 /**
@@ -599,7 +593,7 @@ export namespace Chat {
     id: number,
     title: string,
   };
-  export type channel = WithMin<{
+  export type channel = {
     _: 'channel',
     creator?: boolean,
     left?: boolean,
@@ -625,7 +619,7 @@ export namespace Chat {
     banned_rights?: ChatBannedRights,
     default_banned_rights?: ChatBannedRights,
     participants_count?: number,
-  }>;
+  };
   export type channelForbidden = {
     _: 'channelForbidden',
     broadcast?: boolean,
@@ -6999,12 +6993,12 @@ export type PollResults =
 ;
 
 export namespace PollResults {
-  export type pollResults = WithMin<{
+  export type pollResults = {
     _: 'pollResults',
     min?: boolean,
     results?: PollAnswerVoters[],
     total_voters?: number,
-  }>;
+  };
 }
 
 /**

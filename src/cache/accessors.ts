@@ -75,10 +75,10 @@ export function userToTitle(user: User | undefined, myUserId?: number) {
 }
 
 export function chatToTitle(chat: Chat | undefined) {
-  if (!chat || chat._ === 'chatEmpty') {
-    return 'Unknown chat';
+  if (!chat || chat._ === 'chatEmpty' || !chat.title) {
+    return chat?._ === 'chat' || chat?._ === 'chatForbidden' ? 'Unknown chat' : 'Unknown channel';
   }
-  return todoAssertHasValue(chat.title);
+  return chat.title;
 }
 
 // Pass myUserId to return "Saved messages" for the currently authorized user
