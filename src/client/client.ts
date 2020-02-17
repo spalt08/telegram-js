@@ -86,6 +86,17 @@ function call(method: string, ...args: unknown[]): void {
   if (cb) requests[id] = cb;
 }
 
+function callAsync(method: string, data: unknown, headers: unknown): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    call(method, data, headers, (err: any, res: any) => {
+      if (err) {
+        reject(err);
+      }
+      resolve(res);
+    });
+  });
+}
+
 /**
  * Any task wrapper
  */
@@ -239,6 +250,10 @@ interface Client {
     data: MethodDeclMap[M]['req'],
     headers: Record<string, unknown>,
     cb?: RequestResolver<MethodDeclMap[M]['res']>): void;
+  callAsync<M extends keyof MethodDeclMap>(
+    method: M,
+    data: MethodDeclMap[M]['req'],
+    headers?: Record<string, unknown>): Promise<MethodDeclMap[M]['res']>;
   on: typeof subscribe;
   updates: {
     on: <U extends keyof UpdateDeclMap>(predicate: U, cb: UpdateResolver<UpdateDeclMap[U]>) => void;
@@ -254,6 +269,7 @@ interface Client {
 const client: Client = {
   svc,
   call,
+  callAsync,
   on: subscribe,
   updates: {
     on,

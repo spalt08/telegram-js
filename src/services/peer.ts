@@ -21,7 +21,7 @@ export default class PeerService {
       .subscribe((peer) => this.loadFullInfo(peer));
   }
 
-  private loadFullInfo(peer: Peer | null) {
+  private async loadFullInfo(peer: Peer | null) {
     if (!peer) return;
 
     if (peer._ === 'peerChannel') {
@@ -34,46 +34,41 @@ export default class PeerService {
           access_hash: todoAssertHasValue(chat.access_hash),
         },
       };
-      client.call('channels.getFullChannel', payload, (_err, channelFull) => {
-        if (channelFull?.full_chat) {
-          userCache.put(channelFull.users);
-          chatCache.put(channelFull.chats);
-          chatFullCache.put(channelFull.full_chat);
-          if (channelFull.full_chat.pinned_msg_id) {
-            this.loadPinnedMessage(peer, channelFull.full_chat.pinned_msg_id);
-          }
+      const channelFull = await client.callAsync('channels.getFullChannel', payload);
+      if (channelFull.full_chat) {
+        userCache.put(channelFull.users);
+        chatCache.put(channelFull.chats);
+        chatFullCache.put(channelFull.full_chat);
+        if (channelFull.full_chat.pinned_msg_id) {
+          this.loadPinnedMessage(peer, channelFull.full_chat.pinned_msg_id);
         }
-      });
+      }
     } else if (peer._ === 'peerChat') {
       const payload = { chat_id: peer.chat_id };
-      client.call('messages.getFullChat', payload, (_err, chatFull) => {
-        if (chatFull?.full_chat) {
-          userCache.put(chatFull.users);
-          chatCache.put(chatFull.chats);
-          chatFullCache.put(chatFull.full_chat);
-          if (chatFull.full_chat.pinned_msg_id) {
-            this.loadPinnedMessage(peer, chatFull.full_chat.pinned_msg_id);
-          }
+      const chatFull = await client.callAsync('messages.getFullChat', payload);
+      if (chatFull.full_chat) {
+        userCache.put(chatFull.users);
+        chatCache.put(chatFull.chats);
+        chatFullCache.put(chatFull.full_chat);
+        if (chatFull.full_chat.pinned_msg_id) {
+          this.loadPinnedMessage(peer, chatFull.full_chat.pinned_msg_id);
         }
-      });
+      }
     } else if (peer._ === 'peerUser') {
       const user = userCache.get(peer.user_id);
       if (user?._ !== 'user') return;
       const payload: UsersGetFullUser = {
         id: { _: 'inputUser', user_id: peer.user_id, access_hash: todoAssertHasValue(user.access_hash) },
       };
-      client.call('users.getFullUser', payload, (_err, userFull) => {
-        if (userFull) {
-          userFullCache.put(userFull);
-          if (userFull.pinned_msg_id) {
-            this.loadPinnedMessage(peer, userFull.pinned_msg_id);
-          }
-        }
-      });
+      const userFull = await client.callAsync('users.getFullUser', payload);
+      userFullCache.put(userFull);
+      if (userFull.pinned_msg_id) {
+        this.loadPinnedMessage(peer, userFull.pinned_msg_id);
+      }
     }
   }
 
-  private loadPinnedMessage(peer: Peer, pinnedMessageId: number) {
+  private async loadPinnedMessage(peer: Peer, pinnedMessageId: number) {
     if (peer._ === 'peerChannel') {
       const channel = chatCache.get(peer.channel_id);
       if (channel?._ !== 'channel') return;
@@ -81,22 +76,20 @@ export default class PeerService {
         channel: { _: 'inputChannel', channel_id: peer.channel_id, access_hash: todoAssertHasValue(channel.access_hash) },
         id: [{ _: 'inputMessageID', id: pinnedMessageId }],
       };
-      client.call('channels.getMessages', payload, (_err, msg) => {
-        if (msg?._ === 'messages.channelMessages' && msg.messages.length > 0 && msg.messages[0]._ === 'message') {
-          userCache.put(msg.users);
-          chatCache.put(msg.chats);
-          pinnedMessageCache.put(msg.messages[0]);
-        }
-      });
+      const msg = await client.callAsync('channels.getMessages', payload);
+      if (msg._ === 'messages.channelMessages' && msg.messages.length > 0 && msg.messages[0]._ === 'message') {
+        userCache.put(msg.users);
+        chatCache.put(msg.chats);
+        pinnedMessageCache.put(msg.messages[0]);
+      }
     } else {
       const payload: MessagesGetMessages = { id: [{ _: 'inputMessageID', id: pinnedMessageId }] };
-      client.call('messages.getMessages', payload, (_err, msg) => {
-        if (msg?._ === 'messages.messages' && msg.messages.length > 0 && msg.messages[0]._ === 'message') {
-          userCache.put(msg.users);
-          chatCache.put(msg.chats);
-          pinnedMessageCache.put(msg.messages[0]);
-        }
-      });
+      const msg = await client.callAsync('messages.getMessages', payload);
+      if (msg._ === 'messages.messages' && msg.messages.length > 0 && msg.messages[0]._ === 'message') {
+        userCache.put(msg.users);
+        chatCache.put(msg.chats);
+        pinnedMessageCache.put(msg.messages[0]);
+      }
     }
   }
 }
