@@ -9,8 +9,6 @@
 /* the tool instead.                                                                       */
 /*******************************************************************************************/
 
-import { ClientError } from 'client/worker.types';
-
 /**
  * Transform a type with required fields to type with `min` property with the corresponding meaning
  * Ref: https://core.telegram.org/api/min
@@ -9145,11 +9143,7 @@ export type AccountGetThemes = {
   hash: number,
 };
 
-type RequestResolver<T> = (err: ClientError | null, res?: T) => void;
-type UpdateResolver<T> = (res?: T) => void;
-
-interface MethodDeclMap {
-
+export interface MethodDeclMap {
   'invokeAfterMsg': { req: InvokeAfterMsg, res: any },
   'invokeAfterMsgs': { req: InvokeAfterMsgs, res: any },
   'auth.sendCode': { req: AuthSendCode, res: AuthSentCode },
@@ -9470,98 +9464,93 @@ interface MethodDeclMap {
   'account.getThemes': { req: AccountGetThemes, res: AccountThemes },
 }
 
-export interface Client {
-  call<M extends keyof MethodDeclMap>(method: M, data: MethodDeclMap[M]['req'], cb?: RequestResolver<MethodDeclMap[M]['res']>): void;
-  call<M extends keyof MethodDeclMap>(method: M, data: MethodDeclMap[M]['req'], headers: Record<string, unknown>, cb?: RequestResolver<MethodDeclMap[M]['res']>): void;
-
-  updates: {
-    on(predicate: 'updateNewMessage', cb: UpdateResolver<Update.updateNewMessage>): void;
-    on(predicate: 'updateMessageID', cb: UpdateResolver<Update.updateMessageID>): void;
-    on(predicate: 'updateDeleteMessages', cb: UpdateResolver<Update.updateDeleteMessages>): void;
-    on(predicate: 'updateUserTyping', cb: UpdateResolver<Update.updateUserTyping>): void;
-    on(predicate: 'updateChatUserTyping', cb: UpdateResolver<Update.updateChatUserTyping>): void;
-    on(predicate: 'updateChatParticipants', cb: UpdateResolver<Update.updateChatParticipants>): void;
-    on(predicate: 'updateUserStatus', cb: UpdateResolver<Update.updateUserStatus>): void;
-    on(predicate: 'updateUserName', cb: UpdateResolver<Update.updateUserName>): void;
-    on(predicate: 'updateUserPhoto', cb: UpdateResolver<Update.updateUserPhoto>): void;
-    on(predicate: 'updateNewEncryptedMessage', cb: UpdateResolver<Update.updateNewEncryptedMessage>): void;
-    on(predicate: 'updateEncryptedChatTyping', cb: UpdateResolver<Update.updateEncryptedChatTyping>): void;
-    on(predicate: 'updateEncryption', cb: UpdateResolver<Update.updateEncryption>): void;
-    on(predicate: 'updateEncryptedMessagesRead', cb: UpdateResolver<Update.updateEncryptedMessagesRead>): void;
-    on(predicate: 'updateChatParticipantAdd', cb: UpdateResolver<Update.updateChatParticipantAdd>): void;
-    on(predicate: 'updateChatParticipantDelete', cb: UpdateResolver<Update.updateChatParticipantDelete>): void;
-    on(predicate: 'updateDcOptions', cb: UpdateResolver<Update.updateDcOptions>): void;
-    on(predicate: 'updateUserBlocked', cb: UpdateResolver<Update.updateUserBlocked>): void;
-    on(predicate: 'updateNotifySettings', cb: UpdateResolver<Update.updateNotifySettings>): void;
-    on(predicate: 'updateServiceNotification', cb: UpdateResolver<Update.updateServiceNotification>): void;
-    on(predicate: 'updatePrivacy', cb: UpdateResolver<Update.updatePrivacy>): void;
-    on(predicate: 'updateUserPhone', cb: UpdateResolver<Update.updateUserPhone>): void;
-    on(predicate: 'updateReadHistoryInbox', cb: UpdateResolver<Update.updateReadHistoryInbox>): void;
-    on(predicate: 'updateReadHistoryOutbox', cb: UpdateResolver<Update.updateReadHistoryOutbox>): void;
-    on(predicate: 'updateWebPage', cb: UpdateResolver<Update.updateWebPage>): void;
-    on(predicate: 'updateReadMessagesContents', cb: UpdateResolver<Update.updateReadMessagesContents>): void;
-    on(predicate: 'updateChannelTooLong', cb: UpdateResolver<Update.updateChannelTooLong>): void;
-    on(predicate: 'updateChannel', cb: UpdateResolver<Update.updateChannel>): void;
-    on(predicate: 'updateNewChannelMessage', cb: UpdateResolver<Update.updateNewChannelMessage>): void;
-    on(predicate: 'updateReadChannelInbox', cb: UpdateResolver<Update.updateReadChannelInbox>): void;
-    on(predicate: 'updateDeleteChannelMessages', cb: UpdateResolver<Update.updateDeleteChannelMessages>): void;
-    on(predicate: 'updateChannelMessageViews', cb: UpdateResolver<Update.updateChannelMessageViews>): void;
-    on(predicate: 'updateChatParticipantAdmin', cb: UpdateResolver<Update.updateChatParticipantAdmin>): void;
-    on(predicate: 'updateNewStickerSet', cb: UpdateResolver<Update.updateNewStickerSet>): void;
-    on(predicate: 'updateStickerSetsOrder', cb: UpdateResolver<Update.updateStickerSetsOrder>): void;
-    on(predicate: 'updateStickerSets', cb: UpdateResolver<Update.updateStickerSets>): void;
-    on(predicate: 'updateSavedGifs', cb: UpdateResolver<Update.updateSavedGifs>): void;
-    on(predicate: 'updateBotInlineQuery', cb: UpdateResolver<Update.updateBotInlineQuery>): void;
-    on(predicate: 'updateBotInlineSend', cb: UpdateResolver<Update.updateBotInlineSend>): void;
-    on(predicate: 'updateEditChannelMessage', cb: UpdateResolver<Update.updateEditChannelMessage>): void;
-    on(predicate: 'updateChannelPinnedMessage', cb: UpdateResolver<Update.updateChannelPinnedMessage>): void;
-    on(predicate: 'updateBotCallbackQuery', cb: UpdateResolver<Update.updateBotCallbackQuery>): void;
-    on(predicate: 'updateEditMessage', cb: UpdateResolver<Update.updateEditMessage>): void;
-    on(predicate: 'updateInlineBotCallbackQuery', cb: UpdateResolver<Update.updateInlineBotCallbackQuery>): void;
-    on(predicate: 'updateReadChannelOutbox', cb: UpdateResolver<Update.updateReadChannelOutbox>): void;
-    on(predicate: 'updateDraftMessage', cb: UpdateResolver<Update.updateDraftMessage>): void;
-    on(predicate: 'updateReadFeaturedStickers', cb: UpdateResolver<Update.updateReadFeaturedStickers>): void;
-    on(predicate: 'updateRecentStickers', cb: UpdateResolver<Update.updateRecentStickers>): void;
-    on(predicate: 'updateConfig', cb: UpdateResolver<Update.updateConfig>): void;
-    on(predicate: 'updatePtsChanged', cb: UpdateResolver<Update.updatePtsChanged>): void;
-    on(predicate: 'updateChannelWebPage', cb: UpdateResolver<Update.updateChannelWebPage>): void;
-    on(predicate: 'updateDialogPinned', cb: UpdateResolver<Update.updateDialogPinned>): void;
-    on(predicate: 'updatePinnedDialogs', cb: UpdateResolver<Update.updatePinnedDialogs>): void;
-    on(predicate: 'updateBotWebhookJSON', cb: UpdateResolver<Update.updateBotWebhookJSON>): void;
-    on(predicate: 'updateBotWebhookJSONQuery', cb: UpdateResolver<Update.updateBotWebhookJSONQuery>): void;
-    on(predicate: 'updateBotShippingQuery', cb: UpdateResolver<Update.updateBotShippingQuery>): void;
-    on(predicate: 'updateBotPrecheckoutQuery', cb: UpdateResolver<Update.updateBotPrecheckoutQuery>): void;
-    on(predicate: 'updatePhoneCall', cb: UpdateResolver<Update.updatePhoneCall>): void;
-    on(predicate: 'updateLangPackTooLong', cb: UpdateResolver<Update.updateLangPackTooLong>): void;
-    on(predicate: 'updateLangPack', cb: UpdateResolver<Update.updateLangPack>): void;
-    on(predicate: 'updateFavedStickers', cb: UpdateResolver<Update.updateFavedStickers>): void;
-    on(predicate: 'updateChannelReadMessagesContents', cb: UpdateResolver<Update.updateChannelReadMessagesContents>): void;
-    on(predicate: 'updateContactsReset', cb: UpdateResolver<Update.updateContactsReset>): void;
-    on(predicate: 'updateChannelAvailableMessages', cb: UpdateResolver<Update.updateChannelAvailableMessages>): void;
-    on(predicate: 'updateDialogUnreadMark', cb: UpdateResolver<Update.updateDialogUnreadMark>): void;
-    on(predicate: 'updateUserPinnedMessage', cb: UpdateResolver<Update.updateUserPinnedMessage>): void;
-    on(predicate: 'updateChatPinnedMessage', cb: UpdateResolver<Update.updateChatPinnedMessage>): void;
-    on(predicate: 'updateMessagePoll', cb: UpdateResolver<Update.updateMessagePoll>): void;
-    on(predicate: 'updateChatDefaultBannedRights', cb: UpdateResolver<Update.updateChatDefaultBannedRights>): void;
-    on(predicate: 'updateFolderPeers', cb: UpdateResolver<Update.updateFolderPeers>): void;
-    on(predicate: 'updatePeerSettings', cb: UpdateResolver<Update.updatePeerSettings>): void;
-    on(predicate: 'updatePeerLocated', cb: UpdateResolver<Update.updatePeerLocated>): void;
-    on(predicate: 'updateNewScheduledMessage', cb: UpdateResolver<Update.updateNewScheduledMessage>): void;
-    on(predicate: 'updateDeleteScheduledMessages', cb: UpdateResolver<Update.updateDeleteScheduledMessages>): void;
-    on(predicate: 'updateTheme', cb: UpdateResolver<Update.updateTheme>): void;
-    on(predicate: 'updatesTooLong', cb: UpdateResolver<Updates.updatesTooLong>): void;
-    on(predicate: 'updateShortMessage', cb: UpdateResolver<Updates.updateShortMessage>): void;
-    on(predicate: 'updateShortChatMessage', cb: UpdateResolver<Updates.updateShortChatMessage>): void;
-    on(predicate: 'updateShort', cb: UpdateResolver<Updates.updateShort>): void;
-    on(predicate: 'updatesCombined', cb: UpdateResolver<Updates.updatesCombined>): void;
-    on(predicate: 'updates', cb: UpdateResolver<Updates.updates>): void;
-    on(predicate: 'updateShortSentMessage', cb: UpdateResolver<Updates.updateShortSentMessage>): void;
-    on(predicate: 'userEmpty', cb: UpdateResolver<User.userEmpty>): void;
-    on(predicate: 'user', cb: UpdateResolver<User.user>): void;
-    on(predicate: 'chatEmpty', cb: UpdateResolver<Chat.chatEmpty>): void;
-    on(predicate: 'chat', cb: UpdateResolver<Chat.chat>): void;
-    on(predicate: 'chatForbidden', cb: UpdateResolver<Chat.chatForbidden>): void;
-    on(predicate: 'channel', cb: UpdateResolver<Chat.channel>): void;
-    on(predicate: 'channelForbidden', cb: UpdateResolver<Chat.channelForbidden>): void;
-  }
+export interface UpdateDeclMap {
+  'updateNewMessage': Update.updateNewMessage;
+  'updateMessageID': Update.updateMessageID;
+  'updateDeleteMessages': Update.updateDeleteMessages;
+  'updateUserTyping': Update.updateUserTyping;
+  'updateChatUserTyping': Update.updateChatUserTyping;
+  'updateChatParticipants': Update.updateChatParticipants;
+  'updateUserStatus': Update.updateUserStatus;
+  'updateUserName': Update.updateUserName;
+  'updateUserPhoto': Update.updateUserPhoto;
+  'updateNewEncryptedMessage': Update.updateNewEncryptedMessage;
+  'updateEncryptedChatTyping': Update.updateEncryptedChatTyping;
+  'updateEncryption': Update.updateEncryption;
+  'updateEncryptedMessagesRead': Update.updateEncryptedMessagesRead;
+  'updateChatParticipantAdd': Update.updateChatParticipantAdd;
+  'updateChatParticipantDelete': Update.updateChatParticipantDelete;
+  'updateDcOptions': Update.updateDcOptions;
+  'updateUserBlocked': Update.updateUserBlocked;
+  'updateNotifySettings': Update.updateNotifySettings;
+  'updateServiceNotification': Update.updateServiceNotification;
+  'updatePrivacy': Update.updatePrivacy;
+  'updateUserPhone': Update.updateUserPhone;
+  'updateReadHistoryInbox': Update.updateReadHistoryInbox;
+  'updateReadHistoryOutbox': Update.updateReadHistoryOutbox;
+  'updateWebPage': Update.updateWebPage;
+  'updateReadMessagesContents': Update.updateReadMessagesContents;
+  'updateChannelTooLong': Update.updateChannelTooLong;
+  'updateChannel': Update.updateChannel;
+  'updateNewChannelMessage': Update.updateNewChannelMessage;
+  'updateReadChannelInbox': Update.updateReadChannelInbox;
+  'updateDeleteChannelMessages': Update.updateDeleteChannelMessages;
+  'updateChannelMessageViews': Update.updateChannelMessageViews;
+  'updateChatParticipantAdmin': Update.updateChatParticipantAdmin;
+  'updateNewStickerSet': Update.updateNewStickerSet;
+  'updateStickerSetsOrder': Update.updateStickerSetsOrder;
+  'updateStickerSets': Update.updateStickerSets;
+  'updateSavedGifs': Update.updateSavedGifs;
+  'updateBotInlineQuery': Update.updateBotInlineQuery;
+  'updateBotInlineSend': Update.updateBotInlineSend;
+  'updateEditChannelMessage': Update.updateEditChannelMessage;
+  'updateChannelPinnedMessage': Update.updateChannelPinnedMessage;
+  'updateBotCallbackQuery': Update.updateBotCallbackQuery;
+  'updateEditMessage': Update.updateEditMessage;
+  'updateInlineBotCallbackQuery': Update.updateInlineBotCallbackQuery;
+  'updateReadChannelOutbox': Update.updateReadChannelOutbox;
+  'updateDraftMessage': Update.updateDraftMessage;
+  'updateReadFeaturedStickers': Update.updateReadFeaturedStickers;
+  'updateRecentStickers': Update.updateRecentStickers;
+  'updateConfig': Update.updateConfig;
+  'updatePtsChanged': Update.updatePtsChanged;
+  'updateChannelWebPage': Update.updateChannelWebPage;
+  'updateDialogPinned': Update.updateDialogPinned;
+  'updatePinnedDialogs': Update.updatePinnedDialogs;
+  'updateBotWebhookJSON': Update.updateBotWebhookJSON;
+  'updateBotWebhookJSONQuery': Update.updateBotWebhookJSONQuery;
+  'updateBotShippingQuery': Update.updateBotShippingQuery;
+  'updateBotPrecheckoutQuery': Update.updateBotPrecheckoutQuery;
+  'updatePhoneCall': Update.updatePhoneCall;
+  'updateLangPackTooLong': Update.updateLangPackTooLong;
+  'updateLangPack': Update.updateLangPack;
+  'updateFavedStickers': Update.updateFavedStickers;
+  'updateChannelReadMessagesContents': Update.updateChannelReadMessagesContents;
+  'updateContactsReset': Update.updateContactsReset;
+  'updateChannelAvailableMessages': Update.updateChannelAvailableMessages;
+  'updateDialogUnreadMark': Update.updateDialogUnreadMark;
+  'updateUserPinnedMessage': Update.updateUserPinnedMessage;
+  'updateChatPinnedMessage': Update.updateChatPinnedMessage;
+  'updateMessagePoll': Update.updateMessagePoll;
+  'updateChatDefaultBannedRights': Update.updateChatDefaultBannedRights;
+  'updateFolderPeers': Update.updateFolderPeers;
+  'updatePeerSettings': Update.updatePeerSettings;
+  'updatePeerLocated': Update.updatePeerLocated;
+  'updateNewScheduledMessage': Update.updateNewScheduledMessage;
+  'updateDeleteScheduledMessages': Update.updateDeleteScheduledMessages;
+  'updateTheme': Update.updateTheme;
+  'updatesTooLong': Updates.updatesTooLong;
+  'updateShortMessage': Updates.updateShortMessage;
+  'updateShortChatMessage': Updates.updateShortChatMessage;
+  'updateShort': Updates.updateShort;
+  'updatesCombined': Updates.updatesCombined;
+  'updates': Updates.updates;
+  'updateShortSentMessage': Updates.updateShortSentMessage;
+  'userEmpty': User.userEmpty;
+  'user': User.user;
+  'chatEmpty': Chat.chatEmpty;
+  'chat': Chat.chat;
+  'chatForbidden': Chat.chatForbidden;
+  'channel': Chat.channel;
+  'channelForbidden': Chat.channelForbidden;
 }
