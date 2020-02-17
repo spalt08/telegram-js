@@ -227,7 +227,16 @@ export default class DialogsService {
     for (let i = 0; i < dialogs.length; i++) {
       const dialog = dialogs[i];
       if (dialog._ === 'dialog' && dialog.unread_count === 0) {
-        const payload = { peer: peerToInputPeer(dialogs[i].peer), offset_id: 0, add_offset: -10, limit: 20 };
+        const payload = {
+          peer: peerToInputPeer(dialogs[i].peer),
+          offset_id: 0,
+          offset_date: 0,
+          add_offset: -10,
+          limit: 20,
+          max_id: 0,
+          min_id: 0,
+          hash: 0,
+        };
         client.call('messages.getHistory', payload, { thread: 2 }, (err: any, data: any) => {
           if (err || !data) return;
 

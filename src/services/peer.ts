@@ -1,8 +1,9 @@
 import { debounceTime, switchMap, map } from 'rxjs/operators';
 import { timer } from 'rxjs';
 import client from 'client/client';
-import { Peer, InputUser, MessagesGetMessages, ChannelsGetMessages, InputChannel } from 'cache/types';
+import { Peer, MessagesGetMessages, ChannelsGetMessages, UsersGetFullUser, ChannelsGetFullChannel } from 'cache/types';
 import { userFullCache, chatCache, chatFullCache, userCache, pinnedMessageCache } from 'cache';
+import { todoAssertHasValue } from 'helpers/other';
 import MessageService from './message/message';
 
 const UPDATE_INTERVAL = 60 * 1000; // every minute
@@ -26,12 +27,12 @@ export default class PeerService {
     if (peer._ === 'peerChannel') {
       const chat = chatCache.get(peer.channel_id);
       if (!chat || chat._ !== 'channel') return;
-      const payload = {
+      const payload: ChannelsGetFullChannel = {
         channel: {
           _: 'inputChannel',
           channel_id: peer.channel_id,
-          access_hash: chat.access_hash,
-        } as InputChannel,
+          access_hash: todoAssertHasValue(chat.access_hash),
+        },
       };
       client.call('channels.getFullChannel', payload, (_err, channelFull) => {
         if (channelFull?.full_chat) {
@@ -58,10 +59,10 @@ export default class PeerService {
     } else if (peer._ === 'peerUser') {
       const user = userCache.get(peer.user_id);
       if (user?._ !== 'user') return;
-      const payload = {
-        id: { _: 'inputUser', user_id: peer.user_id, access_hash: user.access_hash! } as InputUser,
+      const payload: UsersGetFullUser = {
+        id: { _: 'inputUser', user_id: peer.user_id, access_hash: todoAssertHasValue(user.access_hash) },
       };
-      client.call('users.getFullUser', payload, (err, userFull) => {
+      client.call('users.getFullUser', payload, (_err, userFull) => {
         if (userFull) {
           userFullCache.put(userFull);
           if (userFull.pinned_msg_id) {
@@ -77,7 +78,7 @@ export default class PeerService {
       const channel = chatCache.get(peer.channel_id);
       if (channel?._ !== 'channel') return;
       const payload: ChannelsGetMessages = {
-        channel: { _: 'inputChannel', channel_id: peer.channel_id, access_hash: channel.access_hash! },
+        channel: { _: 'inputChannel', channel_id: peer.channel_id, access_hash: todoAssertHasValue(channel.access_hash) },
         id: [{ _: 'inputMessageID', id: pinnedMessageId }],
       };
       client.call('channels.getMessages', payload, (_err, msg) => {
