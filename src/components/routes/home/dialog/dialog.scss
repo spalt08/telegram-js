@@ -107,14 +107,14 @@
     margin-top: 3px;
 
     &.out {
-      background-image: url(~assets/message-status-readed@2x.png);
+      background-image: url(~assets/message-status-read@2x.png);
       background-position: left center;
       background-size: 16PX auto;
       background-repeat: no-repeat;
     }
 
-    &.out.unreaded {
-      background-image: url(~assets/message-status-unreaded@2x.png);
+    &.out.unread {
+      background-image: url(~assets/message-status-unread@2x.png);
       padding-left: 16px;
     }
   }

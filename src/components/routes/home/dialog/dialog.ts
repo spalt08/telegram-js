@@ -101,8 +101,8 @@ export default function dialogPreview(id: string) {
       if (msg.out === true) date.classList.add('out');
       else if (date.classList.contains('out')) date.classList.remove('out');
 
-      if (msg.out === true && msg.id > next.read_outbox_max_id) date.classList.add('unreaded');
-      else if (date.classList.contains('unreaded')) date.classList.remove('unreaded');
+      if (msg.out === true && msg.id > next.read_outbox_max_id) date.classList.add('unread');
+      else if (date.classList.contains('unread')) date.classList.remove('unread');
     } else {
       date.textContent = '';
     }

@@ -126,11 +126,11 @@ $messageDistance: 4PX;
 
     .message.out &.only-photo .message__date, .message.out &.only-sticker .message__date {
       color: #FFFFFF;
-      background-image: url(~assets/message-status-readed-white@2x.png);
+      background-image: url(~assets/message-status-read-white@2x.png);
     }
 
-    .message.out.unreaded &.only-photo .message__date {
-      background-image: url(~assets/message-status-unreaded-white@2x.png) !important;
+    .message.out.unread &.only-photo .message__date {
+      background-image: url(~assets/message-status-unread-white@2x.png) !important;
     }
 
     &::before {
@@ -322,7 +322,7 @@ $messageDistance: 4PX;
 
     &__date {
       padding-right: 16PX;
-      background-image: url(~assets/message-status-readed@2x.png);
+      background-image: url(~assets/message-status-read@2x.png);
       background-position: center right;
       background-repeat: no-repeat;
       background-size: 14PX auto;
@@ -340,8 +340,8 @@ $messageDistance: 4PX;
     }
   }
 
-  &.out.unreaded .message__date {
-    background-image: url(~assets/message-status-unreaded-white@2x.png) !important;
+  &.out.unread .message__date {
+    background-image: url(~assets/message-status-unread-white@2x.png) !important;
   }
 
   &.first.out .message {

@@ -227,14 +227,14 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
 
       if (msg.from_id === client.getUserID()) element.classList.add('out');
 
-      // if unreaded
+      // if unread
       const dialog = dialogCache.get(peerToId(peer));
       if (dialog && dialog.read_outbox_max_id < msg.id) {
-        element.classList.add('unreaded');
+        element.classList.add('unread');
 
         const unsubscribe = dialogCache.watchItem(peerToId(peer), (nextDialog: Dialog) => {
           if (nextDialog.read_outbox_max_id >= msg.id) {
-            element.classList.remove('unreaded');
+            element.classList.remove('unread');
             unsubscribe();
           }
         });
