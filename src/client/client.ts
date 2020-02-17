@@ -28,7 +28,7 @@ if (test) saveMetaField = 'metatest';
  */
 const worker = new ClientWorker();
 const requests: Record<string, RequestResolver> = {};
-const quene: Record<string, AnyResolver> = {};
+const queue: Record<string, AnyResolver> = {};
 const updates: Record<string, UpdateResolver[]> = {};
 const eventListeners: Record<string, EventResolver[]> = {};
 const clientDebug = localStorage.getItem('debugmt') || document.location.search.indexOf('debug') !== -1;
@@ -94,7 +94,7 @@ function call(method: string, ...args: unknown[]): void {
 export function task(type: WorkerMessage['type'], payload: any, cb?: AnyResolver) {
   const id = type + Date.now().toString() + Math.random() * 1000;
   worker.postMessage({ id, type, payload } as WorkerMessage);
-  if (cb) quene[id] = cb;
+  if (cb) queue[id] = cb;
 }
 
 /**
@@ -192,9 +192,9 @@ worker.onmessage = (event: MessageEvent) => {
     }
 
     default:
-      if (event.data.id && quene[event.data.id]) {
-        quene[event.data.id](data.payload);
-        delete quene[event.data.id];
+      if (event.data.id && queue[event.data.id]) {
+        queue[event.data.id](data.payload);
+        delete queue[event.data.id];
       }
   }
 };
