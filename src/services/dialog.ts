@@ -55,7 +55,7 @@ export default class DialogsService {
       });
     });
 
-    // incoming message were readed
+    // incoming message were read
     client.updates.on('updateReadHistoryInbox', (update) => {
       if (update) {
         this.changeOrLoadDialog(update.peer, (dialog) => ({
@@ -66,7 +66,7 @@ export default class DialogsService {
       }
     });
 
-    // outcoming message were readed
+    // outcoming message were read
     client.updates.on('updateReadHistoryOutbox', (update) => {
       if (update) {
         this.changeOrLoadDialog(update.peer, (dialog) => ({
@@ -76,7 +76,7 @@ export default class DialogsService {
       }
     });
 
-    // incoming message were readed (channel)
+    // incoming message were read (channel)
     client.updates.on('updateReadChannelInbox', (update) => {
       if (update) {
         this.changeOrLoadDialog({ _: 'peerChannel', channel_id: update.channel_id }, (dialog) => ({
@@ -87,7 +87,7 @@ export default class DialogsService {
       }
     });
 
-    // outcoming message were readed (channel)
+    // outcoming message were read (channel)
     client.updates.on('updateReadChannelOutbox', (update) => {
       if (update) {
         this.changeOrLoadDialog({ _: 'peerChannel', channel_id: update.channel_id }, (dialog) => ({
