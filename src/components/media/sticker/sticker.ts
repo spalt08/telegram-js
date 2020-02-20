@@ -14,7 +14,7 @@ type StickerOptions = {
   onClick?: (sticker: Document) => void,
 };
 
-export default function stickerRenderer(sticker: Document, { size = '200px', autoplay = true, onClick }: StickerOptions) {
+export default function stickerRenderer(sticker: Document.document, { size = '200px', autoplay = true, onClick }: StickerOptions) {
   const location = getDocumentLocation(sticker);
   let cached = media.cached(location);
 
@@ -58,7 +58,7 @@ export default function stickerRenderer(sticker: Document, { size = '200px', aut
     // todo: Find out why the hook isn't triggered on remount
     useOnMount(container, () => {
       if (!cached) {
-        const thumbnailUrl = getThumbnail(sticker.thumbs);
+        const thumbnailUrl = sticker.thumbs ? getThumbnail(sticker.thumbs) : null;
         if (thumbnailUrl) {
           thumbnail = div`.sticker__thumb`(
             img({ src: thumbnailUrl, alt: 'Sticker Preview' }),

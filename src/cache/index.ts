@@ -5,9 +5,9 @@ import {
   peerMessageToId,
   peerToId,
 } from 'helpers/api';
-import Collection, { makeGetIdFromProp } from './fastStorages/collection';
+import Collection, { GetId, makeGetIdFromProp } from './fastStorages/collection';
 import Dictionary from './fastStorages/dictionary';
-import { Chat, Dialog, Message, User, UserFull, ChatFull, MessageCommon } from './types';
+import { Chat, Dialog, Message, User, UserFull, ChatFull } from './types';
 import { orderBy } from './fastStorages/indices';
 import messageHistory from './fastStorages/indices/messageHistory';
 import sharedMediaIndex from './fastStorages/indices/sharedMediaIndex';
@@ -53,10 +53,10 @@ export const messageCache = new Collection<Message, typeof messageCacheIndices, 
  */
 export const dialogCache = new Collection({
   considerMin: false,
-  getId: dialogToId,
+  getId: dialogToId as GetId<Dialog, string>,
   indices: {
-    order: orderBy(
-      (dialog1: Dialog, dialog2: Dialog) => {
+    order: orderBy<Dialog>(
+      (dialog1, dialog2) => {
         // Pinned first
         if (dialog1.pinned !== dialog2.pinned) {
           return (dialog2.pinned ? 1 : 0) - (dialog1.pinned ? 1 : 0);
@@ -66,13 +66,16 @@ export const dialogCache = new Collection({
         const message2 = messageCache.get(peerMessageToId(dialog2.peer, dialog2.top_message));
         return (message2 && message2._ !== 'messageEmpty' ? message2.date : 0) - (message1 && message1._ !== 'messageEmpty' ? message1.date : 0);
       },
-      (dialog: Dialog) => {
+      (dialog) => {
+        if (dialog._ === 'dialogFolder') {
+          return false;
+        }
         if (!isDialogInRootFolder(dialog)) {
           return false;
         }
         if (dialog.peer._ === 'peerChat') {
           const chat = chatCache.get(dialog.peer.chat_id);
-          if (chat && chat.migrated_to) {
+          if (chat && chat._ === 'chat' && chat.migrated_to) {
             return false;
           }
         }
@@ -90,8 +93,8 @@ export const chatFullCache = new Collection<ChatFull, {}, number>({
   getId: (chatFull) => chatFull.id,
 });
 
-export const pinnedMessageCache = new Collection<Message, {}, string>({
-  getId: (msg: MessageCommon) => peerToId(msg.to_id),
+export const pinnedMessageCache = new Collection<Message.message, {}, string>({
+  getId: (msg: Message.message) => peerToId(msg.to_id),
 });
 
 /**

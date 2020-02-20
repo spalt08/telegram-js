@@ -1,4 +1,4 @@
-import { WebPage, MessageCommon } from 'cache/types';
+import { WebPage, Message } from 'cache/types';
 import { div, text, a, nothing } from 'core/html';
 import { newWindowLinkAttributes } from 'const';
 import { ripple, formattedMessage } from 'components/ui';
@@ -16,7 +16,7 @@ function emptyPhotoPlaceholder(webpage: WebPage) {
   return nothing;
 }
 
-export default function webpageLink(msg: MessageCommon) {
+export default function webpageLink(msg: Message.message) {
   if (msg.media?._ !== 'messageMediaWebPage' || msg.media.webpage._ !== 'webPage') {
     const senderPeer = messageToSenderPeer(msg);
     return ripple({ tag: 'div' },
@@ -36,7 +36,7 @@ export default function webpageLink(msg: MessageCommon) {
     [
       div`.webpageLink`(
         div`.webpageLink__photo`(
-          msg.media.webpage.photo
+          msg.media.webpage.photo && msg.media.webpage.photo._ === 'photo'
             ? photoRenderer(msg.media.webpage.photo, { width: 50, height: 50, fit: 'cover', thumb: true, showLoader: false })
             : emptyPhotoPlaceholder(msg.media.webpage)),
         div`.webpageLink__info`(

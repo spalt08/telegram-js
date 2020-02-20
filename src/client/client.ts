@@ -1,12 +1,12 @@
 import ClientWorker from './worker';
 import { WorkerMessage, ClientError } from './worker.types';
-import { InputFile } from '../cache/types';
+import { InputFile, MethodDeclMap, UpdateDeclMap } from '../cache/types';
 
 /**
  * Worker callbacks
  */
-type RequestResolver = (err: ClientError | null, res?: any) => void;
-type UpdateResolver = (res?: any) => void;
+type RequestResolver<T> = (...args: [ClientError, undefined] | [null, T]) => void;
+type UpdateResolver<T> = (res: T) => void;
 type AnyResolver = (...payload: unknown[]) => void;
 type EventResolver = (event: any) => void;
 export type UploadResolver = (input: InputFile) => void;
@@ -27,9 +27,9 @@ if (test) saveMetaField = 'metatest';
  * Vars
  */
 const worker = new ClientWorker();
-const requests: Record<string, RequestResolver> = {};
+const requests: Record<string, RequestResolver<any>> = {};
 const queue: Record<string, AnyResolver> = {};
-const updates: Record<string, UpdateResolver[]> = {};
+const updates: Record<string, UpdateResolver<any>[]> = {};
 const eventListeners: Record<string, EventResolver[]> = {};
 const clientDebug = localStorage.getItem('debugmt') || document.location.search.indexOf('debug') !== -1;
 const dc = +localStorage.getItem('dc')! || 2;
@@ -65,19 +65,17 @@ window.addEventListener('offline', () => worker.postMessage({ type: 'windowEvent
 /**
  * Make RPC API request
  */
-function call(method: string, data: Record<string, any>, cb?: RequestResolver): void;
-function call(method: string, data: Record<string, any>, headers: Record<string, any>, cb?: RequestResolver): void;
 function call(method: string, ...args: unknown[]): void {
   const id = method + Date.now().toString() + Math.random() * 1000;
 
   let params: Record<string, any> = {};
   let headers: Record<string, any> = {};
-  let cb: RequestResolver | undefined;
+  let cb: RequestResolver<unknown> | undefined;
 
   if (typeof args[0] === 'object') params = args[0] as Record<string, any>;
   if (args.length > 1 && typeof args[1] === 'object') headers = args[1] as Record<string, any>;
-  if (args.length > 1 && typeof args[1] === 'function') cb = args[1] as RequestResolver;
-  if (args.length > 2 && typeof args[2] === 'function') cb = args[2] as RequestResolver;
+  if (args.length > 1 && typeof args[1] === 'function') cb = args[1] as RequestResolver<any>;
+  if (args.length > 2 && typeof args[2] === 'function') cb = args[2] as RequestResolver<any>;
 
   worker.postMessage({
     id,
@@ -86,6 +84,17 @@ function call(method: string, ...args: unknown[]): void {
   } as WorkerMessage);
 
   if (cb) requests[id] = cb;
+}
+
+function callAsync(method: string, data: unknown, headers: unknown): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    call(method, data, headers, (err: any, res: any) => {
+      if (err) {
+        reject(err);
+      }
+      resolve(res);
+    });
+  });
 }
 
 /**
@@ -119,7 +128,7 @@ function emit(type: string, data: any) {
 /**
  * Subscribe RPC update
  */
-function on(predicate: string, cb: UpdateResolver) {
+function on(predicate: string, cb: UpdateResolver<any>) {
   if (!updates[predicate]) {
     updates[predicate] = [];
 
@@ -230,9 +239,37 @@ function authorize(dc_id: number, cb?: AnyResolver) {
   task('authorize', dc_id, cb);
 }
 
-const client = {
+interface Client {
+  svc: typeof svc;
+  call<M extends keyof MethodDeclMap>(
+    method: M,
+    data: MethodDeclMap[M]['req'],
+    cb?: RequestResolver<MethodDeclMap[M]['res']>): void;
+  call<M extends keyof MethodDeclMap>(
+    method: M,
+    data: MethodDeclMap[M]['req'],
+    headers: Record<string, unknown>,
+    cb?: RequestResolver<MethodDeclMap[M]['res']>): void;
+  callAsync<M extends keyof MethodDeclMap>(
+    method: M,
+    data: MethodDeclMap[M]['req'],
+    headers?: Record<string, unknown>): Promise<MethodDeclMap[M]['res']>;
+  on: typeof subscribe;
+  updates: {
+    on: <U extends keyof UpdateDeclMap>(predicate: U, cb: UpdateResolver<UpdateDeclMap[U]>) => void;
+  };
+  getUserID: typeof getUserID;
+  getBaseDC: typeof getBaseDC;
+  setBaseDC: typeof setBaseDC;
+  getPasswordKdfAsync: typeof getPasswordKdfAsync;
+  authorize: typeof authorize;
+  storage: Storage;
+}
+
+const client: Client = {
   svc,
   call,
+  callAsync,
   on: subscribe,
   updates: {
     on,

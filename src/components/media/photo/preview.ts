@@ -1,11 +1,11 @@
-import { Photo, MessageCommon, Peer } from 'cache/types';
+import { Photo, Peer, Message } from 'cache/types';
 import { listen } from 'core/dom';
 import { getInterface } from 'core/hooks';
 import { main } from 'services';
 import photoRenderer, { PhotoOptions } from './photo';
 
 
-export default function photoPreview(photo: Photo, peer: Peer, message: MessageCommon, options: PhotoOptions = {}) {
+export default function photoPreview(photo: Photo.photo, peer: Peer, message: Message.message, options: PhotoOptions = {}) {
   if (photo._ !== 'photo') return null;
 
   const photoEl = photoRenderer(photo, options);

@@ -31,7 +31,7 @@ export default function stickerSet(set: StickerSet, onClick?: (sticker: Document
       if (err || !result) throw new Error(`Unable to load sticker set: ${JSON.stringify(err)}`);
 
       for (let i = 0; i < Math.min(result.documents.length, set.count); i += 1) {
-        elements[i] = stickerRenderer(result.documents[i], { size: '100%', autoplay: false, onClick });
+        elements[i] = stickerRenderer(result.documents[i] as Document.document, { size: '100%', autoplay: false, onClick });
         mount(placeholders[i], elements[i]);
       }
 

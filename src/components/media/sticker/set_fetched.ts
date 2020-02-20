@@ -7,8 +7,8 @@ import './set.scss';
 /**
  * Sticker set
  */
-export default function stickerSetFetched(set: StickerSet, stickers: Document[], onClick?: (sticker: Document) => void) {
-  const elements = stickers.map((sticker: Document) => stickerRenderer(sticker, { size: '100%', autoplay: false, onClick }));
+export default function stickerSetFetched(set: StickerSet, stickers: Document.document[], onClick?: (sticker: Document.document) => void) {
+  const elements = stickers.map((sticker) => stickerRenderer(sticker, { size: '100%', autoplay: false, onClick }));
 
   const container = (
     div`.sticker-set`(

@@ -1,4 +1,4 @@
-import { Peer, Message, MessageFilter, MessageCommon } from 'cache/types';
+import { Peer, Message, MessagesFilter } from 'cache/types';
 import { div } from 'core/html';
 import { VirtualizedList } from 'components/ui';
 import { BehaviorSubject } from 'rxjs';
@@ -10,10 +10,10 @@ import { messageToId } from 'helpers/api';
 import { unmount, mount } from 'core/dom';
 import webpageLink from 'components/media/webpage/webpage_link';
 
-const SEARCH_FILTER: MessageFilter['_'] = 'inputMessagesFilterUrl';
+const SEARCH_FILTER: MessagesFilter['_'] = 'inputMessagesFilterUrl';
 
 const linkRenderer = (id: string) => {
-  const msg = messageCache.get(id)! as MessageCommon;
+  const msg = messageCache.get(id) as Message.message;
   return webpageLink(msg);
 };
 

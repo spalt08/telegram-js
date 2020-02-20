@@ -84,6 +84,10 @@ $messageDistance: 4PX;
         display: none !important;
         content: none !important;
       }
+
+      .message__reply {
+        max-width: 400px;
+      }
     }
     &.only-sticker { flex-direction: row-reverse; }
     .message.out &.only-sticker { flex-direction: row; }
@@ -208,7 +212,6 @@ $messageDistance: 4PX;
     background: #FFFFFF;
     border-radius: 6px;
     min-width: 0;
-    max-width: 400px;
 
     .message.out & {
       background: #EEFFDE;

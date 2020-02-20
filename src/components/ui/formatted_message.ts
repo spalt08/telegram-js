@@ -1,7 +1,8 @@
-import { MessageEntity, MessageCommon } from 'cache/types';
+import { MessageEntity, Message } from 'cache/types';
 import { strong, text, code, pre, em, a, fragment, span } from 'core/html';
 import { mount } from 'core/dom';
 import { newWindowLinkAttributes } from 'const';
+import { todoAssertHasValue } from 'helpers/other';
 
 interface TreeNode {
   children: TreeNode[];
@@ -108,11 +109,11 @@ export function highlightLinks(message: string) {
   return span(...parts);
 }
 
-export function formattedMessage(message: MessageCommon) {
+export function formattedMessage(message: Message.message) {
   if (typeof message === 'string') return highlightLinks(message);
 
   const root = createTreeNode(message.message);
-  message.entities.forEach((e) => applyEntity(root, e.offset, e.length, e));
+  todoAssertHasValue(message.entities).forEach((e) => applyEntity(root, e.offset, e.length, e));
   const frag = fragment();
   const nodeList: Node[] = [];
   nodeToHtml(root, nodeList);

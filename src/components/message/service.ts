@@ -1,11 +1,12 @@
-import { MessageService, Peer } from 'cache/types';
+import { Message, Peer } from 'cache/types';
 import { div, strong, text } from 'core/html';
 import { profileTitle } from 'components/profile';
 import './service.scss';
+import { todoAssertHasValue } from 'helpers/other';
 
-export default function messageSerivce(originalPeer: Peer, msg: MessageService) {
+export default function messageSerivce(originalPeer: Peer, msg: Message.messageService) {
   const peer: Peer = msg.from_id !== 0
-    ? { _: 'peerUser', user_id: msg.from_id }
+    ? { _: 'peerUser', user_id: todoAssertHasValue(msg.from_id) }
     : originalPeer;
 
   let innerContent: Node[];

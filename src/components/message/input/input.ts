@@ -19,7 +19,7 @@ export default function messageInput() {
     onSelectEmoji: (emoji: string) => {
       getInterface(textarea).insertText(emoji);
     },
-    onSelectSticker: (sticker: Document) => {
+    onSelectSticker: (sticker: Document.document) => {
       message.sendMediaMessage({
         _: 'inputMediaDocument',
         id: {

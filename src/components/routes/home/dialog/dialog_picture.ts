@@ -9,7 +9,7 @@ function status(peer: Peer) {
   if (peer._ === 'peerUser') {
     const userSubject = userCache.useItemBehaviorSubject(container, peer.user_id);
     userSubject.subscribe((user) => {
-      const isOnline = user?.status?._ === 'userStatusOnline' && user?.id !== auth.userID;
+      const isOnline = user?._ === 'user' && user?.status?._ === 'userStatusOnline' && user?.id !== auth.userID;
       container.classList.toggle('online', user && isOnline);
     });
   }

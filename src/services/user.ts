@@ -3,9 +3,9 @@ import { userCache } from '../cache';
 
 export default class UsersService {
   constructor() {
-    client.updates.on('updateUserStatus', (update: any) => {
+    client.updates.on('updateUserStatus', (update) => {
       const user = userCache.get(update.user_id);
-      if (user) {
+      if (user && user._ !== 'userEmpty') {
         userCache.put({ ...user, status: update.status });
       }
     });

@@ -14,7 +14,11 @@ function isMyself(peer: Peer) {
 }
 
 function isDeletedAccount(peer: Peer) {
-  return (peer._ === 'peerUser' && (userCache.get(peer.user_id)?.deleted ?? true));
+  if (peer._ === 'peerUser') {
+    const user = userCache.get(peer.user_id);
+    return user?._ !== 'user' || user.deleted;
+  }
+  return false;
 }
 
 export default function profileAvatar(peer: Peer, message?: Message, isForDialogList = false) {

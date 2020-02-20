@@ -1,7 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { ClientError } from 'client/worker.types';
-import { Document, Peer, MessageFilter, StickerSet, Messages, MessagesNotModified } from 'cache/types';
+import { Document, Peer, StickerSet, MessagesFilter } from 'cache/types';
 import { peerToInputPeer } from 'cache/accessors';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToId } from 'helpers/api';
@@ -12,12 +12,12 @@ import MainService from './main';
  */
 export default class MediaService {
   /** Recent Stickers */
-  recentStickers = new BehaviorSubject<Document[]>([]);
+  recentStickers = new BehaviorSubject<Document.document[]>([]);
 
   /** Stickers Packs */
   stickerSets = new BehaviorSubject<StickerSet[]>([]);
 
-  mediaLoading: Record<string /* peerId */, Partial<Record<MessageFilter['_'], boolean>>> = {};
+  mediaLoading: Record<string /* peerId */, Partial<Record<MessagesFilter['_'], boolean>>> = {};
 
   /** Hash values for sticker syc */
   stickerSetsHash = 0;
@@ -56,18 +56,18 @@ export default class MediaService {
    * Ref: https://core.telegram.org/method/messages.getRecentStickers
    */
   loadRecentStickers(): void {
-    client.call('messages.getRecentStickers', { hash: this.recentStickersHash }, (err: ClientError, result: any) => {
+    client.call('messages.getRecentStickers', { hash: this.recentStickersHash }, (err, result) => {
       if (err || !result) throw new Error(JSON.stringify(err));
 
       // update recent stickers
       if (result._ === 'messages.recentStickers') {
         this.recentStickersHash = result.hash;
-        this.recentStickers.next(result.stickers);
+        this.recentStickers.next(result.stickers as Document.document[]);
       }
     });
   }
 
-  loadMedia(peer: Peer, filterType: MessageFilter['_'], offsetMessageId = 0) {
+  loadMedia(peer: Peer, filterType: MessagesFilter['_'], offsetMessageId = 0) {
     const peerId = peerToId(peer);
     if (!this.mediaLoading[peerId]) {
       this.mediaLoading[peerId] = {};
@@ -81,7 +81,6 @@ export default class MediaService {
     const payload = {
       peer: peerToInputPeer(peer),
       q: '',
-      from_id: 0,
       filter,
       min_date: 0,
       max_date: 0,
@@ -108,9 +107,9 @@ export default class MediaService {
         throw Error('Unknown filter');
     }
 
-    client.call('messages.search', payload, (_err: any, res?: Exclude<Messages, MessagesNotModified>) => {
+    client.call('messages.search', payload, (_err, res) => {
       this.mediaLoading[peerId][filterType] = false;
-      if (res) {
+      if (res && res._ !== 'messages.messagesNotModified') {
         userCache.put(res.users);
         chatCache.put(res.chats);
         index.putMediaMessages(peer, res.messages);
@@ -118,7 +117,7 @@ export default class MediaService {
     });
   }
 
-  isMediaLoading(peer: Peer, filterType: MessageFilter['_']) {
+  isMediaLoading(peer: Peer, filterType: MessagesFilter['_']) {
     return !!this.mediaLoading[peerToId(peer)]?.[filterType];
   }
 

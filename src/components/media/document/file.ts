@@ -9,7 +9,7 @@ import media from 'client/media';
 import photoRenderer from '../photo/photo';
 import './file.scss';
 
-const renderMeta = (document: Document, message: Message | undefined) => {
+const renderMeta = (document: Document.document, message: Message | undefined) => {
   const nodes: Node[] = [text(getReadableSize(document.size))];
 
   if (message?._ === 'message') {
@@ -21,7 +21,7 @@ const renderMeta = (document: Document, message: Message | undefined) => {
   return nodes;
 };
 
-export default function documentFile(document: Document, message?: Message) {
+export default function documentFile(document: Document.document, message?: Message) {
   const filenameAttributte = getAttributeFilename(document);
 
   let filename = '';

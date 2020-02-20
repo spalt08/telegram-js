@@ -4,8 +4,8 @@ import { div, nothing } from 'core/html';
 import { info, username, phone } from 'components/icons';
 import { BehaviorSubject } from 'rxjs';
 import { infoListItem } from 'components/ui';
-import './peer_info.scss';
 import { mount } from 'core/dom';
+import './peer_info.scss';
 
 function userInfo(userId: number) {
   const bioSubject = new BehaviorSubject<string>('');
@@ -19,14 +19,14 @@ function userInfo(userId: number) {
 
   const userSubject = userCache.useItemBehaviorSubject(container, userId);
   userSubject.subscribe((u) => {
-    if (u) {
+    if (u?._ === 'user') {
       usernameSubject.next(u.username || '');
       phoneSubject.next(u.phone ? `+${u.phone}` : '');
     }
   });
   const userFullSubject = userFullCache.useItemBehaviorSubject(container, userId);
   userFullSubject.subscribe((uf) => {
-    if (uf) bioSubject.next(uf.about);
+    if (uf?._ === 'userFull') bioSubject.next(uf.about || '');
   });
 
   return container;

@@ -7,6 +7,7 @@ import { mount } from 'core/dom';
 export default function webpagePreview(webpage: WebPage) {
   if (webpage._ === 'webPageEmpty') return nothing;
   if (webpage._ === 'webPagePending') return nothing;
+  if (webpage._ === 'webPageNotModified') return nothing;
 
   // let photo: HTMLElement | Node = nothing;
 
@@ -18,7 +19,7 @@ export default function webpagePreview(webpage: WebPage) {
   const description = text(webpage.description || '');
   const content = div`.webpage-preview__content`(title, description);
 
-  if (webpage.photo) {
+  if (webpage._ === 'webPage' && webpage.photo?._ === 'photo') {
     switch (webpage.type) {
       case 'photo':
       case 'video': {

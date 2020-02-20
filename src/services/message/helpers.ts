@@ -1,6 +1,7 @@
-import { Message, Messages, MessagesNotModified, Peer } from 'cache/types';
+import { Message, Peer } from 'cache/types';
 import { peerToInputPeer } from 'cache/accessors';
 import client from 'client/client';
+import { ClientError } from 'client/worker.types';
 import { Direction } from './types';
 import { chatCache, messageCache, userCache } from '../../cache';
 
@@ -20,7 +21,7 @@ export function loadContinuousMessages(
   direction: Direction,
   fromId?: number,
   toId?: number,
-  onComplete: (err: any, result?: ContinuousMessagesResult) => void = () => {},
+  onComplete: (err: ClientError | null, result?: ContinuousMessagesResult) => void = () => {},
 ) {
   if (direction === Direction.Newer && toId !== undefined) {
     direction = Direction.Older; // eslint-disable-line no-param-reassign
@@ -67,11 +68,15 @@ export function loadContinuousMessages(
   }
 
   // console.log('loadMessages - request', payload);
-  client.call('messages.getHistory', payload, (err: any, data?: Exclude<Messages, MessagesNotModified>) => {
+  client.call('messages.getHistory', payload, (err, data) => {
     // console.log('loadMessages - response', data);
 
     if (!data) {
       onComplete(err);
+      return;
+    }
+
+    if (data._ === 'messages.messagesNotModified') {
       return;
     }
 

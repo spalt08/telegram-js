@@ -1,4 +1,4 @@
-import { Peer, UpdateChatUserTyping, UpdateUserTyping, SendMessageAction } from 'cache/types';
+import { Peer, Update, SendMessageAction } from 'cache/types';
 import { Subject, Observable, empty, BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 
@@ -12,11 +12,11 @@ export default class UserTyping {
   actionStates: Record<string, TypingState> = {};
 
   constructor() {
-    client.updates.on('updateUserTyping', (update: UpdateUserTyping) => {
+    client.updates.on('updateUserTyping', (update) => {
       this.notifyPeer(`user_${update.user_id}`, update);
     });
 
-    client.updates.on('updateChatUserTyping', (update: UpdateChatUserTyping) => {
+    client.updates.on('updateChatUserTyping', (update) => {
       this.notifyPeer(`chat_${update.chat_id}`, update);
     });
   }
@@ -34,7 +34,7 @@ export default class UserTyping {
     }
   }
 
-  private notifyPeer(peerId: string, typing: UpdateUserTyping | UpdateChatUserTyping) {
+  private notifyPeer(peerId: string, typing: Update.updateUserTyping | Update.updateChatUserTyping) {
     const state = this.ensureState(peerId);
     if (typing.action._ === 'sendMessageCancelAction') {
       delete state.pendingActions[typing.user_id];

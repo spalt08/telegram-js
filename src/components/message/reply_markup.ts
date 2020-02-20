@@ -4,7 +4,7 @@ import { mount } from 'core/dom';
 import './reply_markup.scss';
 
 export default function replyMarkupRenderer(markup: ReplyMarkup): Node {
-  if (markup._ === 'replyKeyboardForceReply') return nothing;
+  if (markup._ === 'replyKeyboardForceReply' || markup._ === 'replyKeyboardHide') return nothing;
 
   const container = div`.reply-markup`();
 

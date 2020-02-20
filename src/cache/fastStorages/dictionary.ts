@@ -1,7 +1,6 @@
 import { BehaviorSubject, Subject } from 'rxjs';
 import { useWhileMounted } from 'core/hooks';
 import BatchActions from 'helpers/batchActions';
-import { WithMin } from '../types';
 
 export type ItemWatcher<TItem> = (item: Readonly<TItem> | undefined) => void;
 
@@ -149,8 +148,8 @@ export default class Dictionary<TKey extends keyof any, TItem> {
       if (item !== currentItem) {
         let itemToPut: Readonly<TItem>;
 
-        if (this.considerMin && (currentItem as WithMin<TItem>).min) {
-          const { min, ...itemWithoutMin } = item as WithMin<TItem>;
+        if (this.considerMin && (currentItem as any).min) {
+          const { min, ...itemWithoutMin } = item as any;
           itemToPut = { ...currentItem, ...itemWithoutMin };
         } else {
           itemToPut = item;
