@@ -3,46 +3,57 @@ import { Message } from 'cache/types';
 import { getAttributeSticker } from 'helpers/files';
 import { todoAssertHasValue } from 'helpers/other';
 
+const MAX_LENGTH = 200;
+
 export default function messageShort(msg: Message) {
-  let content = 'Message';
+  switch (msg._) {
+    case 'messageEmpty': return '';
+    case 'messageService': {
+      const user = userCache.get(todoAssertHasValue(msg.from_id));
+      const userLabel = user?._ === 'user' ? user.first_name : 'Someone';
 
-  if (msg._ === 'messageEmpty') return content;
-
-  if (msg._ === 'messageService') {
-    const user = userCache.get(todoAssertHasValue(msg.from_id));
-    const userLabel = user?._ === 'user' ? user.first_name : 'Someone';
-
-    switch (msg.action._) {
-      case 'messageActionChatCreate': content = `${userLabel} created the group`; break;
-      case 'messageActionChatEditPhoto': content = `${userLabel} updated group photo`; break;
-      case 'messageActionChatEditTitle': content = `${userLabel} changed the group title`; break;
-      case 'messageActionChatDeletePhoto': content = `${userLabel} updated deleted photo`; break;
-      case 'messageActionChatAddUser': content = `${userLabel} joined the group`; break;
-      case 'messageActionChatDeleteUser': content = `${userLabel} removed someone from the group`; break;
-      case 'messageActionChannelCreate': content = `${userLabel} created the channel`; break;
-      case 'messageActionChatMigrateTo': content = 'Group was converted to supergroup'; break;
-      case 'messageActionChannelMigrateFrom': content = 'Channel was created from group'; break;
-      case 'messageActionPinMessage': content = `${userLabel} pinned the message`; break;
-      case 'messageActionCustomAction': content = msg.action.message; break;
-      case 'messageActionPhoneCall': content = '🤙Incoming call'; break;
-      default: content = '';
+      switch (msg.action._) {
+        case 'messageActionChatCreate': return `${userLabel} created the group`;
+        case 'messageActionChatEditPhoto': return `${userLabel} updated group photo`;
+        case 'messageActionChatEditTitle': return `${userLabel} changed the group title`;
+        case 'messageActionChatDeletePhoto': return `${userLabel} updated deleted photo`;
+        case 'messageActionChatAddUser': return `${userLabel} joined the group`;
+        case 'messageActionChatDeleteUser': return `${userLabel} removed someone from the group`;
+        case 'messageActionChannelCreate': return `${userLabel} created the channel`;
+        case 'messageActionChatMigrateTo': return 'Group was converted to supergroup';
+        case 'messageActionChannelMigrateFrom': return 'Channel was created from group';
+        case 'messageActionPinMessage': return `${userLabel} pinned the message`;
+        case 'messageActionCustomAction': return msg.action.message;
+        case 'messageActionPhoneCall': return '🤙 Incoming call';
+        default: return '';
+      }
     }
-  } else {
-    content = msg.message;
-  }
+    case 'message': {
+      const content = msg.message.slice(0, MAX_LENGTH);
+      if (content) {
+        return content;
+      }
 
-  if (!content && msg._ === 'message' && msg.media && msg.media._ !== 'messageMediaEmpty') {
-    if (msg.media._ === 'messageMediaPhoto') content = content ? `🖼${content}` : '🖼 Photo';
-    if (msg.media._ === 'messageMediaGeo') content = '📍 Location';
-    if (msg.media._ === 'messageMediaContact') content = '👤 Contact';
-    if (msg.media._ === 'messageMediaGeoLive') content = '📍 Live Location';
-    if (msg.media._ === 'messageMediaPoll') content = '📊 Poll';
-    if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document') {
-      const isSticker = getAttributeSticker(msg.media.document);
-      if (isSticker) content = `${isSticker.alt}Sticker`;
-      else content = 'Document';
+      if (msg.media && msg.media._ !== 'messageMediaEmpty') {
+        switch (msg.media._) {
+          case 'messageMediaPhoto': return '🖼 Photo';
+          case 'messageMediaGeo': return '📍 Location';
+          case 'messageMediaContact': return '👤 Contact';
+          case 'messageMediaGeoLive': return '📍 Live Location';
+          case 'messageMediaPoll': return '📊 Poll';
+          case 'messageMediaDocument':
+            if (msg.media.document?._ === 'document') {
+              const isSticker = getAttributeSticker(msg.media.document);
+              return isSticker ? `${isSticker.alt} Sticker` : '📄 Document';
+            }
+            break;
+          default:
+        }
+      }
+
+      return content;
     }
+    default:
+      return '';
   }
-
-  return content;
 }
