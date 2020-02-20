@@ -7,6 +7,7 @@ export function downloadByUrl(filename: string, href: string) {
 
 export function todoAssertHasValue<T>(value: T | null | undefined): T {
   if (value === null || value === undefined) {
+    // eslint-disable-next-line no-console
     console.warn('ASSERT: Empty value');
   }
   return value!;

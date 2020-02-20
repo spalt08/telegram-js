@@ -1,7 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { chatCache, messageCache, userCache } from 'cache';
-import { Message, Peer, MessagesSearch, MessagesMessages, MessagesFilter } from 'cache/types';
+import { Message, Peer, MessagesSearch, MessagesFilter } from 'cache/types';
 import { peerToInputPeer } from 'cache/accessors';
 import { mergeOrderedArrays } from 'helpers/data';
 
@@ -64,8 +64,12 @@ function makeSearchRequest(
 
   // console.log('search request', parameters);
 
-  client.call('messages.search', parameters, (_err: any, data?: Exclude<MessagesMessages, MessagesMessages.messagesMessagesNotModified>) => {
-    // console.log('search response', _err, data);
+  client.call('messages.search', parameters, (err, data) => {
+    // console.log('search response', err, data);
+
+    if (data && data._ === 'messages.messagesNotModified') {
+      return;
+    }
 
     if (data) {
       userCache.put(data.users);

@@ -11,7 +11,10 @@ export function peerToId(peer: Peer): string {
   }
 }
 
-export function dialogToId(dialog: Dialog): string {
+export function dialogToId(dialog: Readonly<Dialog>): string {
+  if (dialog._ === 'dialogFolder') {
+    return `folder_${dialog.folder.id}`;
+  }
   return peerToId(dialog.peer);
 }
 
@@ -74,12 +77,12 @@ export function shortChatMessageToMessage(message: Updates.updateShortChatMessag
   };
 }
 
-export function isDialogInRootFolder(dialog: Dialog.dialog) {
-  return dialog.folder_id === ROOT_FOLDER_ID;
+export function isDialogInRootFolder(dialog: Dialog) {
+  return dialog._ === 'dialogFolder' || dialog.folder_id === ROOT_FOLDER_ID;
 }
 
-export function isDialogArchived(dialog: Dialog.dialog) {
-  return dialog.folder_id === ARCHIVE_FOLDER_ID;
+export function isDialogArchived(dialog: Dialog) {
+  return dialog._ !== 'dialogFolder' && dialog.folder_id === ARCHIVE_FOLDER_ID;
 }
 
 export function getDialogLastReadMessageId(dialog: Dialog.dialog) {
