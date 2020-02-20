@@ -5,8 +5,8 @@ import { InputFile, MethodDeclMap, UpdateDeclMap } from '../cache/types';
 /**
  * Worker callbacks
  */
-type RequestResolver<T> = (err: ClientError | null, res?: T) => void;
-type UpdateResolver<T> = (res?: T) => void;
+type RequestResolver<T> = (...args: [ClientError, undefined] | [null, T]) => void;
+type UpdateResolver<T> = (res: T) => void;
 type AnyResolver = (...payload: unknown[]) => void;
 type EventResolver = (event: any) => void;
 export type UploadResolver = (input: InputFile) => void;

@@ -4,11 +4,9 @@ import { userCache } from '../cache';
 export default class UsersService {
   constructor() {
     client.updates.on('updateUserStatus', (update) => {
-      if (update) {
-        const user = userCache.get(update.user_id);
-        if (user && user._ !== 'userEmpty') {
-          userCache.put({ ...user, status: update.status });
-        }
+      const user = userCache.get(update.user_id);
+      if (user && user._ !== 'userEmpty') {
+        userCache.put({ ...user, status: update.status });
       }
     });
 
@@ -16,7 +14,7 @@ export default class UsersService {
     client.updates.on('user', (user) => {
       // It may have a broken access_hash (like the `chat` push) so it shouldn't replace an existing user
       // todo: Check it
-      if (user && !userCache.has(user.id)) {
+      if (!userCache.has(user.id)) {
         userCache.put(user);
       }
     });

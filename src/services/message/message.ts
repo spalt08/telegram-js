@@ -32,42 +32,32 @@ export default class MessagesService {
 
   constructor() {
     client.updates.on('updateNewMessage', (update) => {
-      if (update) this.pushMessages([update.message]);
+      this.pushMessages([update.message]);
     });
 
     client.updates.on('updateShortMessage', (update) => {
-      if (update) {
-        const message = shortMessageToMessage(client.getUserID(), update);
-        this.pushMessages([message]);
-      }
+      const message = shortMessageToMessage(client.getUserID(), update);
+      this.pushMessages([message]);
     });
 
     client.updates.on('updateShortChatMessage', (update) => {
-      if (update) {
-        const message = shortChatMessageToMessage(update);
-        this.pushMessages([message]);
-      }
+      const message = shortChatMessageToMessage(update);
+      this.pushMessages([message]);
     });
 
     client.updates.on('updateNewChannelMessage', (update) => {
-      if (update) {
-        this.pushMessages([update.message]);
-      }
+      this.pushMessages([update.message]);
     });
 
     client.updates.on('updateDeleteMessages', (update) => {
-      if (update) {
-        update.messages.forEach((messageId: number) => messageCache.remove(getUserMessageId(messageId)));
-      }
+      update.messages.forEach((messageId: number) => messageCache.remove(getUserMessageId(messageId)));
     });
 
     client.updates.on('updateDeleteChannelMessages', (update) => {
-      if (update) {
-        // console.log('updateDeleteChannelMessages', update);
-        update.messages.forEach((messageId: number) => messageCache.remove(
-          peerMessageToId({ _: 'peerChannel', channel_id: update.channel_id }, messageId),
-        ));
-      }
+      // console.log('updateDeleteChannelMessages', update);
+      update.messages.forEach((messageId: number) => messageCache.remove(
+        peerMessageToId({ _: 'peerChannel', channel_id: update.channel_id }, messageId),
+      ));
     });
   }
 

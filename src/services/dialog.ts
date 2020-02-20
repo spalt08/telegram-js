@@ -29,7 +29,7 @@ export default class DialogsService {
     // The client pushes it before pushing messages
     client.updates.on('chat', (chat) => {
       // It has a broken access_hash for some reason so it shouldn't replace an existing chat
-      if (chat && !chatCache.has(chat.id)) {
+      if (!chatCache.has(chat.id)) {
         chatCache.put(chat);
       }
     });
@@ -57,48 +57,40 @@ export default class DialogsService {
 
     // incoming message were read
     client.updates.on('updateReadHistoryInbox', (update) => {
-      if (update) {
-        this.changeOrLoadDialog(update.peer, (dialog) => ({
-          ...dialog,
-          read_inbox_max_id: update.max_id,
-          unread_count: update.still_unread_count,
-        }));
-      }
+      this.changeOrLoadDialog(update.peer, (dialog) => ({
+        ...dialog,
+        read_inbox_max_id: update.max_id,
+        unread_count: update.still_unread_count,
+      }));
     });
 
     // outcoming message were read
     client.updates.on('updateReadHistoryOutbox', (update) => {
-      if (update) {
-        this.changeOrLoadDialog(update.peer, (dialog) => ({
-          ...dialog,
-          read_outbox_max_id: update.max_id,
-        }));
-      }
+      this.changeOrLoadDialog(update.peer, (dialog) => ({
+        ...dialog,
+        read_outbox_max_id: update.max_id,
+      }));
     });
 
     // incoming message were read (channel)
     client.updates.on('updateReadChannelInbox', (update) => {
-      if (update) {
-        this.changeOrLoadDialog({ _: 'peerChannel', channel_id: update.channel_id }, (dialog) => ({
-          ...dialog,
-          read_inbox_max_id: update.max_id,
-          unread_count: update.still_unread_count,
-        }));
-      }
+      this.changeOrLoadDialog({ _: 'peerChannel', channel_id: update.channel_id }, (dialog) => ({
+        ...dialog,
+        read_inbox_max_id: update.max_id,
+        unread_count: update.still_unread_count,
+      }));
     });
 
     // outcoming message were read (channel)
     client.updates.on('updateReadChannelOutbox', (update) => {
-      if (update) {
-        this.changeOrLoadDialog({ _: 'peerChannel', channel_id: update.channel_id }, (dialog) => ({
-          ...dialog,
-          read_outbox_max_id: update.max_id,
-        }));
-      }
+      this.changeOrLoadDialog({ _: 'peerChannel', channel_id: update.channel_id }, (dialog) => ({
+        ...dialog,
+        read_outbox_max_id: update.max_id,
+      }));
     });
 
     client.updates.on('updateDialogUnreadMark', (update) => {
-      if (update?.peer._ === 'dialogPeer') {
+      if (update.peer._ === 'dialogPeer') {
         this.changeOrLoadDialog(update.peer.peer, (dialog) => ({
           ...dialog,
           unread_mark: update.unread,
@@ -107,7 +99,7 @@ export default class DialogsService {
     });
 
     client.updates.on('updateDialogPinned', (update) => {
-      if (update?.peer._ === 'dialogPeer') {
+      if (update.peer._ === 'dialogPeer') {
         this.changeOrLoadDialog(update.peer.peer, (dialog) => ({
           ...dialog,
           pinned: update.pinned,

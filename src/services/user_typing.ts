@@ -13,11 +13,11 @@ export default class UserTyping {
 
   constructor() {
     client.updates.on('updateUserTyping', (update) => {
-      if (update) this.notifyPeer(`user_${update.user_id}`, update);
+      this.notifyPeer(`user_${update.user_id}`, update);
     });
 
     client.updates.on('updateChatUserTyping', (update) => {
-      if (update) this.notifyPeer(`chat_${update.chat_id}`, update);
+      this.notifyPeer(`chat_${update.chat_id}`, update);
     });
   }
 
