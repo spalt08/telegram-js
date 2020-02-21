@@ -41,12 +41,11 @@ export function isSearchRequestEmpty(request: SearchRequest): boolean {
 const LOAD_CHUNK_LENGTH = 20;
 const SEARCH_REQUEST_DEBOUNCE = 500;
 
-function makeSearchRequest(
+async function makeSearchRequest(
   peer: Peer,
   request: SearchRequest,
   offsetMessageId: number | null,
-  onComplete: (messagesIds: number[], count: number, isEnd: boolean) => void,
-) {
+): Promise<{messageIds: number[], count: number, isEnd: boolean}> {
   const filter: MessagesFilter = { _: 'inputMessagesFilterEmpty' };
   const parameters: MessagesSearch = {
     peer: peerToInputPeer(peer),
@@ -63,73 +62,52 @@ function makeSearchRequest(
   };
 
   // console.log('search request', parameters);
-
-  client.call('messages.search', parameters, (err, data) => {
+  try {
+    const data = await client.callAsync('messages.search', parameters);
     // console.log('search response', err, data);
 
-    if (data && data._ === 'messages.messagesNotModified') {
-      return;
+    if (data._ === 'messages.messagesNotModified') {
+      throw Error(data._);
     }
 
-    if (data) {
-      userCache.put(data.users);
-      chatCache.put(data.chats);
-      messageCache.put(data.messages);
-    }
+    userCache.put(data.users);
+    chatCache.put(data.chats);
+    messageCache.put(data.messages);
 
-    if (data) {
-      const messageIds = data.messages.map((message: Message) => message.id);
-      const count = data._ === 'messages.messages'
-        ? data.messages.length
-        : data.count;
-      const isEnd = data._ === 'messages.messages' || data.messages.length < LOAD_CHUNK_LENGTH * 0.9; // Decrease just in case
-      onComplete(messageIds, count, isEnd);
-    } else {
-      onComplete([], 0, false);
-    }
-  });
+    const messageIds = data.messages.map((message: Message) => message.id);
+    const count = data._ === 'messages.messages'
+      ? data.messages.length
+      : data.count;
+    const isEnd = data._ === 'messages.messages' || data.messages.length < LOAD_CHUNK_LENGTH * 0.9; // Decrease just in case
+    return { messageIds, count, isEnd };
+  } catch (err) {
+    return { messageIds: [], count: 0, isEnd: false };
+  }
 }
 
 export default function makeSearchSession(peer: Peer): SearchSession {
   let isDestroyed = false;
   let desiredRequest: SearchRequest = '';
   let searchStartTimeout: number = 0;
-  let stopSearchRequests: (() => void) | undefined;
+  let searchInProgress = false;
 
   const isSearching = new BehaviorSubject(false); // Includes the debounce time too
   const isLoadingMore = new BehaviorSubject(false);
   const result = new BehaviorSubject(emptySearchResult);
 
-  function searchRecursive(request: SearchRequest, onComplete: () => void) {
-    let isStopped = false;
-    let recursiveStop: (() => void) | undefined;
-
-    makeSearchRequest(peer, request, null, (ids, count, isEnd) => {
-      if (isStopped) {
+  async function repeatSearchWhileRequestIsChanging() {
+    searchInProgress = true;
+    while (searchInProgress) {
+      const currentRequest = desiredRequest;
+      // eslint-disable-next-line no-await-in-loop
+      const { messageIds: ids, count, isEnd: isFull } = await makeSearchRequest(peer, desiredRequest, null);
+      if (!searchInProgress) return;
+      if (areSearchRequestsEqual(currentRequest, desiredRequest)) {
+        searchInProgress = false;
+        result.next({ request: currentRequest, ids, count, isFull });
         return;
       }
-      if (areSearchRequestsEqual(request, desiredRequest)) {
-        try {
-          result.next({
-            request,
-            ids,
-            count,
-            isFull: isEnd,
-          });
-        } finally {
-          onComplete();
-        }
-      } else {
-        recursiveStop = searchRecursive(desiredRequest, onComplete);
-      }
-    });
-
-    return () => {
-      isStopped = true;
-      if (recursiveStop) {
-        recursiveStop();
-      }
-    };
+    }
   }
 
   function search(request: SearchRequest) {
@@ -149,10 +127,7 @@ export default function makeSearchSession(peer: Peer): SearchSession {
 
     if (isSearchRequestEmpty(request)) {
       // Instant result when the request is empty
-      if (stopSearchRequests) {
-        stopSearchRequests();
-        stopSearchRequests = undefined;
-      }
+      searchInProgress = false;
       result.next({ request, ...emptySearchResult });
       if (isSearching.value) {
         isSearching.next(false);
@@ -163,23 +138,21 @@ export default function makeSearchSession(peer: Peer): SearchSession {
       }
 
       // Actual search is in progress, it will research at the end automatically
-      if (stopSearchRequests) {
+      if (searchInProgress) {
         return;
       }
 
       clearTimeout(searchStartTimeout);
-      searchStartTimeout = (setTimeout as typeof window.setTimeout)(() => {
+      searchStartTimeout = (setTimeout as typeof window.setTimeout)(async () => {
         // When the debounce ends, start an actual search that repeats unless the result request matches the desired request.
         // When it ends, the debounce will be available again.
-        stopSearchRequests = searchRecursive(request, () => {
-          stopSearchRequests = undefined;
-          isSearching.next(false);
-        });
+        await repeatSearchWhileRequestIsChanging();
+        isSearching.next(false);
       }, SEARCH_REQUEST_DEBOUNCE);
     }
   }
 
-  function loadMore() {
+  async function loadMore() {
     if (isDestroyed) {
       if (process.env.NODE_ENV === 'development') {
         // eslint-disable-next-line no-console
@@ -201,22 +174,21 @@ export default function makeSearchSession(peer: Peer): SearchSession {
 
     isLoadingMore.next(true);
 
-    makeSearchRequest(peer, startRequest, startIds[startIds.length - 1], (loadedIds, loadedCount, isSearchEnd) => {
-      if (isDestroyed) {
-        return;
-      }
-      const { ids: endIds, count: endCount, request: endRequest } = result.value;
-      if (areSearchRequestsEqual(startRequest, endRequest)) {
-        mergeOrderedArrays(endIds, loadedIds, (id1, id2) => id2 - id1);
-        result.next({
-          request: endRequest,
-          ids: endIds,
-          count: endCount, // Use the previous count for a case of a loading error (in which case the `count` will be `0`)
-          isFull: isSearchEnd,
-        });
-        isLoadingMore.next(false);
-      }
-    });
+    const { messageIds: loadedIds, isEnd: isSearchEnd } = await makeSearchRequest(peer, startRequest, startIds[startIds.length - 1]);
+    if (isDestroyed) {
+      return;
+    }
+    const { ids: endIds, count: endCount, request: endRequest } = result.value;
+    if (areSearchRequestsEqual(startRequest, endRequest)) {
+      mergeOrderedArrays(endIds, loadedIds, (id1, id2) => id2 - id1);
+      result.next({
+        request: endRequest,
+        ids: endIds,
+        count: endCount, // Use the previous count for a case of a loading error (in which case the `count` will be `0`)
+        isFull: isSearchEnd,
+      });
+      isLoadingMore.next(false);
+    }
   }
 
   function destroy() {
@@ -229,10 +201,8 @@ export default function makeSearchSession(peer: Peer): SearchSession {
     }
 
     isDestroyed = true;
+    searchInProgress = false;
     clearTimeout(searchStartTimeout);
-    if (stopSearchRequests) {
-      stopSearchRequests();
-    }
   }
 
   return { result, isSearching, isLoadingMore, search, loadMore, destroy };

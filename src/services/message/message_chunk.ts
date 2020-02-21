@@ -43,7 +43,7 @@ export default function makeMessageChunk(peer: Peer, messageId: Exclude<number, 
     }
   });
 
-  function loadMessages(direction: Direction, fromId?: number, toId?: number) {
+  async function loadMessages(direction: Direction, fromId?: number, toId?: number) {
     if (
       ((direction === Direction.Around || direction === Direction.Older) && historySubject.value.loadingOlder)
       || ((direction === Direction.Around || direction === Direction.Newer) && historySubject.value.loadingNewer)
@@ -56,20 +56,13 @@ export default function makeMessageChunk(peer: Peer, messageId: Exclude<number, 
       loadingNewer: direction === Direction.Around || direction === Direction.Newer ? true : historySubject.value.loadingNewer,
     });
 
-    loadContinuousMessages(peer, direction, fromId, toId, (error, result) => {
+    try {
+      const result = await loadContinuousMessages(peer, direction, fromId, toId);
       if (isDestroyed) {
         return;
       }
 
       try {
-        if (error || !result) {
-          if (process.env.NODE_ENV === 'development') {
-            // eslint-disable-next-line no-console
-            console.error('Failed to load messages history part', { peer, direction, fromId, toId, error, result });
-          }
-          return;
-        }
-
         try {
           isUpdatingCacheChunk = true;
           cacheChunkRef.putChunk(result);
@@ -83,7 +76,12 @@ export default function makeMessageChunk(peer: Peer, messageId: Exclude<number, 
           loadingNewer: direction === Direction.Around || direction === Direction.Newer ? false : historySubject.value.loadingNewer,
         });
       }
-    });
+    } catch (err) {
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load messages history part', { peer, direction, fromId, toId, err });
+      }
+    }
   }
 
   function loadMore(direction: Direction.Newer | Direction.Older) {

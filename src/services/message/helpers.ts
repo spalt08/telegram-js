@@ -1,7 +1,7 @@
 import { Message, Peer } from 'cache/types';
 import { peerToInputPeer } from 'cache/accessors';
 import client from 'client/client';
-import { ClientError } from 'client/worker.types';
+import { MessagesChunk } from 'cache/fastStorages/indices/messageHistory';
 import { Direction } from './types';
 import { chatCache, messageCache, userCache } from '../../cache';
 
@@ -16,13 +16,12 @@ export interface ContinuousMessagesResult {
 /**
  * Messages with id equal fromId and toId are not included to the result
  */
-export function loadContinuousMessages(
+export async function loadContinuousMessages(
   peer: Peer,
   direction: Direction,
   fromId?: number,
   toId?: number,
-  onComplete: (err: ClientError | null, result?: ContinuousMessagesResult) => void = () => {},
-) {
+): Promise<MessagesChunk> {
   if (direction === Direction.Newer && toId !== undefined) {
     direction = Direction.Older; // eslint-disable-line no-param-reassign
     [fromId, toId] = [toId, fromId]; // eslint-disable-line no-param-reassign
@@ -68,49 +67,43 @@ export function loadContinuousMessages(
   }
 
   // console.log('loadMessages - request', payload);
-  client.call('messages.getHistory', payload, (err, data) => {
-    // console.log('loadMessages - response', data);
+  const data = await client.callAsync('messages.getHistory', payload);
+  // console.log('loadMessages - response', data);
 
-    if (!data) {
-      onComplete(err);
-      return;
-    }
+  if (data._ === 'messages.messagesNotModified') {
+    throw Error(data._);
+  }
 
-    if (data._ === 'messages.messagesNotModified') {
-      return;
-    }
+  userCache.put(data.users);
+  chatCache.put(data.chats);
+  messageCache.put(data.messages);
 
-    userCache.put(data.users);
-    chatCache.put(data.chats);
-    messageCache.put(data.messages);
+  const isLoadedChunkFull = data.messages.length >= LOAD_CHUNK_LENGTH - 10; // -10 just in case
+  let oldestReached = false;
+  let newestReached = false;
+  switch (direction) {
+    case Direction.Older:
+      if (!fromId) {
+        newestReached = true;
+      }
+      if (!toId && !isLoadedChunkFull) {
+        oldestReached = true;
+      }
+      break;
+    case Direction.Newer:
+      if (!fromId) {
+        oldestReached = true;
+      }
+      if (!isLoadedChunkFull) {
+        newestReached = true;
+      }
+      break;
+    default:
+  }
 
-    const isLoadedChunkFull = data.messages.length >= LOAD_CHUNK_LENGTH - 10; // -10 just in case
-    let oldestReached = false;
-    let newestReached = false;
-    switch (direction) {
-      case Direction.Older:
-        if (!fromId) {
-          newestReached = true;
-        }
-        if (!toId && !isLoadedChunkFull) {
-          oldestReached = true;
-        }
-        break;
-      case Direction.Newer:
-        if (!fromId) {
-          oldestReached = true;
-        }
-        if (!isLoadedChunkFull) {
-          newestReached = true;
-        }
-        break;
-      default:
-    }
-
-    onComplete(null, {
-      messages: data.messages,
-      newestReached,
-      oldestReached,
-    });
-  });
+  return {
+    messages: data.messages,
+    oldestReached,
+    newestReached,
+  };
 }

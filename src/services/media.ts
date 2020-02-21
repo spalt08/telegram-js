@@ -1,6 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
-import { ClientError } from 'client/worker.types';
 import { Document, Peer, StickerSet, MessagesFilter } from 'cache/types';
 import { peerToInputPeer } from 'cache/accessors';
 import { chatCache, messageCache, userCache } from 'cache';
@@ -36,10 +35,9 @@ export default class MediaService {
    * Load installed sticker sets
    * Ref: https://core.telegram.org/method/messages.getAllStickers
    */
-  loadStickerSets(): void {
-    client.call('messages.getAllStickers', { hash: this.stickerSetsHash }, (err: ClientError, result: any) => {
-      if (err || !result) throw new Error(JSON.stringify(err));
-
+  async loadStickerSets() {
+    try {
+      const result = await client.callAsync('messages.getAllStickers', { hash: this.stickerSetsHash });
       // sticker packs not changed
       if (result._ === 'messages.allStickersNotModified') return;
 
@@ -48,26 +46,30 @@ export default class MediaService {
         this.stickerSetsHash = result.hash;
         this.stickerSets.next(result.sets);
       }
-    });
+    } catch (err) {
+      throw new Error(JSON.stringify(err))
+    }
   }
 
   /**
    * Load recent sticker sets
    * Ref: https://core.telegram.org/method/messages.getRecentStickers
    */
-  loadRecentStickers(): void {
-    client.call('messages.getRecentStickers', { hash: this.recentStickersHash }, (err, result) => {
-      if (err || !result) throw new Error(JSON.stringify(err));
+  async loadRecentStickers() {
+    try {
+      const result = await client.callAsync('messages.getRecentStickers', { hash: this.recentStickersHash });
 
       // update recent stickers
       if (result._ === 'messages.recentStickers') {
         this.recentStickersHash = result.hash;
         this.recentStickers.next(result.stickers as Document.document[]);
       }
-    });
+    } catch (err) {
+      throw new Error(JSON.stringify(err));
+    }
   }
 
-  loadMedia(peer: Peer, filterType: MessagesFilter['_'], offsetMessageId = 0) {
+  async loadMedia(peer: Peer, filterType: MessagesFilter['_'], offsetMessageId = 0) {
     const peerId = peerToId(peer);
     if (!this.mediaLoading[peerId]) {
       this.mediaLoading[peerId] = {};
@@ -107,14 +109,17 @@ export default class MediaService {
         throw Error('Unknown filter');
     }
 
-    client.call('messages.search', payload, (_err, res) => {
+    try {
+      const res = await client.callAsync('messages.search', payload);
       this.mediaLoading[peerId][filterType] = false;
       if (res && res._ !== 'messages.messagesNotModified') {
         userCache.put(res.users);
         chatCache.put(res.chats);
         index.putMediaMessages(peer, res.messages);
       }
-    });
+    } catch (err) {
+      // todo: handle the error
+    }
   }
 
   isMediaLoading(peer: Peer, filterType: MessagesFilter['_']) {

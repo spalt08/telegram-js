@@ -1,7 +1,7 @@
 import { BehaviorSubject, Subject } from 'rxjs';
 import { first } from 'rxjs/operators';
 import client from 'client/client';
-import { Message, Peer, MessagesGetMessages } from 'cache/types';
+import { Message, Peer, MessagesGetMessages, MessagesSendMedia, InputMedia } from 'cache/types';
 import { messageCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage, shortChatMessageToMessage } from 'helpers/api';
@@ -222,7 +222,7 @@ export default class MessagesService {
   }
 
   /** Load single message */
-  loadMessageReply = (msg: Message.message, cb: (msg: Message) => void) => {
+  loadMessageReply = async (msg: Message.message): Promise<Message | null> => {
     const params: MessagesGetMessages = {
       id: [
         { _: 'inputMessageReplyTo', id: msg.id },
@@ -230,15 +230,16 @@ export default class MessagesService {
       ],
     };
 
-    client.call('messages.getMessages', params, (err, res) => {
-      if (!err && res && res._ !== 'messages.messagesNotModified' && res.messages && res.messages.length > 0) {
-        messageCache.put(res.messages);
-        cb(res.messages[0]);
-      }
-    });
+    const messages = await client.callAsync('messages.getMessages', params);
+    if (messages._ !== 'messages.messagesNotModified' && messages.messages.length > 0) {
+      messageCache.put(messages.messages);
+      return messages.messages[0];
+    }
+
+    return null;
   };
 
-  sendMessage = (message: string) => {
+  sendMessage = async (message: string) => {
     if (!this.activePeer.value || !message) return;
 
     const randId = Math.ceil(Math.random() * 0xFFFFFF).toString(16) + Math.ceil(Math.random() * 0xFFFFFF).toString(16);
@@ -262,11 +263,9 @@ export default class MessagesService {
       message,
     };
 
-    client.call('messages.sendMessage', params, (err, result) => {
+    try {
+      const result = await client.callAsync('messages.sendMessage', params);
       // console.log('After sending', err, result);
-      if (err) {
-        // todo handling errors
-      }
 
       if (result?._ === 'updateShortSentMessage') {
         this.pendingMessages[randId].id = result.id;
@@ -276,26 +275,27 @@ export default class MessagesService {
         messageCache.indices.history.putNewestMessages([this.pendingMessages[randId]]);
         delete this.pendingMessages[randId];
       }
-    });
+    } catch (err) {
+      // todo handling errors
+    }
   };
 
-  sendMediaMessage = (inputMedia: any) => {
+  sendMediaMessage = async (inputMedia: InputMedia) => {
     if (!this.activePeer.value) return;
 
     const randId = Math.ceil(Math.random() * 0xFFFFFF).toString(16) + Math.ceil(Math.random() * 0xFFFFFF).toString(16);
-    const params = {
+    const params: MessagesSendMedia = {
       peer: peerToInputPeer(this.activePeer.value),
       message: '',
       media: inputMedia,
       random_id: randId,
     };
 
-    client.call('messages.sendMedia', params, (err, _result) => {
-      if (err) {
-        // todo handling errors
-      }
-
+    try {
+      await client.callAsync('messages.sendMedia', params);
       // console.log('After sending', err, result);
-    });
+    } catch (err) {
+      // todo handling errors
+    }
   };
 }

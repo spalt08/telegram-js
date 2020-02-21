@@ -30,7 +30,7 @@ export default class MainService {
       this.network.next(state);
     });
 
-    client.call('account.updateStatus', { offline: false }, () => {});
+    client.callAsync('account.updateStatus', { offline: false });
   }
 
   showPopup(type: 'sendMedia'): void;
