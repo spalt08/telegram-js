@@ -47,7 +47,7 @@ export default class MediaService {
         this.stickerSets.next(result.sets);
       }
     } catch (err) {
-      throw new Error(JSON.stringify(err))
+      throw new Error(JSON.stringify(err));
     }
   }
 
