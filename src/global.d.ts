@@ -54,3 +54,8 @@ declare module 'code-points' {
   const codePoints: (str: string, options?: { unique?: boolean }) => number[];
   export default codePoints;
 }
+
+declare module 'lottie-web/build/player/lottie_canvas' {
+  export { default } from 'lottie-web';
+  export * from 'lottie-web';
+}

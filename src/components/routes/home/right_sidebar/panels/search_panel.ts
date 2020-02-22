@@ -6,8 +6,8 @@ import roundButton from 'components/ui/round_button/round_button';
 import { Peer } from 'cache/types';
 import * as icons from 'components/icons';
 import { searchInput, VirtualizedList } from 'components/ui';
-import { getInterface, useOnMount, useToBehaviorSubject } from 'core/hooks';
-import { mount } from 'core/dom';
+import { getInterface, useToBehaviorSubject } from 'core/hooks';
+import { mount, watchVisibility } from 'core/dom';
 import { peerMessageToId } from 'helpers/api';
 import { foundMessage } from 'components/sidebar';
 import './search_panel.scss';
@@ -31,7 +31,14 @@ export default function searchPanel(peer: Peer) {
       messageSearch.search(value);
     },
   });
-  useOnMount(searchInputEl, () => getInterface(searchInputEl).focus());
+
+  // If the element isn't in layout, the focus call will be ignored
+  const stopWatchingVisibility = watchVisibility(searchInputEl, (isVisible) => {
+    if (isVisible) {
+      stopWatchingVisibility();
+      getInterface(searchInputEl).focus();
+    }
+  });
 
   const resultList = new VirtualizedList({
     className: 'messagesSearch__messages',

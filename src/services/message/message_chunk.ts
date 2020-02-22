@@ -1,5 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
-import { IdsChunk } from 'cache/fastStorages/indices/messageHistory';
+import { IdsChunk, MessagesChunk } from 'cache/fastStorages/indices/messageHistory';
 import { Peer } from 'cache/types';
 import { messageCache } from 'cache';
 import { Direction } from './types';
@@ -56,31 +56,35 @@ export default function makeMessageChunk(peer: Peer, messageId: Exclude<number, 
       loadingNewer: direction === Direction.Around || direction === Direction.Newer ? true : historySubject.value.loadingNewer,
     });
 
-    try {
-      const result = await loadContinuousMessages(peer, direction, fromId, toId);
-      if (isDestroyed) {
-        return;
-      }
+    let result: MessagesChunk;
 
-      try {
-        try {
-          isUpdatingCacheChunk = true;
-          cacheChunkRef.putChunk(result);
-        } finally {
-          isUpdatingCacheChunk = false;
-        }
-      } finally {
-        historySubject.next({
-          ...cacheChunkRef.history.value,
-          loadingOlder: direction === Direction.Around || direction === Direction.Older ? false : historySubject.value.loadingOlder,
-          loadingNewer: direction === Direction.Around || direction === Direction.Newer ? false : historySubject.value.loadingNewer,
-        });
-      }
+    try {
+      result = await loadContinuousMessages(peer, direction, fromId, toId);
     } catch (err) {
-      if (process.env.NODE_ENV === 'development') {
+      if (!isDestroyed && process.env.NODE_ENV === 'development') {
         // eslint-disable-next-line no-console
         console.error('Failed to load messages history part', { peer, direction, fromId, toId, err });
       }
+      return;
+    }
+
+    if (isDestroyed) {
+      return;
+    }
+
+    try {
+      try {
+        isUpdatingCacheChunk = true;
+        cacheChunkRef.putChunk(result);
+      } finally {
+        isUpdatingCacheChunk = false;
+      }
+    } finally {
+      historySubject.next({
+        ...cacheChunkRef.history.value,
+        loadingOlder: direction === Direction.Around || direction === Direction.Older ? false : historySubject.value.loadingOlder,
+        loadingNewer: direction === Direction.Around || direction === Direction.Newer ? false : historySubject.value.loadingNewer,
+      });
     }
   }
 

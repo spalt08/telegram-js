@@ -4,7 +4,7 @@ import { mount, listenOnce, unmount, listen } from 'core/dom';
 import { getThumbnail } from 'helpers/photo';
 import { getDocumentLocation } from 'helpers/files';
 import media from 'client/media';
-import { tgs } from 'components/ui';
+import { preloadTgsAssets, tgs } from 'components/ui';
 import './sticker.scss';
 import { useInterface, getInterface, WithInterfaceHook, useOnMount } from 'core/hooks';
 
@@ -13,6 +13,11 @@ type StickerOptions = {
   autoplay: boolean,
   onClick?: (sticker: Document) => void,
 };
+
+enum StickerMimeType {
+  TGS = 'application/x-tgsticker',
+  WebP = 'image/webp',
+}
 
 export default function stickerRenderer(sticker: Document.document, { size = '200px', autoplay = true, onClick }: StickerOptions) {
   const location = getDocumentLocation(sticker);
@@ -25,7 +30,7 @@ export default function stickerRenderer(sticker: Document.document, { size = '20
   const render = (src: string) => {
     cached = src;
 
-    if (sticker.mime_type === 'application/x-tgsticker') {
+    if (sticker.mime_type === StickerMimeType.TGS) {
       animated = tgs({ src, className: `sticker__tgs${thumbnail ? ' animated' : ''}`, autoplay, loop: true });
       mount(container, animated);
 
@@ -38,7 +43,7 @@ export default function stickerRenderer(sticker: Document.document, { size = '20
       return;
     }
 
-    if (sticker.mime_type === 'image/webp') {
+    if (sticker.mime_type === StickerMimeType.WebP) {
       const stickerImage = img({ src, className: `sticker__image${thumbnail ? ' animated' : ''}` });
       mount(container, stickerImage);
 
@@ -65,6 +70,10 @@ export default function stickerRenderer(sticker: Document.document, { size = '20
           );
 
           mount(container, thumbnail);
+        }
+
+        if (sticker.mime_type === StickerMimeType.TGS) {
+          preloadTgsAssets();
         }
 
         media.get(location, render, sticker.dc_id, sticker.mime_type);

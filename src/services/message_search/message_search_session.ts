@@ -1,11 +1,21 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { chatCache, messageCache, userCache } from 'cache';
-import { Message, Peer, MessagesSearch, MessagesFilter } from 'cache/types';
+import { Peer, MessagesSearch, MessagesFilter, MessagesMessages } from 'cache/types';
 import { peerToInputPeer } from 'cache/accessors';
 import { mergeOrderedArrays } from 'helpers/data';
+import debounceWithQueue from '../../helpers/debounceWithQueue';
+
+const LOAD_CHUNK_LENGTH = 20;
+const SEARCH_REQUEST_DEBOUNCE = 500;
 
 export type SearchRequest = string; // It may get other filter in future (e.g. date)
+
+interface SearchResponse {
+  messageIds: number[];
+  count: number;
+  isEnd: boolean;
+}
 
 export interface SearchResult {
   request: SearchRequest; // For what request was this result obtained
@@ -27,25 +37,15 @@ export function areSearchRequestsEqual(request1: SearchRequest, request2: Search
   return request1 === request2;
 }
 
-export const emptySearchResult: SearchResult = {
-  request: '',
-  ids: [],
-  count: 0,
-  isFull: true,
-};
-
 export function isSearchRequestEmpty(request: SearchRequest): boolean {
   return request.length === 0;
 }
-
-const LOAD_CHUNK_LENGTH = 20;
-const SEARCH_REQUEST_DEBOUNCE = 500;
 
 async function makeSearchRequest(
   peer: Peer,
   request: SearchRequest,
   offsetMessageId: number | null,
-): Promise<{messageIds: number[], count: number, isEnd: boolean}> {
+): Promise<SearchResponse> {
   const filter: MessagesFilter = { _: 'inputMessagesFilterEmpty' };
   const parameters: MessagesSearch = {
     peer: peerToInputPeer(peer),
@@ -61,54 +61,83 @@ async function makeSearchRequest(
     hash: 0,
   };
 
-  // console.log('search request', parameters);
+  let data: MessagesMessages;
+
   try {
-    const data = await client.callAsync('messages.search', parameters);
-    // console.log('search response', err, data);
-
-    if (data._ === 'messages.messagesNotModified') {
-      throw Error(data._);
+    // console.log('search request', parameters);
+    data = await client.callAsync('messages.search', parameters);
+    // console.log('search response', data);
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
+      console.error('Failed to search for messages', error);
     }
-
-    userCache.put(data.users);
-    chatCache.put(data.chats);
-    messageCache.put(data.messages);
-
-    const messageIds = data.messages.map((message: Message) => message.id);
-    const count = data._ === 'messages.messages'
-      ? data.messages.length
-      : data.count;
-    const isEnd = data._ === 'messages.messages' || data.messages.length < LOAD_CHUNK_LENGTH * 0.9; // Decrease just in case
-    return { messageIds, count, isEnd };
-  } catch (err) {
     return { messageIds: [], count: 0, isEnd: false };
   }
+
+  if (data._ === 'messages.messagesNotModified') {
+    throw Error(data._);
+  }
+
+  userCache.put(data.users);
+  chatCache.put(data.chats);
+  messageCache.put(data.messages);
+
+  const messageIds = data.messages.map((message) => message.id);
+  const count = data._ === 'messages.messages' ? data.messages.length : data.count;
+  const isEnd = data._ === 'messages.messages' || data.messages.length < LOAD_CHUNK_LENGTH * 0.9; // Decrease just in case
+  return { messageIds, count, isEnd };
 }
+
+function responseToResult(request: SearchRequest, response: SearchResponse): SearchResult {
+  return {
+    request,
+    ids: response.messageIds,
+    count: response.count,
+    isFull: response.isEnd,
+  };
+}
+
+const emptySearchRequest: SearchRequest = '';
+
+const emptySearchResponse: SearchResponse = {
+  messageIds: [],
+  count: 0,
+  isEnd: true,
+};
+
+export const emptySearchResult = responseToResult(emptySearchRequest, emptySearchResponse);
 
 export default function makeSearchSession(peer: Peer): SearchSession {
   let isDestroyed = false;
-  let desiredRequest: SearchRequest = '';
-  let searchStartTimeout: number = 0;
-  let searchInProgress = false;
-
   const isSearching = new BehaviorSubject(false); // Includes the debounce time too
   const isLoadingMore = new BehaviorSubject(false);
   const result = new BehaviorSubject(emptySearchResult);
 
-  async function repeatSearchWhileRequestIsChanging() {
-    searchInProgress = true;
-    while (searchInProgress) {
-      const currentRequest = desiredRequest;
-      // eslint-disable-next-line no-await-in-loop
-      const { messageIds: ids, count, isEnd: isFull } = await makeSearchRequest(peer, desiredRequest, null);
-      if (!searchInProgress) return;
-      if (areSearchRequestsEqual(currentRequest, desiredRequest)) {
-        searchInProgress = false;
-        result.next({ request: currentRequest, ids, count, isFull });
+  const debouncedSearch = debounceWithQueue<SearchRequest, SearchResponse>({
+    initialInput: emptySearchRequest,
+    debounceTime: SEARCH_REQUEST_DEBOUNCE,
+    performOnInit: false,
+    shouldPerform(prevRequest, nextRequest) {
+      return !areSearchRequestsEqual(prevRequest, nextRequest);
+    },
+    async perform(request) {
+      if (isSearchRequestEmpty(request)) {
+        return emptySearchResponse;
+      }
+      const response = await makeSearchRequest(peer, request, null);
+      return response;
+    },
+    onOutput(request, response, isDebounceComplete): void {
+      // Ignore the results that come before the final result that matches the latest request
+      if (!isDebounceComplete) {
         return;
       }
-    }
-  }
+
+      result.next(responseToResult(request, response));
+      isSearching.next(false);
+    },
+  });
 
   function search(request: SearchRequest) {
     if (isDestroyed) {
@@ -119,37 +148,10 @@ export default function makeSearchSession(peer: Peer): SearchSession {
       return;
     }
 
-    if (areSearchRequestsEqual(request, desiredRequest)) {
-      return;
+    if (!isSearching.value) {
+      isSearching.next(true);
     }
-
-    desiredRequest = request;
-
-    if (isSearchRequestEmpty(request)) {
-      // Instant result when the request is empty
-      searchInProgress = false;
-      result.next({ request, ...emptySearchResult });
-      if (isSearching.value) {
-        isSearching.next(false);
-      }
-    } else {
-      if (!isSearching.value) {
-        isSearching.next(true);
-      }
-
-      // Actual search is in progress, it will research at the end automatically
-      if (searchInProgress) {
-        return;
-      }
-
-      clearTimeout(searchStartTimeout);
-      searchStartTimeout = (setTimeout as typeof window.setTimeout)(async () => {
-        // When the debounce ends, start an actual search that repeats unless the result request matches the desired request.
-        // When it ends, the debounce will be available again.
-        await repeatSearchWhileRequestIsChanging();
-        isSearching.next(false);
-      }, SEARCH_REQUEST_DEBOUNCE);
-    }
+    debouncedSearch.run(request, isSearchRequestEmpty(request));
   }
 
   async function loadMore() {
@@ -178,13 +180,13 @@ export default function makeSearchSession(peer: Peer): SearchSession {
     if (isDestroyed) {
       return;
     }
-    const { ids: endIds, count: endCount, request: endRequest } = result.value;
+    const { ids: endIds, request: endRequest } = result.value;
     if (areSearchRequestsEqual(startRequest, endRequest)) {
       mergeOrderedArrays(endIds, loadedIds, (id1, id2) => id2 - id1);
       result.next({
-        request: endRequest,
+        // Use the previous count for a case of a loading error (in which case the `count` will be `0`)
+        ...result.value,
         ids: endIds,
-        count: endCount, // Use the previous count for a case of a loading error (in which case the `count` will be `0`)
         isFull: isSearchEnd,
       });
       isLoadingMore.next(false);
@@ -201,8 +203,7 @@ export default function makeSearchSession(peer: Peer): SearchSession {
     }
 
     isDestroyed = true;
-    searchInProgress = false;
-    clearTimeout(searchStartTimeout);
+    debouncedSearch.destroy();
   }
 
   return { result, isSearching, isLoadingMore, search, loadMore, destroy };
