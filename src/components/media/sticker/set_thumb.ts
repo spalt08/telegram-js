@@ -17,7 +17,7 @@ export default function stickerSetThumb(set: StickerSet) {
 
   media.get(location, (src: string) => {
     if (set.animated) {
-      const thumb = tgs({ src, className: 'sticker-set-thumb__animated', autoplay: false });
+      const thumb = tgs({ src, className: 'sticker-set-thumb__animated', autoplay: false, loop: true });
 
       mount(container, thumb);
 
