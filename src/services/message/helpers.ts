@@ -1,4 +1,4 @@
-import { Message, Peer } from 'cache/types';
+import { Peer } from 'cache/types';
 import { peerToInputPeer } from 'cache/accessors';
 import client from 'client/client';
 import { MessagesChunk } from 'cache/fastStorages/indices/messageHistory';
@@ -6,12 +6,6 @@ import { Direction } from './types';
 import { chatCache, messageCache, userCache } from '../../cache';
 
 export const LOAD_CHUNK_LENGTH = 35;
-
-export interface ContinuousMessagesResult {
-  messages: Message[];
-  newestReached: boolean;
-  oldestReached: boolean;
-}
 
 /**
  * Messages with id equal fromId and toId are not included to the result
