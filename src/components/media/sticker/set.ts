@@ -25,18 +25,19 @@ export default function stickerSet(set: StickerSet, onClick?: (sticker: Document
     )
   );
 
-  useOnMount(container, () => {
+  useOnMount(container, async () => {
     // fetch data
-    client.call('messages.getStickerSet', { stickerset: stickerSetToInput(set) }, (err, result) => {
-      if (err || !result) throw new Error(`Unable to load sticker set: ${JSON.stringify(err)}`);
-
+    try {
+      const result = await client.callAsync('messages.getStickerSet', { stickerset: stickerSetToInput(set) });
       for (let i = 0; i < Math.min(result.documents.length, set.count); i += 1) {
         elements[i] = stickerRenderer(result.documents[i] as Document.document, { size: '100%', autoplay: false, onClick });
         mount(placeholders[i], elements[i]);
       }
 
       for (let i = 0; i < elements.length; i++) getInterface(elements[i]).play();
-    });
+    } catch (err) {
+      throw new Error(`Unable to load sticker set: ${JSON.stringify(err)}`);
+    }
   });
 
   return useInterface(container, {

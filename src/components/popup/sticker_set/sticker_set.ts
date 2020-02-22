@@ -22,11 +22,14 @@ export default function stickerSetPopup(stickerset: InputStickerSet) {
 
   listen(close, 'click', getInterface(container).remove);
 
-  client.call('messages.getStickerSet', { stickerset }, (err, result) => {
-    if (err || !result) throw new Error(`Unable to load sticker set: ${JSON.stringify(err)}`);
+  client.callAsync('messages.getStickerSet', { stickerset })
+    .then((result) => {
+      unmount(loader);
+      mount(content, stickerSetFetched(result.set, result.documents as Document.document[]));
+    })
+    .catch((err) => {
+      throw new Error(`Unable to load sticker set: ${JSON.stringify(err)}`);
+    });
 
-    unmount(loader);
-    mount(content, stickerSetFetched(result.set, result.documents as Document.document[]));
-  });
   return container;
 }

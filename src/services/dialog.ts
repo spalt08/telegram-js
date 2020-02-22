@@ -108,25 +108,24 @@ export default class DialogsService {
     });
   }
 
-  updateDialogs(offsetDate = 0) {
+  async updateDialogs(offsetDate = 0) {
     if (this.loading.value) return;
     this.loading.next(true);
-    this.doUpdateDialogs(offsetDate, () => {
-      this.loading.next(false);
-    });
+    await this.doUpdateDialogs(offsetDate);
+    this.loading.next(false);
   }
 
-  loadMoreDialogs() {
+  async loadMoreDialogs() {
     if (!this.isComplete) {
       const last = dialogCache.get(this.dialogs.value[this.dialogs.value.length - 1] as string);
       if (last) {
         const msg = messageCache.get(peerMessageToId(last.peer, last.top_message));
-        if (msg && msg._ !== 'messageEmpty') this.updateDialogs(msg.date);
+        if (msg && msg._ !== 'messageEmpty') await this.updateDialogs(msg.date);
       }
     }
   }
 
-  protected doUpdateDialogs(offsetDate = 0, cb?: () => void) {
+  protected async doUpdateDialogs(offsetDate = 0) {
     const chunk = 30;
     const payload: MessagesGetDialogs = {
       offset_date: offsetDate,
@@ -136,37 +135,36 @@ export default class DialogsService {
       hash: 0,
     };
 
-    client.call('messages.getDialogs', payload, (err, res) => {
-      if (err && err.message && err.message.indexOf('USER_MIGRATE_') > -1) {
+    try {
+      const res = await client.callAsync('messages.getDialogs', payload);
+
+      if (res._ === 'messages.dialogs' || res._ === 'messages.dialogsSlice') {
+        const data = res;
+
+        let dialogsToPreload: Dialog[] | undefined;
+        if (this.dialogs.value.length === 0) dialogsToPreload = data.dialogs.slice(0, 10);
+
+        if (data.dialogs.length < chunk - 10) { // -10 just in case
+          this.isComplete = true;
+        }
+
+        userCache.put(data.users);
+        chatCache.put(data.chats);
+        messageCache.put(data.messages);
+        dialogCache.put(data.dialogs);
+        this.messageService.pushMessages(data.messages);
+
+        if (dialogsToPreload) {
+          await this.preloadDialogs(dialogsToPreload);
+        }
+      }
+    } catch (err) {
+      if (err.message?.indexOf('USER_MIGRATE_') > -1) {
         // todo store dc
         client.setBaseDC(+err.message.slice(-1));
-        this.doUpdateDialogs(offsetDate, cb);
-        return;
+        await this.doUpdateDialogs(offsetDate);
       }
-
-      try {
-        if (res && (res._ === 'messages.dialogs' || res._ === 'messages.dialogsSlice')) {
-          const data = res;
-
-          let dialogsToPreload: Dialog[] | undefined;
-          if (this.dialogs.value.length === 0) dialogsToPreload = data.dialogs.slice(0, 10);
-
-          if (data.dialogs.length < chunk - 10) { // -10 just in case
-            this.isComplete = true;
-          }
-
-          userCache.put(data.users);
-          chatCache.put(data.chats);
-          messageCache.put(data.messages);
-          dialogCache.put(data.dialogs);
-          this.messageService.pushMessages(data.messages);
-
-          if (dialogsToPreload) this.preloadDialogs(dialogsToPreload);
-        }
-      } finally {
-        if (cb) cb();
-      }
-    });
+    }
   }
 
   protected changeOrLoadDialog(peer: Peer, modify: (dialog: Dialog) => Dialog | null | undefined) {
@@ -196,26 +194,24 @@ export default class DialogsService {
     this.loadInputPeerDialogs(inputPeers);
   }
 
-  protected loadInputPeerDialogs(peers: InputDialogPeer[]) {
+  protected async loadInputPeerDialogs(peers: InputDialogPeer[]) {
     const request = { peers };
-    client.call('messages.getPeerDialogs', request, (error, data) => {
-      if (error || !data) {
-        if (process.env.NODE_ENV === 'development') {
-          // eslint-disable-next-line no-console
-          console.error('Failed to load peer dialogs', { request, error });
-        }
-        return;
-      }
-
+    try {
+      const data = await client.callAsync('messages.getPeerDialogs', request);
       userCache.put(data.users);
       chatCache.put(data.chats);
       messageCache.put(data.messages);
       dialogCache.put(data.dialogs);
       this.messageService.pushMessages(data.messages);
-    });
+    } catch (err) {
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load peer dialogs', { request, err });
+      }
+    }
   }
 
-  preloadDialogs = (dialogs: Dialog[]) => {
+  preloadDialogs = async (dialogs: Dialog[]) => {
     for (let i = 0; i < dialogs.length; i++) {
       const dialog = dialogs[i];
       if (dialog._ === 'dialog' && dialog.unread_count === 0) {
@@ -229,13 +225,17 @@ export default class DialogsService {
           min_id: 0,
           hash: 0,
         };
-        client.call('messages.getHistory', payload, { thread: 2 }, (err: any, data: any) => {
-          if (err || !data) return;
-
-          userCache.put(data.users);
-          chatCache.put(data.chats);
-          messageCache.indices.history.putNewestMessages(data.messages);
-        });
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          const messages = await client.callAsync('messages.getHistory', payload, { thread: 2 });
+          if (messages._ !== 'messages.messagesNotModified') {
+            userCache.put(messages.users);
+            chatCache.put(messages.chats);
+            messageCache.indices.history.putNewestMessages(messages.messages);
+          }
+        } catch (err) {
+          return;
+        }
       }
     }
   };
