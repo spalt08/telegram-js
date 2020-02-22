@@ -41,7 +41,6 @@
     background-position: center;
     background-size: cover;
     filter: blur(6px);
-    clip-path: inset(0);
     transform: scale(1.06);
     z-index: 0;
     opacity: 0.4;
@@ -49,12 +48,10 @@
 
   &__thumbnail {
     filter: blur(6px);
-    clip-path: inset(0);
     transform: scale(1.06);
     z-index: 1;
 
     &.no-blur {
-      clip-path: none;
       transform: none;
       filter: none;
     }
