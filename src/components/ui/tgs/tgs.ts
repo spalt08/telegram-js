@@ -84,3 +84,13 @@ export default function tgs({ src, className, autoplay = true, loop = false }: P
     },
   });
 }
+
+/**
+ * Call it to preload the required assets before creating a TGS element. It can be called multiple times.
+ *
+ * It should be used when you load a TGS URL before creating a TGS element.
+ * Such way the TGS and the assets will be loading simultaneously.
+ */
+export function preloadTgsAssets() {
+  loadLottie();
+}
