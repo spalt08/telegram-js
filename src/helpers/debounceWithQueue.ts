@@ -26,7 +26,7 @@ function makeShortQueue<TInput, TOutput>(
   const queue: TInput[] = []; // The first element is always the input that is currently performing
 
   return {
-    run(input: TInput) {
+    async run(input: TInput) {
       if (isDestroyed) {
         return;
       }
@@ -39,34 +39,33 @@ function makeShortQueue<TInput, TOutput>(
         if (shouldPerform(queue[0], input)) {
           queue.push(input);
         }
+        // There is an input in the queue therefore the queue is being processed now so a new process mustn't be started
         return;
       }
 
-      (async () => {
-        while (queue.length) {
+      while (queue.length) {
+        try {
+          const performingInput = queue[0];
+          let output: TOutput;
           try {
-            const performingInput = queue[0];
-            let output: TOutput;
-            try {
-              // eslint-disable-next-line no-await-in-loop
-              output = await perform(performingInput);
-            } finally {
-              // Keep the current performing input in the queue until the perform end to be able to compare it with new inputs above.
-              // Remove before `onOutput` for a case when `run` with the same input is called inside `onOutput`.
-              queue.shift();
-            }
-            if (isDestroyed) {
-              return;
-            }
-            onOutput(performingInput, output, queue.length === 0);
-          } catch (error) {
-            if (!isDestroyed) {
-              // eslint-disable-next-line no-console
-              console.error(error);
-            }
+            // eslint-disable-next-line no-await-in-loop
+            output = await perform(performingInput);
+          } finally {
+            // Keep the current performing input in the queue until the perform end to be able to compare it with new inputs above.
+            // Remove before `onOutput` for a case when `run` with the same input is called inside `onOutput`.
+            queue.shift();
+          }
+          if (isDestroyed) {
+            return;
+          }
+          onOutput(performingInput, output, queue.length === 0);
+        } catch (error) {
+          if (!isDestroyed) {
+            // eslint-disable-next-line no-console
+            console.error(error);
           }
         }
-      })();
+      }
     },
     destroy() {
       isDestroyed = true;
