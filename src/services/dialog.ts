@@ -7,6 +7,9 @@ import {
   InputDialogPeer,
   Dialog,
   MessagesGetDialogs,
+  MessagesDialogs,
+  MessagesPeerDialogs,
+  MessagesMessages,
 } from 'cache/types';
 import { peerToInputDialogPeer, peerToInputPeer } from 'cache/accessors';
 import MessageService from './message/message';
@@ -135,34 +138,34 @@ export default class DialogsService {
       hash: 0,
     };
 
+    let data: MessagesDialogs | undefined;
     try {
-      const res = await client.callAsync('messages.getDialogs', payload);
-
-      if (res._ === 'messages.dialogs' || res._ === 'messages.dialogsSlice') {
-        const data = res;
-
-        let dialogsToPreload: Dialog[] | undefined;
-        if (this.dialogs.value.length === 0) dialogsToPreload = data.dialogs.slice(0, 10);
-
-        if (data.dialogs.length < chunk - 10) { // -10 just in case
-          this.isComplete = true;
-        }
-
-        userCache.put(data.users);
-        chatCache.put(data.chats);
-        messageCache.put(data.messages);
-        dialogCache.put(data.dialogs);
-        this.messageService.pushMessages(data.messages);
-
-        if (dialogsToPreload) {
-          await this.preloadDialogs(dialogsToPreload);
-        }
-      }
+      data = await client.callAsync('messages.getDialogs', payload);
     } catch (err) {
       if (err.message?.indexOf('USER_MIGRATE_') > -1) {
         // todo store dc
         client.setBaseDC(+err.message.slice(-1));
         await this.doUpdateDialogs(offsetDate);
+        return;
+      }
+    }
+
+    if (data && (data._ === 'messages.dialogs' || data._ === 'messages.dialogsSlice')) {
+      let dialogsToPreload: Dialog[] | undefined;
+      if (this.dialogs.value.length === 0) dialogsToPreload = data.dialogs.slice(0, 10);
+
+      if (data.dialogs.length < chunk - 10) { // -10 just in case
+        this.isComplete = true;
+      }
+
+      userCache.put(data.users);
+      chatCache.put(data.chats);
+      messageCache.put(data.messages);
+      dialogCache.put(data.dialogs);
+      this.messageService.pushMessages(data.messages);
+
+      if (dialogsToPreload) {
+        await this.preloadDialogs(dialogsToPreload);
       }
     }
   }
@@ -196,19 +199,21 @@ export default class DialogsService {
 
   protected async loadInputPeerDialogs(peers: InputDialogPeer[]) {
     const request = { peers };
+    let data: MessagesPeerDialogs.messagesPeerDialogs;
     try {
-      const data = await client.callAsync('messages.getPeerDialogs', request);
-      userCache.put(data.users);
-      chatCache.put(data.chats);
-      messageCache.put(data.messages);
-      dialogCache.put(data.dialogs);
-      this.messageService.pushMessages(data.messages);
+      data = await client.callAsync('messages.getPeerDialogs', request);
     } catch (err) {
       if (process.env.NODE_ENV === 'development') {
         // eslint-disable-next-line no-console
         console.error('Failed to load peer dialogs', { request, err });
       }
+      return;
     }
+    userCache.put(data.users);
+    chatCache.put(data.chats);
+    messageCache.put(data.messages);
+    dialogCache.put(data.dialogs);
+    this.messageService.pushMessages(data.messages);
   }
 
   preloadDialogs = async (dialogs: Dialog[]) => {
@@ -225,16 +230,17 @@ export default class DialogsService {
           min_id: 0,
           hash: 0,
         };
+        let messages: MessagesMessages;
         try {
           // eslint-disable-next-line no-await-in-loop
-          const messages = await client.callAsync('messages.getHistory', payload, { thread: 2 });
-          if (messages._ !== 'messages.messagesNotModified') {
-            userCache.put(messages.users);
-            chatCache.put(messages.chats);
-            messageCache.indices.history.putNewestMessages(messages.messages);
-          }
+          messages = await client.callAsync('messages.getHistory', payload, { thread: 2 });
         } catch (err) {
           return;
+        }
+        if (messages._ !== 'messages.messagesNotModified') {
+          userCache.put(messages.users);
+          chatCache.put(messages.chats);
+          messageCache.indices.history.putNewestMessages(messages.messages);
         }
       }
     }

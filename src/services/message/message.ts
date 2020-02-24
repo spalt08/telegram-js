@@ -1,7 +1,7 @@
 import { BehaviorSubject, Subject } from 'rxjs';
 import { first } from 'rxjs/operators';
 import client from 'client/client';
-import { Message, Peer, MessagesGetMessages, MessagesSendMedia, InputMedia } from 'cache/types';
+import { Message, Peer, MessagesGetMessages, MessagesSendMedia, InputMedia, Updates } from 'cache/types';
 import { messageCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage, shortChatMessageToMessage } from 'helpers/api';
@@ -263,20 +263,20 @@ export default class MessagesService {
       message,
     };
 
+    let result: Updates | undefined;
     try {
-      const result = await client.callAsync('messages.sendMessage', params);
-      // console.log('After sending', err, result);
-
-      if (result?._ === 'updateShortSentMessage') {
-        this.pendingMessages[randId].id = result.id;
-        this.pendingMessages[randId].date = result.date;
-        this.pendingMessages[randId].entities = result.entities;
-
-        messageCache.indices.history.putNewestMessages([this.pendingMessages[randId]]);
-        delete this.pendingMessages[randId];
-      }
+      result = await client.callAsync('messages.sendMessage', params);
     } catch (err) {
       // todo handling errors
+    }
+
+    if (result?._ === 'updateShortSentMessage') {
+      this.pendingMessages[randId].id = result.id;
+      this.pendingMessages[randId].date = result.date;
+      this.pendingMessages[randId].entities = result.entities;
+
+      messageCache.indices.history.putNewestMessages([this.pendingMessages[randId]]);
+      delete this.pendingMessages[randId];
     }
   };
 

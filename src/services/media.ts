@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
-import { Document, Peer, StickerSet, MessagesFilter } from 'cache/types';
+import { Document, Peer, StickerSet, MessagesFilter, MessagesAllStickers, MessagesRecentStickers, MessagesMessages } from 'cache/types';
 import { peerToInputPeer } from 'cache/accessors';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToId } from 'helpers/api';
@@ -36,18 +36,19 @@ export default class MediaService {
    * Ref: https://core.telegram.org/method/messages.getAllStickers
    */
   async loadStickerSets() {
+    let result: MessagesAllStickers;
     try {
-      const result = await client.callAsync('messages.getAllStickers', { hash: this.stickerSetsHash });
-      // sticker packs not changed
-      if (result._ === 'messages.allStickersNotModified') return;
-
-      // save stickers
-      if (result._ === 'messages.allStickers') {
-        this.stickerSetsHash = result.hash;
-        this.stickerSets.next(result.sets);
-      }
+      result = await client.callAsync('messages.getAllStickers', { hash: this.stickerSetsHash });
     } catch (err) {
       throw new Error(JSON.stringify(err));
+    }
+    // sticker packs not changed
+    if (result._ === 'messages.allStickersNotModified') return;
+
+    // save stickers
+    if (result._ === 'messages.allStickers') {
+      this.stickerSetsHash = result.hash;
+      this.stickerSets.next(result.sets);
     }
   }
 
@@ -56,16 +57,16 @@ export default class MediaService {
    * Ref: https://core.telegram.org/method/messages.getRecentStickers
    */
   async loadRecentStickers() {
+    let result: MessagesRecentStickers;
     try {
-      const result = await client.callAsync('messages.getRecentStickers', { hash: this.recentStickersHash });
-
-      // update recent stickers
-      if (result._ === 'messages.recentStickers') {
-        this.recentStickersHash = result.hash;
-        this.recentStickers.next(result.stickers as Document.document[]);
-      }
+      result = await client.callAsync('messages.getRecentStickers', { hash: this.recentStickersHash });
     } catch (err) {
       throw new Error(JSON.stringify(err));
+    }
+    // update recent stickers
+    if (result._ === 'messages.recentStickers') {
+      this.recentStickersHash = result.hash;
+      this.recentStickers.next(result.stickers as Document.document[]);
     }
   }
 
@@ -75,8 +76,6 @@ export default class MediaService {
       this.mediaLoading[peerId] = {};
     }
     if (this.mediaLoading[peerId][filterType]) return;
-
-    this.mediaLoading[peerId][filterType] = true;
 
     const chunk = 40;
     const filter = { _: filterType };
@@ -109,16 +108,20 @@ export default class MediaService {
         throw Error('Unknown filter');
     }
 
+    this.mediaLoading[peerId][filterType] = true;
+
+    let res: MessagesMessages | undefined;
     try {
-      const res = await client.callAsync('messages.search', payload);
-      this.mediaLoading[peerId][filterType] = false;
-      if (res && res._ !== 'messages.messagesNotModified') {
-        userCache.put(res.users);
-        chatCache.put(res.chats);
-        index.putMediaMessages(peer, res.messages);
-      }
+      res = await client.callAsync('messages.search', payload);
     } catch (err) {
       // todo: handle the error
+    } finally {
+      this.mediaLoading[peerId][filterType] = false;
+    }
+    if (res && res._ !== 'messages.messagesNotModified') {
+      userCache.put(res.users);
+      chatCache.put(res.chats);
+      index.putMediaMessages(peer, res.messages);
     }
   }
 
