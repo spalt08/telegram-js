@@ -2,11 +2,11 @@ import { BehaviorSubject, combineLatest } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { button, div } from 'core/html';
 import { listen, mount, unmount } from 'core/dom';
-import { useObservable } from 'core/hooks';
+import { useObservable, getInterface } from 'core/hooks';
 import { message as service } from 'services';
 import { Direction as MessageDirection } from 'services/message/types';
 import message from 'components/message/message';
-import { sectionSpinner, VirtualizedList } from 'components/ui';
+import { sectionSpinner, virtualScrollBar, VirtualizedList } from 'components/ui';
 import * as icons from 'components/icons';
 import messageInput from 'components/message/input/input';
 import { Peer, InputChannel } from 'cache/types';
@@ -56,6 +56,8 @@ export default function messages({ className = '' }: Props = {}) {
       loadingNextChunk || ((loadingNewer || loadingOlder) && ids.length < 3)
     )));
 
+  const scrollBar = virtualScrollBar();
+
   const scroll: VirtualizedList = new VirtualizedList({
     className: 'messages__list',
     items: itemsSubject,
@@ -66,6 +68,7 @@ export default function messages({ className = '' }: Props = {}) {
     renderer: (id: string) => message(id, service.activePeer.value!, (mid: string) => scroll.pendingRecalculate.push(mid)),
     onReachTop: () => service.loadMoreHistory(MessageDirection.Older),
     onReachBottom: () => service.loadMoreHistory(MessageDirection.Newer),
+    onScrollChange: getInterface(scrollBar).onScrollChange,
     onFocus: (id: string) => {
       const showDown = !service.history.value.newestReached || itemsSubject.value[itemsSubject.value.length - 1] !== id;
       if (showDown !== showDownButton.value) {
@@ -114,6 +117,7 @@ export default function messages({ className = '' }: Props = {}) {
   });
 
   mount(historySection, scroll.container);
+  mount(historySection, scrollBar);
 
   useObservable(element, service.activePeer, () => scroll.clear());
 

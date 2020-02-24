@@ -1,0 +1,29 @@
+.virtualScrollBar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  padding: 2px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 5px;
+  background-color: transparent;
+  transition: background-color .3s;
+
+  &__thumb {
+    flex-shrink: 0;
+    flex-grow: 0;
+    flex-basis: 50px;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, .3);
+  }
+  &__before, &__after {
+    flex-basis: 0;
+    transition: flex-basis .05s ease-out;
+  }
+}
+
+.virtualScrollBar:hover {
+  background-color: rgba(0, 0, 0, .1);
+}
