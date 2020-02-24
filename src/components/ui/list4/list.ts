@@ -1,7 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import { el, listen, mount, unmount, listenOnce } from 'core/dom';
 import { useOnMount, useListenWhileMounted, useMaybeObservable } from 'core/hooks';
-import { DistanceTree } from './distance-tree/distance_tree';
+import { DistanceTree } from './distance_tree/distance_tree';
 import './list.scss';
 
 type Props = {
