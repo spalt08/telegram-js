@@ -43,13 +43,11 @@ export default function sharedMediaIndex(collection: Collection<Message, any>) {
 
   return {
     putMediaMessages(peer: Peer, messages: Message[]) {
-      if (!messages.length) {
-        return;
-      }
-
-      collection.put(messages);
       const cacheLine = getCacheLine(peer);
-      cacheLine.snapshot.batchChanges(() => messages.forEach((m) => cacheLine.snapshot.put(m)));
+      if (messages.length > 0) {
+        collection.put(messages);
+        cacheLine.snapshot.batchChanges(() => messages.forEach((m) => cacheLine.snapshot.put(m)));
+      }
       const snapshot = cacheLine.snapshot.indices.invertedOrder.getItems();
       cacheLine.subject.next(snapshot);
     },
