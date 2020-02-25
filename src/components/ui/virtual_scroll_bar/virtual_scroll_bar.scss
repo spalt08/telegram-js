@@ -9,12 +9,16 @@
   flex-direction: column;
   border-radius: 5px;
   background-color: transparent;
-  transition: background-color .3s;
+  transition: background-color .3s, opacity 1s;
+  opacity: 0;
+
+  &.visible {
+    opacity: 1;
+  }
 
   &__thumb {
-    flex-shrink: 0;
-    flex-grow: 0;
-    flex-basis: 50px;
+    height: 100%;
+    min-height: 50px;
     border-radius: 3px;
     background: rgba(0, 0, 0, .3);
   }
