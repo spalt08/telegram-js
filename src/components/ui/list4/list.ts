@@ -190,10 +190,7 @@ export class VirtualizedList {
       if (width !== this.scrollWidth) this.updateViewport();
 
       this.virtualize();
-      if (this.cfg.onScrollChange) {
-        const { outerDistance: firstItemOffset } = this.heights.getByIndex(this.first);
-        this.cfg.onScrollChange(this.heights.totalLength(), this.viewport.height, firstItemOffset + this.scrollTop);
-      }
+      this.updateScrollPosition();
     }, { passive: true, capture: true });
   }
 
@@ -207,6 +204,13 @@ export class VirtualizedList {
       this.heightsCache = {};
       this.updateHeights(true);
       this.updateTopElement();
+    }
+  };
+
+  updateScrollPosition = () => {
+    if (this.cfg.onScrollChange) {
+      const { outerDistance: firstItemOffset } = this.heights.getByIndex(this.first);
+      this.cfg.onScrollChange(this.heights.totalLength(), this.viewport.height, firstItemOffset + this.container.scrollTop);
     }
   };
 
@@ -343,7 +347,7 @@ export class VirtualizedList {
       nextFirst = this.first;
       nextLast = Math.min(this.first + visible.length - 1, next.length - 1);
 
-    // keep last element visible
+      // keep last element visible
     } else {
       nextLast = Math.max(-1, next.length - (this.current.length - this.last - 1) - 1);
       nextFirst = Math.max(nextLast - (this.last - this.first), 0);
@@ -402,7 +406,7 @@ export class VirtualizedList {
         elm.classList.add('list__appeared');
         listenOnce(elm, 'animationend', () => elm.classList.remove('list__appeared'));
 
-      // swap elements
+        // swap elements
       } else if (nextItemIndex !== j) {
         let item = renderedItems[j];
         let item2 = '';
@@ -426,6 +430,7 @@ export class VirtualizedList {
 
     this.container.scrollTop = this.prevScrollTop = this.scrollTop -= (this.scrollHeight - this.container.scrollHeight);
     this.scrollHeight = this.container.scrollHeight;
+    this.updateScrollPosition();
 
     let offset = 0;
     // get position of nextVisible elements
@@ -548,7 +553,10 @@ export class VirtualizedList {
       this.scrollHeight = this.container.scrollHeight;
 
       // set initial scroll position
-      if (this.cfg.pivotBottom) this.container.scrollTop = this.prevScrollTop = this.scrollTop = this.scrollHeight - this.viewport.height;
+      if (this.cfg.pivotBottom) {
+        this.container.scrollTop = this.prevScrollTop = this.scrollTop = this.scrollHeight - this.viewport.height;
+        this.updateScrollPosition();
+      }
 
       this.updateHeights();
       this.updateTopElement();
@@ -559,7 +567,7 @@ export class VirtualizedList {
 
     // apply top elements and shrink bottom
     if ((this.prevScrollTop > this.scrollTop || this.scrollHeight < this.viewport.height || direction === -1)
-    && this.scrollTop < this.cfg.threshold * this.viewport.height) {
+      && this.scrollTop < this.cfg.threshold * this.viewport.height) {
       const count = Math.min(this.cfg.batch, this.first);
 
       if (count > 0) {
@@ -618,6 +626,7 @@ export class VirtualizedList {
 
       this.scrollTop = Math.floor(this.scrollTop + deltaHeight);
       const deferred = this.container.scrollTop = this.prevScrollTop = this.scrollTop;
+      this.updateScrollPosition();
 
       // fix chrome
       requestAnimationFrame(() => {
@@ -635,10 +644,14 @@ export class VirtualizedList {
 
       this.scrollTop = Math.floor(this.scrollTop - deltaHeight);
       const deferred = this.container.scrollTop = this.prevScrollTop = this.scrollTop;
+      this.updateScrollPosition();
 
       // fix chrome
       requestAnimationFrame(() => {
-        if (Math.abs(this.container.scrollTop - deferred) > 20) this.container.scrollTop = this.prevScrollTop = this.scrollTop = deferred;
+        if (Math.abs(this.container.scrollTop - deferred) > 20) {
+          this.container.scrollTop = this.prevScrollTop = this.scrollTop = deferred;
+          this.updateScrollPosition();
+        }
       });
     }
 
@@ -753,6 +766,7 @@ export class VirtualizedList {
     this.scrollHeight = this.container.scrollHeight;
     this.container.scrollTop = this.prevScrollTop = this.scrollTop = this.getScrollToValue(item);
     this.updateTopElement();
+    this.updateScrollPosition();
 
     // animate new elements
     for (let i = this.first; i <= this.last; i++) {
@@ -779,6 +793,7 @@ export class VirtualizedList {
       this.isLocked = false;
       this.elements[item].classList.remove('focused');
       this.container.scrollTop = this.prevScrollTop = this.scrollTop = this.getScrollToValue(item);
+      this.updateScrollPosition();
       this.virtualize();
     };
 
@@ -823,6 +838,7 @@ export class VirtualizedList {
 
       if (percentage > 0) {
         this.container.scrollTo(0, y + ease(percentage) * dy);
+        this.updateScrollPosition();
       }
 
       if (percentage < 1) {
