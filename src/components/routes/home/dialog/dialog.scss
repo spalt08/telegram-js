@@ -7,7 +7,7 @@
 
 
   &__wrapper {
-    height: 75px;
+    height: 76px;
   }
 
   &__wrapper.lastpin {
@@ -92,7 +92,7 @@
   &__title {
     color: #000000;
     font-weight: 500;
-    font-size: 15px;
+    font-size: 16px;
     line-height: 190%;
     white-space: nowrap;
     overflow: hidden;
@@ -104,7 +104,7 @@
     font-weight: 300;
     padding-left: 20px;
     color: #5F6369;
-    margin-top: 3px;
+    margin-top: 7.5px;
 
     &.out {
       background-image: url(~assets/message-status-read@2x.png);
@@ -129,10 +129,9 @@
   &__message {
     color: #707579;
     font-weight: 300;
-    font-size: 15px;
+    font-size: 16px;
     overflow: hidden;
-    margin-bottom: 4px;
-    line-height: 150%;
+    line-height: 115%;
     position: relative;
     flex: 1 50%;
     word-break: break-word;
