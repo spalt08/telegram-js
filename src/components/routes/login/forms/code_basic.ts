@@ -5,7 +5,7 @@ import { button, textInput } from 'components/ui';
 import { blurAll, listen } from 'core/dom';
 import { getInterface } from 'core/hooks';
 import { formatWithCountry } from 'helpers/phone';
-import { auth } from 'services';
+import { auth, AuthStage } from 'services';
 import * as icons from 'components/icons';
 import { humanizeErrorOperator } from 'helpers/humanizeError';
 import '../login.scss';
@@ -45,7 +45,7 @@ export default function codeBasic({ onFocus, onBlur, onChange }: Props) {
     form`.login__subform`(
       h1`.login__title`(
         text(formatWithCountry(auth.phoneCountry.value, auth.phoneNumber.value)),
-        icons.edit({ class: 'login__title_icon', onClick: () => auth.state.next('unauthorized') }),
+        icons.edit({ class: 'login__title_icon', onClick: () => auth.state.next(AuthStage.Unauthorized) }),
       ),
       p`.login__description`(text(codeMsg)),
       div`.login__inputs`(
@@ -59,17 +59,18 @@ export default function codeBasic({ onFocus, onBlur, onChange }: Props) {
     )
   );
 
-  listen(element, 'submit', (event: Event) => {
+  listen(element, 'submit', async (event: Event) => {
     event.preventDefault();
-
     blurAll(element);
 
     if (!isProcessing.value) {
-      isProcessing.next(true);
-
-      const code = getInterface(inputCode).getValue();
-
-      auth.checkCode(code, () => isProcessing.next(false));
+      try {
+        isProcessing.next(true);
+        const code = getInterface(inputCode).getValue();
+        await auth.checkCode(code);
+      } finally {
+        isProcessing.next(false);
+      }
     }
   });
 

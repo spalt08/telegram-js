@@ -42,17 +42,19 @@ export default function code2fa({ onHideToggle }: Props) {
     )
   );
 
-  listen(element, 'submit', (event: Event) => {
+  listen(element, 'submit', async (event: Event) => {
+    event.preventDefault();
     blurAll(element);
 
     if (!isProcessing.value) {
-      isProcessing.next(true);
-      const password = getInterface(inputPassword).getValue();
-
-      auth.checkPassword(password, () => isProcessing.next(false));
+      try {
+        isProcessing.next(true);
+        const password = getInterface(inputPassword).getValue();
+        await auth.checkPassword(password);
+      } finally {
+        isProcessing.next(false);
+      }
     }
-
-    event.preventDefault();
   });
 
   return element;

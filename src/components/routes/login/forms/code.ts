@@ -1,6 +1,6 @@
 import { div } from 'core/html';
 import { getInterface, useObservable } from 'core/hooks';
-import { auth } from 'services';
+import { auth, AuthStage } from 'services';
 import LoginTransition from '../transition';
 import codeBasic from './code_basic';
 import code2fa from './code_2fa';
@@ -43,12 +43,12 @@ export default function formCode() {
 
   // Manage transitions
   useObservable(element, auth.state, (view) => {
-    if (view === '2fa') {
+    if (view === AuthStage.TwoFA) {
       transitioner.translateRight(() => c2fa);
       getInterface(monkeyEl).closeEyes();
     }
 
-    if (view === 'code') transitioner.set(() => basic);
+    if (view === AuthStage.Code) transitioner.set(() => basic);
   });
 
   return element;

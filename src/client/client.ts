@@ -1,6 +1,6 @@
 import ClientWorker from './worker';
 import { WorkerMessage, ClientError } from './worker.types';
-import { InputFile, MethodDeclMap, UpdateDeclMap } from '../cache/types';
+import { InputCheckPasswordSRP, InputFile, MethodDeclMap, UpdateDeclMap } from '../cache/types';
 
 /**
  * Worker callbacks
@@ -231,12 +231,12 @@ function setBaseDC(dc_id: number) {
 }
 
 // Returns result of kdf hash algo
-function getPasswordKdfAsync(algo: any, password: string, cb: AnyResolver) {
-  task('password_kdf', { algo, password }, cb);
+function getPasswordKdfAsync(algo: any, password: string): Promise<InputCheckPasswordSRP> {
+  return new Promise((resolve) => task('password_kdf', { algo, password }, resolve));
 }
 
-function authorize(dc_id: number, cb?: AnyResolver) {
-  task('authorize', dc_id, cb);
+function authorize(dc_id: number) {
+  return new Promise((resolve) => task('authorize', dc_id, resolve));
 }
 
 interface Client {

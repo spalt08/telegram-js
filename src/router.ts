@@ -1,8 +1,9 @@
+import { distinctUntilChanged, map } from 'rxjs/operators';
 import { mount, unmount } from 'core/dom';
-import { useListenWhileMounted, useOnMount } from 'core/hooks'; // eslint-disable-line import/named
+import { useListenWhileMounted, useObservable, useOnMount } from 'core/hooks';
 import { div } from 'core/html';
-import client from 'client/client';
 import * as route from 'components/routes';
+import { auth, AuthStage } from 'services';
 
 /**
  * Main router handler
@@ -30,13 +31,19 @@ export class Router {
     });
 
     useOnMount(this.element, () => this.fetchLocation());
+
+    useObservable(
+      this.element,
+      auth.state.pipe(
+        map((state) => state === AuthStage.Authorized),
+        distinctUntilChanged(),
+      ),
+      () => this.fetchLocation(),
+    );
   }
 
-  fetchLocation(uid?: number) {
-    let newRoute = '';
-
-    if (client.getUserID() || uid) newRoute = '/';
-    else newRoute = '/login';
+  fetchLocation() {
+    const newRoute = auth.userID ? '/' : '/login';
 
     if (this.currentRoute !== newRoute) {
       const routeHandler = this.routes[newRoute] || this.routes.default;

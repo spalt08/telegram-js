@@ -29,8 +29,6 @@ export default class MainService {
     client.on('networkChanged', (state: string) => {
       this.network.next(state);
     });
-
-    client.callAsync('account.updateStatus', { offline: false });
   }
 
   showPopup(type: 'sendMedia'): void;
