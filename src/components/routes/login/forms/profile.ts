@@ -104,17 +104,19 @@ export default function formProfile() {
     event.preventDefault();
   });
 
-  listen(element, 'submit', (event: Event) => {
+  listen(element, 'submit', async (event: Event) => {
     event.preventDefault();
     blurAll(element);
 
     if (!isProcessing.value) {
-      isProcessing.next(true);
-
-      const firstName = getInterface(inputLastName).getValue();
-      const lastName = getInterface(inputLastName).getValue();
-
-      auth.signUp(firstName, lastName, () => isProcessing.next(false));
+      try {
+        isProcessing.next(true);
+        const firstName = getInterface(inputLastName).getValue();
+        const lastName = getInterface(inputLastName).getValue();
+        await auth.signUp(firstName, lastName);
+      } finally {
+        isProcessing.next(false);
+      }
     }
   });
 

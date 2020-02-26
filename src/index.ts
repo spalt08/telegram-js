@@ -1,4 +1,5 @@
 import './polyfills';
+import './helpers/handlePromiseRejections';
 import { mount, unmount } from 'core/dom';
 import popup from 'components/popup/popup';
 import { router } from './router';

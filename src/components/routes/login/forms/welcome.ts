@@ -77,18 +77,20 @@ export default function formWelcome() {
     )
   );
 
-  listen(element, 'submit', (event: Event) => {
+  listen(element, 'submit', async (event: Event) => {
+    event.preventDefault();
     blurAll(element);
 
     if (!isProcessing.value) {
-      isProcessing.next(true);
-      const phoneNumber = getInterface(inputPhone).getValue();
-      const remember = getInterface(inputRemember).getChecked();
-
-      auth.sendCode(phoneNumber, remember, () => isProcessing.next(false));
+      try {
+        isProcessing.next(true);
+        const phoneNumber = getInterface(inputPhone).getValue();
+        const remember = getInterface(inputRemember).getChecked();
+        await auth.sendCode(phoneNumber, remember);
+      } finally {
+        isProcessing.next(false);
+      }
     }
-
-    event.preventDefault();
   });
 
   return element;

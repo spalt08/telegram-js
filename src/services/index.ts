@@ -8,6 +8,7 @@ import MessageSearchService from './message_search/message_search';
 import UserTyping from './user_typing';
 import UserService from './user';
 
+export { AuthStage } from './auth';
 export { RightSidebarPanel } from './main';
 
 export const main = new MainService();
