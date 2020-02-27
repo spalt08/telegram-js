@@ -8,11 +8,12 @@ import client from 'client/client';
 import { profileAvatar, profileTitle } from 'components/profile';
 import webpagePreview from 'components/media/webpage/preview';
 import photoPreview from 'components/media/photo/preview';
-import { getAttributeSticker, getAttributeVideo, getAttributeAnimated } from 'helpers/files';
+import { getAttributeSticker, getAttributeVideo, getAttributeAnimated, getAttributeAudio } from 'helpers/files';
 import stickerRenderer from 'components/media/sticker/sticker';
 import documentFile from 'components/media/document/file';
 import videoPreview from 'components/media/video/preview';
 import videoRenderer from 'components/media/video/video';
+import audio from 'components/media/audio/audio';
 import { messageToSenderPeer, peerToColorCode } from 'cache/accessors';
 import { userIdToPeer, peerToId } from 'helpers/api';
 import { isEmoji } from 'helpers/message';
@@ -36,7 +37,7 @@ const now = new Date();
 const timezoneOffset = now.getTimezoneOffset() * 60;
 
 // message renderer
-const renderMessage = (msg: Message.message, peer: Peer) => {
+const renderMessage = (msg: Message.message, peer: Peer, isOut: boolean) => {
   const date = messageDate(msg);
   const reply = msg.reply_to_msg_id ? messageReply(msg.reply_to_msg_id, peer, msg) : nothing;
   let title: Node = nothing;
@@ -151,6 +152,19 @@ const renderMessage = (msg: Message.message, peer: Peer) => {
     );
   }
 
+  // with audio
+  if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document' && getAttributeAudio(msg.media.document)) {
+    const previewEl = audio(msg.media.document, isOut);
+
+    return (
+      div`.message__bubble`(
+        reply,
+        div`.message__media-padded`(previewEl),
+        date,
+      )
+    );
+  }
+
   // with document
   if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document') {
     const messageEl = msg.message ? div`.message__text`(formattedMessage(msg)) : nothing;
@@ -211,8 +225,11 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
       mount(element, container);
     }
 
-
-    if (msg && msg._ !== 'messageEmpty' && msg.from_id === client.getUserID()) element.classList.add('out');
+    let isOut = false;
+    if (msg && msg._ !== 'messageEmpty' && msg.from_id === client.getUserID()) {
+      isOut = true;
+      element.classList.add('out');
+    }
 
     // shouldn't rerender service and empty message
     if (!msg || msg._ !== 'message') {
@@ -225,8 +242,6 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
       wrapper = div`.message__wrap`();
       aligner = div`.message__align`(wrapper);
       mount(container, aligner);
-
-      if (msg.from_id === client.getUserID()) element.classList.add('out');
 
       // if unread
       const dialog = dialogCache.get(peerToId(peer));
@@ -246,7 +261,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     if (!bubble || !cached || (cached._ === 'message' && msg.message !== cached.message)) {
       if (bubble) unmount(bubble);
 
-      bubble = renderMessage(msg, peer);
+      bubble = renderMessage(msg, peer, isOut);
       mount(wrapper, bubble);
 
       if (onUpdateHeight) onUpdateHeight(id);
