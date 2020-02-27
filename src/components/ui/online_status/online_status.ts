@@ -41,7 +41,10 @@ function formatLastSeenTime(date: Date) {
   return formatDate(date);
 }
 
-function formatStatus(status: UserStatus) {
+function formatStatus(status?: UserStatus) {
+  if (!status) {
+    return 'last seen a long time ago';
+  }
   switch (status._) {
     case 'userStatusOnline': return 'online';
     case 'userStatusOffline': return status.was_online > 0
@@ -50,7 +53,7 @@ function formatStatus(status: UserStatus) {
     case 'userStatusRecently': return 'last seen recently';
     case 'userStatusLastWeek': return 'last seen within a week';
     case 'userStatusLastMonth': return 'last seen within a month';
-    default: return '';
+    default: return 'last seen a long time ago';
   }
 }
 
@@ -62,16 +65,20 @@ export default function onlineStatus(peer: Peer) {
     if (peer.user_id === authService.userID) {
       statusText.textContent = '';
     } else {
-      let prevStatus: UserStatus;
+      let prevStatus: UserStatus | null | undefined = null;
       let prevTime: number;
       const userSubject = userCache.useItemBehaviorSubject(container, peer.user_id);
       const minuteTimer = timer(0, 60 * 1000);
       const periodicUserObservable = combineLatest(userSubject, minuteTimer);
       useObservable(container, periodicUserObservable, ([u, time]) => {
-        if (u?._ !== 'user' || !u.status) return;
-        if (prevStatus !== u.status || (prevTime !== time && u.status._ === 'userStatusOffline')) {
+        if (u?._ !== 'user') return;
+        if (u.bot) {
+          statusText.textContent = 'bot';
+          return;
+        }
+        if (prevStatus !== u.status || (prevTime !== time && u.status?._ === 'userStatusOffline')) {
           statusText.textContent = formatStatus(u.status);
-          container.classList.toggle('online', u.status._ === 'userStatusOnline');
+          container.classList.toggle('online', u.status?._ === 'userStatusOnline');
         }
         prevStatus = u.status;
         prevTime = time;
