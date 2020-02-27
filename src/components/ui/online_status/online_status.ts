@@ -72,6 +72,10 @@ export default function onlineStatus(peer: Peer) {
       const periodicUserObservable = combineLatest(userSubject, minuteTimer);
       useObservable(container, periodicUserObservable, ([u, time]) => {
         if (u?._ !== 'user') return;
+        if (u.bot) {
+          statusText.textContent = 'bot';
+          return;
+        }
         if (prevStatus !== u.status || (prevTime !== time && u.status?._ === 'userStatusOffline')) {
           statusText.textContent = formatStatus(u.status);
           container.classList.toggle('online', u.status?._ === 'userStatusOnline');
