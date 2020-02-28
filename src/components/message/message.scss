@@ -332,7 +332,7 @@ $messageDistance: 4PX;
       background-position: center right;
       background-repeat: no-repeat;
       background-size: 14PX auto;
-      color: #469165;
+      color: var(--accent-color);
     }
 
     &__text {

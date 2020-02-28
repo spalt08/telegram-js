@@ -46,7 +46,7 @@
   }
 
   &__icon {
-    background: #1DA1F1;
+    background: var(--accent-color);
     color: #FFFFFF;
     display: flex;
     justify-content: center;
@@ -133,9 +133,7 @@
   }
 
   &__size {
-    color: #1DA1F1;
-
-    .message.out & { color: #429f47; }
+    color: var(--accent-color);
   }
 
   &__progress {
@@ -150,7 +148,7 @@
       width: 0%;
       height: 100%;
       border-radius: 2px;
-      background: #1DA1F1;
+      background: var(--accent-color);
       transition: width .2s linear;
     }
   }
