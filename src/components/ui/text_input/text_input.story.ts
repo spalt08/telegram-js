@@ -6,7 +6,7 @@ import { withKnobs, text } from '@storybook/addon-knobs';
 
 import textInput from './text_input';
 
-const stories = storiesOf('UI Elements | Text Input', module)
+const stories = storiesOf('II. UI Elements | Text Input', module)
   .addDecorator(centered)
   .addDecorator(withKnobs);
 

@@ -6,7 +6,7 @@ import { action } from '@storybook/addon-actions';
 
 import selectAutoComplete from './select_autocomplete';
 
-const stories = storiesOf('UI Elements | Select', module)
+const stories = storiesOf('II. UI Elements | Select', module)
   .addDecorator(withKnobs)
   .addDecorator(centered);
 
