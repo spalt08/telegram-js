@@ -37,7 +37,9 @@
   },
   "devDependencies": {
     "@babel/core": "^7.8.6",
+    "@storybook/addon-actions": "^5.3.14",
     "@storybook/addon-centered": "^5.3.14",
+    "@storybook/addon-knobs": "^5.3.14",
     "@storybook/cli": "^5.3.14",
     "@storybook/html": "^5.3.14",
     "@types/pako": "^1.0.1",
