@@ -52,12 +52,12 @@ module.exports = (env, argv) => {
         {
           test: /\.s?css$/,
           use: [
-            {
+            isProduction ? {
               loader: MiniCssExtractPlugin.loader,
               options: {
                 reloadAll: true,
               },
-            },
+            } : { loader: 'style-loader' },
             {
               loader: 'css-loader',
               options: {
