@@ -7,4 +7,4 @@ import welcomeForm from './welcome';
 const stories = storiesOf('I. Login | Forms', module)
   .addDecorator(centered);
 
-//stories.add('Welcome', () => welcomeForm());
+stories.add('Welcome', () => welcomeForm());

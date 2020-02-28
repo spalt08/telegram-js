@@ -5,10 +5,12 @@ interface FileReaderSync {
   readAsText(blob: Blob, encoding?: string): string;
 }
 
-declare var FileReaderSync: {
+declare const FileReaderSync: {
   prototype: FileReaderSync;
   new(): FileReaderSync;
 };
+
+declare const _TESTS: boolean | undefined;
 
 declare module 'aes-js'
 

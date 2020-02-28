@@ -23,7 +23,10 @@ module.exports = (env, argv) => {
     mode,
 
     resolve: {
-      modules: [sourceDirectory, 'node_modules'],
+      modules: [sourceDirectory, 'storybook', 'node_modules'],
+      alias: {
+        storybook: path.resolve(__dirname, 'storybook/'),
+      },
       extensions: ['.js', '.ts'],
     },
 

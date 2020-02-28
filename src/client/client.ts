@@ -1,4 +1,3 @@
-import ClientWorker from './worker';
 import { WorkerMessage, ClientError } from './worker.types';
 import { InputCheckPasswordSRP, InputFile, MethodDeclMap, UpdateDeclMap } from '../cache/types';
 
@@ -26,7 +25,17 @@ if (test) saveMetaField = 'metatest';
 /**
  * Vars
  */
-const worker = new ClientWorker();
+
+/* globals _TESTS */ // to do: use process.env.TESTS
+let worker: Worker;
+if (_TESTS) {
+  const MockWorker = require('./mocks/worker'); // eslint-disable-line
+  worker = new MockWorker();
+} else {
+  const ClientWorker = require('./worker'); // eslint-disable-line
+  worker = new ClientWorker();
+}
+
 const requests: Record<string, RequestResolver<any>> = {};
 const queue: Record<string, AnyResolver> = {};
 const updates: Record<string, UpdateResolver<any>[]> = {};
