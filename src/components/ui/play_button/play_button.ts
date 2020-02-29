@@ -7,6 +7,7 @@ import { media as mediaService } from 'services';
 import { useInterface } from 'core/hooks';
 import { div } from 'core/html';
 import { unmount } from 'core/dom';
+import './play_button.scss';
 
 export default function playButton(doc: Document.document) {
   const downloadButtonSvg = svgCodeToComponent(download, doc.file_reference)({ class: 'download' });
@@ -16,7 +17,7 @@ export default function playButton(doc: Document.document) {
 
   let currStatus: MediaPlaybackStatus = MediaPlaybackStatus.NotStarted;
   let currProgress = 0;
-  const container = div`.document-audio__play-pause`({
+  const container = div`.playButton`({
     onClick: () => {
       if (currStatus === MediaPlaybackStatus.NotStarted || currStatus === MediaPlaybackStatus.Stopped) {
         mediaService.playAudio(doc);
