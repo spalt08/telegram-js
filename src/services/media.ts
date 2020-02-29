@@ -8,17 +8,17 @@ import { getDocumentLocation, getAttributeAudio } from 'helpers/files';
 import media from 'client/media';
 import MainService from './main';
 
-export enum AudioPlaybackStatus {
+export enum MediaPlaybackStatus {
   NotStarted,
   Downloading,
   Playing,
   Stopped,
 }
 
-export type AudioPlaybackState = {
+export type MediaPlaybackState = {
   downloadProgress: number,
   playProgress: number,
-  status: AudioPlaybackStatus,
+  status: MediaPlaybackStatus,
 };
 
 /**
@@ -154,18 +154,18 @@ export default class MediaService {
     if (this.main.popup.value !== 'sendMedia') this.main.showPopup('sendMedia');
   };
 
-  private audioInfos: Record<string, BehaviorSubject<AudioPlaybackState>> = {};
+  private audioInfos: Record<string, BehaviorSubject<MediaPlaybackState>> = {};
 
   private getPlaybackState(doc: Document.document) {
     let info = this.audioInfos[doc.file_reference];
     if (!info) {
-      info = new BehaviorSubject<AudioPlaybackState>({ downloadProgress: 0, playProgress: 0, status: AudioPlaybackStatus.NotStarted });
+      info = new BehaviorSubject<MediaPlaybackState>({ downloadProgress: 0, playProgress: 0, status: MediaPlaybackStatus.NotStarted });
       this.audioInfos[doc.file_reference] = info;
     }
     return info;
   }
 
-  audioInfo(doc: Document.document): Observable<Readonly<AudioPlaybackState>> {
+  audioInfo(doc: Document.document): Observable<Readonly<MediaPlaybackState>> {
     return this.getPlaybackState(doc);
   }
 
@@ -180,23 +180,23 @@ export default class MediaService {
     // eslint-disable-next-line no-param-reassign
     audio.currentTime = 0;
     audio.play();
-    this.getPlaybackState(doc).next({ downloadProgress: 1, playProgress: 0, status: AudioPlaybackStatus.Playing });
+    this.getPlaybackState(doc).next({ downloadProgress: 1, playProgress: 0, status: MediaPlaybackStatus.Playing });
     this.audioPlayingTimer = setInterval(() => {
       const progress = audio.currentTime / audioAttribute.duration;
       if (audio.ended) {
-        this.getPlaybackState(doc).next({ downloadProgress: 1, playProgress: 0, status: AudioPlaybackStatus.Stopped });
+        this.getPlaybackState(doc).next({ downloadProgress: 1, playProgress: 0, status: MediaPlaybackStatus.Stopped });
         clearInterval(this.audioPlayingTimer);
       } else {
-        this.getPlaybackState(doc).next({ downloadProgress: 1, playProgress: progress, status: AudioPlaybackStatus.Playing });
+        this.getPlaybackState(doc).next({ downloadProgress: 1, playProgress: progress, status: MediaPlaybackStatus.Playing });
       }
-    }, Math.min(1000, audioAttribute.duration * 10));
+    }, Math.min(100, audioAttribute.duration * 10));
   }
 
   stopAudio(doc: Document.document) {
     if (this.audioPlaying && doc.file_reference === this.docPlaying?.file_reference) {
       clearInterval(this.audioPlayingTimer);
       this.audioPlaying.pause();
-      this.getPlaybackState(this.docPlaying!).next({ downloadProgress: 0, playProgress: 0, status: AudioPlaybackStatus.Stopped });
+      this.getPlaybackState(this.docPlaying!).next({ downloadProgress: 0, playProgress: 0, status: MediaPlaybackStatus.Stopped });
       delete this.audioPlaying;
       delete this.docPlaying;
     }
@@ -205,8 +205,8 @@ export default class MediaService {
   playAudio(doc: Document.document) {
     const location = getDocumentLocation(doc);
     let state = this.getPlaybackState(doc);
-    if (state.value.status === AudioPlaybackStatus.NotStarted) {
-      this.getPlaybackState(doc).next({ ...state.value, downloadProgress: 0, status: AudioPlaybackStatus.Downloading });
+    if (state.value.status === MediaPlaybackStatus.NotStarted) {
+      this.getPlaybackState(doc).next({ ...state.value, downloadProgress: 0, status: MediaPlaybackStatus.Downloading });
     }
     media.download(location, { size: doc.size }, (url) => {
       const cachedAudio = this.audio.get(doc.file_reference);

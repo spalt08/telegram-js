@@ -63,7 +63,11 @@ function interpolateArray(data: number[], fitCount: number) {
   return newData;
 }
 
-export default function waveform(form: string, width: number, height: number, colorActive: string, colorInactive: string) {
+function rgba(rgb: number, a: number) {
+  return `rgba(${(rgb & 0xff0000) >> 16},${(rgb & 0xff00) >> 8},${rgb & 0xff}, ${a})`;
+}
+
+export default function waveform(form: string, width: number, height: number, colorActive: number, colorInactive: number) {
   const waveformBytes = hexBytesToArray(form);
   let waveformDecoded = decodeWaveform(waveformBytes);
 
@@ -84,12 +88,16 @@ export default function waveform(form: string, width: number, height: number, co
 
     for (let a = 0; a < waveformDecoded.length; a++) {
       const x = a * (4 * dpr);
-      if ((x < playProgress * width * dpr) || (x > thumbX - (4 * dpr) && x <= thumbX + (0 * dpr))) {
-        ctx.fillStyle = colorActive;
-      } else {
-        ctx.fillStyle = colorInactive;
+      let alpha = 0;
+      if (x > thumbX - (4 * dpr) && x <= thumbX) {
+        alpha = 1;
+      } else if (x < playProgress * width * dpr) {
+        alpha = Math.min(1, (playProgress * width * dpr - x) / 4);
       }
       const value = waveformDecoded[a];
+      ctx.fillStyle = rgba(colorInactive, 1);
+      roundRect(ctx, x, 0, 2 * dpr, dpr * (Math.max(2, Math.round((value * height) / peak))), dpr);
+      ctx.fillStyle = rgba(colorActive, alpha);
       roundRect(ctx, x, 0, 2 * dpr, dpr * (Math.max(2, Math.round((value * height) / peak))), dpr);
     }
   };
