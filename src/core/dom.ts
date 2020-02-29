@@ -282,8 +282,8 @@ const svgFromCodeTempRoot = document.createElement('div');
 /**
  * Makes an <svg /> element from the SVG code
  */
-export function svgFromCode(code: string, props?: Record<string, any>): SVGSVGElement {
-  svgFromCodeTempRoot.innerHTML = code;
+export function svgFromCode(code: string, id?: string, props?: Record<string, any>): SVGSVGElement {
+  svgFromCodeTempRoot.innerHTML = id === undefined ? code : code.replace(/\$id\$/g, id);
   const element = svgFromCodeTempRoot.lastElementChild;
   svgFromCodeTempRoot.innerHTML = '';
 

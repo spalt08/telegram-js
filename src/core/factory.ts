@@ -94,12 +94,12 @@ export function ElementFactory<T extends keyof HTMLElementTagNameMap>(tag: T) {
   return TemplatedResolver;
 }
 
-export function svgCodeToComponent(code: string) {
+export function svgCodeToComponent(code: string, id?: string) {
   let svg: SVGSVGElement | undefined; // Lazy initialization
 
   function getOrCreateTemplate(): SVGSVGElement {
     if (!svg) {
-      svg = svgFromCode(code);
+      svg = svgFromCode(code, id);
 
       // To not keep the code in memory
       code = ''; // eslint-disable-line no-param-reassign

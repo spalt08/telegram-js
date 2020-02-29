@@ -1,7 +1,8 @@
 import { hexBytesToArray } from 'helpers/files';
-import { nothing, canvas } from 'core/html';
+import { canvas } from 'core/html';
 import './waveform.scss';
 import { listen } from 'core/dom';
+import { useInterface } from 'core/hooks';
 
 function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
   ctx.beginPath();
@@ -18,24 +19,62 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: n
   ctx.fill();
 }
 
+// Ref: https://github.com/telegramdesktop/tdesktop/blob/0743e71ab6b928d2ee5bae1aed991849b1e2b291/Telegram/SourceFiles/data/data_document.cpp#L1018
+function decodeWaveform(encoded5bit: number[]) {
+  const bitsCount = encoded5bit.length * 8;
+  const valuesCount = Math.floor(bitsCount / 5);
+  if (!valuesCount) {
+    return [];
+  }
+
+  // Read each 5 bit of encoded5bit as 0-31 unsigned char.
+  // We count the index of the byte in which the desired 5-bit sequence starts.
+  // And then we read a uint16 starting from that byte to guarantee to get all of those 5 bits.
+  //
+  // BUT! if it is the last byte we have, we're not allowed to read a uint16 starting with it.
+  // Because it will be an overflow (we'll access one byte after the available memory).
+  // We see, that only the last 5 bits could start in the last available byte and be problematic.
+  // So we read in a general way all the entries in a general way except the last one.
+  const result = Array(valuesCount);
+  const bitsData = encoded5bit;
+  for (let i = 0, l = valuesCount - 1; i !== l; ++i) {
+    const byteIndex = Math.floor((i * 5) / 8);
+    const bitShift = Math.floor((i * 5) % 8);
+    const value = (bitsData[byteIndex]) + (bitsData[byteIndex + 1] << 8);
+    result[i] = ((value >> bitShift) & 0x1F);
+  }
+  const lastByteIndex = Math.floor(((valuesCount - 1) * 5) / 8);
+  const lastBitShift = Math.floor(((valuesCount - 1) * 5) % 8);
+  const lastValue = (bitsData[lastByteIndex]) + ((bitsData[lastByteIndex + 1] ?? 0) << 8);
+  result[valuesCount - 1] = (lastValue >> lastBitShift) & 0x1F;
+
+  return result;
+}
+
+function interpolateArray(data: number[], fitCount: number) {
+  const newData = new Array(fitCount);
+  const springFactor = data.length / fitCount;
+  const leftFiller = data[0];
+  const rightFiller = data[data.length - 1];
+  for (let i = 0; i < fitCount; i++) {
+    const idx = Math.floor(i * springFactor);
+    newData[i] = ((data[idx - 1] ?? leftFiller) + (data[idx] ?? leftFiller) + (data[idx + 1] ?? rightFiller)) / 3;
+  }
+  return newData;
+}
+
 export default function waveform(form: string, width: number, height: number, colorActive: string, colorInactive: string) {
   const waveformBytes = hexBytesToArray(form);
-  // // const r = heights;
-  // const r = [];
-  // for (let i = 0; i < waveformBytes.length * (2 / 3); i++) {
-  //   const h = (waveformBytes[i * 2] + waveformBytes[i * 2 + 1] + waveformBytes[i * 2 + 2]) / 3;
-  //   r.push(h);
-  // }
+  let waveformDecoded = decodeWaveform(waveformBytes);
 
   let thumbX = -Infinity;
+  let playProgress = -Infinity;
 
   const dpr = window.devicePixelRatio;
 
-  const totalBarsCount = width / 4;
-
-  if (totalBarsCount <= 0.1) {
-    return nothing;
-  }
+  const totalBarsCount = Math.floor(width / 4);
+  waveformDecoded = interpolateArray(waveformDecoded, totalBarsCount);
+  const peak = Math.max(...waveformDecoded);
 
   const c = canvas`.waveform`();
   const ctx = c.getContext('2d', { alpha: true })!;
@@ -43,47 +82,15 @@ export default function waveform(form: string, width: number, height: number, co
   const render = () => {
     ctx.clearRect(0, 0, width * dpr, height * dpr);
 
-    const samplesCount = (waveformBytes.length * 8) / 5;
-    const samplesPerBar = samplesCount / totalBarsCount;
-    let barCounter = 0;
-    let nextBarNum = 0;
-    let barNum = 0;
-    let lastBarNum;
-    let drawBarCount;
-
-    for (let a = 0; a < samplesCount; a++) {
-      if (a !== nextBarNum) {
-        continue;
+    for (let a = 0; a < waveformDecoded.length; a++) {
+      const x = a * (4 * dpr);
+      if ((x < playProgress * width * dpr) || (x > thumbX - (4 * dpr) && x <= thumbX + (0 * dpr))) {
+        ctx.fillStyle = colorActive;
+      } else {
+        ctx.fillStyle = colorInactive;
       }
-      drawBarCount = 0;
-      lastBarNum = nextBarNum;
-      while (lastBarNum === nextBarNum) {
-        barCounter += samplesPerBar;
-        nextBarNum = Math.floor(barCounter);
-        drawBarCount++;
-      }
-
-      const bitPointer = a * 5;
-      const byteNum = Math.floor(bitPointer / 8);
-      const byteBitOffset = bitPointer - byteNum * 8;
-      const currentByteCount = 8 - byteBitOffset;
-      const nextByteRest = 5 - currentByteCount;
-      let value = (waveformBytes[byteNum] >> byteBitOffset) & ((2 << (Math.min(5, currentByteCount) - 1)) - 1);
-      if (nextByteRest > 0 && byteNum + 1 < waveformBytes.length) {
-        value <<= nextByteRest;
-        value |= waveformBytes[byteNum + 1] & ((2 << (nextByteRest - 1)) - 1);
-      }
-
-      for (let b = 0; b < drawBarCount; b++) {
-        const x = barNum * (4 * dpr);
-        if (x > thumbX - (4 * dpr) && x <= thumbX + (0 * dpr)) {
-          ctx.fillStyle = colorActive;
-        } else {
-          ctx.fillStyle = colorInactive;
-        }
-        roundRect(ctx, x, 0, 2 * dpr, dpr * (Math.max(2, Math.round((value * height) / 31))), dpr);
-        barNum++;
-      }
+      const value = waveformDecoded[a];
+      roundRect(ctx, x, 0, 2 * dpr, dpr * (Math.max(2, Math.round((value * height) / peak))), dpr);
     }
   };
 
@@ -104,5 +111,10 @@ export default function waveform(form: string, width: number, height: number, co
   ctx.scale(1, -1);
   ctx.translate(0, -height * dpr);
   render();
-  return c;
+  return useInterface(c, {
+    updateProgress: (progress: number) => {
+      playProgress = progress;
+      render();
+    },
+  });
 }
