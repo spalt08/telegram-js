@@ -27,7 +27,7 @@ export interface WithInterfaceHook<TInterface> {
 
 const nodesHooks = new WeakMap<Node, Hooks>();
 
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV !== 'production') {
   (window as any).nodesHooks = nodesHooks;
 }
 

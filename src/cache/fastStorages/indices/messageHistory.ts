@@ -92,7 +92,7 @@ function compareChunksAndIdForOrder(chunk: IdsChunk, id: number): number {
     return result;
   }
 
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     // eslint-disable-next-line no-console
     console.error('Unexpected empty chunk (no ids and not oldest or newest)');
   }
@@ -231,7 +231,7 @@ class PeerIndex {
       getMessagePosition: (messageId: number) => compareChunksAndId(chunkReference.history.value, messageId),
       putChunk: (chunk: IdsChunk) => {
         if (chunkReference.isRevoked) {
-          if (process.env.NODE_ENV === 'development') {
+          if (process.env.NODE_ENV !== 'production') {
             // eslint-disable-next-line no-console
             console.error('Called `putChunk` on a revoked chunk reference. The call is ignored.');
           }
@@ -398,14 +398,14 @@ export default function messageHistory(collection: Collection<Message, any>) {
             isUpdatingByThisIndex = true;
 
             if (messagesChunkReference.isRevoked) {
-              if (process.env.NODE_ENV === 'development') {
+              if (process.env.NODE_ENV !== 'production') {
                 // eslint-disable-next-line no-console
                 console.error('Called `putChunk` on a revoked chunk reference. The call is ignored.');
               }
               return;
             }
 
-            if (process.env.NODE_ENV === 'development') {
+            if (process.env.NODE_ENV !== 'production') {
               chunk.messages.forEach((message, messageIndex) => {
                 const messagePeer = messageToDialogPeer(message);
                 if (!messagePeer) {
