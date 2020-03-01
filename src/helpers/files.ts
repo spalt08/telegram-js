@@ -133,7 +133,7 @@ export function getReadableSize(fsize: number): string {
 
 export function getReadableDuration(duration: number) {
   // eslint-disable-next-line no-param-reassign
-  duration = Math.round(duration);
+  duration = Math.floor(duration);
   const seconds = `0${duration % 60}`.slice(-2);
   let minutes: number | string = Math.floor(duration / 60);
 

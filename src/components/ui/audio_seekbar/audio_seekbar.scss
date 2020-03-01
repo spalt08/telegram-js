@@ -1,0 +1,15 @@
+.audioSeekbar {
+  display: flex;
+  height: 2px;
+  align-items: stretch;
+
+  > * {
+    flex-basis: 1px;
+  }
+
+  &__played {
+    background-color: var(--accent-color);
+    height: 2px;
+    border-radius: 1px;
+  }
+}
