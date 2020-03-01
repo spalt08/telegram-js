@@ -1,6 +1,7 @@
 import { BehaviorSubject, Observable } from 'rxjs';
 import client from 'client/client';
 import { Document, Peer, StickerSet, MessagesFilter, MessagesAllStickers, MessagesRecentStickers, MessagesMessages } from 'cache/types';
+import { el } from 'core/dom';
 import { peerToInputPeer } from 'cache/accessors';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToId } from 'helpers/api';
@@ -42,8 +43,8 @@ export default class MediaService {
 
   main: MainService;
 
-  private audio: Map<string, HTMLAudioElement> = new Map();
-  private audioPlaying?: HTMLAudioElement;
+  private currentAudioSource?: HTMLSourceElement;
+  private currentAudio?: HTMLAudioElement;
   private docPlaying?: Document.document;
   private audioPlayingTimer: any;
 
@@ -169,21 +170,27 @@ export default class MediaService {
     return this.getPlaybackState(doc);
   }
 
-  play(doc: Document.document, audio: HTMLAudioElement) {
-    if (this.docPlaying) {
-      this.stopAudio(this.docPlaying);
-    }
+  play(doc: Document.document, url: string, position?: number) {
     const audioAttribute = getAttributeAudio(doc)!;
 
-    this.audioPlaying = audio;
+    if (this.docPlaying) {
+      if (this.docPlaying.file_reference === doc.file_reference) {
+        this.currentAudio!.currentTime = position !== undefined ? position * audioAttribute.duration : 0;
+        return;
+      }
+      this.stopAudio(this.docPlaying);
+    }
+
+    this.currentAudioSource!.src = url;
     this.docPlaying = doc;
     // eslint-disable-next-line no-param-reassign
-    audio.currentTime = 0;
-    audio.play();
+    this.currentAudio!.load();
+    this.currentAudio!.currentTime = position !== undefined ? position * audioAttribute.duration : 0;
+    this.currentAudio!.play();
     this.getPlaybackState(doc).next({ downloadProgress: 1, playProgress: 0, status: MediaPlaybackStatus.Playing });
     this.audioPlayingTimer = setInterval(() => {
-      const progress = audio.currentTime / audioAttribute.duration;
-      if (audio.ended) {
+      const progress = this.currentAudio!.currentTime / audioAttribute.duration;
+      if (this.currentAudio!.ended) {
         this.getPlaybackState(doc).next({ downloadProgress: 1, playProgress: 0, status: MediaPlaybackStatus.Stopped });
         clearInterval(this.audioPlayingTimer);
       } else {
@@ -193,30 +200,43 @@ export default class MediaService {
   }
 
   stopAudio(doc: Document.document) {
-    if (this.audioPlaying && doc.file_reference === this.docPlaying?.file_reference) {
+    if (this.currentAudio && doc.file_reference === this.docPlaying?.file_reference) {
       clearInterval(this.audioPlayingTimer);
-      this.audioPlaying.pause();
+      this.currentAudio.pause();
       this.getPlaybackState(this.docPlaying!).next({ downloadProgress: 0, playProgress: 0, status: MediaPlaybackStatus.Stopped });
-      delete this.audioPlaying;
       delete this.docPlaying;
     }
   }
 
-  playAudio(doc: Document.document) {
+  pauseAudio(doc: Document.document) {
+    if (this.currentAudio && doc.file_reference === this.docPlaying?.file_reference) {
+      clearInterval(this.audioPlayingTimer);
+      this.currentAudio.pause();
+      const state = this.getPlaybackState(doc);
+      state.next({ ...state.value, status: MediaPlaybackStatus.Stopped });
+      delete this.docPlaying;
+    }
+  }
+
+  resumeAudio(doc: Document.document) {
+    const state = this.getPlaybackState(doc);
+    this.playAudio(doc, state.value.playProgress);
+  }
+
+  playAudio(doc: Document.document, position?: number) {
+    if (!this.currentAudio) {
+      this.currentAudioSource = el('source');
+      this.currentAudio = el('audio', undefined, [this.currentAudioSource]);
+      // this.currentAudio.load();
+      // this.currentAudio.play();
+    }
     const location = getDocumentLocation(doc);
     let state = this.getPlaybackState(doc);
     if (state.value.status === MediaPlaybackStatus.NotStarted) {
       this.getPlaybackState(doc).next({ ...state.value, downloadProgress: 0, status: MediaPlaybackStatus.Downloading });
     }
     media.download(location, { size: doc.size }, (url) => {
-      const cachedAudio = this.audio.get(doc.file_reference);
-      if (cachedAudio) {
-        this.play(doc, cachedAudio);
-        return;
-      }
-      const currentAudio = new Audio(url);
-      this.audio.set(doc.file_reference, currentAudio);
-      this.play(doc, currentAudio);
+      this.play(doc, url, position);
     }, (progress) => {
       state = this.getPlaybackState(doc);
       this.getPlaybackState(doc).next({ ...state.value, downloadProgress: progress / doc.size });

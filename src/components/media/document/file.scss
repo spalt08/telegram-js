@@ -65,10 +65,10 @@
       position: absolute;
       right: 0;
       top: 0;
-      border-right: 8PX solid #fff;
-      border-top: 8PX solid #fff;
-      border-bottom: 8PX solid #2a7cc3;
-      border-left: 8PX solid #2a7cc3;
+      border-right: 8PX solid var(--bubble-background);
+      border-top: 8PX solid var(--bubble-background);
+      border-bottom: 8PX solid var(--accent-color);
+      border-left: 8PX solid var(--accent-color);
       border-bottom-left-radius: 6px;
       transition: .2s ease-out;
     }
@@ -77,8 +77,6 @@
     .message.out &::after {
       border-bottom-color: #1b7a21;
       border-left-color: #1b7a21;
-      border-top-color: #eeffde;
-      border-right-color: #eeffde;
     }
   }
 

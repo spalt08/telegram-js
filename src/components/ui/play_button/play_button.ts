@@ -20,9 +20,9 @@ export default function playButton(doc: Document.document) {
   const container = div`.playButton`({
     onClick: () => {
       if (currStatus === MediaPlaybackStatus.NotStarted || currStatus === MediaPlaybackStatus.Stopped) {
-        mediaService.playAudio(doc);
+        mediaService.resumeAudio(doc);
       } else {
-        mediaService.stopAudio(doc);
+        mediaService.pauseAudio(doc);
       }
     },
   }, cancelButtonSvg, downloadButtonSvg, playButtonSvg, pauseButtonSvg);
@@ -31,6 +31,11 @@ export default function playButton(doc: Document.document) {
     setStatus: (status: MediaPlaybackStatus) => {
       if (currStatus !== status) {
         currStatus = status;
+        if (status === MediaPlaybackStatus.Downloading) {
+          const button = downloadButtonSvg.getElementById(`button_${doc.file_reference}`) as SVGGElement;
+          button.dispatchEvent(new Event('click'));
+        }
+
         downloadButtonSvg.classList.toggle('hidden', status !== MediaPlaybackStatus.Downloading);
         cancelButtonSvg.classList.toggle('hidden', status !== MediaPlaybackStatus.Downloading);
         playButtonSvg.classList.toggle('hidden', status !== MediaPlaybackStatus.Stopped);

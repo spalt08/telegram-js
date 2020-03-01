@@ -7,9 +7,9 @@
     <animate id="animation_$id$" attributeName="stroke-dasharray" dur="0.2s" fill="freeze"/>
   </circle>
   <path id="path_$id$" d="M22,13v22c0 4,-2 6.6,-7 4.7" stroke="#000" fill="none" stroke-width="2" stroke-dasharray="0 0 16 100" stroke-dashoffset="1" stroke-linejoin="round" stroke-linecap="round">
-    <animate id="arrowToDash_$id$" attributeName="stroke-dasharray" from="0 1 16 100" to="0 19 3 100" dur="0.2s" fill="freeze" begin="button_$id$.click"/>
-    <animate id="vline_$id$" attributeName="stroke-dasharray" from="0 19 3 100" to="0 29 3 100" dur="0.2s" fill="freeze" begin="arrowToDash_$id$.end"/>
-    <animate attributeName="opacity" to="0" dur="0.01s" fill="freeze" begin="vline_$id$.end"/>
+    <animate id="arrowToDash_$id$" attributeName="stroke-dasharray" to="0 19 3 100" dur="0.2s" fill="freeze" begin="button_$id$.click"/>
+    <animate id="vline_$id$" attributeName="stroke-dasharray" to="0 29 3 100" dur="0.2s" fill="freeze" begin="arrowToDash_$id$.end"/>
+    <set attributeName="visibility" to="collapse" fill="freeze" begin="vline_$id$.end"/>
   </path>
   <path d="M22,29l-7,-7z" stroke="#000" stroke-width="2" stroke-linejoin="round">
     <animate attributeName="d" to="M22,34l0,0z" dur="0.2s" fill="freeze" begin="button_$id$.click"/>

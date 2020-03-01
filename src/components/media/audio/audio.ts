@@ -12,9 +12,10 @@ export default function audio(doc: Document.document, out: boolean) {
   const audioAttribute = getAttributeAudio(doc)!;
   const duration = getReadableDuration(audioAttribute.duration);
   const timing = text(duration);
+  const onSeek = (seek: number) => mediaService.playAudio(doc, seek);
   const track = audioAttribute.waveform
-    ? waveform(audioAttribute.waveform, 192, 23, out ? 0x4fae4e : 0x50a2e9, out ? 0xaedfa4 : 0xcbcbcb)
-    : audioSeekbar();
+    ? waveform(audioAttribute.waveform, 192, 23, out ? 0x4fae4e : 0x50a2e9, out ? 0xaedfa4 : 0xcbcbcb, onSeek)
+    : audioSeekbar(onSeek);
   let header;
   if (audioAttribute.performer || audioAttribute.title) {
     if (audioAttribute.performer && audioAttribute.title) {

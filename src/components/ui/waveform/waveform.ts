@@ -67,7 +67,13 @@ function rgba(rgb: number, a: number) {
   return `rgba(${(rgb & 0xff0000) >> 16},${(rgb & 0xff00) >> 8},${rgb & 0xff}, ${a})`;
 }
 
-export default function waveform(form: string, width: number, height: number, colorActive: number, colorInactive: number) {
+export default function waveform(
+  form: string,
+  width: number,
+  height: number,
+  colorActive: number,
+  colorInactive: number,
+  seek?: (position: number) => void) {
   const waveformBytes = hexBytesToArray(form);
   let waveformDecoded = decodeWaveform(waveformBytes);
 
@@ -82,6 +88,12 @@ export default function waveform(form: string, width: number, height: number, co
 
   const c = canvas`.waveform`();
   const ctx = c.getContext('2d', { alpha: true })!;
+
+  if (seek) {
+    listen(c, 'click', (e) => {
+      seek((e.clientX - c.getBoundingClientRect().left) / c.clientWidth);
+    });
+  }
 
   const render = () => {
     ctx.clearRect(0, 0, width * dpr, height * dpr);

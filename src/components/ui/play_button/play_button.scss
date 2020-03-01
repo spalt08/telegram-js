@@ -12,8 +12,10 @@
   border-radius: 50%;
   background-color: var(--accent-color);
   cursor: pointer;
+  user-select: none;
 
   svg {
+    pointer-events: none;
     opacity: 1;
     grid-row: 1;
     grid-column: 1;
@@ -43,7 +45,6 @@
   svg.hidden {
     opacity: 0;
     transform: scale(0);
-    pointer-events: none;
   }
 
   svg.hidden.download {
