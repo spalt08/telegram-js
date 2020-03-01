@@ -102,7 +102,7 @@ export const pinnedMessageCache = new Collection<Message.message, {}, string>({
  */
 export const fileCache = new Dictionary<string, string | null>();
 
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV !== 'production') {
   (window as any).mcache = messageCache;
   (window as any).ccache = chatCache;
   (window as any).dcache = dialogCache;

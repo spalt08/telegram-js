@@ -33,7 +33,7 @@ export default class UsersService {
 
     client.call('users.getUsers', parameters, (err, data?: User[]) => {
       if (err) {
-        if (process.env.NODE_ENV === 'development') {
+        if (process.env.NODE_ENV !== 'production') {
           // eslint-disable-next-line no-console
           console.error('Failed to get users', {
             request: parameters,

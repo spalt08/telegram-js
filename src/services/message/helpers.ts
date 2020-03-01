@@ -21,7 +21,7 @@ export async function loadContinuousMessages(
     [fromId, toId] = [toId, fromId]; // eslint-disable-line no-param-reassign
   }
 
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     if (direction === Direction.Around && toId !== undefined) {
       // eslint-disable-next-line no-console
       console.warn('The toId parameter gives no effect with Direction.Around');

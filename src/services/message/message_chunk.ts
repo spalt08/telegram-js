@@ -61,7 +61,7 @@ export default function makeMessageChunk(peer: Peer, messageId: Exclude<number, 
     try {
       result = await loadContinuousMessages(peer, direction, fromId, toId);
     } catch (err) {
-      if (!isDestroyed && process.env.NODE_ENV === 'development') {
+      if (!isDestroyed && process.env.NODE_ENV !== 'production') {
         // eslint-disable-next-line no-console
         console.error('Failed to load messages history part', { peer, direction, fromId, toId, err });
       }
@@ -90,7 +90,7 @@ export default function makeMessageChunk(peer: Peer, messageId: Exclude<number, 
 
   function loadMore(direction: Direction.Newer | Direction.Older) {
     if (isDestroyed) {
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV !== 'production') {
         // eslint-disable-next-line no-console
         console.error('Called `loadMore` on a destroyed message chunk. Ignoring the call.');
       }
@@ -117,7 +117,7 @@ export default function makeMessageChunk(peer: Peer, messageId: Exclude<number, 
 
   function destroy() {
     if (isDestroyed) {
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV !== 'production') {
         // eslint-disable-next-line no-console
         console.error('Called `destroy` on a destroyed message chunk. Ignoring the call.');
       }

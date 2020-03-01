@@ -42,7 +42,7 @@ export default class MessageSearchService {
 
   public search(request: SearchRequest) {
     if (!this.session) {
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV !== 'production') {
         // eslint-disable-next-line no-console
         console.warn('Can\'t search because a peer is not set.');
       }
@@ -54,7 +54,7 @@ export default class MessageSearchService {
 
   public loadMore() {
     if (!this.session) {
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV !== 'production') {
         // eslint-disable-next-line no-console
         console.warn('Can\'t load more search results because a peer is not set.');
       }
