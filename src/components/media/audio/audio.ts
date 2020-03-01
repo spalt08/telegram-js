@@ -14,11 +14,19 @@ export default function audio(doc: Document.document, out: boolean) {
   const timing = text(duration);
   const track = audioAttribute.waveform
     ? waveform(audioAttribute.waveform, 192, 23, out ? 0x4fae4e : 0x50a2e9, out ? 0xaedfa4 : 0xcbcbcb)
-    : audioSeekbar(audioAttribute, 192);
+    : audioSeekbar();
+  let header;
+  if (audioAttribute.performer || audioAttribute.title) {
+    if (audioAttribute.performer && audioAttribute.title) {
+      header = `${audioAttribute.performer} \u2014 ${audioAttribute.title}`;
+    } else {
+      header = audioAttribute.performer ?? audioAttribute.title;
+    }
+  }
   const container = div`.document-audio`(
     button,
     div`.document-audio__wave`(
-      audioAttribute.title ? div`.document-audio__title`(text(audioAttribute.title)) : nothing,
+      header ? div`.document-audio__title`(text(header)) : nothing,
       track,
       div`.document-audio__timing`(timing),
     ));

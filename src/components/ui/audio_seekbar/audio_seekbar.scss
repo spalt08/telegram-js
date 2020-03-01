@@ -1,5 +1,7 @@
 .audioSeekbar {
   display: flex;
+  width: 100%;
+  min-width: 192px;
   height: 2px;
   align-items: stretch;
 
