@@ -25,7 +25,8 @@ export default function playButton(doc: Document.document) {
         mediaService.pauseAudio(doc);
       }
     },
-  }, cancelButtonSvg, downloadButtonSvg, playButtonSvg, pauseButtonSvg);
+  }, div`.playButton__inner`(cancelButtonSvg, downloadButtonSvg, playButtonSvg, pauseButtonSvg),
+  );
 
   return useInterface(container, {
     setStatus: (status: MediaPlaybackStatus) => {

@@ -1,13 +1,25 @@
 .audioSeekbar {
-  display: flex;
+  position: relative;
   width: 100%;
   min-width: 192px;
-  height: 2px;
-  align-items: stretch;
+  height: 4px;
+  padding: 1px;
+  border-radius: 2px;
   cursor: pointer;
-  
-  > * {
-    flex-basis: 1px;
+
+  &__inner {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+
+    > * {
+      flex-basis: 1px;
+      transition: flex-grow 0.1s;
+    }
   }
 
   &__played {
@@ -15,4 +27,10 @@
     height: 2px;
     border-radius: 1px;
   }
+
+  &__left {
+    background-color: var(--voice-message-bar-transparent);
+    height: 2px;
+  }
 }
+

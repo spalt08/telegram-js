@@ -173,26 +173,32 @@ export default class MediaService {
   play(doc: Document.document, url: string, position?: number) {
     const audioAttribute = getAttributeAudio(doc)!;
 
+    const time = position !== undefined ? position * audioAttribute.duration : 0;
     if (this.docPlaying) {
       if (this.docPlaying.file_reference === doc.file_reference) {
-        this.currentAudio!.currentTime = position !== undefined ? position * audioAttribute.duration : 0;
+        this.currentAudio!.currentTime = time;
         return;
       }
-      this.stopAudio(this.docPlaying);
+      const currentAudioAttribute = getAttributeAudio(this.docPlaying)!;
+      if (currentAudioAttribute.voice) {
+        this.stopAudio(this.docPlaying);
+      } else {
+        this.pauseAudio(this.docPlaying);
+      }
     }
 
     this.currentAudioSource!.src = url;
     this.docPlaying = doc;
-    // eslint-disable-next-line no-param-reassign
     this.currentAudio!.load();
-    this.currentAudio!.currentTime = position !== undefined ? position * audioAttribute.duration : 0;
+    this.currentAudio!.currentTime = time;
     this.currentAudio!.play();
-    this.getPlaybackState(doc).next({ downloadProgress: 1, playProgress: 0, status: MediaPlaybackStatus.Playing });
+    this.getPlaybackState(doc).next({ downloadProgress: 1, playProgress: position ?? 0, status: MediaPlaybackStatus.Playing });
     this.audioPlayingTimer = setInterval(() => {
       const progress = this.currentAudio!.currentTime / audioAttribute.duration;
       if (this.currentAudio!.ended) {
         this.getPlaybackState(doc).next({ downloadProgress: 1, playProgress: 0, status: MediaPlaybackStatus.Stopped });
         clearInterval(this.audioPlayingTimer);
+        delete this.docPlaying;
       } else {
         this.getPlaybackState(doc).next({ downloadProgress: 1, playProgress: progress, status: MediaPlaybackStatus.Playing });
       }
@@ -227,8 +233,6 @@ export default class MediaService {
     if (!this.currentAudio) {
       this.currentAudioSource = el('source');
       this.currentAudio = el('audio', undefined, [this.currentAudioSource]);
-      // this.currentAudio.load();
-      // this.currentAudio.play();
     }
     const location = getDocumentLocation(doc);
     let state = this.getPlaybackState(doc);

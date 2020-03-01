@@ -6,7 +6,8 @@ import './audio_seekbar.scss';
 export default function audioSeekbar(seek?: (position: number) => void) {
   const played = div`.audioSeekbar__played`();
   const left = div`.audioSeekbar__left`();
-  const container = div`.audioSeekbar`(played, left);
+  const innerContainer = div`.audioSeekbar__inner`(played, left);
+  const container = div`.audioSeekbar`(innerContainer);
 
   if (seek) {
     listen(container, 'click', (e) => {

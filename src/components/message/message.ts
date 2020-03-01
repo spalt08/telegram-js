@@ -37,7 +37,7 @@ const now = new Date();
 const timezoneOffset = now.getTimezoneOffset() * 60;
 
 // message renderer
-const renderMessage = (msg: Message.message, peer: Peer, isOut: boolean) => {
+const renderMessage = (msg: Message.message, peer: Peer) => {
   const date = messageDate(msg);
   const reply = msg.reply_to_msg_id ? messageReply(msg.reply_to_msg_id, peer, msg) : nothing;
   let title: Node = nothing;
@@ -154,7 +154,7 @@ const renderMessage = (msg: Message.message, peer: Peer, isOut: boolean) => {
 
   // with audio
   if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document' && getAttributeAudio(msg.media.document)) {
-    const previewEl = audio(msg.media.document, isOut);
+    const previewEl = audio(msg.media.document);
 
     return (
       div`.message__bubble`(
@@ -225,9 +225,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
       mount(element, container);
     }
 
-    let isOut = false;
     if (msg && msg._ !== 'messageEmpty' && msg.from_id === client.getUserID()) {
-      isOut = true;
       element.classList.add('out');
     }
 
@@ -261,7 +259,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     if (!bubble || !cached || (cached._ === 'message' && msg.message !== cached.message)) {
       if (bubble) unmount(bubble);
 
-      bubble = renderMessage(msg, peer, isOut);
+      bubble = renderMessage(msg, peer);
       mount(wrapper, bubble);
 
       if (onUpdateHeight) onUpdateHeight(id);

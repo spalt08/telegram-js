@@ -1,33 +1,40 @@
 import { Document } from 'cache/types';
-import { div, text, nothing } from 'core/html';
-import { getAttributeAudio, getReadableDuration } from 'helpers/files';
+import { div, text, nothing, strong, span } from 'core/html';
+import { getAttributeAudio, getReadableDuration, getAttributeFilename } from 'helpers/files';
 import { playButton, audioSeekbar, waveform } from 'components/ui';
 import { getInterface, useObservable } from 'core/hooks';
 import { media as mediaService } from 'services';
 import { MediaPlaybackStatus } from 'services/media';
 import './audio.scss';
 
-export default function audio(doc: Document.document, out: boolean) {
+export default function audio(doc: Document.document) {
   const button = playButton(doc);
   const audioAttribute = getAttributeAudio(doc)!;
   const duration = getReadableDuration(audioAttribute.duration);
   const timing = text(duration);
   const onSeek = (seek: number) => mediaService.playAudio(doc, seek);
   const track = audioAttribute.waveform
-    ? waveform(audioAttribute.waveform, 192, 23, out ? 0x4fae4e : 0x50a2e9, out ? 0xaedfa4 : 0xcbcbcb, onSeek)
+    ? waveform(doc, 48, onSeek)
     : audioSeekbar(onSeek);
-  let header;
+  let header: Node | undefined;
   if (audioAttribute.performer || audioAttribute.title) {
     if (audioAttribute.performer && audioAttribute.title) {
-      header = `${audioAttribute.performer} \u2014 ${audioAttribute.title}`;
+      header = span(strong(text(audioAttribute.performer)), text(` \u2014 ${audioAttribute.title}`));
     } else {
-      header = audioAttribute.performer ?? audioAttribute.title;
+      header = text(audioAttribute.performer || audioAttribute.title || '');
     }
   }
+  if (!header) {
+    const filenameAttribute = getAttributeFilename(doc);
+    if (filenameAttribute) {
+      header = text(filenameAttribute.file_name);
+    }
+  }
+
   const container = div`.document-audio`(
     button,
     div`.document-audio__wave`(
-      header ? div`.document-audio__title`(text(header)) : nothing,
+      header ? div`.document-audio__title`(header) : nothing,
       track,
       div`.document-audio__timing`(timing),
     ));

@@ -1,14 +1,9 @@
 .waveform {
   cursor: pointer;
-  display: flex;
-  flex-direction: row;
-  height: 20PX;
-  align-items: baseline;
-  &__column {
-    width: 2PX;
-    background: var(--waveform-color);
-    margin: 0 1PX;
-    min-height: 2PX;
-    border-radius: 2PX;
+  line {
+    stroke: var(--voice-message-bar-transparent);
+  }
+  line.active {
+    stroke: var(--voice-message-bar);
   }
 }

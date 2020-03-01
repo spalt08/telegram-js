@@ -1,23 +1,8 @@
-import { hexBytesToArray } from 'helpers/files';
-import { canvas } from 'core/html';
-import './waveform.scss';
-import { listen } from 'core/dom';
+import { Document } from 'cache/types';
+import { hexBytesToArray, getAttributeAudio } from 'helpers/files';
+import { listen, svgEl, mount } from 'core/dom';
 import { useInterface } from 'core/hooks';
-
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
-  ctx.beginPath();
-  ctx.moveTo(x + radius, y);
-  ctx.lineTo(x + width - radius, y);
-  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-  ctx.lineTo(x + width, y + height - radius);
-  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-  ctx.lineTo(x + radius, y + height);
-  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-  ctx.lineTo(x, y + radius);
-  ctx.quadraticCurveTo(x, y, x + radius, y);
-  ctx.closePath();
-  ctx.fill();
-}
+import './waveform.scss';
 
 // Ref: https://github.com/telegramdesktop/tdesktop/blob/0743e71ab6b928d2ee5bae1aed991849b1e2b291/Telegram/SourceFiles/data/data_document.cpp#L1018
 function decodeWaveform(encoded5bit: number[]) {
@@ -63,75 +48,67 @@ function interpolateArray(data: number[], fitCount: number) {
   return newData;
 }
 
-function rgba(rgb: number, a: number) {
-  return `rgba(${(rgb & 0xff0000) >> 16},${(rgb & 0xff00) >> 8},${rgb & 0xff}, ${a})`;
-}
+export default function waveform(doc: Document.document, barsCount: number, seek?: (position: number) => void) {
+  const info = getAttributeAudio(doc);
 
-export default function waveform(
-  form: string,
-  width: number,
-  height: number,
-  colorActive: number,
-  colorInactive: number,
-  seek?: (position: number) => void) {
-  const waveformBytes = hexBytesToArray(form);
+  const waveformBytes = hexBytesToArray(info?.waveform ?? '');
   let waveformDecoded = decodeWaveform(waveformBytes);
 
   let thumbX = -Infinity;
   let playProgress = -Infinity;
 
-  const dpr = window.devicePixelRatio;
-
-  const totalBarsCount = Math.floor(width / 4);
-  waveformDecoded = interpolateArray(waveformDecoded, totalBarsCount);
+  waveformDecoded = interpolateArray(waveformDecoded, barsCount);
   const peak = Math.max(...waveformDecoded);
 
-  const c = canvas`.waveform`();
-  const ctx = c.getContext('2d', { alpha: true })!;
+  const bars: SVGLineElement[] = [];
+  const svg = svgEl('svg', { class: 'waveform', width: barsCount * 4, height: 23, viewBox: `0 0 ${barsCount * 4} 23` });
 
   if (seek) {
-    listen(c, 'click', (e) => {
-      seek((e.clientX - c.getBoundingClientRect().left) / c.clientWidth);
+    listen(svg, 'click', (e) => {
+      seek((e.clientX - svg.getBoundingClientRect().left) / svg.clientWidth);
     });
   }
 
-  const render = () => {
-    ctx.clearRect(0, 0, width * dpr, height * dpr);
+  const height = 21;
+  for (let i = 0; i < barsCount; i++) {
+    const value = waveformDecoded[i];
+    const barHeight = Math.max(0, Math.round((value * height) / peak));
+    const bar = svgEl('line', {
+      x1: i * 4 + 1,
+      x2: i * 4 + 1,
+      y1: 1 + height - barHeight,
+      y2: 1 + height,
+      'stroke-width': '2',
+      stroke: '#F00',
+      'stroke-linecap': 'round',
+    });
+    bars[i] = bar;
+    mount(svg, bar);
+  }
 
-    for (let a = 0; a < waveformDecoded.length; a++) {
-      const x = a * (4 * dpr);
-      let alpha = 0;
-      if (x > thumbX - (4 * dpr) && x <= thumbX) {
-        alpha = 1;
-      } else if (x < playProgress * width * dpr) {
-        alpha = Math.min(1, (playProgress * width * dpr - x) / 4);
-      }
-      const value = waveformDecoded[a];
-      ctx.fillStyle = rgba(colorInactive, 1);
-      roundRect(ctx, x, 0, 2 * dpr, dpr * (Math.max(2, Math.round((value * height) / peak))), dpr);
-      ctx.fillStyle = rgba(colorActive, alpha);
-      roundRect(ctx, x, 0, 2 * dpr, dpr * (Math.max(2, Math.round((value * height) / peak))), dpr);
+  const render = () => {
+    for (let i = 0; i < bars.length; i++) {
+      const bar = bars[i];
+      bar.classList.toggle('active', i < playProgress * bars.length);
+    }
+    const thumbIndex = Math.round(thumbX / 4);
+    if (thumbIndex >= 0 && thumbIndex < bars.length) {
+      bars[thumbIndex].classList.add('active');
     }
   };
 
-  listen(c, 'mousemove', (e) => {
-    thumbX = e.offsetX * dpr;
+  listen(svg, 'mousemove', (e) => {
+    thumbX = e.clientX - svg.getBoundingClientRect().left;
     render();
   });
 
-  listen(c, 'mouseleave', () => {
+  listen(svg, 'mouseleave', () => {
     thumbX = -Infinity;
     render();
   });
 
-  c.style.width = `${width}px`;
-  c.style.height = `${height}px`;
-  c.width = width * dpr;
-  c.height = height * dpr;
-  ctx.scale(1, -1);
-  ctx.translate(0, -height * dpr);
   render();
-  return useInterface(c, {
+  return useInterface(svg, {
     updateProgress: (progress: number) => {
       playProgress = progress;
       render();

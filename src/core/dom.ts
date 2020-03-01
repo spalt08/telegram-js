@@ -255,6 +255,22 @@ export function el(tag: string, props: Record<string, any> = {}, children: Node[
   return element;
 }
 
+export function svgEl<T extends keyof SVGElementTagNameMap>(tag: T, props?: Record<string, any>, ...children: SVGElement[]) {
+  const element = document.createElementNS('http://www.w3.org/2000/svg', tag);
+
+  // Setting props
+  if (props) {
+    setElementProps(element, props);
+  }
+
+  // Mounting children
+  for (let i = 0; i < children.length; i += 1) {
+    element.appendChild(children[i]);
+  }
+
+  return element;
+}
+
 export function createFragment(children: ArrayLike<Node> = []) {
   const fragment = document.createDocumentFragment();
   for (let i = 0; i < children.length; i += 1) {

@@ -24,7 +24,9 @@ $messageDistance: 4PX;
 
 .message {
   --bubble-background: #FFFFFF;
-  --accent-color: #1DA1F1;
+  --accent-color: #1da1f1;
+  --voice-message-bar: #1da1f1;
+  --voice-message-bar-transparent: rgba(112, 117, 121, 0.35);
   --accent-color-inactive: #707579;
 
   width: 100%;
@@ -392,5 +394,7 @@ $messageDistance: 4PX;
     --bubble-background: #EEFFDE;
     --accent-color: #4FAE4F;
     --accent-color-inactive: #4FAE4E;
+    --voice-message-bar: rgb(79, 174, 79);
+    --voice-message-bar-transparent: rgba(79, 174, 79, 0.5);
   }
 }
