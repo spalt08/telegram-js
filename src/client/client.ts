@@ -26,9 +26,8 @@ if (test) saveMetaField = 'metatest';
  * Vars
  */
 
-/* globals _TESTS */ // to do: use process.env.TESTS
 let worker: Worker;
-if (_TESTS) {
+if (process.env.NODE_ENV === 'test') {
   const MockWorker = require('./mocks/worker'); // eslint-disable-line
   worker = new MockWorker();
 } else {

@@ -10,8 +10,6 @@ declare const FileReaderSync: {
   new(): FileReaderSync;
 };
 
-declare const _TESTS: boolean | undefined;
-
 declare module 'aes-js'
 
 declare module '.scss'
