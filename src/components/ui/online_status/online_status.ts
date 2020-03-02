@@ -99,7 +99,7 @@ export default function onlineStatus(peer: Peer) {
           }
         });
         let onlineText: string;
-        if (onlineUsers === 1 && wasMe) {
+        if (onlineUsers === 0 || (onlineUsers === 1 && wasMe)) {
           onlineText = '';
         } else {
           onlineText = `, ${onlineUsers} online`;

@@ -368,7 +368,7 @@ function processMessage(message: WorkerMessage) {
             }
           } else {
             // eslint-disable-next-line no-lonely-if
-            if (process.env.NODE_ENV === 'development') {
+            if (process.env.NODE_ENV !== 'production') {
               // eslint-disable-next-line no-console
               console.error(`Failed to download a TGS from ${payload}`);
             }

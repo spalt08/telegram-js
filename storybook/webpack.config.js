@@ -13,7 +13,7 @@ module.exports = async ({ config }) => {
 
   config.plugins.push(
     new webpack.DefinePlugin({
-      _TESTS: 'true',
+      'process.env.NODE_ENV': 'test',
     }),
   );
 

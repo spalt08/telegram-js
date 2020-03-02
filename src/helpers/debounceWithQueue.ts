@@ -109,7 +109,7 @@ export default function makeDebounceWithQueue<TInput, TOutput>({
 
   function run(input: TInput, forceNow = true) {
     if (isDestroyed) {
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV !== 'production') {
         // eslint-disable-next-line no-console
         console.error('Called `run` on a destroyed object. Ignoring the call.');
       }
@@ -143,7 +143,7 @@ export default function makeDebounceWithQueue<TInput, TOutput>({
 
   function destroy() {
     if (isDestroyed) {
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV !== 'production') {
         // eslint-disable-next-line no-console
         console.error('Called `destroy` on a destroyed object. Ignoring the call.');
       }

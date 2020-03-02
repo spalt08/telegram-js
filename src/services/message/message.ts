@@ -109,7 +109,7 @@ export default class MessagesService {
               .pipe(first(({ ids, loadingNewer, loadingOlder }) => (ids.length >= 3 || !(loadingNewer || loadingOlder))))
               .subscribe(() => {
                 if (nextChunk !== this.nextChunk) {
-                  if (process.env.NODE_ENV === 'development') {
+                  if (process.env.NODE_ENV !== 'production') {
                     // eslint-disable-next-line no-console
                     console.error(
                       'The `nextChunk.history` was updated after the chunk was removed from the message service.'

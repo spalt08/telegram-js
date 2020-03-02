@@ -68,7 +68,7 @@ async function makeSearchRequest(
     data = await client.callAsync('messages.search', parameters);
     // console.log('search response', data);
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV !== 'production') {
       // eslint-disable-next-line no-console
       console.error('Failed to search for messages', error);
     }
@@ -141,7 +141,7 @@ export default function makeSearchSession(peer: Peer): SearchSession {
 
   function search(request: SearchRequest) {
     if (isDestroyed) {
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV !== 'production') {
         // eslint-disable-next-line no-console
         console.error('Called `search` on a destroyed search session. Ignoring the call.');
       }
@@ -156,7 +156,7 @@ export default function makeSearchSession(peer: Peer): SearchSession {
 
   async function loadMore() {
     if (isDestroyed) {
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV !== 'production') {
         // eslint-disable-next-line no-console
         console.error('Called `loadMore` on a destroyed search session. Ignoring the call.');
       }
@@ -195,7 +195,7 @@ export default function makeSearchSession(peer: Peer): SearchSession {
 
   function destroy() {
     if (isDestroyed) {
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV !== 'production') {
         // eslint-disable-next-line no-console
         console.error('Called `destroy` on a destroyed search session. Ignoring the call.');
       }
