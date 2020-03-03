@@ -4,7 +4,6 @@ import { mount, unmount } from 'core/dom';
 import { messageCache, dialogCache } from 'cache';
 import { Peer, Message, Dialog } from 'cache/types';
 import { formattedMessage } from 'components/ui';
-import client from 'client/client';
 import { profileAvatar, profileTitle } from 'components/profile';
 import webpagePreview from 'components/media/webpage/preview';
 import photoPreview from 'components/media/photo/preview';
@@ -225,7 +224,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
       mount(element, container);
     }
 
-    if (msg && msg._ !== 'messageEmpty' && msg.from_id === client.getUserID()) {
+    if (msg && msg._ !== 'messageEmpty' && msg.out) {
       element.classList.add('out');
     }
 
