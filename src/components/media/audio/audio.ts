@@ -42,8 +42,6 @@ export default function audio(doc: Document.document) {
 
   useObservable(container, mediaService.audioInfo(doc), (info) => {
     getInterface(track).updateProgress(info.playProgress);
-    getInterface(button).setStatus(info.status);
-    getInterface(button).setProgress(info.downloadProgress);
     const progress = info.status === MediaPlaybackStatus.Playing ? info.playProgress * audioAttribute.duration : audioAttribute.duration;
     if (info.status === MediaPlaybackStatus.Playing) {
       timing.textContent = `${getReadableDuration(progress)} / ${getReadableDuration(audioAttribute.duration)}`;

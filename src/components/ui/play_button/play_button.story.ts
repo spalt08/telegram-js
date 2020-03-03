@@ -1,16 +1,17 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { storiesOf } from '@storybook/html';
 import centered from '@storybook/addon-centered/html';
-import { withKnobs, optionsKnob } from '@storybook/addon-knobs';
+import { withKnobs, button as buttonKnob } from '@storybook/addon-knobs';
+import { withMountTrigger } from 'storybook/decorators';
 import { Document, DocumentAttribute } from 'cache/types';
 import { getInterface } from 'core/hooks';
-import { MediaPlaybackStatus } from 'services/media';
 
 import playButton from './play_button';
 
-const stories = storiesOf('II. UI Elements | Play Button', module)
-  .addDecorator(centered)
-  .addDecorator(withKnobs);
+const stories = storiesOf('II. UI Elements | Play Audio Button', module)
+  .addDecorator(withKnobs)
+  .addDecorator(withMountTrigger)
+  .addDecorator(centered);
 
 const doc: Document.document = {
   _: 'document',
@@ -31,11 +32,9 @@ const doc: Document.document = {
 
 stories.add('Common Usage', () => {
   const button = playButton(doc);
-  getInterface(button).setStatus(optionsKnob('State', {
-    NotStarted: MediaPlaybackStatus.NotStarted,
-    Playing: MediaPlaybackStatus.Playing,
-    Stopped: MediaPlaybackStatus.Stopped,
-  }, MediaPlaybackStatus.NotStarted, { display: 'select' }));
+  buttonKnob('Download', () => {
+    setTimeout(() => getInterface(button).download());
+  });
   button.style.setProperty('--accent-color', '#4fae4f');
   button.style.setProperty('--bubble-background', '#eeffde');
   return button;

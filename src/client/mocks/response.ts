@@ -1,6 +1,10 @@
-import { AuthSentCode } from 'cache/types';
+import { AuthSentCode, MethodDeclMap } from 'cache/types';
+import { ClientError } from 'client/worker.types';
 
-export default function makeResponse(method: string, _params: Record<string, any>, _headers: Record<string, any>): [any, any] {
+export default function makeResponse<T extends keyof MethodDeclMap>(
+  method: keyof MethodDeclMap,
+  _params: MethodDeclMap[T]['req'],
+  _headers: Record<string, any>): [ClientError | null, MethodDeclMap[T]['res']] {
   switch (method) {
     case 'auth.sendCode': {
       return [null, {
@@ -12,7 +16,16 @@ export default function makeResponse(method: string, _params: Record<string, any
     }
 
     default: {
-      return [{ type: 'network' }, undefined];
+      return [{ type: 'network', code: 100 }, undefined];
     }
+  }
+}
+
+export function makeFileResponse(id: string) {
+  switch (id) {
+    case 'document_1_y':
+      return 'https://file-examples.com/wp-content/uploads/2017/11/file_example_MP3_700KB.mp3';
+    default:
+      return null;
   }
 }

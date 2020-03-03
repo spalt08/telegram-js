@@ -246,4 +246,16 @@ export default class MediaService {
       this.getPlaybackState(doc).next({ ...state.value, downloadProgress: progress / doc.size });
     });
   }
+
+  downloadAudio(doc: Document.document) {
+    const location = getDocumentLocation(doc);
+    let state = this.getPlaybackState(doc);
+    state.next({ downloadProgress: 0, playProgress: 0, status: MediaPlaybackStatus.Downloading });
+    media.download(location, { size: doc.size }, () => {
+      state.next({ downloadProgress: 1, playProgress: 0, status: MediaPlaybackStatus.Stopped });
+    }, (progress) => {
+      state = this.getPlaybackState(doc);
+      this.getPlaybackState(doc).next({ ...state.value, downloadProgress: progress / doc.size });
+    });
+  }
 }
