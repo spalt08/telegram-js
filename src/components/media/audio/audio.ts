@@ -32,7 +32,7 @@ export default function audio(doc: Document.document) {
   }
 
   const container = div`.document-audio`(
-    button,
+    div`.document-audio__play-button`(button),
     div`.document-audio__wave`(
       header ? div`.document-audio__title`(header) : nothing,
       track,

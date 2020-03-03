@@ -391,9 +391,9 @@ $messageDistance: 4PX;
   &.out.first.last &__bubble::before { border-image: url(~assets/message_out-whole@2x.png) 49 49 49 49 fill; }
 
   &.out {
-    --bubble-background: #EEFFDE;
-    --accent-color: #4FAE4F;
-    --accent-color-inactive: #4FAE4E;
+    --bubble-background: #eeffde;
+    --accent-color: #4fae4f;
+    --accent-color-inactive: #4fae4f;
     --voice-message-bar: rgb(79, 174, 79);
     --voice-message-bar-transparent: rgba(79, 174, 79, 0.5);
   }

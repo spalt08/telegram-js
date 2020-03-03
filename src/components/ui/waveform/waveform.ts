@@ -86,19 +86,38 @@ export default function waveform(doc: Document.document, barsCount: number, seek
     mount(svg, bar);
   }
 
+  const currentBar = svgEl('line', {
+    'stroke-width': '2',
+    stroke: '#F00',
+    'stroke-linecap': 'round',
+    opacity: 1,
+    class: 'active',
+  });
+  mount(svg, currentBar);
+
   const render = () => {
     for (let i = 0; i < bars.length; i++) {
       const bar = bars[i];
-      bar.classList.toggle('active', i < playProgress * bars.length);
+      bar.classList.toggle('active', i < playProgress * bars.length - 1);
     }
     const thumbIndex = Math.round(thumbX / 4);
     if (thumbIndex >= 0 && thumbIndex < bars.length) {
       bars[thumbIndex].classList.add('active');
     }
+
+    const pp = Math.max(0, Math.min(1, playProgress));
+    const x = Math.floor(pp * bars.length) * 4 + 1;
+    const val = waveformDecoded[Math.floor(pp * (bars.length - 1))];
+    const h = Math.round((val * height) / peak);
+    currentBar.setAttribute('opacity', (pp * bars.length - Math.floor(pp * bars.length)).toString());
+    currentBar.setAttribute('x1', x.toString());
+    currentBar.setAttribute('x2', x.toString());
+    currentBar.setAttribute('y1', (1 + height - h).toString());
+    currentBar.setAttribute('y2', (1 + height).toString());
   };
 
   listen(svg, 'mousemove', (e) => {
-    thumbX = e.clientX - svg.getBoundingClientRect().left;
+    thumbX = e.clientX - 1 - svg.getBoundingClientRect().left;
     render();
   });
 

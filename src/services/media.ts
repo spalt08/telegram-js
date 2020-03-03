@@ -194,7 +194,7 @@ export default class MediaService {
     this.currentAudio!.play();
     this.getPlaybackState(doc).next({ downloadProgress: 1, playProgress: position ?? 0, status: MediaPlaybackStatus.Playing });
     this.audioPlayingTimer = setInterval(() => {
-      const progress = this.currentAudio!.currentTime / audioAttribute.duration;
+      const progress = Math.min(1, this.currentAudio!.currentTime / audioAttribute.duration);
       if (this.currentAudio!.ended) {
         this.getPlaybackState(doc).next({ downloadProgress: 1, playProgress: 0, status: MediaPlaybackStatus.Stopped });
         clearInterval(this.audioPlayingTimer);
