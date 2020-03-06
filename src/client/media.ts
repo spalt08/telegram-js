@@ -41,11 +41,15 @@ export function download(location: InputFileLocation, options: DownloadOptions, 
   }
 }
 
+/**
+ * Request for file uploading
+ */
 export function upload(file: File, _ready: UploadResolver, _progress?: UploadProgressResolver) {
   const id = (Math.floor(Math.random() * 0xFFFFFFFF).toString(16) + Math.floor(Math.random() * 0xFFFFFFFF).toString(16)).slice(-8);
-
   task('upload', { id, file });
 }
+
+export default { cached, upload, download };
 
 /**
  * Resolve downloading progress

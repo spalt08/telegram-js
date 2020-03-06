@@ -1,5 +1,5 @@
-import { triggerMount } from '../src/core/hooks';
-import chamomile from '../src/assets/chamomile-blurred.jpg';
+import { triggerMount } from 'core/hooks';
+import chamomile from 'assets/chamomile-blurred.jpg';
 
 export function withMountTrigger(creator: () => Node) {
   const element = creator();

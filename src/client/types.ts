@@ -153,7 +153,7 @@ export type AnyResolver = (...payload: unknown[]) => void;
 export type EventResolver = (event: any) => void;
 export type UploadResolver = (input: InputFile) => void;
 export type UploadProgressResolver = (uploaded: number, total: number) => void;
-export type DownloadOptions = { size: number, dc_id?: number, mime_type?: string, priority?: Priority };
+export type DownloadOptions = { size?: number, dc_id?: number, mime_type?: string, priority?: Priority };
 export type DownloadResolver = (url: string) => void;
 export type DownloadProgressResolver = (downloaded: number, total: number) => void;
 

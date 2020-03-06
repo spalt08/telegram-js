@@ -31,7 +31,7 @@ export function request<K extends WorkerRequestType>(type: K, payload: WorkerReq
 
 // Wrapper for listening messages
 export function listenMessage<K extends WorkerNotificationType>(type: K, cb: WorkerNotificationCallback<K>) {
-  if (listeners[type]) listeners[type] = [];
+  if (!listeners[type]) listeners[type] = [];
   listeners[type].push(cb);
 }
 

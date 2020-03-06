@@ -72,9 +72,9 @@ function downloadFileChunkLoop(client: Client, id: string, part: number, notify:
       if (chunk) downloading[id].chunks.push(chunk.buffer);
       else throw new Error('Unexpected empty chunk');
 
-      if (part < parts - 1) {
+      if ((parts && part < parts - 1) || (!parts && chunk.length >= partSize)) {
         downloadFileChunkLoop(client, id, part + 1, notify);
-        notify('download_progress', { id, downloaded: offset + chunk.length, total: options.size });
+        if (options.size) notify('download_progress', { id, downloaded: offset + chunk.length, total: options.size });
       } else {
         const type = options.mime_type || typeToMime(result.params.type.value);
         const blob = new Blob(downloading[id].chunks, { type });
@@ -96,7 +96,7 @@ export function downloadFile(client: Client, id: string, location: InputFileLoca
     location,
     options,
     partSize,
-    parts: Math.ceil(options.size / partSize),
+    parts: options.size ? Math.ceil(options.size / partSize) : 0,
     chunks: [],
   };
 

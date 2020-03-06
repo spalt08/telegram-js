@@ -3,7 +3,7 @@ import { div, img, nothing } from 'core/html';
 import { materialSpinner } from 'components/icons';
 import { mount, unmount, listenOnce } from 'core/dom';
 import { getThumbnail, getPhotoLocation, getSize, PhotoFitMode } from 'helpers/photo';
-import media from 'client/media';
+import { download, cached } from 'client/media';
 import './photo.scss';
 import { useInterface, useOnMount } from 'core/hooks';
 import { todoAssertHasValue } from 'helpers/other';
@@ -34,7 +34,7 @@ export default function photoRenderer(photo: Photo.photo | Document.document,
 
   const orientation = size.w >= size.h ? 'landscape' : 'portrait';
   const location = getPhotoLocation(photo, size.type);
-  let url = media.cached(location);
+  let url = cached(location);
 
   let thumbSrc: string | null = null;
 
@@ -111,7 +111,7 @@ export default function photoRenderer(photo: Photo.photo | Document.document,
           mount(container, loader);
         }
 
-        media.get(location, render, photo.dc_id);
+        download(location, { size: size.size, dc_id: photo.dc_id }, render);
       }
     });
   } else {
