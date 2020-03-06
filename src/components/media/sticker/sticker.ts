@@ -1,5 +1,5 @@
 import { div, img } from 'core/html';
-import { Document } from 'cache/types';
+import { Document } from 'client/schema';
 import { mount, listenOnce, unmount, listen } from 'core/dom';
 import { getThumbnail } from 'helpers/photo';
 import { getDocumentLocation } from 'helpers/files';

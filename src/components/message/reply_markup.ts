@@ -1,4 +1,4 @@
-import { ReplyMarkup } from 'cache/types';
+import { ReplyMarkup } from 'client/schema';
 import { nothing, div, text } from 'core/html';
 import { mount } from 'core/dom';
 import './reply_markup.scss';

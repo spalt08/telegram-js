@@ -3,7 +3,7 @@ import { storiesOf } from '@storybook/html';
 import { withKnobs, boolean, text } from '@storybook/addon-knobs';
 import centered from '@storybook/addon-centered/html';
 import { withMountTrigger, withChamomileBackground } from 'storybook/decorators';
-import { Document, DocumentAttribute, Message, MessageMedia, Peer } from 'cache/types';
+import { Document, DocumentAttribute, Message, MessageMedia, Peer } from 'client/schema';
 import { messageCache } from 'cache';
 
 import message from './message';

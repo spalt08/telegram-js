@@ -5,9 +5,9 @@ import {
   peerMessageToId,
   peerToId,
 } from 'helpers/api';
+import { Chat, Dialog, Message, User, UserFull, ChatFull } from 'client/schema';
 import Collection, { GetId, makeGetIdFromProp } from './fastStorages/collection';
 import Dictionary from './fastStorages/dictionary';
-import { Chat, Dialog, Message, User, UserFull, ChatFull } from './types';
 import { orderBy } from './fastStorages/indices';
 import messageHistory from './fastStorages/indices/messageHistory';
 import sharedMediaIndex from './fastStorages/indices/sharedMediaIndex';
@@ -100,7 +100,7 @@ export const pinnedMessageCache = new Collection<Message.message, {}, string>({
 /**
  * File urls cache
  */
-export const fileCache = new Dictionary<string, string | null>();
+export const fileCache = new Dictionary<string, string>();
 
 if (process.env.NODE_ENV !== 'production') {
   (window as any).mcache = messageCache;

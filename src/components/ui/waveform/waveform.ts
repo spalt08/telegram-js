@@ -1,4 +1,4 @@
-import { Document } from 'cache/types';
+import { Document } from 'client/schema';
 import { hexBytesToArray, getAttributeAudio } from 'helpers/files';
 import { listen, svgEl, mount } from 'core/dom';
 import { useInterface } from 'core/hooks';

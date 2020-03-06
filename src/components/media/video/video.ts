@@ -1,4 +1,4 @@
-import { Document } from 'cache/types';
+import { Document } from 'client/schema';
 import { div, text, nothing, video } from 'core/html';
 import { getDocumentLocation, getAttributeVideo } from 'helpers/files';
 import media from 'client/media';

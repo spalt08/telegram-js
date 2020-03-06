@@ -3,7 +3,7 @@ import { mount, unmountChildren } from 'core/dom';
 import { message, main, RightSidebarPanel } from 'services';
 import { useObservable, useInterface } from 'core/hooks';
 import { combineLatest } from 'rxjs';
-import { Peer } from 'cache/types';
+import { Peer } from 'client/schema';
 import infoPanel from './panels/info_panel';
 import searchPanel from './panels/search_panel';
 import './right_sidebar.scss';

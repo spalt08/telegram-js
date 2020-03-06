@@ -1,4 +1,4 @@
-import { Document } from 'cache/types';
+import { Document } from 'client/schema';
 import { play, pause, close } from 'components/icons';
 import download from 'components/icons/download_button/download_button.svg?raw';
 import { svgCodeToComponent } from 'core/factory';

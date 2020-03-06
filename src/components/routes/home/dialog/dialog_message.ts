@@ -1,7 +1,7 @@
 import { text, strong } from 'core/html';
 import { messageCache, userCache } from 'cache';
 import { peerMessageToId } from 'helpers/api';
-import { Dialog } from 'cache/types';
+import { Dialog } from 'client/schema';
 import { typingIndicator } from 'components/ui';
 import messageShort from 'components/message/short';
 import { todoAssertHasValue } from 'helpers/other';

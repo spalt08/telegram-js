@@ -1,4 +1,4 @@
-import { Peer } from 'cache/types';
+import { Peer } from 'client/schema';
 import { peerToInputPeer } from 'cache/accessors';
 import client from 'client/client';
 import { MessagesChunk } from 'cache/fastStorages/indices/messageHistory';

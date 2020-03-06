@@ -3,7 +3,7 @@ import { div, text } from 'core/html';
 import { main as mainService, messageSearch, RightSidebarPanel } from 'services';
 import { isSearchRequestEmpty } from 'services/message_search/message_search_session';
 import roundButton from 'components/ui/round_button/round_button';
-import { Peer } from 'cache/types';
+import { Peer } from 'client/schema';
 import * as icons from 'components/icons';
 import { searchInput, VirtualizedList } from 'components/ui';
 import { getInterface, useToBehaviorSubject } from 'core/hooks';

@@ -6,7 +6,7 @@ import media from 'client/media';
 import { getReadableSize } from 'helpers/files';
 import { send } from 'components/icons';
 import messageTextarea from 'components/message/input/input_textarea';
-import { InputFile } from 'cache/types';
+import { InputFile } from 'client/schema';
 import { KeyboardKeys } from 'const';
 import popupCommon from '../popup_common';
 import './send_media.scss';

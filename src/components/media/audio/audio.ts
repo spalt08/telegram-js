@@ -1,4 +1,4 @@
-import { Document } from 'cache/types';
+import { Document } from 'client/schema';
 import { div, text, nothing, strong, span } from 'core/html';
 import { getAttributeAudio, getReadableDuration, getAttributeFilename } from 'helpers/files';
 import { playButton, audioSeekbar, waveform } from 'components/ui';

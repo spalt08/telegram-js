@@ -11,7 +11,7 @@ import {
   AuthSentCode,
   AuthAuthorization,
   AccountPassword,
-} from 'cache/types';
+} from 'client/schema';
 
 export const enum AuthStage {
   Unauthorized,

@@ -1,4 +1,4 @@
-import { Photo, Document } from 'cache/types';
+import { Photo, Document } from 'client/schema';
 import { div, img, nothing } from 'core/html';
 import { materialSpinner } from 'components/icons';
 import { mount, unmount, listenOnce } from 'core/dom';

@@ -1,4 +1,4 @@
-import { StickerSet } from 'cache/types';
+import { StickerSet } from 'client/schema';
 import { div, img } from 'core/html';
 import { getStickerSetThumbLocation } from 'helpers/photo';
 import media from 'client/media';

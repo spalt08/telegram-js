@@ -9,7 +9,7 @@ import message from 'components/message/message';
 import { sectionSpinner, VirtualizedList } from 'components/ui';
 import * as icons from 'components/icons';
 import messageInput from 'components/message/input/input';
-import { Peer, InputChannel } from 'cache/types';
+import { Peer, InputChannel } from 'client/schema';
 import { peerMessageToId, peerToId } from 'helpers/api';
 import { messageCache, dialogCache, chatCache } from 'cache';
 import client from 'client/client';

@@ -1,7 +1,7 @@
 import { debounceTime, switchMap, map } from 'rxjs/operators';
 import { timer } from 'rxjs';
 import client from 'client/client';
-import { Peer, MessagesGetMessages, ChannelsGetMessages, UsersGetFullUser, ChannelsGetFullChannel } from 'cache/types';
+import { Peer, MessagesGetMessages, ChannelsGetMessages, UsersGetFullUser, ChannelsGetFullChannel } from 'client/schema';
 import { userFullCache, chatCache, chatFullCache, userCache, pinnedMessageCache } from 'cache';
 import { todoAssertHasValue } from 'helpers/other';
 import MessageService from './message/message';

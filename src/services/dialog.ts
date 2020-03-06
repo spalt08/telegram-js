@@ -10,7 +10,7 @@ import {
   MessagesDialogs,
   MessagesPeerDialogs,
   MessagesMessages,
-} from 'cache/types';
+} from 'client/schema';
 import { peerToInputDialogPeer, peerToInputPeer } from 'cache/accessors';
 import MessageService from './message/message';
 

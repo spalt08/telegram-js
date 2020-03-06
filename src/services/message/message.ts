@@ -1,7 +1,7 @@
 import { BehaviorSubject, Subject } from 'rxjs';
 import { first } from 'rxjs/operators';
 import client from 'client/client';
-import { Message, Peer, MessagesGetMessages, MessagesSendMedia, InputMedia, Updates } from 'cache/types';
+import { Message, Peer, MessagesGetMessages, MessagesSendMedia, InputMedia, Updates } from 'client/schema';
 import { messageCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage, shortChatMessageToMessage } from 'helpers/api';

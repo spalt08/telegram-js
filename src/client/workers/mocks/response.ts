@@ -1,5 +1,5 @@
-import { AuthSentCode, MethodDeclMap } from 'cache/types';
-import { ClientError } from 'client/worker.types';
+import { AuthSentCode, MethodDeclMap } from 'client/schema';
+import { ClientError } from 'client/types';
 
 export default function makeResponse<T extends keyof MethodDeclMap>(
   method: keyof MethodDeclMap,

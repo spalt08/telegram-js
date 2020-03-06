@@ -1,97 +1,81 @@
-import { InputFileLocation } from 'cache/types';
+import { InputFileLocation } from 'client/schema';
 import { locationToString } from 'helpers/files';
 import { fileCache } from 'cache';
-import { task, UploadResolver, UploadProgressResolver, uploadingFiles, downloadingFiles, DownloadResolver,
-  DownloadProgressResolver, DownloadOptions } from './client';
+import { task, listenMessage } from './context';
+import { UploadResolver, UploadProgressResolver, DownloadResolver,
+  DownloadProgressResolver, DownloadOptions } from './types';
+
+type FileID = string;
 
 /**
- * File download callback
+ * Request resolvers to avoid parallel requests
  */
-type MediaResolver = (url: string | null) => void;
+const resolvers: Record<FileID, DownloadResolver[]> = {};
 
 /**
- * Requested files and it's callbacks to avoid parallel requests
+ * Lookup cached file
  */
-const requests: Record<string, MediaResolver[]> = {};
-
-/**
- * Update cache when url generated
- */
-function resolve(location: InputFileLocation) {
-  return (url: string | null) => {
-    if (url) fileCache.put(locationToString(location), url);
-
-    const id = locationToString(location);
-
-    if (requests[id]) {
-      for (let i = 0; i < requests[id].length; i += 1) {
-        requests[id][i](url);
-      }
-
-      delete requests[id];
-    }
-  };
-}
-
-/** Search for file in cache */
-function getCachedFile(location: InputFileLocation): string | null | undefined {
+export function cached(location: InputFileLocation): string | undefined {
   return fileCache.get(locationToString(location));
 }
 
-/** Download file */
-function getFile(location: InputFileLocation, cb: MediaResolver, dc_id?: number, mime?: string): string {
+/**
+ * Request for file downloading
+ */
+export function download(location: InputFileLocation, options: DownloadOptions, ready: DownloadResolver, _progress?: DownloadProgressResolver) {
   const id = locationToString(location);
-  const cached = getCachedFile(location);
+  const cachedURL = cached(location);
 
   // already downloaded
-  if (cached) {
-    cb(cached);
+  if (cachedURL) {
+    ready(cachedURL);
 
   // already processing
-  } else if (requests[id]) {
-    requests[id].push(cb);
+  } else if (resolvers[id]) {
+    resolvers[id].push(ready);
 
   // should download
   } else {
-    requests[id] = [cb];
-    task('get_file', { location, dc_id, mime }, resolve(location));
+    resolvers[id] = [ready];
+    task('download', { id, location, options });
   }
-
-  return id;
 }
 
-/** Upload file */
-function uploadFile(file: File, ready: UploadResolver, progress?: UploadProgressResolver) {
+export function upload(file: File, _ready: UploadResolver, _progress?: UploadProgressResolver) {
   const id = (Math.floor(Math.random() * 0xFFFFFFFF).toString(16) + Math.floor(Math.random() * 0xFFFFFFFF).toString(16)).slice(-8);
-  task('upload_file', { id, file }, ready);
 
-  uploadingFiles[id] = { ready, progress };
+  task('upload', { id, file });
 }
 
-/** Download file */
-function downloadFile(location: InputFileLocation, options: DownloadOptions, ready: DownloadResolver, progress?: DownloadProgressResolver) {
-  const id = locationToString(location);
-  const cached = getCachedFile(location);
+/**
+ * Resolve downloading progress
+ */
+listenMessage('download_progress', ({ id, downloaded, total }) => {
+  console.log(id, downloaded, total);
+});
 
-  // already downloaded
-  if (cached) {
-    ready(cached);
+/**
+ * Resolve uploading progress
+ */
+listenMessage('upload_progress', ({ id, uploaded, total }) => {
+  console.log(id, uploaded, total);
+});
 
-  // already processing
-  } else if (requests[id]) {
-    requests[id].push(ready);
+/**
+ * Resolve downloading response
+ */
+listenMessage('download_ready', ({ id, url }) => {
+  fileCache.put(id, url);
 
-  // should download
-  } else {
-    requests[id] = [ready];
-    downloadingFiles[id] = { ready: resolve(location), progress };
-    task('download_file', { id, location, options }, resolve(location));
+  if (resolvers[id]) {
+    for (let i = 0; i < resolvers[id].length; i += 1) resolvers[id][i](url);
+    delete resolvers[id];
   }
-}
+});
 
-export default {
-  get: getFile,
-  cached: getCachedFile,
-  upload: uploadFile,
-  download: downloadFile,
-};
+/**
+ * Resolve downloading response
+ */
+listenMessage('upload_ready', ({ id, inputFile }) => {
+  console.log(id, inputFile);
+});

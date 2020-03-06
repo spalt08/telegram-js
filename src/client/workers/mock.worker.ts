@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-import makeResponse, { makeFileResponse } from './response';
+import makeResponse, { makeFileResponse } from './mocks/response';
 
 // Worker context
 const ctx: Worker = self as any;

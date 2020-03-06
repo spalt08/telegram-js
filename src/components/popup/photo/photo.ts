@@ -1,5 +1,5 @@
 import { div, nothing, text } from 'core/html';
-import { Message, Peer, Photo } from 'cache/types';
+import { Message, Peer, Photo } from 'client/schema';
 import './photo.scss';
 import media from 'client/media';
 import { getPhotoLocation, getOrientation, getSize } from 'helpers/photo';

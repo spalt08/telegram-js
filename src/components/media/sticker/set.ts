@@ -1,5 +1,5 @@
 import { text, div } from 'core/html';
-import { Document, StickerSet, MessagesStickerSet } from 'cache/types';
+import { Document, StickerSet, MessagesStickerSet } from 'client/schema';
 import { useInterface, getInterface, useOnMount } from 'core/hooks';
 import client from 'client/client';
 import { mount } from 'core/dom';

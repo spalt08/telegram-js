@@ -7,14 +7,18 @@
     "noUnusedParameters": false,
     "importHelpers": true,
     "target": "ES2017",
-    "baseUrl": "./src",
     "module": "esnext",
     "moduleResolution": "node",
     "sourceMap": true,
     "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "baseUrl": "./src",
+    "paths": {
+      "packages/mtproto-js": ["../packages/mtproto-js/src"],
+      "storybook/*": ["../storybook/*"]
+    }
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
   ]
 }

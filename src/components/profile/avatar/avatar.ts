@@ -1,5 +1,5 @@
 import { div, text, img } from 'core/html';
-import { Peer, Message } from 'cache/types';
+import { Peer, Message } from 'client/schema';
 import { peerToInitials, peerToColorCode } from 'cache/accessors';
 import { getPeerPhotoInputLocation } from 'helpers/photo';
 import { unmount, mount } from 'core/dom';

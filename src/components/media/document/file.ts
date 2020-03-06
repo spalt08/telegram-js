@@ -1,4 +1,4 @@
-import { Document, Message } from 'cache/types';
+import { Document, Message } from 'client/schema';
 import { div, text } from 'core/html';
 import { getAttributeFilename, getReadableSize, getDocumentLocation } from 'helpers/files';
 import { downloadByUrl } from 'helpers/other';
