@@ -73,35 +73,22 @@ window.addEventListener('offline', () => worker.postMessage({ type: 'windowEvent
 /**
  * Make RPC API request
  */
-function call(method: string, ...args: unknown[]): void {
-  const id = method + Date.now().toString() + Math.random() * 1000;
-
-  let params: Record<string, any> = {};
-  let headers: Record<string, any> = {};
-  let cb: RequestResolver<unknown> | undefined;
-
-  if (typeof args[0] === 'object') params = args[0] as Record<string, any>;
-  if (args.length > 1 && typeof args[1] === 'object') headers = args[1] as Record<string, any>;
-  if (args.length > 1 && typeof args[1] === 'function') cb = args[1] as RequestResolver<any>;
-  if (args.length > 2 && typeof args[2] === 'function') cb = args[2] as RequestResolver<any>;
-
-  worker.postMessage({
-    id,
-    type: 'call',
-    payload: { method, params, headers },
-  } as WorkerMessage);
-
-  if (cb) requests[id] = cb;
-}
-
-function callAsync(method: string, data: unknown, headers: unknown): Promise<unknown> {
+function call(method: string, params: Record<string, any>, headers: Record<string, any> = {}) {
   return new Promise((resolve, reject) => {
-    call(method, data, headers, (err: any, res: any) => {
+    const id = method + Date.now().toString() + Math.random() * 1000;
+
+    worker.postMessage({
+      id,
+      type: 'call',
+      payload: { method, params, headers },
+    } as WorkerMessage);
+
+    requests[id] = (err: any, res: any) => {
       if (err) {
         reject(err);
       }
       resolve(res);
-    });
+    };
   });
 }
 
@@ -252,16 +239,8 @@ interface Client {
   call<M extends keyof MethodDeclMap>(
     method: M,
     data: MethodDeclMap[M]['req'],
-    cb?: RequestResolver<MethodDeclMap[M]['res']>): void;
-  call<M extends keyof MethodDeclMap>(
-    method: M,
-    data: MethodDeclMap[M]['req'],
-    headers: Record<string, unknown>,
-    cb?: RequestResolver<MethodDeclMap[M]['res']>): void;
-  callAsync<M extends keyof MethodDeclMap>(
-    method: M,
-    data: MethodDeclMap[M]['req'],
-    headers?: Record<string, unknown>): Promise<MethodDeclMap[M]['res']>;
+    headers?: Record<string, unknown>,
+  ): Promise<MethodDeclMap[M]['res']>;
   on: typeof subscribe;
   updates: {
     on: <U extends keyof UpdateDeclMap>(predicate: U, cb: UpdateResolver<UpdateDeclMap[U]>) => void;
@@ -277,7 +256,6 @@ interface Client {
 const client: Client = {
   svc,
   call,
-  callAsync,
   on: subscribe,
   updates: {
     on,

@@ -65,7 +65,7 @@ async function makeSearchRequest(
 
   try {
     // console.log('search request', parameters);
-    data = await client.callAsync('messages.search', parameters);
+    data = await client.call('messages.search', parameters);
     // console.log('search response', data);
   } catch (error) {
     if (process.env.NODE_ENV !== 'production') {

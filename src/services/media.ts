@@ -59,7 +59,7 @@ export default class MediaService {
   async loadStickerSets() {
     let result: MessagesAllStickers;
     try {
-      result = await client.callAsync('messages.getAllStickers', { hash: this.stickerSetsHash });
+      result = await client.call('messages.getAllStickers', { hash: this.stickerSetsHash });
     } catch (err) {
       throw new Error(JSON.stringify(err));
     }
@@ -80,7 +80,7 @@ export default class MediaService {
   async loadRecentStickers() {
     let result: MessagesRecentStickers;
     try {
-      result = await client.callAsync('messages.getRecentStickers', { hash: this.recentStickersHash });
+      result = await client.call('messages.getRecentStickers', { hash: this.recentStickersHash });
     } catch (err) {
       throw new Error(JSON.stringify(err));
     }
@@ -133,7 +133,7 @@ export default class MediaService {
 
     let res: MessagesMessages | undefined;
     try {
-      res = await client.callAsync('messages.search', payload);
+      res = await client.call('messages.search', payload);
     } catch (err) {
       // todo: handle the error
     } finally {

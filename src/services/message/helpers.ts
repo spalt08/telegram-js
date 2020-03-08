@@ -61,7 +61,7 @@ export async function loadContinuousMessages(
   }
 
   // console.log('loadMessages - request', payload);
-  const data = await client.callAsync('messages.getHistory', payload);
+  const data = await client.call('messages.getHistory', payload);
   // console.log('loadMessages - response', data);
 
   if (data._ === 'messages.messagesNotModified') {

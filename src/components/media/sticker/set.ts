@@ -29,7 +29,7 @@ export default function stickerSet(set: StickerSet, onClick?: (sticker: Document
     let result: MessagesStickerSet.messagesStickerSet;
     // fetch data
     try {
-      result = await client.callAsync('messages.getStickerSet', { stickerset: stickerSetToInput(set) });
+      result = await client.call('messages.getStickerSet', { stickerset: stickerSetToInput(set) });
     } catch (err) {
       throw new Error(`Unable to load sticker set: ${JSON.stringify(err)}`);
     }

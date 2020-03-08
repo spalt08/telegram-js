@@ -34,7 +34,7 @@ export default class PeerService {
           access_hash: todoAssertHasValue(chat.access_hash),
         },
       };
-      const channelFull = await client.callAsync('channels.getFullChannel', payload);
+      const channelFull = await client.call('channels.getFullChannel', payload);
       if (channelFull.full_chat) {
         userCache.put(channelFull.users);
         chatCache.put(channelFull.chats);
@@ -45,7 +45,7 @@ export default class PeerService {
       }
     } else if (peer._ === 'peerChat') {
       const payload = { chat_id: peer.chat_id };
-      const chatFull = await client.callAsync('messages.getFullChat', payload);
+      const chatFull = await client.call('messages.getFullChat', payload);
       if (chatFull.full_chat) {
         userCache.put(chatFull.users);
         chatCache.put(chatFull.chats);
@@ -60,7 +60,7 @@ export default class PeerService {
       const payload: UsersGetFullUser = {
         id: { _: 'inputUser', user_id: peer.user_id, access_hash: todoAssertHasValue(user.access_hash) },
       };
-      const userFull = await client.callAsync('users.getFullUser', payload);
+      const userFull = await client.call('users.getFullUser', payload);
       userFullCache.put(userFull);
       if (userFull.pinned_msg_id) {
         this.loadPinnedMessage(peer, userFull.pinned_msg_id);
@@ -76,7 +76,7 @@ export default class PeerService {
         channel: { _: 'inputChannel', channel_id: peer.channel_id, access_hash: todoAssertHasValue(channel.access_hash) },
         id: [{ _: 'inputMessageID', id: pinnedMessageId }],
       };
-      const msg = await client.callAsync('channels.getMessages', payload);
+      const msg = await client.call('channels.getMessages', payload);
       if (msg._ === 'messages.channelMessages' && msg.messages.length > 0 && msg.messages[0]._ === 'message') {
         userCache.put(msg.users);
         chatCache.put(msg.chats);
@@ -84,7 +84,7 @@ export default class PeerService {
       }
     } else {
       const payload: MessagesGetMessages = { id: [{ _: 'inputMessageID', id: pinnedMessageId }] };
-      const msg = await client.callAsync('messages.getMessages', payload);
+      const msg = await client.call('messages.getMessages', payload);
       if (msg._ === 'messages.messages' && msg.messages.length > 0 && msg.messages[0]._ === 'message') {
         userCache.put(msg.users);
         chatCache.put(msg.chats);

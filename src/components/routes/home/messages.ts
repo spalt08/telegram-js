@@ -89,10 +89,10 @@ export default function messages({ className = '' }: Props = {}) {
               channel_id: dialog.peer.channel_id,
               access_hash: todoAssertHasValue(channel.access_hash),
             };
-            client.callAsync('channels.readHistory', { channel: inputChannel, max_id: msg.id });
+            client.call('channels.readHistory', { channel: inputChannel, max_id: msg.id });
           // read other
           } else {
-            client.callAsync('messages.readHistory', { peer: peerToInputPeer(dialog.peer), max_id: msg.id });
+            client.call('messages.readHistory', { peer: peerToInputPeer(dialog.peer), max_id: msg.id });
           }
 
           let { unread_count } = dialog;

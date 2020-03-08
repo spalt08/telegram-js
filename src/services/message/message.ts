@@ -230,7 +230,7 @@ export default class MessagesService {
       ],
     };
 
-    const messages = await client.callAsync('messages.getMessages', params);
+    const messages = await client.call('messages.getMessages', params);
     if (messages._ !== 'messages.messagesNotModified' && messages.messages.length > 0) {
       messageCache.put(messages.messages);
       return messages.messages[0];
@@ -265,7 +265,7 @@ export default class MessagesService {
 
     let result: Updates | undefined;
     try {
-      result = await client.callAsync('messages.sendMessage', params);
+      result = await client.call('messages.sendMessage', params);
     } catch (err) {
       // todo handling errors
     }
@@ -292,7 +292,7 @@ export default class MessagesService {
     };
 
     try {
-      await client.callAsync('messages.sendMedia', params);
+      await client.call('messages.sendMedia', params);
       // console.log('After sending', err, result);
     } catch (err) {
       // todo handling errors

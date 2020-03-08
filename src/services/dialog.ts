@@ -140,7 +140,7 @@ export default class DialogsService {
 
     let data: MessagesDialogs | undefined;
     try {
-      data = await client.callAsync('messages.getDialogs', payload);
+      data = await client.call('messages.getDialogs', payload);
     } catch (err) {
       if (err.message?.indexOf('USER_MIGRATE_') > -1) {
         // todo store dc
@@ -201,7 +201,7 @@ export default class DialogsService {
     const request = { peers };
     let data: MessagesPeerDialogs.messagesPeerDialogs;
     try {
-      data = await client.callAsync('messages.getPeerDialogs', request);
+      data = await client.call('messages.getPeerDialogs', request);
     } catch (err) {
       if (process.env.NODE_ENV !== 'production') {
         // eslint-disable-next-line no-console
@@ -233,7 +233,7 @@ export default class DialogsService {
         let messages: MessagesMessages;
         try {
           // eslint-disable-next-line no-await-in-loop
-          messages = await client.callAsync('messages.getHistory', payload, { thread: 2 });
+          messages = await client.call('messages.getHistory', payload, { thread: 2 });
         } catch (err) {
           return;
         }
