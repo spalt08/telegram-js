@@ -9,12 +9,11 @@ import message from 'components/message/message';
 import { sectionSpinner, VirtualizedList } from 'components/ui';
 import * as icons from 'components/icons';
 import messageInput from 'components/message/input/input';
-import { Peer, InputChannel } from 'cache/types';
+import { Peer } from 'cache/types';
 import { peerMessageToId, peerToId } from 'helpers/api';
-import { messageCache, dialogCache, chatCache } from 'cache';
+import { messageCache, dialogCache } from 'cache';
 import client from 'client/client';
-import { peerToInputPeer } from 'cache/accessors';
-import { todoAssertHasValue } from 'helpers/other';
+import { peerToInputChannel, peerToInputPeer } from 'cache/accessors';
 import header from './header/header';
 
 interface Props {
@@ -81,15 +80,7 @@ export default function messages({ className = '' }: Props = {}) {
         if (message && dialog?._ === 'dialog' && msg.id > dialog.read_inbox_max_id) {
           // read channel
           if (dialog.peer._ === 'peerChannel') {
-            const channel = chatCache.get(dialog.peer.channel_id);
-            if (!channel || channel._ !== 'channel') return;
-
-            const inputChannel: InputChannel = {
-              _: 'inputChannel',
-              channel_id: dialog.peer.channel_id,
-              access_hash: todoAssertHasValue(channel.access_hash),
-            };
-            client.call('channels.readHistory', { channel: inputChannel, max_id: msg.id });
+            client.call('channels.readHistory', { channel: peerToInputChannel(dialog.peer), max_id: msg.id });
           // read other
           } else {
             client.call('messages.readHistory', { peer: peerToInputPeer(dialog.peer), max_id: msg.id });

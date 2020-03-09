@@ -64,9 +64,7 @@ export default class Dictionary<TKey extends keyof any, TItem> {
    * Adds or updates the item in the dictionary
    */
   public put(key: TKey, item: Readonly<TItem>): void;
-
   public put(items: Readonly<Record<TKey, Readonly<TItem>>>): void;
-
   public put(arg1: any, arg2?: any) {
     if (arg2 === undefined) {
       this.batchChanges(() => {
