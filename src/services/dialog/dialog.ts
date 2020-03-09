@@ -128,10 +128,16 @@ export default class DialogsService {
   }
 
   async updateDialogs(offsetDate = 0) {
-    if (this.loading.value) return;
-    this.loading.next(true);
-    await this.doUpdateDialogs(offsetDate);
-    this.loading.next(false);
+    if (this.loading.value) {
+      return;
+    }
+
+    try {
+      this.loading.next(true);
+      await this.doUpdateDialogs(offsetDate);
+    } finally {
+      this.loading.next(false);
+    }
   }
 
   async loadMoreDialogs() {
@@ -193,7 +199,7 @@ export default class DialogsService {
       this.messageService.pushMessages(data.messages);
 
       if (dialogsToPreload) {
-        await this.preloadDialogs(dialogsToPreload);
+        /* no await */this.preloadMessages(dialogsToPreload);
       }
     }
   }
@@ -244,11 +250,21 @@ export default class DialogsService {
     this.messageService.pushMessages(data.messages);
   }
 
-  preloadDialogs = async (dialogs: Dialog[]) => {
+  protected async preloadMessages(dialogs: Dialog[]) {
     for (let i = 0; i < dialogs.length; i++) {
       const dialog = dialogs[i];
-      if (dialog._ === 'dialog' && dialog.unread_count === 0) {
-        const payload = {
+      if (dialog._ !== 'dialog' || dialog.unread_count > 0) {
+        continue;
+      }
+
+      // Postpone a bit to let more important requests go
+      // eslint-disable-next-line no-await-in-loop
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      let messages: MessagesMessages;
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        messages = await client.call('messages.getHistory', {
           peer: peerToInputPeer(dialogs[i].peer),
           offset_id: 0,
           offset_date: 0,
@@ -257,20 +273,17 @@ export default class DialogsService {
           max_id: 0,
           min_id: 0,
           hash: 0,
-        };
-        let messages: MessagesMessages;
-        try {
-          // eslint-disable-next-line no-await-in-loop
-          messages = await client.call('messages.getHistory', payload, { thread: 2 });
-        } catch (err) {
-          return;
-        }
-        if (messages._ !== 'messages.messagesNotModified') {
-          userCache.put(messages.users);
-          chatCache.put(messages.chats);
-          messageCache.indices.history.putNewestMessages(messages.messages);
-        }
+        }, {
+          thread: 2,
+        });
+      } catch (err) {
+        return;
+      }
+      if (messages._ !== 'messages.messagesNotModified') {
+        userCache.put(messages.users);
+        chatCache.put(messages.chats);
+        messageCache.indices.history.putNewestMessages(messages.messages);
       }
     }
-  };
+  }
 }
