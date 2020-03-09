@@ -81,6 +81,8 @@ function downloadFileChunkLoop(client: Client, id: string, part: number, notify:
         const url = (URL || webkitURL).createObjectURL(blob);
 
         notify('download_ready', { id, url });
+
+        delete downloading[id];
       }
     }
   });
@@ -99,6 +101,8 @@ export function downloadFile(client: Client, id: string, location: InputFileLoca
     parts: options.size ? Math.ceil(options.size / partSize) : 0,
     chunks: [],
   };
+
+  if (options.size) notify('download_progress', { id, downloaded: 0, total: options.size });
 
   downloadFileChunkLoop(client, id, 0, notify);
 }
@@ -137,6 +141,8 @@ function uploadFileChunkLoop(client: Client, id: string, part: number, notify: N
           md5_checksum: '',
         },
       });
+
+      delete uploading[id];
     }
   });
 }
@@ -152,6 +158,8 @@ export function uploadFile(client: Client, id: string, file: File, notify: Notif
   } else if (file.size < 102400) {
     partSize = 32768;
   }
+
+  notify('upload_progress', { id, uploaded: 0, total: file.size });
 
   uploading[id] = {
     data: new Bytes(reader.readAsArrayBuffer(file)),

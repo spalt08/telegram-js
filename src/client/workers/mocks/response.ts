@@ -1,31 +1,26 @@
 import { AuthSentCode, MethodDeclMap } from 'client/schema';
-import { ClientError } from 'client/types';
+import fileMap from './files';
 
-export default function makeResponse<T extends keyof MethodDeclMap>(
+export function mockResponse<T extends keyof MethodDeclMap>(
   method: keyof MethodDeclMap,
   _params: MethodDeclMap[T]['req'],
-  _headers: Record<string, any>): [ClientError | null, MethodDeclMap[T]['res']] {
+  _headers: Record<string, any>): [any, MethodDeclMap[T]['res'], number] {
   switch (method) {
     case 'auth.sendCode': {
       return [null, {
         _: 'auth.sentCode',
         type: { _: 'auth.sentCodeTypeApp' },
         phone_code_hash: 'hash',
-      } as AuthSentCode.authSentCode];
+      } as AuthSentCode.authSentCode, 100];
       break;
     }
 
     default: {
-      return [{ type: 'network', code: 100 }, undefined];
+      return [{ type: 'network', code: 100 }, undefined, 100];
     }
   }
 }
 
-export function makeFileResponse(id: string) {
-  switch (id) {
-    case 'document_1_y':
-      return 'https://file-examples.com/wp-content/uploads/2017/11/file_example_MP3_700KB.mp3';
-    default:
-      return null;
-  }
+export function getMockedFile(id: string): [number, string] {
+  return fileMap[id] || [1000, ''];
 }

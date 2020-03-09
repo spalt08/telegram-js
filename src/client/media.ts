@@ -10,7 +10,10 @@ type FileID = string;
 /**
  * Request resolvers to avoid parallel requests
  */
-const resolvers: Record<FileID, DownloadResolver[]> = {};
+const downloadResolvers: Record<FileID, DownloadResolver[]> = {};
+const downloadProgressResolvers: Record<FileID, DownloadProgressResolver[]> = {};
+const uploadResovers: Record<FileID, UploadResolver> = {};
+const uploadProgressResovers: Record<FileID, UploadProgressResolver> = {};
 
 /**
  * Lookup cached file
@@ -22,7 +25,7 @@ export function cached(location: InputFileLocation): string | undefined {
 /**
  * Request for file downloading
  */
-export function download(location: InputFileLocation, options: DownloadOptions, ready: DownloadResolver, _progress?: DownloadProgressResolver) {
+export function download(location: InputFileLocation, options: DownloadOptions, ready: DownloadResolver, progress?: DownloadProgressResolver) {
   const id = locationToString(location);
   const cachedURL = cached(location);
 
@@ -31,12 +34,16 @@ export function download(location: InputFileLocation, options: DownloadOptions, 
     ready(cachedURL);
 
   // already processing
-  } else if (resolvers[id]) {
-    resolvers[id].push(ready);
+  } else if (downloadResolvers[id]) {
+    downloadResolvers[id].push(ready);
+    if (progress) downloadProgressResolvers[id].push(progress);
 
   // should download
   } else {
-    resolvers[id] = [ready];
+    downloadResolvers[id] = [ready];
+    downloadProgressResolvers[id] = [];
+    if (progress) downloadProgressResolvers[id].push(progress);
+
     task('download', { id, location, options });
   }
 }
@@ -44,8 +51,11 @@ export function download(location: InputFileLocation, options: DownloadOptions, 
 /**
  * Request for file uploading
  */
-export function upload(file: File, _ready: UploadResolver, _progress?: UploadProgressResolver) {
+export function upload(file: File, ready: UploadResolver, progress?: UploadProgressResolver) {
   const id = (Math.floor(Math.random() * 0xFFFFFFFF).toString(16) + Math.floor(Math.random() * 0xFFFFFFFF).toString(16)).slice(-8);
+
+  uploadResovers[id] = ready;
+  if (progress) uploadProgressResovers[id] = progress;
   task('upload', { id, file });
 }
 
@@ -55,14 +65,18 @@ export default { cached, upload, download };
  * Resolve downloading progress
  */
 listenMessage('download_progress', ({ id, downloaded, total }) => {
-  console.log(id, downloaded, total);
+  const progressListeners = downloadProgressResolvers[id];
+
+  if (!progressListeners) return;
+  for (let i = 0; i < progressListeners.length; i += 1) progressListeners[i](downloaded, total);
 });
 
 /**
  * Resolve uploading progress
  */
 listenMessage('upload_progress', ({ id, uploaded, total }) => {
-  console.log(id, uploaded, total);
+  const resolver = uploadProgressResovers[id];
+  if (resolver) resolver(uploaded, total);
 });
 
 /**
@@ -71,15 +85,23 @@ listenMessage('upload_progress', ({ id, uploaded, total }) => {
 listenMessage('download_ready', ({ id, url }) => {
   fileCache.put(id, url);
 
-  if (resolvers[id]) {
-    for (let i = 0; i < resolvers[id].length; i += 1) resolvers[id][i](url);
-    delete resolvers[id];
+  const readyListeners = downloadResolvers[id];
+
+  if (readyListeners) {
+    for (let i = 0; i < readyListeners.length; i += 1) readyListeners[i](url);
   }
+
+  delete downloadResolvers[id];
+  delete downloadProgressResolvers[id];
 });
 
 /**
  * Resolve downloading response
  */
 listenMessage('upload_ready', ({ id, inputFile }) => {
-  console.log(id, inputFile);
+  const resolver = uploadResovers[id];
+  if (resolver) resolver(inputFile);
+
+  delete uploadResovers[id];
+  delete uploadProgressResovers[id];
 });

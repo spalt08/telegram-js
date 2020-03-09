@@ -1,7 +1,7 @@
 import { Photo, Document } from 'client/schema';
 import { div, img, nothing } from 'core/html';
 import { materialSpinner } from 'components/icons';
-import { mount, unmount, listenOnce } from 'core/dom';
+import { mount, unmount, listenOnce, listen } from 'core/dom';
 import { getThumbnail, getPhotoLocation, getSize, PhotoFitMode } from 'helpers/photo';
 import { download, cached } from 'client/media';
 import './photo.scss';

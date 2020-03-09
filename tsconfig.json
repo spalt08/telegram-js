@@ -15,7 +15,8 @@
     "baseUrl": "./src",
     "paths": {
       "packages/mtproto-js": ["../packages/mtproto-js/src"],
-      "storybook/*": ["../storybook/*"]
+      "storybook/*": ["../storybook/*"],
+      "mocks/*": ["./client/workers/mocks/*"]
     }
   },
   "include": [

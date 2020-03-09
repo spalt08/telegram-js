@@ -1,5 +1,7 @@
 /* eslint-disable no-restricted-globals */
-import makeResponse, { makeFileResponse } from './mocks/response';
+import { WorkerMessageOutcoming, WorkerResponseType, WorkerResponsePayloadMap, WorkerNotificationType, WorkerNotificationPayloadMap } from 'client/types';
+import { mockResponse, getMockedFile } from './mocks/response';
+import { locationToString } from 'helpers/files';
 
 // Worker context
 const ctx: Worker = self as any;
@@ -7,10 +9,17 @@ const ctx: Worker = self as any;
 /**
  * Resolve worker task
  */
-function resolve(id: string, type: string, payload: any) {
+function respond<K extends WorkerResponseType>(id: string, type: K, payload: WorkerResponsePayloadMap[K]) {
   // eslint-disable-next-line no-console
   console.log('mock worker', type, payload);
   ctx.postMessage({ id, type, payload });
+}
+
+/**
+ * Send notification
+ */
+function notify<K extends WorkerNotificationType>(type: K, payload: WorkerNotificationPayloadMap[K]) {
+  ctx.postMessage({ type, payload });
 }
 
 /**
@@ -19,21 +28,21 @@ function resolve(id: string, type: string, payload: any) {
 ctx.onmessage = (event) => {
   if (!event.data) return;
 
-  const { id, type } = event.data;
+  const message = event.data as WorkerMessageOutcoming;
 
-  switch (type) {
+  console.log(message);
+  switch (message.type) {
     case 'call': {
-      const { method, params, headers } = event.data.payload;
-      const [err, result] = makeResponse(method, params, headers);
-      resolve(id, type, { err, result });
+      const { method, params, headers } = message.payload;
+      const [error, result, delay] = mockResponse(method as any, params, headers);
+      setTimeout(() => respond(message.id, 'rpc_result', { error, result }), delay);
       break;
     }
-    case 'download_file': {
-      const { id: fileId } = event.data.payload;
-      setTimeout(() => {
-        const url = makeFileResponse(fileId);
-        resolve(id, type, url);
-      }, 2000);
+    case 'download': {
+      console.log(message.payload);
+      const { id, location } = message.payload;
+      const [delay, url] = getMockedFile(locationToString(location));
+      setTimeout(() => notify('download_ready', { id, url }), delay);
       break;
     }
 

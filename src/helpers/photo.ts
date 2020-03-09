@@ -1,7 +1,7 @@
 /* eslint-disable prefer-destructuring, prefer-template, max-len */
 import { PhotoSize, InputFileLocation, Peer, Message, Document, StickerSet, InputStickerSet, Photo } from 'client/schema';
 import { peerToInputPeer, getPeerPhotoLocation } from 'cache/accessors';
-import { blobToUrl, hexToBlob, hexToStr, strToBlob } from './files';
+import { blobToUrl, strToBlob } from './files';
 
 /**
  * Ref: https://github.com/telegramdesktop/tdesktop/blob/bec39d89e19670eb436dc794a8f20b657cb87c71/Telegram/SourceFiles/ui/image/image.cpp#L225
@@ -11,11 +11,11 @@ export function strippedToBlob(stripped: string): Blob {
 
   return strToBlob(
     header.slice(0, 164)
-    + hexToStr(stripped.slice(2, 4))
+    + stripped.slice(1, 2)
     + header.charAt(165)
-    + hexToStr(stripped.slice(4, 6))
+    + stripped.slice(2, 3)
     + header.slice(167)
-    + hexToStr(stripped.slice(6))
+    + stripped.slice(3)
     + '\xff\xd9', 'image/jpeg');
 }
 
@@ -29,7 +29,7 @@ export function getThumbnail(sizes: PhotoSize[]) {
     }
 
     if (size._ === 'photoCachedSize') {
-      const blob = hexToBlob(size.bytes, 'image/jpeg');
+      const blob = strToBlob(size.bytes, 'image/jpeg');
       return blobToUrl(blob);
     }
   }

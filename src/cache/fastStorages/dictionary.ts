@@ -89,6 +89,13 @@ export default class Dictionary<TKey extends keyof any, TItem> {
   }
 
   /**
+   * Removes all items from dictionary
+   */
+  public empty() {
+    this.data = {} as Record<TKey, Readonly<TItem>>;
+  }
+
+  /**
    * Replaces all the items in the dictionary with the given items
    */
   public replaceAll(items: Readonly<Record<TKey, Readonly<TItem>>>) {
