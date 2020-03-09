@@ -81,6 +81,10 @@ export default class Collection<TItem, TIndices extends IndicesFactories<any, an
     }
   }
 
+  public change(id: TId, itemUpdate: Readonly<Partial<TItem>>) {
+    this.storage.change(id, itemUpdate);
+  }
+
   public remove(id: TId) {
     this.storage.remove(id);
   }

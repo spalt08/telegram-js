@@ -1,7 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { userCache, chatCache, messageCache, dialogCache } from 'cache';
-import { peerMessageToId, peerToId } from 'helpers/api';
+import { dialogPeerToDialogId, dialogToId, peerMessageToId, peerToId } from 'helpers/api';
 import {
   Peer,
   InputDialogPeer,
@@ -12,21 +12,37 @@ import {
   MessagesMessages,
 } from 'cache/types';
 import { peerToInputDialogPeer, peerToInputPeer } from 'cache/accessors';
-import MessageService from './message/message';
+
+import MessageService from '../message/message';
+import makeDialogReadReporter, { DialogReadReporter } from './dialog_read_reporter';
 
 /**
- * Singleton service class for handling auth flow
+ * Singleton service class for handling dialogs
  */
 export default class DialogsService {
-  dialogs = new BehaviorSubject(dialogCache.indices.order.getIds());
+  readonly dialogs = new BehaviorSubject(dialogCache.indices.order.getIds());
 
-  loading = new BehaviorSubject(false);
+  readonly loading = new BehaviorSubject(false);
 
   protected isComplete = false;
+
+  protected readReporters: Record<string, DialogReadReporter> = {};
 
   constructor(private messageService: MessageService) {
     dialogCache.indices.order.changes.subscribe(() => {
       this.dialogs.next(dialogCache.indices.order.getIds());
+    });
+
+    dialogCache.changes.subscribe((changes) => {
+      changes.forEach(([action, dialog]) => {
+        if (action === 'remove') {
+          const dialogId = dialogToId(dialog);
+          if (this.readReporters[dialogId]) {
+            this.readReporters[dialogId].destroy();
+            delete this.readReporters[dialogId];
+          }
+        }
+      });
     });
 
     // The client pushes it before pushing messages
@@ -39,11 +55,11 @@ export default class DialogsService {
 
     messageCache.indices.history.newestMessages.subscribe(([peer, messageId]) => {
       this.changeOrLoadDialog(peer, (dialog) => {
-        if (dialog._ !== 'dialog' && dialog.top_message === messageId) { // todo: possible bug! Should be ||
+        if (dialog._ !== 'dialog' || dialog.top_message === messageId) {
           return undefined;
         }
 
-        let unread = (dialog as Dialog.dialog).unread_count;
+        let unread = dialog.unread_count;
         const message = messageCache.get(peerMessageToId(dialog.peer, messageId));
         if (message && message._ !== 'messageEmpty' && message.out === false) {
           if (message.id > dialog.top_message) unread++;
@@ -126,6 +142,18 @@ export default class DialogsService {
         if (msg && msg._ !== 'messageEmpty') await this.updateDialogs(msg.date);
       }
     }
+  }
+
+  reportMessageRead(peer: Peer, messageId: number) {
+    const dialogId = dialogPeerToDialogId(peer);
+    if (!dialogCache.has(dialogId)) {
+      return;
+    }
+
+    if (!this.readReporters[dialogId]) {
+      this.readReporters[dialogId] = makeDialogReadReporter(peer);
+    }
+    this.readReporters[dialogId].reportRead(messageId);
   }
 
   protected async doUpdateDialogs(offsetDate = 0) {
