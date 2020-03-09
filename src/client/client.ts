@@ -52,9 +52,9 @@ function call<K extends keyof MethodDeclMap>(method: K, ...args: unknown[]): voi
 }
 
 function callAsync<K extends keyof MethodDeclMap>(method: K, data: APICallParams<K>,
-  headers: APICallHeaders): Promise<MethodDeclMap[K]['res']> {
+  headers?: APICallHeaders): Promise<MethodDeclMap[K]['res']> {
   return new Promise((resolve, reject) => {
-    call(method, data, headers, (err: any, res: any) => {
+    call(method, data, headers || {}, (err: any, res: any) => {
       if (err) reject(err);
       else resolve(res);
     });
@@ -83,17 +83,9 @@ function emit(type: string, data: any) {
 /**
  * Listen worker incoming messages
  */
-listenMessage('update', (update) => {
-  emit(update._, update);
-});
-
-listenMessage('meta_updated', (newMeta) => {
-  meta = newMeta;
-});
-
-listenMessage('network_updated', (status) => {
-  emit('networkChanged', status);
-});
+listenMessage('update', (update) => emit(update._, update));
+listenMessage('meta_updated', (newMeta) => meta = newMeta);
+listenMessage('network_updated', (status) => emit('networkChanged', status));
 
 // Returns id of authorized user
 function getUserID(): number {
