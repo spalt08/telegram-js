@@ -126,7 +126,6 @@ function uploadFileChunkLoop(client: Client, id: string, part: number, notify: N
   client.call(big ? 'upload.saveFilePartBig' : 'upload.saveFilePart', payload, { thread: 2 }, (err, res) => {
     if (err || !res) throw new Error(`Error while uploadig file: ${JSON.stringify(err)}`);
 
-
     if (part < total - 1) {
       notify('upload_progress', { id, uploaded: uploaded + remaining, total: size });
       uploadFileChunkLoop(client, id, part + 1, notify);

@@ -86,6 +86,11 @@ function processMessage(msg: WorkerMessageOutcoming) {
       break;
     }
 
+    case 'listen_update': {
+      client.updates.on(msg.payload, (update) => notify('update', update));
+      break;
+    }
+
     default: {
       throw new Error(`Unknown task: ${msg.type}`);
     }
@@ -116,6 +121,7 @@ ctx.onmessage = (event) => {
       ...message.payload,
     });
 
+    console.log(client);
     // Broadcast meta changes
     client.on('metaChanged', (newMeta) => { notify('meta_updated', newMeta); });
 

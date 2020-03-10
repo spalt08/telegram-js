@@ -22,5 +22,6 @@ export function mockResponse<T extends keyof MethodDeclMap>(
 }
 
 export function getMockedFile(id: string): [number, string] {
+  console.log('getMockedFile', id, fileMap[id]);
   return fileMap[id] || [1000, ''];
 }

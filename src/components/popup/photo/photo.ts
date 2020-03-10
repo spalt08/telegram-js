@@ -1,7 +1,7 @@
 import { div, nothing, text } from 'core/html';
 import { Message, Peer, Photo } from 'client/schema';
 import './photo.scss';
-import media from 'client/media';
+import { cached } from 'client/media';
 import { getPhotoLocation, getOrientation, getSize } from 'helpers/photo';
 import { listen, mount } from 'core/dom';
 import { getInterface, hasInterface, useListenWhileMounted } from 'core/hooks';
@@ -60,7 +60,7 @@ export default function photoPopup({ rect, options, photo, peer, message }: Prop
   const top = (window.innerHeight - height) / 2;
   const left = (window.innerWidth - width) / 2;
 
-  const cachedSmall = media.cached(getPhotoLocation(photo, getSize(photo.sizes, options.width, options.height, options.fit)?.type));
+  const cachedSmall = cached(getPhotoLocation(photo, getSize(photo.sizes, options.width, options.height, options.fit)?.type));
   if (cachedSmall && photoEl instanceof HTMLElement) getInterface(photoEl).setThumb(cachedSmall);
 
   const orientation = getOrientation(photo.sizes);

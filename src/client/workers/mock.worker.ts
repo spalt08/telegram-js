@@ -1,7 +1,8 @@
 /* eslint-disable no-restricted-globals */
-import { WorkerMessageOutcoming, WorkerResponseType, WorkerResponsePayloadMap, WorkerNotificationType, WorkerNotificationPayloadMap } from 'client/types';
-import { mockResponse, getMockedFile } from './mocks/response';
+import { WorkerMessageOutcoming, WorkerResponseType, WorkerResponsePayloadMap, WorkerNotificationType,
+  WorkerNotificationPayloadMap } from 'client/types';
 import { locationToString } from 'helpers/files';
+import { mockResponse, getMockedFile } from './mocks/response';
 
 // Worker context
 const ctx: Worker = self as any;
@@ -30,7 +31,6 @@ ctx.onmessage = (event) => {
 
   const message = event.data as WorkerMessageOutcoming;
 
-  console.log(message);
   switch (message.type) {
     case 'call': {
       const { method, params, headers } = message.payload;
@@ -39,7 +39,6 @@ ctx.onmessage = (event) => {
       break;
     }
     case 'download': {
-      console.log(message.payload);
       const { id, location } = message.payload;
       const [delay, url] = getMockedFile(locationToString(location));
       setTimeout(() => notify('download_ready', { id, url }), delay);

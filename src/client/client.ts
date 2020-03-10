@@ -70,6 +70,14 @@ function on(type: string, cb: EventResolver) {
 }
 
 /**
+ * Subscribe update event
+ */
+function onUpdate(type: string, cb: EventResolver) {
+  on(type, cb);
+  task('listen_update', type);
+}
+
+/**
  * Emit event
  */
 function emit(type: string, data: any) {
@@ -120,7 +128,7 @@ const client = {
   call,
   callAsync,
   on,
-  updates: { on },
+  updates: { on: onUpdate },
   getUserID,
   getBaseDC,
   setBaseDC,

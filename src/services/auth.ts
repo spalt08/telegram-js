@@ -4,7 +4,7 @@ import { Country } from 'const/country';
 import client from 'client/client';
 import { API_HASH, API_ID } from 'const/api';
 import { unformat } from 'helpers/phone';
-import media from 'client/media';
+import { upload } from 'client/media';
 import {
   AuthSendCode,
   AuthCheckPassword,
@@ -272,7 +272,7 @@ export default class AuthService {
   protected setProfilePhoto() {
     if (!this.profilePhoto) return;
 
-    media.upload(this.profilePhoto, async (inputFile) => {
+    upload(this.profilePhoto, async (inputFile) => {
       await client.callAsync('photos.uploadProfilePhoto', { file: inputFile });
       // console.log(result);
     });

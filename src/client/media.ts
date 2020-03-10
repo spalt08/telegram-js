@@ -3,9 +3,12 @@ import { locationToString } from 'helpers/files';
 import { fileCache } from 'cache';
 import { task, listenMessage } from './context';
 import { UploadResolver, UploadProgressResolver, DownloadResolver,
-  DownloadProgressResolver, DownloadOptions } from './types';
+  DownloadProgressResolver, DownloadOptions, Priority } from './types';
 
 type FileID = string;
+
+// const
+const MAX_CONCURENT_DOWNLOADS = 4;
 
 /**
  * Request resolvers to avoid parallel requests
@@ -14,6 +17,25 @@ const downloadResolvers: Record<FileID, DownloadResolver[]> = {};
 const downloadProgressResolvers: Record<FileID, DownloadProgressResolver[]> = {};
 const uploadResovers: Record<FileID, UploadResolver> = {};
 const uploadProgressResovers: Record<FileID, UploadProgressResolver> = {};
+const downloadQuene: Array<{ priority: Priority, location: InputFileLocation, options: DownloadOptions }> = [];
+let downloadsProcessing = 0;
+
+function processScheduledDownloads() {
+  while (downloadQuene.length > 0 && downloadsProcessing < MAX_CONCURENT_DOWNLOADS) {
+    const request = downloadQuene.shift();
+    if (request) {
+      task('download', { id: locationToString(request.location), ...request });
+      downloadsProcessing++;
+    }
+  }
+}
+
+function scheduleDownload(location: InputFileLocation, options: DownloadOptions, priority: Priority = Priority.Background) {
+  downloadQuene.push({ priority, location, options });
+  downloadQuene.sort((left, right) => left.priority - right.priority);
+
+  processScheduledDownloads();
+}
 
 /**
  * Lookup cached file
@@ -44,7 +66,7 @@ export function download(location: InputFileLocation, options: DownloadOptions, 
     downloadProgressResolvers[id] = [];
     if (progress) downloadProgressResolvers[id].push(progress);
 
-    task('download', { id, location, options });
+    scheduleDownload(location, options, options.priority);
   }
 }
 
@@ -93,6 +115,10 @@ listenMessage('download_ready', ({ id, url }) => {
 
   delete downloadResolvers[id];
   delete downloadProgressResolvers[id];
+
+  downloadsProcessing--;
+  console.log('downloaded', downloadsProcessing, id);
+  processScheduledDownloads();
 });
 
 /**

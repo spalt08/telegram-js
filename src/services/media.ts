@@ -6,7 +6,7 @@ import { peerToInputPeer } from 'cache/accessors';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToId } from 'helpers/api';
 import { getDocumentLocation, getAttributeAudio } from 'helpers/files';
-import media from 'client/media';
+import { download } from 'client/media';
 import MainService from './main';
 
 export enum MediaPlaybackStatus {
@@ -239,7 +239,7 @@ export default class MediaService {
     if (state.value.status === MediaPlaybackStatus.NotStarted) {
       this.getPlaybackState(doc).next({ ...state.value, downloadProgress: 0, status: MediaPlaybackStatus.Downloading });
     }
-    media.download(location, { size: doc.size }, (url) => {
+    download(location, { size: doc.size }, (url) => {
       this.play(doc, url, position);
     }, (progress) => {
       state = this.getPlaybackState(doc);
@@ -251,7 +251,7 @@ export default class MediaService {
     const location = getDocumentLocation(doc);
     let state = this.getPlaybackState(doc);
     state.next({ downloadProgress: 0, playProgress: 0, status: MediaPlaybackStatus.Downloading });
-    media.download(location, { size: doc.size }, () => {
+    download(location, { size: doc.size }, () => {
       state.next({ downloadProgress: 1, playProgress: 0, status: MediaPlaybackStatus.Stopped });
     }, (progress) => {
       state = this.getPlaybackState(doc);

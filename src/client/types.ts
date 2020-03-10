@@ -28,6 +28,7 @@ export interface WorkerTaskPayloadMap {
   };
   'switch_dc': number,
   'window_event': string,
+  'listen_update': string,
 }
 
 /**

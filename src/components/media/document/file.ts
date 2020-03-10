@@ -5,7 +5,7 @@ import { downloadByUrl } from 'helpers/other';
 import { datetime } from 'components/ui';
 import { listen, mount, unmountChildren, unmount } from 'core/dom';
 import { materialSpinner } from 'components/icons';
-import media from 'client/media';
+import { download, cached as getCached } from 'client/media';
 import photoRenderer from '../photo/photo';
 import './file.scss';
 
@@ -48,7 +48,7 @@ export default function documentFile(document: Document.document, message?: Mess
   listen(icon, 'click', () => {
     if (isDownloading) return;
 
-    const cached = media.cached(getDocumentLocation(document, ''));
+    const cached = getCached(getDocumentLocation(document, ''));
 
     if (cached) {
       downloadByUrl(filename, cached);
@@ -63,7 +63,7 @@ export default function documentFile(document: Document.document, message?: Mess
     unmountChildren(sizeEl);
     sizeEl.textContent = '0%';
 
-    media.download(
+    download(
       getDocumentLocation(document, ''),
       { dc_id: document.dc_id, size: document.size, mime_type: document.mime_type },
 

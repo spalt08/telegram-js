@@ -15,7 +15,7 @@ const stories = storiesOf('Media | Photo', module)
   .addDecorator(withKnobs);
 
 stories.add('Square', () => (
-  photoRenderer(photoSquare as Photo, {
+  photoRenderer(photoSquare as Photo.photo, {
     fit: select('Fit Mode', ['cover', 'contain'], 'cover'),
     width: number('Width', 320),
     height: number('Height', 320),
@@ -23,7 +23,7 @@ stories.add('Square', () => (
 ));
 
 stories.add('Landscape', () => (
-  photoRenderer(photoLandscape as Photo, {
+  photoRenderer(photoLandscape as Photo.photo, {
     fit: select('Fit Mode', ['cover', 'contain'], 'contain'),
     width: number('Width', 320),
     minHeight: number('Min height', 320),

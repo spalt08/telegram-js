@@ -1,7 +1,7 @@
 import { StickerSet } from 'client/schema';
 import { div, img } from 'core/html';
 import { getStickerSetThumbLocation } from 'helpers/photo';
-import media from 'client/media';
+import { download } from 'client/media';
 import { mount, listen } from 'core/dom';
 import { preloadTgsAssets, tgs } from 'components/ui';
 import { getInterface } from 'core/hooks';
@@ -19,7 +19,7 @@ export default function stickerSetThumb(set: StickerSet) {
     preloadTgsAssets();
   }
 
-  media.get(location, (src: string) => {
+  download(location, set.thumb, (src: string) => {
     if (set.animated) {
       const thumb = tgs({ src, className: 'sticker-set-thumb__animated', autoplay: false, loop: true });
 
@@ -30,7 +30,7 @@ export default function stickerSetThumb(set: StickerSet) {
     } else {
       mount(container, img({ src, alt: set.title }));
     }
-  }, set.thumb_dc_id);
+  });
 
   return container;
 }
