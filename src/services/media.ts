@@ -158,10 +158,10 @@ export default class MediaService {
   private audioInfos: Record<string, BehaviorSubject<MediaPlaybackState>> = {};
 
   private getPlaybackState(doc: Document.document) {
-    let info = this.audioInfos[doc.file_reference];
+    let info = this.audioInfos[doc.id];
     if (!info) {
       info = new BehaviorSubject<MediaPlaybackState>({ downloadProgress: 0, playProgress: 0, status: MediaPlaybackStatus.NotStarted });
-      this.audioInfos[doc.file_reference] = info;
+      this.audioInfos[doc.id] = info;
     }
     return info;
   }
@@ -175,7 +175,7 @@ export default class MediaService {
 
     const time = position !== undefined ? position * audioAttribute.duration : 0;
     if (this.docPlaying) {
-      if (this.docPlaying.file_reference === doc.file_reference) {
+      if (this.docPlaying.id === doc.id) {
         this.currentAudio!.currentTime = time;
         return;
       }
@@ -206,7 +206,7 @@ export default class MediaService {
   }
 
   stopAudio(doc: Document.document) {
-    if (this.currentAudio && doc.file_reference === this.docPlaying?.file_reference) {
+    if (this.currentAudio && doc.id === this.docPlaying?.id) {
       clearInterval(this.audioPlayingTimer);
       this.currentAudio.pause();
       this.getPlaybackState(this.docPlaying!).next({ downloadProgress: 0, playProgress: 0, status: MediaPlaybackStatus.Stopped });
@@ -215,7 +215,7 @@ export default class MediaService {
   }
 
   pauseAudio(doc: Document.document) {
-    if (this.currentAudio && doc.file_reference === this.docPlaying?.file_reference) {
+    if (this.currentAudio && doc.id === this.docPlaying?.id) {
       clearInterval(this.audioPlayingTimer);
       this.currentAudio.pause();
       const state = this.getPlaybackState(doc);
