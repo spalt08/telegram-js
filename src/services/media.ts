@@ -254,6 +254,7 @@ export default class MediaService {
     download(location, { size: doc.size }, () => {
       state.next({ downloadProgress: 1, playProgress: 0, status: MediaPlaybackStatus.Stopped });
     }, (progress) => {
+      console.log(progress, doc.size);
       state = this.getPlaybackState(doc);
       this.getPlaybackState(doc).next({ ...state.value, downloadProgress: progress / doc.size });
     });

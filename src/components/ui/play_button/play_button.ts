@@ -10,7 +10,7 @@ import { unmount } from 'core/dom';
 import './play_button.scss';
 
 export default function playButton(doc: Document.document) {
-  const downloadButtonSvg = svgCodeToComponent(download, doc.file_reference)({ class: 'download' });
+  const downloadButtonSvg = svgCodeToComponent(download, doc.id)({ class: 'download' });
   const playButtonSvg = play({ class: 'play hidden' });
   const pauseButtonSvg = pause({ class: 'pause hidden' });
   const cancelButtonSvg = close({ class: 'cancel hidden' });
@@ -32,7 +32,7 @@ export default function playButton(doc: Document.document) {
     if (currStatus !== status) {
       currStatus = status;
       if (status === MediaPlaybackStatus.Downloading) {
-        const button = downloadButtonSvg.getElementById(`button_${doc.file_reference}`) as SVGGElement;
+        const button = downloadButtonSvg.getElementById(`button_${doc.id}`) as SVGGElement;
         button.dispatchEvent(new Event('click'));
       }
 
@@ -48,7 +48,7 @@ export default function playButton(doc: Document.document) {
 
   const setProgress = (progress: number) => {
     if (currProgress !== progress) {
-      const animation = downloadButtonSvg.getElementById(`animation_${doc.file_reference}`) as SVGAnimationElement;
+      const animation = downloadButtonSvg.getElementById(`animation_${doc.id}`) as SVGAnimationElement;
       animation.setAttribute('from', `${Math.max(2, currProgress * 2 * Math.PI * 19)} 1000`);
       animation.setAttribute('to', `${Math.max(2, progress * 2 * Math.PI * 19)} 1000`);
       if ((animation as any).beginElement) (animation as any).beginElement();
