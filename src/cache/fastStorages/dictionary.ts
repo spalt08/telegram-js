@@ -64,9 +64,7 @@ export default class Dictionary<TKey extends keyof any, TItem> {
    * Adds or updates the item in the dictionary
    */
   public put(key: TKey, item: Readonly<TItem>): void;
-
   public put(items: Readonly<Record<TKey, Readonly<TItem>>>): void;
-
   public put(arg1: any, arg2?: any) {
     if (arg2 === undefined) {
       this.batchChanges(() => {
@@ -74,6 +72,21 @@ export default class Dictionary<TKey extends keyof any, TItem> {
       });
     } else {
       this.putOne(arg1, arg2);
+    }
+  }
+
+  /**
+   * Partially updates the item in the dictionary. If the item doesn't exist, changes nothing.
+   */
+  public change(key: TKey, itemUpdate: Readonly<Partial<TItem>>): void;
+  public change(itemUpdates: Readonly<Record<TKey, Readonly<Partial<TItem>>>>): void;
+  public change(arg1: any, arg2?: any) {
+    if (arg2 === undefined) {
+      this.batchChanges(() => {
+        (Object.keys(arg1) as TKey[]).forEach((key) => this.changeOne(key, arg1[key]));
+      });
+    } else {
+      this.changeOne(arg1, arg2);
     }
   }
 
@@ -169,6 +182,15 @@ export default class Dictionary<TKey extends keyof any, TItem> {
       this.data[key] = item;
       this.notify('add', key, item);
     }
+  }
+
+  protected changeOne(key: TKey, itemUpdate: Readonly<Partial<TItem>>) {
+    if (!this.data[key]) {
+      return;
+    }
+
+    this.data[key] = { ...this.data[key], ...itemUpdate };
+    this.notify('update', key, this.data[key]);
   }
 
   protected notify(action: 'add' | 'update' | 'remove', key: TKey, item: Readonly<TItem>) {

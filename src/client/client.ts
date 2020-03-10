@@ -1,5 +1,5 @@
 import { InputCheckPasswordSRP, MethodDeclMap } from 'client/schema';
-import { EventResolver, APICallResolver, APICallHeaders, APICallParams } from './types';
+import { EventResolver, APICallHeaders, APICallParams } from './types';
 import { task, request, listenMessage } from './context';
 
 // Environment & Setup
@@ -31,32 +31,12 @@ task('init', { dc, test, debug, meta });
 window.addEventListener('online', () => task('window_event', 'online'));
 window.addEventListener('offline', () => task('window_event', 'offline'));
 
-/**
- * Make RPC API request
- */
-function call<K extends keyof MethodDeclMap>(method: K, params: APICallParams<K>, cb?: APICallResolver<K>): void;
-function call<K extends keyof MethodDeclMap>(method: K, params: APICallParams<K>, headers: APICallHeaders, cb?: APICallResolver<K>): void;
-function call<K extends keyof MethodDeclMap>(method: K, ...args: unknown[]): void {
-  let params: APICallParams<K> = {};
-  let headers: APICallHeaders = {};
-  let cb: APICallResolver<K> | undefined;
-
-  if (typeof args[0] === 'object') params = args[0] as APICallParams<K>;
-  if (args.length > 1 && typeof args[1] === 'object') headers = args[1] as APICallHeaders;
-  if (args.length > 1 && typeof args[1] === 'function') cb = args[1] as APICallResolver<K>;
-  if (args.length > 2 && typeof args[2] === 'function') cb = args[2] as APICallResolver<K>;
-
-  request('call', { method, params, headers }, ({ error, result }) => {
-    if (cb) cb(error, result);
-  });
-}
-
-function callAsync<K extends keyof MethodDeclMap>(method: K, data: APICallParams<K>,
-  headers?: APICallHeaders): Promise<MethodDeclMap[K]['res']> {
+function call<K extends keyof MethodDeclMap>(method: K, params: APICallParams<K>,
+  headers: APICallHeaders = {}): Promise<MethodDeclMap[K]['res']> {
   return new Promise((resolve, reject) => {
-    call(method, data, headers || {}, (err: any, res: any) => {
-      if (err) reject(err);
-      else resolve(res);
+    request('call', { method, params, headers }, ({ error, result }) => {
+      if (error) reject(error);
+      else resolve(result);
     });
   });
 }
@@ -126,7 +106,6 @@ function authorize(dc_id: number) {
 const client = {
   svc: { meta, test },
   call,
-  callAsync,
   on,
   updates: { on: onUpdate },
   getUserID,

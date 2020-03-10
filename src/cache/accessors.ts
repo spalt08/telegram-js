@@ -4,7 +4,7 @@ import { chatCache, userCache } from 'cache';
 import { getFirstLetters } from 'helpers/data';
 import { messageToDialogPeer, userIdToPeer } from 'helpers/api';
 import { todoAssertHasValue } from 'helpers/other';
-import { InputPeer, Message, Peer, FileLocation, User, Chat, InputUser, InputDialogPeer } from '../client/schema';
+import { InputPeer, Message, Peer, FileLocation, User, Chat, InputUser, InputDialogPeer, InputChannel } from 'client/schema';
 
 interface PeerReference {
   peer: InputPeer;
@@ -42,6 +42,28 @@ export function peerToInputPeer(peer: Peer, reference?: PeerReference): InputPee
     default:
       return { _: 'inputPeerEmpty' };
   }
+}
+
+export function peerToInputUser(peer: Peer.peerUser, reference?: PeerReference): InputUser {
+  const user = userCache.get(peer.user_id);
+  if (user?._ === 'user' && user.access_hash) {
+    return { _: 'inputUser', user_id: peer.user_id, access_hash: user.access_hash };
+  }
+  if (reference) {
+    return { _: 'inputUserFromMessage', peer: reference.peer, msg_id: reference.message.id, user_id: peer.user_id };
+  }
+  throw new Error('A reference is required to convert this Peer to InputUser');
+}
+
+export function peerToInputChannel(peer: Peer.peerChannel, reference?: PeerReference): InputChannel {
+  const channel = chatCache.get(peer.channel_id);
+  if (channel?._ === 'channel' && channel.access_hash) {
+    return { _: 'inputChannel', channel_id: peer.channel_id, access_hash: channel.access_hash };
+  }
+  if (reference) {
+    return { _: 'inputChannelFromMessage', peer: reference.peer, msg_id: reference.message.id, channel_id: peer.channel_id };
+  }
+  throw new Error('A reference is required to convert this Peer to InputChannel');
 }
 
 export function messageSenderToInputUser(message: Exclude<Message, Message.messageEmpty>): InputUser {

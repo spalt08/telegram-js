@@ -1,5 +1,5 @@
 import AuthService from './auth';
-import DialogService from './dialog';
+import DialogService from './dialog/dialog';
 import MessageService from './message/message';
 import MainService from './main';
 import MediaService from './media';

@@ -82,7 +82,7 @@ export default class AuthService {
         filter((isAuthorized) => isAuthorized),
       )
       .subscribe(() => {
-        client.callAsync('account.updateStatus', { offline: false });
+        client.call('account.updateStatus', { offline: false });
       });
   }
 
@@ -106,7 +106,7 @@ export default class AuthService {
     let result: AuthSentCode;
 
     try {
-      result = await client.callAsync('auth.sendCode', payload);
+      result = await client.call('auth.sendCode', payload);
     } catch (err) {
       if (err.type === 'network') {
         if (err.message && (err.message.indexOf('400') || err.code === 1006)) {
@@ -151,7 +151,7 @@ export default class AuthService {
     let result: AuthAuthorization;
 
     try {
-      result = await client.callAsync('auth.signIn', payload);
+      result = await client.call('auth.signIn', payload);
     } catch (err) {
       if (err.type === 'network') {
         this.errCode.next('NETWORK_ERROR');
@@ -175,7 +175,7 @@ export default class AuthService {
     for (;;) {
       try {
         // eslint-disable-next-line no-await-in-loop
-        this.passwordAlgo = await client.callAsync('account.getPassword', {});
+        this.passwordAlgo = await client.call('account.getPassword', {});
         break;
       } catch (error) {
         // retry
@@ -199,7 +199,7 @@ export default class AuthService {
     let result: AuthAuthorization;
 
     try {
-      result = await client.callAsync('auth.checkPassword', payload);
+      result = await client.call('auth.checkPassword', payload);
     } catch (err) {
       if (err.type === 'network') {
         this.errPassword.next('NETWORK_ERROR');
@@ -230,7 +230,7 @@ export default class AuthService {
     let result: AuthAuthorization;
 
     try {
-      result = await client.callAsync('auth.signUp', payload);
+      result = await client.call('auth.signUp', payload);
     } catch (err) {
       // todo: handle PHONE_CODE_EXPIRED
       if (err.type === 'network') {
@@ -273,7 +273,7 @@ export default class AuthService {
     if (!this.profilePhoto) return;
 
     upload(this.profilePhoto, async (inputFile) => {
-      await client.callAsync('photos.uploadProfilePhoto', { file: inputFile });
+      await client.call('photos.uploadProfilePhoto', { file: inputFile });
       // console.log(result);
     });
   }

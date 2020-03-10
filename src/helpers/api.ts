@@ -11,11 +11,15 @@ export function peerToId(peer: Peer): string {
   }
 }
 
+export function dialogPeerToDialogId(peer: Peer) {
+  return peerToId(peer);
+}
+
 export function dialogToId(dialog: Readonly<Dialog>): string {
   if (dialog._ === 'dialogFolder') {
     return `folder_${dialog.folder.id}`;
   }
-  return peerToId(dialog.peer);
+  return dialogPeerToDialogId(dialog.peer);
 }
 
 // Use it to convert a user message id to the message cache key
@@ -43,6 +47,27 @@ export function messageToDialogPeer(message: Readonly<Message>): Peer | undefine
 export function messageToId(message: Readonly<Message>): string {
   if (message._ === 'messageEmpty') return `deleted_${message.id}`;
   return peerMessageToId(messageToDialogPeer(message), message.id);
+}
+
+export function messageIdToId(messageId: string) {
+  const dividerPosition = messageId.lastIndexOf('_');
+  return Number(messageId.slice(dividerPosition + 1));
+}
+
+/**
+ * @return
+ * <0 The first message is older than the second
+ * =0 Messages are the same
+ * >0 The first message is newer than the second
+ */
+export function compareSamePeerMessageIds(id1: string, id2: string): number {
+  if (id1 === id2) {
+    return 0;
+  }
+  if (id1.length !== id2.length) {
+    return id1.length - id2.length;
+  }
+  return id1 < id2 ? -1 : 1;
 }
 
 export function userIdToPeer(id: number): Peer {

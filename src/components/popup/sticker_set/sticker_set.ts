@@ -22,7 +22,7 @@ export default function stickerSetPopup(stickerset: InputStickerSet) {
 
   listen(close, 'click', getInterface(container).remove);
 
-  client.callAsync('messages.getStickerSet', { stickerset })
+  client.call('messages.getStickerSet', { stickerset })
     .then((result) => {
       unmount(loader);
       mount(content, stickerSetFetched(result.set, result.documents as Document.document[]));
