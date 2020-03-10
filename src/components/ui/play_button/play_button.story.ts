@@ -8,7 +8,7 @@ import { getInterface } from 'core/hooks';
 
 import playButton from './play_button';
 
-const stories = storiesOf('II. UI Elements | Play Audio Button', module)
+const stories = storiesOf('UI Elements | Play Audio Button', module)
   .addDecorator(withKnobs)
   .addDecorator(withMountTrigger)
   .addDecorator(centered);

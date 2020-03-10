@@ -4,7 +4,8 @@ import { API_ID, API_HASH, APP_VERSION } from 'const/api';
 import { WorkerMessageOutcoming, WorkerResponseType, WorkerResponsePayloadMap, WorkerNotificationType,
   WorkerNotificationPayloadMap } from 'client/types';
 import schema from './layer105.json';
-import { downloadFile, loadTGS, uploadFile } from './worker.media';
+import { downloadFile, uploadFile } from './worker.media';
+import { loadTGS } from './worker.utils';
 
 /**
  * Vars

@@ -3,6 +3,7 @@ import { WorkerMessageOutcoming, WorkerResponseType, WorkerResponsePayloadMap, W
   WorkerNotificationPayloadMap } from 'client/types';
 import { locationToString } from 'helpers/files';
 import { mockResponse, getMockedFile } from './mocks/response';
+import { loadTGS } from './worker.utils';
 
 // Worker context
 const ctx: Worker = self as any;
@@ -12,7 +13,6 @@ const ctx: Worker = self as any;
  */
 function respond<K extends WorkerResponseType>(id: string, type: K, payload: WorkerResponsePayloadMap[K]) {
   // eslint-disable-next-line no-console
-  console.log('mock worker', type, payload);
   ctx.postMessage({ id, type, payload });
 }
 
@@ -38,10 +38,17 @@ ctx.onmessage = (event) => {
       setTimeout(() => respond(message.id, 'rpc_result', { error, result }), delay);
       break;
     }
+
     case 'download': {
       const { id, location } = message.payload;
       const [delay, url] = getMockedFile(locationToString(location));
       setTimeout(() => notify('download_ready', { id, url }), delay);
+      break;
+    }
+
+    case 'load_tgs': {
+      const { payload, id } = message;
+      loadTGS(payload, (json) => respond(id, 'tgs_loaded', json));
       break;
     }
 

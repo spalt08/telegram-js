@@ -1,10 +1,12 @@
-import { triggerMount } from 'core/hooks';
+import { triggerMountRecursive } from 'core/dom';
+import { div } from 'core/html';
 import chamomile from 'assets/chamomile-blurred.jpg';
 import { fileCache } from 'cache';
+import 'components/routes/home/home.scss';
 
 export function withMountTrigger(creator: () => Node) {
   const element = creator();
-  triggerMount(element);
+  triggerMountRecursive(element);
   return element;
 }
 
@@ -14,10 +16,22 @@ export function withEmptyFileCache(creator: () => Node) {
 }
 
 export function withChamomileBackground(creator: () => Node) {
-  const div = document.createElement('div');
-  div.style.background = `url(${chamomile})`;
-  div.style.backgroundSize = 'cover';
-  div.style.backgroundPosition = 'center center';
-  div.appendChild(creator());
-  return div;
+  const el = document.createElement('div');
+  el.style.background = `url(${chamomile})`;
+  el.style.backgroundSize = 'cover';
+  el.style.backgroundPosition = 'center center';
+  el.appendChild(creator());
+  return el;
+}
+
+export function withChatLayout(creator: () => Node) {
+  return (
+    div`.home`(
+      div`.messages`(
+        div`.messages__history`(
+          creator(),
+        ),
+      ),
+    )
+  );
 }

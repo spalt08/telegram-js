@@ -1,18 +1,16 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { storiesOf } from '@storybook/html';
 import { withKnobs, boolean, text } from '@storybook/addon-knobs';
-import centered from '@storybook/addon-centered/html';
-import { withMountTrigger, withChamomileBackground } from 'storybook/decorators';
+import { withMountTrigger, withChatLayout } from 'storybook/decorators';
 import { Document, DocumentAttribute, Message, MessageMedia, Peer } from 'client/schema';
 import { messageCache } from 'cache';
 
 import message from './message';
 
-const stories = storiesOf('III. Messages | Audio Message', module)
+const stories = storiesOf('Messages | With Audio', module)
   .addDecorator(withMountTrigger)
-  .addDecorator(withChamomileBackground)
-  .addDecorator(withKnobs)
-  .addDecorator(centered);
+  .addDecorator(withChatLayout)
+  .addDecorator(withKnobs);
 
 stories.add('Common Usage', () => {
   const doc: Document.document = {
