@@ -1,7 +1,7 @@
 import { triggerMountRecursive } from 'core/dom';
 import { div } from 'core/html';
 import chamomile from 'assets/chamomile-blurred.jpg';
-import { fileCache } from 'cache';
+import { emptyCache } from 'client/media';
 import 'components/routes/home/home.scss';
 
 export function withMountTrigger(creator: () => Node) {
@@ -11,7 +11,7 @@ export function withMountTrigger(creator: () => Node) {
 }
 
 export function withEmptyFileCache(creator: () => Node) {
-  fileCache.empty();
+  emptyCache();
   return creator();
 }
 

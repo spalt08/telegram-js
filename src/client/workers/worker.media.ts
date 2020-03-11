@@ -1,7 +1,7 @@
 import { InputFileLocation, InputFile } from 'client/schema';
 import { DownloadOptions } from 'client/types';
 import { typeToMime } from 'helpers/files';
-import { Client, TLConstructor, TLBytes, Bytes } from 'packages/mtproto-js';
+import { Client, TLConstructor, TLBytes, Bytes } from 'mtproto-js';
 
 // constants
 const DOWNLOAD_CHUNK_LIMIT = 512 * 1024;

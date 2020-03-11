@@ -7,7 +7,6 @@ import {
 } from 'helpers/api';
 import { Chat, Dialog, Message, User, UserFull, ChatFull } from 'client/schema';
 import Collection, { GetId, makeGetIdFromProp } from './fastStorages/collection';
-import Dictionary from './fastStorages/dictionary';
 import { orderBy } from './fastStorages/indices';
 import messageHistory from './fastStorages/indices/messageHistory';
 import sharedMediaIndex from './fastStorages/indices/sharedMediaIndex';
@@ -97,15 +96,9 @@ export const pinnedMessageCache = new Collection<Message.message, {}, string>({
   getId: (msg: Message.message) => peerToId(msg.to_id),
 });
 
-/**
- * File urls cache
- */
-export const fileCache = new Dictionary<string, string>();
-
 if (process.env.NODE_ENV !== 'production') {
   (window as any).mcache = messageCache;
   (window as any).ccache = chatCache;
   (window as any).dcache = dialogCache;
   (window as any).ucache = userCache;
-  (window as any).fcache = fileCache;
 }

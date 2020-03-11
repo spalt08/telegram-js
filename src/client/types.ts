@@ -1,4 +1,4 @@
-import { Transports, ClientError, TransportState, AuthKey } from 'packages/mtproto-js';
+import { Transports, ClientError, TransportState, AuthKey } from 'mtproto-js';
 import { InputFile, AccountPassword, InputCheckPasswordSRP, InputFileLocation, Update, MethodDeclMap } from 'client/schema';
 
 export type APICallHeaders = {

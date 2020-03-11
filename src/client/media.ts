@@ -1,6 +1,5 @@
 import { InputFileLocation } from 'client/schema';
 import { locationToString } from 'helpers/files';
-import { fileCache } from 'cache';
 import { task, listenMessage } from './context';
 import { UploadResolver, UploadProgressResolver, DownloadResolver,
   DownloadProgressResolver, DownloadOptions, Priority } from './types';
@@ -9,6 +8,8 @@ type FileID = string;
 
 // const
 const MAX_CONCURENT_DOWNLOADS = 4;
+
+let fileCache: Record<FileID, string> = {};
 
 /**
  * Request resolvers to avoid parallel requests
@@ -41,7 +42,7 @@ function scheduleDownload(location: InputFileLocation, options: DownloadOptions,
  * Lookup cached file
  */
 export function cached(location: InputFileLocation): string | undefined {
-  return fileCache.get(locationToString(location));
+  return fileCache[locationToString(location)];
 }
 
 /**
@@ -81,8 +82,6 @@ export function upload(file: File, ready: UploadResolver, progress?: UploadProgr
   task('upload', { id, file });
 }
 
-export default { cached, upload, download };
-
 /**
  * Resolve downloading progress
  */
@@ -105,7 +104,7 @@ listenMessage('upload_progress', ({ id, uploaded, total }) => {
  * Resolve downloading response
  */
 listenMessage('download_ready', ({ id, url }) => {
-  fileCache.put(id, url);
+  fileCache[id] = url;
 
   const readyListeners = downloadResolvers[id];
 
@@ -131,3 +130,7 @@ listenMessage('upload_ready', ({ id, inputFile }) => {
   delete uploadResovers[id];
   delete uploadProgressResovers[id];
 });
+
+export function emptyCache() {
+  fileCache = {};
+}

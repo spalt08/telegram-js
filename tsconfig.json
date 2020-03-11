@@ -14,7 +14,7 @@
     "resolveJsonModule": true,
     "baseUrl": "./src",
     "paths": {
-      "packages/mtproto-js": ["../packages/mtproto-js/src"],
+      "mtproto-js": ["../packages/mtproto-js/src"],
       "storybook/*": ["../storybook/*"],
       "mocks/*": ["./client/workers/mocks/*"]
     }

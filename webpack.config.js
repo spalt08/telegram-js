@@ -26,7 +26,7 @@ module.exports = (env, argv) => {
       modules: [sourceDirectory, 'node_modules'],
       alias: {
         storybook: path.resolve(__dirname, 'storybook/'),
-        'packages/mtproto-js': path.resolve(__dirname, 'packages/mtproto-js/src'),
+        'mtproto-js': path.resolve(__dirname, 'packages/mtproto-js/src'),
         mocks: path.resolve(__dirname, 'src/client/workers/mocks'),
       },
       extensions: ['.js', '.ts'],

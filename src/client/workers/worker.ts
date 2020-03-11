@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-import { Client, TypeLanguage } from 'packages/mtproto-js';
+import { Client, TypeLanguage } from 'mtproto-js';
 import { API_ID, API_HASH, APP_VERSION } from 'const/api';
 import { WorkerMessageOutcoming, WorkerResponseType, WorkerResponsePayloadMap, WorkerNotificationType,
   WorkerNotificationPayloadMap } from 'client/types';
