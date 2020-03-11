@@ -2,7 +2,7 @@ import { div, text, img } from 'core/html';
 import { Peer, Message } from 'cache/types';
 import { peerToInitials, peerToColorCode } from 'cache/accessors';
 import { getPeerPhotoInputLocation } from 'helpers/photo';
-import { unmount, mount } from 'core/dom';
+import { mount, unmountChildren } from 'core/dom';
 import media from 'client/media';
 import { auth } from 'services';
 import { savedmessages, avatarDeletedaccount } from 'components/icons';
@@ -21,52 +21,46 @@ function isDeletedAccount(peer: Peer) {
   return false;
 }
 
+function pictureAvatar(src: string | null) {
+  const holder = div`.avatar__picture`();
+  if (src !== null) {
+    mount(holder, img({ src }));
+  }
+  return holder;
+}
+
+function picturelessAvatar(peer: Peer, isForDialogList: boolean) {
+  if (isMyself(peer) && isForDialogList) {
+    return div`.avatar__predefined`(
+      savedmessages(),
+    );
+  }
+  if (isDeletedAccount(peer)) {
+    return div`.avatar__predefined`(
+      avatarDeletedaccount(),
+    );
+  }
+  return div`.avatar__standard${`color-${peerToColorCode(peer)}`}`(
+    text(peerToInitials(peer)[0]),
+  );
+}
+
 export default function profileAvatar(peer: Peer, message?: Message, isForDialogList = false) {
-  const me = isMyself(peer);
-  const deletedAccount = isDeletedAccount(peer);
   const container = div`.avatar`();
   const location = getPeerPhotoInputLocation(peer, message);
-  let defaultPicture: Element | undefined;
 
-  const preview = (src: string | null) => {
-    if (!src) {
-      if (me && isForDialogList) {
-        defaultPicture = div`.avatar__predefined`(
-          savedmessages(),
-        );
-      } else if (deletedAccount) {
-        defaultPicture = div`.avatar__predefined`(
-          avatarDeletedaccount(),
-        );
-      } else {
-        defaultPicture = div`.avatar__standard${`color-${peerToColorCode(peer)}`}`(
-          text(peerToInitials(peer)[0]),
-        );
-      }
+  if (location) {
+    media.get(location, (src) => {
+      unmountChildren(container);
+      mount(container, pictureAvatar(src));
+    });
 
-      mount(container, defaultPicture);
-    } else {
-      if (defaultPicture) unmount(defaultPicture);
-      mount(container, div`.avatar__picture`(img({ src })));
+    // No cache – add placeholder
+    if (!container.firstChild) {
+      mount(container, pictureAvatar(null));
     }
-  };
-
-  // display default icon
-  if (!location || me || deletedAccount) {
-    preview(null);
-    return container;
-  }
-
-  const url = media.cached(location);
-
-  // download file
-  if (url === undefined) {
-    preview(null);
-    media.get(location, preview);
-
-  // display from cache
   } else {
-    preview(url);
+    mount(container, picturelessAvatar(peer, isForDialogList));
   }
 
   return container;
