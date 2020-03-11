@@ -25,11 +25,6 @@
         background-color: $color;
       }
     }
-
-    &.removed {
-      position: absolute;
-      animation: avatarRemoved .3s ease;
-    }
   }
 
   &__predefined {
@@ -53,17 +48,12 @@
     // animation: avatarAppeared .3s ease;
     border-radius: 50%;
     overflow: hidden;
+    background: rgba(#7f7f7f, 0.15);
 
     img {
       width: 100%;
       height: 100%;
     }
-  }
-}
-
-@keyframes avatarRemoved {
-  to {
-    opacity: 0;
   }
 }
 
