@@ -1,5 +1,5 @@
 import { text } from 'core/html';
-import { Peer } from 'cache/types';
+import { Peer } from 'client/schema';
 import { useObservable } from 'core/hooks';
 import { peerToTitle } from 'cache/accessors';
 import { auth } from 'services';

@@ -1,6 +1,6 @@
 import { div, text } from 'core/html';
 import { materialSpinner } from 'components/icons';
-import { Document, InputStickerSet } from 'cache/types';
+import { Document, InputStickerSet } from 'client/schema';
 import { listen, unmount, mount } from 'core/dom';
 import { getInterface } from 'core/hooks';
 import client from 'client/client';
@@ -22,7 +22,7 @@ export default function stickerSetPopup(stickerset: InputStickerSet) {
 
   listen(close, 'click', getInterface(container).remove);
 
-  client.callAsync('messages.getStickerSet', { stickerset })
+  client.call('messages.getStickerSet', { stickerset })
     .then((result) => {
       unmount(loader);
       mount(content, stickerSetFetched(result.set, result.documents as Document.document[]));

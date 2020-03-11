@@ -31,6 +31,7 @@ export const a = ElementFactory('a');
 export const mark = ElementFactory('mark');
 export const video = ElementFactory('video');
 export const button = ElementFactory('button');
+export const canvas = ElementFactory('canvas');
 
 /**
  * Wrapper for any text children

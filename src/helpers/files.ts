@@ -1,4 +1,4 @@
-import { StorageFileType, Document, InputFileLocation, DocumentAttribute } from 'cache/types';
+import { StorageFileType, Document, InputFileLocation, DocumentAttribute } from 'client/schema';
 
 export function hexToStr(hex: string): string {
   let str = '';
@@ -8,6 +8,16 @@ export function hexToStr(hex: string): string {
   }
 
   return str;
+}
+
+export function hexBytesToArray(hex: string): number[] {
+  const result = [];
+
+  for (let i = 0; i < hex.length; i += 2) {
+    result.push(parseInt(hex.slice(i, i + 2), 16));
+  }
+
+  return result;
 }
 
 export function strToBlob(str: string, type: string) {
@@ -78,6 +88,7 @@ export function getAttribute(document: Document.document, name: 'documentAttribu
 export function getAttribute(document: Document.document, name: 'documentAttributeFilename'): DocumentAttribute.documentAttributeFilename | null;
 export function getAttribute(document: Document.document, name: 'documentAttributeSticker'): DocumentAttribute.documentAttributeSticker | null;
 export function getAttribute(document: Document.document, name: 'documentAttributeVideo'): DocumentAttribute.documentAttributeVideo | null;
+export function getAttribute(document: Document.document, name: 'documentAttributeAudio'): DocumentAttribute.documentAttributeAudio | null;
 export function getAttribute(document: Document.document, name: string): DocumentAttribute | null {
   for (let i = 0; i < document.attributes.length; i += 1) {
     const attr = document.attributes[i];
@@ -93,6 +104,10 @@ export function getAttributeSticker(document: Document.document) {
 
 export function getAttributeVideo(document: Document.document) {
   return getAttribute(document, 'documentAttributeVideo');
+}
+
+export function getAttributeAudio(document: Document.document) {
+  return getAttribute(document, 'documentAttributeAudio');
 }
 
 export function getAttributeFilename(document: Document.document) {
@@ -117,6 +132,8 @@ export function getReadableSize(fsize: number): string {
 }
 
 export function getReadableDuration(duration: number) {
+  // eslint-disable-next-line no-param-reassign
+  duration = Math.floor(duration);
   const seconds = `0${duration % 60}`.slice(-2);
   let minutes: number | string = Math.floor(duration / 60);
 

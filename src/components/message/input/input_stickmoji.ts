@@ -3,7 +3,7 @@ import stickerPanel from 'components/media/sticker/panel';
 import './input_stickmoji.scss';
 import { listenOnce } from 'core/dom';
 import { getInterface, hasInterface } from 'core/hooks';
-import { Document } from 'cache/types';
+import { Document } from 'client/schema';
 import { tabsPanel } from 'components/ui';
 
 type Props = {

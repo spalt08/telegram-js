@@ -1,4 +1,4 @@
-import { Peer } from 'cache/types';
+import { Peer } from 'client/schema';
 import { peerToInputPeer } from 'cache/accessors';
 import client from 'client/client';
 import { MessagesChunk } from 'cache/fastStorages/indices/messageHistory';
@@ -21,7 +21,7 @@ export async function loadContinuousMessages(
     [fromId, toId] = [toId, fromId]; // eslint-disable-line no-param-reassign
   }
 
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     if (direction === Direction.Around && toId !== undefined) {
       // eslint-disable-next-line no-console
       console.warn('The toId parameter gives no effect with Direction.Around');
@@ -61,7 +61,7 @@ export async function loadContinuousMessages(
   }
 
   // console.log('loadMessages - request', payload);
-  const data = await client.callAsync('messages.getHistory', payload);
+  const data = await client.call('messages.getHistory', payload);
   // console.log('loadMessages - response', data);
 
   if (data._ === 'messages.messagesNotModified') {

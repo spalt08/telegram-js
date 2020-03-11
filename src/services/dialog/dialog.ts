@@ -1,7 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { userCache, chatCache, messageCache, dialogCache } from 'cache';
-import { peerMessageToId, peerToId } from 'helpers/api';
+import { dialogPeerToDialogId, dialogToId, peerMessageToId, peerToId } from 'helpers/api';
 import {
   Peer,
   InputDialogPeer,
@@ -10,23 +10,39 @@ import {
   MessagesDialogs,
   MessagesPeerDialogs,
   MessagesMessages,
-} from 'cache/types';
+} from 'client/schema';
 import { peerToInputDialogPeer, peerToInputPeer } from 'cache/accessors';
-import MessageService from './message/message';
+
+import MessageService from '../message/message';
+import makeDialogReadReporter, { DialogReadReporter } from './dialog_read_reporter';
 
 /**
- * Singleton service class for handling auth flow
+ * Singleton service class for handling dialogs
  */
 export default class DialogsService {
-  dialogs = new BehaviorSubject(dialogCache.indices.order.getIds());
+  readonly dialogs = new BehaviorSubject(dialogCache.indices.order.getIds());
 
-  loading = new BehaviorSubject(false);
+  readonly loading = new BehaviorSubject(false);
 
   protected isComplete = false;
+
+  protected readReporters: Record<string, DialogReadReporter> = {};
 
   constructor(private messageService: MessageService) {
     dialogCache.indices.order.changes.subscribe(() => {
       this.dialogs.next(dialogCache.indices.order.getIds());
+    });
+
+    dialogCache.changes.subscribe((changes) => {
+      changes.forEach(([action, dialog]) => {
+        if (action === 'remove') {
+          const dialogId = dialogToId(dialog);
+          if (this.readReporters[dialogId]) {
+            this.readReporters[dialogId].destroy();
+            delete this.readReporters[dialogId];
+          }
+        }
+      });
     });
 
     // The client pushes it before pushing messages
@@ -39,11 +55,11 @@ export default class DialogsService {
 
     messageCache.indices.history.newestMessages.subscribe(([peer, messageId]) => {
       this.changeOrLoadDialog(peer, (dialog) => {
-        if (dialog._ !== 'dialog' && dialog.top_message === messageId) { // todo: possible bug! Should be ||
+        if (dialog._ !== 'dialog' || dialog.top_message === messageId) {
           return undefined;
         }
 
-        let unread = (dialog as Dialog.dialog).unread_count;
+        let unread = dialog.unread_count;
         const message = messageCache.get(peerMessageToId(dialog.peer, messageId));
         if (message && message._ !== 'messageEmpty' && message.out === false) {
           if (message.id > dialog.top_message) unread++;
@@ -112,10 +128,16 @@ export default class DialogsService {
   }
 
   async updateDialogs(offsetDate = 0) {
-    if (this.loading.value) return;
-    this.loading.next(true);
-    await this.doUpdateDialogs(offsetDate);
-    this.loading.next(false);
+    if (this.loading.value) {
+      return;
+    }
+
+    try {
+      this.loading.next(true);
+      await this.doUpdateDialogs(offsetDate);
+    } finally {
+      this.loading.next(false);
+    }
   }
 
   async loadMoreDialogs() {
@@ -126,6 +148,18 @@ export default class DialogsService {
         if (msg && msg._ !== 'messageEmpty') await this.updateDialogs(msg.date);
       }
     }
+  }
+
+  reportMessageRead(peer: Peer, messageId: number) {
+    const dialogId = dialogPeerToDialogId(peer);
+    if (!dialogCache.has(dialogId)) {
+      return;
+    }
+
+    if (!this.readReporters[dialogId]) {
+      this.readReporters[dialogId] = makeDialogReadReporter(peer);
+    }
+    this.readReporters[dialogId].reportRead(messageId);
   }
 
   protected async doUpdateDialogs(offsetDate = 0) {
@@ -140,7 +174,7 @@ export default class DialogsService {
 
     let data: MessagesDialogs | undefined;
     try {
-      data = await client.callAsync('messages.getDialogs', payload);
+      data = await client.call('messages.getDialogs', payload);
     } catch (err) {
       if (err.message?.indexOf('USER_MIGRATE_') > -1) {
         // todo store dc
@@ -165,7 +199,7 @@ export default class DialogsService {
       this.messageService.pushMessages(data.messages);
 
       if (dialogsToPreload) {
-        await this.preloadDialogs(dialogsToPreload);
+        /* no await */this.preloadMessages(dialogsToPreload);
       }
     }
   }
@@ -201,9 +235,9 @@ export default class DialogsService {
     const request = { peers };
     let data: MessagesPeerDialogs.messagesPeerDialogs;
     try {
-      data = await client.callAsync('messages.getPeerDialogs', request);
+      data = await client.call('messages.getPeerDialogs', request);
     } catch (err) {
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV !== 'production') {
         // eslint-disable-next-line no-console
         console.error('Failed to load peer dialogs', { request, err });
       }
@@ -216,11 +250,21 @@ export default class DialogsService {
     this.messageService.pushMessages(data.messages);
   }
 
-  preloadDialogs = async (dialogs: Dialog[]) => {
+  protected async preloadMessages(dialogs: Dialog[]) {
     for (let i = 0; i < dialogs.length; i++) {
       const dialog = dialogs[i];
-      if (dialog._ === 'dialog' && dialog.unread_count === 0) {
-        const payload = {
+      if (dialog._ !== 'dialog' || dialog.unread_count > 0) {
+        continue;
+      }
+
+      // Postpone a bit to let more important requests go
+      // eslint-disable-next-line no-await-in-loop
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      let messages: MessagesMessages;
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        messages = await client.call('messages.getHistory', {
           peer: peerToInputPeer(dialogs[i].peer),
           offset_id: 0,
           offset_date: 0,
@@ -229,20 +273,17 @@ export default class DialogsService {
           max_id: 0,
           min_id: 0,
           hash: 0,
-        };
-        let messages: MessagesMessages;
-        try {
-          // eslint-disable-next-line no-await-in-loop
-          messages = await client.callAsync('messages.getHistory', payload, { thread: 2 });
-        } catch (err) {
-          return;
-        }
-        if (messages._ !== 'messages.messagesNotModified') {
-          userCache.put(messages.users);
-          chatCache.put(messages.chats);
-          messageCache.indices.history.putNewestMessages(messages.messages);
-        }
+        }, {
+          thread: 2,
+        });
+      } catch (err) {
+        return;
+      }
+      if (messages._ !== 'messages.messagesNotModified') {
+        userCache.put(messages.users);
+        chatCache.put(messages.chats);
+        messageCache.indices.history.putNewestMessages(messages.messages);
       }
     }
-  };
+  }
 }

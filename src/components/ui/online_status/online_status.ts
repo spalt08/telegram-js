@@ -1,4 +1,4 @@
-import { Peer, UserStatus } from 'cache/types';
+import { Peer, UserStatus } from 'client/schema';
 import { userCache, chatCache, chatFullCache } from 'cache';
 import { text, span } from 'core/html';
 import { useObservable } from 'core/hooks';
@@ -99,7 +99,7 @@ export default function onlineStatus(peer: Peer) {
           }
         });
         let onlineText: string;
-        if (onlineUsers === 1 && wasMe) {
+        if (onlineUsers === 0 || (onlineUsers === 1 && wasMe)) {
           onlineText = '';
         } else {
           onlineText = `, ${onlineUsers} online`;

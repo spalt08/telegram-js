@@ -24,6 +24,11 @@ module.exports = (env, argv) => {
 
     resolve: {
       modules: [sourceDirectory, 'node_modules'],
+      alias: {
+        storybook: path.resolve(__dirname, 'storybook/'),
+        'mtproto-js': path.resolve(__dirname, 'packages/mtproto-js/src'),
+        mocks: path.resolve(__dirname, 'src/client/workers/mocks'),
+      },
       extensions: ['.js', '.ts'],
     },
 
@@ -52,12 +57,12 @@ module.exports = (env, argv) => {
         {
           test: /\.s?css$/,
           use: [
-            {
+            isProduction ? {
               loader: MiniCssExtractPlugin.loader,
               options: {
                 reloadAll: true,
               },
-            },
+            } : { loader: 'style-loader' },
             {
               loader: 'css-loader',
               options: {

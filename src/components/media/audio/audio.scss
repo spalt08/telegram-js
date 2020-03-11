@@ -1,0 +1,35 @@
+.document-audio {
+  display: flex;
+  transform: translateZ(0);
+
+  &__play-button {
+    margin-right: 10PX;
+    margin-top: 1PX;
+    margin-bottom: 1PX;
+  }
+
+  &__wave {
+    display: flex;
+    flex-direction: column;
+    margin-top: 4PX;
+  }
+
+  &__title {
+    display: flex;
+    flex-direction: column;
+  }  
+
+  &__timing {
+    color: var(--accent-color-inactive);
+    font-size: 14px;
+    line-height: 2;
+  }
+
+  .message.chat {
+    --waveform-color: #50a2e9;
+  }
+
+  .message.chat.out {
+    --waveform-color: #4fae4e;
+  }
+}

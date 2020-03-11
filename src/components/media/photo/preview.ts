@@ -1,4 +1,4 @@
-import { Photo, Peer, Message } from 'cache/types';
+import { Photo, Peer, Message } from 'client/schema';
 import { listen } from 'core/dom';
 import { getInterface } from 'core/hooks';
 import { main } from 'services';

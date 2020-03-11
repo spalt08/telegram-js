@@ -15,7 +15,7 @@ export function isMounted(element: Node): boolean {
   return element.isConnected;
 }
 
-function triggerMountRecursive(element: Node) {
+export function triggerMountRecursive(element: Node) {
   // The parent is triggered as mounted means that the children are triggered too (if they use mount/unmount as expected)
   if (isMountTriggered(element) === true) {
     return;
@@ -255,6 +255,22 @@ export function el(tag: string, props: Record<string, any> = {}, children: Node[
   return element;
 }
 
+export function svgEl<T extends keyof SVGElementTagNameMap>(tag: T, props?: Record<string, any>, ...children: SVGElement[]) {
+  const element = document.createElementNS('http://www.w3.org/2000/svg', tag);
+
+  // Setting props
+  if (props) {
+    setElementProps(element, props);
+  }
+
+  // Mounting children
+  for (let i = 0; i < children.length; i += 1) {
+    element.appendChild(children[i]);
+  }
+
+  return element;
+}
+
 export function createFragment(children: ArrayLike<Node> = []) {
   const fragment = document.createDocumentFragment();
   for (let i = 0; i < children.length; i += 1) {
@@ -282,8 +298,8 @@ const svgFromCodeTempRoot = document.createElement('div');
 /**
  * Makes an <svg /> element from the SVG code
  */
-export function svgFromCode(code: string, props?: Record<string, any>): SVGSVGElement {
-  svgFromCodeTempRoot.innerHTML = code;
+export function svgFromCode(code: string, id?: string, props?: Record<string, any>): SVGSVGElement {
+  svgFromCodeTempRoot.innerHTML = id === undefined ? code : code.replace(/\$id\$/g, id);
   const element = svgFromCodeTempRoot.lastElementChild;
   svgFromCodeTempRoot.innerHTML = '';
 

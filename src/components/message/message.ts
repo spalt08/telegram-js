@@ -2,17 +2,17 @@ import { div, text, nothing } from 'core/html';
 import { useInterface, hasInterface, getInterface, useOnMount } from 'core/hooks';
 import { mount, unmount } from 'core/dom';
 import { messageCache, dialogCache } from 'cache';
-import { Peer, Message, Dialog } from 'cache/types';
+import { Peer, Message, Dialog } from 'client/schema';
 import { formattedMessage } from 'components/ui';
-import client from 'client/client';
 import { profileAvatar, profileTitle } from 'components/profile';
 import webpagePreview from 'components/media/webpage/preview';
 import photoPreview from 'components/media/photo/preview';
-import { getAttributeSticker, getAttributeVideo, getAttributeAnimated } from 'helpers/files';
+import { getAttributeSticker, getAttributeVideo, getAttributeAnimated, getAttributeAudio } from 'helpers/files';
 import stickerRenderer from 'components/media/sticker/sticker';
 import documentFile from 'components/media/document/file';
 import videoPreview from 'components/media/video/preview';
 import videoRenderer from 'components/media/video/video';
+import audio from 'components/media/audio/audio';
 import { messageToSenderPeer, peerToColorCode } from 'cache/accessors';
 import { userIdToPeer, peerToId } from 'helpers/api';
 import { isEmoji } from 'helpers/message';
@@ -151,6 +151,19 @@ const renderMessage = (msg: Message.message, peer: Peer) => {
     );
   }
 
+  // with audio
+  if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document' && getAttributeAudio(msg.media.document)) {
+    const previewEl = audio(msg.media.document);
+
+    return (
+      div`.message__bubble`(
+        reply,
+        div`.message__media-padded`(previewEl),
+        date,
+      )
+    );
+  }
+
   // with document
   if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document') {
     const messageEl = msg.message ? div`.message__text`(formattedMessage(msg)) : nothing;
@@ -211,8 +224,9 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
       mount(element, container);
     }
 
-
-    if (msg && msg._ !== 'messageEmpty' && msg.from_id === client.getUserID()) element.classList.add('out');
+    if (msg && msg._ !== 'messageEmpty' && msg.out) {
+      element.classList.add('out');
+    }
 
     // shouldn't rerender service and empty message
     if (!msg || msg._ !== 'message') {
@@ -225,8 +239,6 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
       wrapper = div`.message__wrap`();
       aligner = div`.message__align`(wrapper);
       mount(container, aligner);
-
-      if (msg.from_id === client.getUserID()) element.classList.add('out');
 
       // if unread
       const dialog = dialogCache.get(peerToId(peer));

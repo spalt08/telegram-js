@@ -1,4 +1,4 @@
-import { Peer } from 'cache/types';
+import { Peer } from 'client/schema';
 import { tabsPanel } from 'components/ui';
 import mediaPanel from './media_panel';
 import docsPanel from './docs_panel';

@@ -20,3 +20,6 @@ export { default as quote } from './quote/quote';
 export { default as typingIndicator } from './typing_indicator/typing_indicator';
 export { default as tabsPanel } from './tabs/tabs';
 export { default as virtualScrollBar } from './virtual_scroll_bar/virtual_scroll_bar';
+export { default as waveform } from './waveform/waveform';
+export { default as audioSeekbar } from './audio_seekbar/audio_seekbar';
+export { default as playButton } from './play_button/play_button';

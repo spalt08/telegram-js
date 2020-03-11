@@ -1,20 +1,18 @@
+import binarySearch from 'binary-search';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { button, div } from 'core/html';
 import { listen, mount, unmount } from 'core/dom';
 import { useObservable, getInterface } from 'core/hooks';
-import { message as service } from 'services';
+import { message as service, dialog as dialogService } from 'services';
 import { Direction as MessageDirection } from 'services/message/types';
 import message from 'components/message/message';
 import { sectionSpinner, virtualScrollBar, VirtualizedList } from 'components/ui';
 import * as icons from 'components/icons';
 import messageInput from 'components/message/input/input';
-import { Peer, InputChannel } from 'cache/types';
-import { peerMessageToId, peerToId } from 'helpers/api';
-import { messageCache, dialogCache, chatCache } from 'cache';
-import client from 'client/client';
-import { peerToInputPeer } from 'cache/accessors';
-import { todoAssertHasValue } from 'helpers/other';
+import { Peer } from 'client/schema';
+import { compareSamePeerMessageIds, peerMessageToId, peerToId } from 'helpers/api';
+import { messageCache, dialogCache } from 'cache';
 import header from './header/header';
 
 interface Props {
@@ -49,6 +47,7 @@ export default function messages({ className = '' }: Props = {}) {
     messageInput(),
   );
   let spinner: Node | undefined;
+  let scroll: VirtualizedList;
 
   const itemsSubject = new BehaviorSubject<string[]>([]);
   const showSpinnerObservable = combineLatest([service.history, service.loadingNextChunk])
@@ -56,9 +55,55 @@ export default function messages({ className = '' }: Props = {}) {
       loadingNextChunk || ((loadingNewer || loadingOlder) && ids.length < 3)
     )));
 
+  function getMessageIndex(messageId: string): number {
+    const rawValue = binarySearch(itemsSubject.value, messageId, compareSamePeerMessageIds);
+    return rawValue >= 0 ? rawValue : (-rawValue - 1.5);
+  }
+
+  function updateDownButtonState(bottomVisibleMessageId: string) {
+    const showDown = !service.history.value.newestReached || itemsSubject.value[itemsSubject.value.length - 1] !== bottomVisibleMessageId;
+    if (showDown !== showDownButton.value) {
+      showDownButton.next(showDown);
+    }
+  }
+
+  function reportRead(newestReadMessageId: number) {
+    dialogService.reportMessageRead(
+      service.activePeer.value!,
+      newestReadMessageId,
+    );
+  }
+
+  function updateUnreadCounter(newestReadMessageId: number) {
+    const peer = service.activePeer.value!;
+    const dialog = dialogCache.get(peerToId(peer));
+    if (dialog?._ !== 'dialog' || newestReadMessageId <= dialog.read_inbox_max_id) {
+      return;
+    }
+
+    let { unread_count } = dialog;
+
+    if (newestReadMessageId === dialog.top_message) {
+      unread_count = 0;
+    } else {
+      const lastReadMessageIndex = getMessageIndex(peerMessageToId(peer, dialog.read_inbox_max_id));
+      const newReadMessageIndex = getMessageIndex(peerMessageToId(peer, newestReadMessageId));
+      for (let i = Math.floor(lastReadMessageIndex) + 1; i <= newReadMessageIndex; i++) {
+        const msg = messageCache.get(scroll.current[i]);
+        if (msg && msg._ !== 'messageEmpty' && !msg.out) unread_count--;
+      }
+    }
+
+    dialogCache.put({
+      ...dialog,
+      read_inbox_max_id: newestReadMessageId,
+      unread_count,
+    });
+  }
+
   const scrollBar = virtualScrollBar();
 
-  const scroll: VirtualizedList = new VirtualizedList({
+  scroll = new VirtualizedList({
     className: 'messages__list',
     items: itemsSubject,
     pivotBottom: true,
@@ -70,48 +115,12 @@ export default function messages({ className = '' }: Props = {}) {
     onReachBottom: () => service.loadMoreHistory(MessageDirection.Newer),
     onScrollChange: getInterface(scrollBar).onScrollChange,
     onFocus: (id: string) => {
-      const showDown = !service.history.value.newestReached || itemsSubject.value[itemsSubject.value.length - 1] !== id;
-      if (showDown !== showDownButton.value) {
-        showDownButton.next(showDown);
-      }
+      updateDownButtonState(id);
 
-      const msg = messageCache.get(id);
-
-      // send read status
-      if (msg && msg._ !== 'messageEmpty' && service.activePeer.value) {
-        const dialog = dialogCache.get(peerToId(service.activePeer.value));
-
-        if (message && dialog?._ === 'dialog' && msg.id > dialog.read_inbox_max_id) {
-          // read channel
-          if (dialog.peer._ === 'peerChannel') {
-            const channel = chatCache.get(dialog.peer.channel_id);
-            if (!channel || channel._ !== 'channel') return;
-
-            const inputChannel: InputChannel = {
-              _: 'inputChannel',
-              channel_id: dialog.peer.channel_id,
-              access_hash: todoAssertHasValue(channel.access_hash),
-            };
-            client.callAsync('channels.readHistory', { channel: inputChannel, max_id: msg.id });
-          // read other
-          } else {
-            client.callAsync('messages.readHistory', { peer: peerToInputPeer(dialog.peer), max_id: msg.id });
-          }
-
-          let { unread_count } = dialog;
-
-          if (msg.id === dialog.top_message) unread_count = 0;
-          else {
-            for (let i = scroll.current.indexOf(peerMessageToId(dialog.peer, dialog.read_inbox_max_id)) + 1; i <= scroll.current.indexOf(id); i++) {
-              const next = messageCache.get(scroll.current[i]);
-              if (next && next._ !== 'messageEmpty' && next.out === false) unread_count--;
-            }
-          }
-
-          dialogCache.put({
-            ...dialog, read_inbox_max_id: msg.id, unread_count,
-          });
-        }
+      const numericId = messageCache.get(id)?.id;
+      if (numericId !== undefined) {
+        reportRead(numericId);
+        updateUnreadCounter(numericId);
       }
     },
   });
@@ -119,7 +128,9 @@ export default function messages({ className = '' }: Props = {}) {
   mount(historySection, scroll.container);
   mount(historySection, scrollBar);
 
-  useObservable(element, service.activePeer, () => scroll.clear());
+  useObservable(element, service.activePeer, () => {
+    scroll.clear();
+  });
 
   // Handle message focus
   useObservable(element, service.focusMessage, (focus) => {

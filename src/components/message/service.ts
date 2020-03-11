@@ -1,4 +1,4 @@
-import { Message, Peer } from 'cache/types';
+import { Message, Peer } from 'client/schema';
 import { div, strong, text } from 'core/html';
 import { profileTitle } from 'components/profile';
 import './service.scss';

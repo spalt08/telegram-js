@@ -1,9 +1,9 @@
 import { div, img } from 'core/html';
-import { Document } from 'cache/types';
+import { Document } from 'client/schema';
 import { mount, listenOnce, unmount, listen } from 'core/dom';
 import { getThumbnail } from 'helpers/photo';
 import { getDocumentLocation } from 'helpers/files';
-import media from 'client/media';
+import { download, cached as getCached } from 'client/media';
 import { preloadTgsAssets, tgs } from 'components/ui';
 import './sticker.scss';
 import { useInterface, getInterface, WithInterfaceHook, useOnMount } from 'core/hooks';
@@ -21,7 +21,7 @@ enum StickerMimeType {
 
 export default function stickerRenderer(sticker: Document.document, { size = '200px', autoplay = true, onClick }: StickerOptions) {
   const location = getDocumentLocation(sticker);
-  let cached = media.cached(location);
+  let cached = getCached(location);
 
   const container = div`.sticker`({ style: { width: size, height: size } });
   let thumbnail: HTMLElement | undefined;
@@ -76,7 +76,7 @@ export default function stickerRenderer(sticker: Document.document, { size = '20
           preloadTgsAssets();
         }
 
-        media.get(location, render, sticker.dc_id, sticker.mime_type);
+        download(location, { ...sticker }, render);
       }
     });
   }

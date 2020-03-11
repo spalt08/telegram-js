@@ -5,7 +5,7 @@ interface FileReaderSync {
   readAsText(blob: Blob, encoding?: string): string;
 }
 
-declare var FileReaderSync: {
+declare const FileReaderSync: {
   prototype: FileReaderSync;
   new(): FileReaderSync;
 };
@@ -20,6 +20,14 @@ declare module '*.svg' {
   export default src;
 }
 declare module '*.png' {
+  const src: string;
+  export default src;
+}
+declare module '*.jpg' {
+  const src: string;
+  export default src;
+}
+declare module '*.mp3' {
   const src: string;
   export default src;
 }

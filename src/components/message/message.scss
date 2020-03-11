@@ -23,6 +23,12 @@ $messageDistance: 4PX;
 }
 
 .message {
+  --bubble-background: #FFFFFF;
+  --accent-color: #1da1f1;
+  --voice-message-bar: #1da1f1;
+  --voice-message-bar-transparent: rgba(112, 117, 121, 0.35);
+  --accent-color-inactive: #707579;
+
   width: 100%;
 
   & .photo {
@@ -52,7 +58,7 @@ $messageDistance: 4PX;
   }
 
   &__bubble {
-    background: #FFFFFF;
+    background: var(--bubble-background);
     overflow: visible;
     position: relative;
     border-radius: 6px 12.5px 12.5px 6px;
@@ -247,7 +253,7 @@ $messageDistance: 4PX;
   &__title {
     font-size: 14px;
     font-weight: 500;
-    color: #1DA1F1;
+    color: var(--accent-color);
     line-height: 150%;
     display: none;
     padding: $messageBubblePadding;
@@ -307,15 +313,14 @@ $messageDistance: 4PX;
     }
 
     &__bubble {
-      background: #EEFFDE;
       border-radius: 12.5px 6px 6px 12.5px;
 
       & .quote, & .webpage-preview {
-        border-left-color: #4FAE4F;
+        border-left-color: var(--accent-color);
       }
 
       & .quote__title, & .webpage-preview__header {
-        color: #4FAE4F;
+        color: var(--accent-color);
       }
 
       &.only-photo, &.only-sticker {
@@ -329,12 +334,12 @@ $messageDistance: 4PX;
       background-position: center right;
       background-repeat: no-repeat;
       background-size: 14PX auto;
-      color: #469165;
+      color: var(--accent-color);
     }
 
     &__text {
       & code, & pre {
-        color: #4FAE4F;
+        color: var(--accent-color);
       }
     }
 
@@ -384,4 +389,12 @@ $messageDistance: 4PX;
   &.out.first &__bubble::before { border-image: url(~assets/message_out-upper@2x.png) 49 49 49 49 fill; }
   &.out.last &__bubble::before { border-image: url(~assets/message_out-lower@2x.png) 49 49 49 49 fill; }
   &.out.first.last &__bubble::before { border-image: url(~assets/message_out-whole@2x.png) 49 49 49 49 fill; }
+
+  &.out {
+    --bubble-background: #eeffde;
+    --accent-color: #4fae4f;
+    --accent-color-inactive: #4fae4f;
+    --voice-message-bar: rgb(79, 174, 79);
+    --voice-message-bar-transparent: rgba(79, 174, 79, 0.5);
+  }
 }

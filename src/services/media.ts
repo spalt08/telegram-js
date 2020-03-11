@@ -1,10 +1,26 @@
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import client from 'client/client';
-import { Document, Peer, StickerSet, MessagesFilter, MessagesAllStickers, MessagesRecentStickers, MessagesMessages } from 'cache/types';
+import { Document, Peer, StickerSet, MessagesFilter, MessagesAllStickers, MessagesRecentStickers, MessagesMessages } from 'client/schema';
+import { el } from 'core/dom';
 import { peerToInputPeer } from 'cache/accessors';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToId } from 'helpers/api';
+import { getDocumentLocation, getAttributeAudio } from 'helpers/files';
+import { download } from 'client/media';
 import MainService from './main';
+
+export enum MediaPlaybackStatus {
+  NotStarted,
+  Downloading,
+  Playing,
+  Stopped,
+}
+
+export type MediaPlaybackState = {
+  downloadProgress: number,
+  playProgress: number,
+  status: MediaPlaybackStatus,
+};
 
 /**
  * Singleton service class for handling media-related queries
@@ -27,6 +43,11 @@ export default class MediaService {
 
   main: MainService;
 
+  private currentAudioSource?: HTMLSourceElement;
+  private currentAudio?: HTMLAudioElement;
+  private docPlaying?: Document.document;
+  private audioPlayingTimer: any;
+
   constructor(main: MainService) {
     this.main = main;
   }
@@ -38,7 +59,7 @@ export default class MediaService {
   async loadStickerSets() {
     let result: MessagesAllStickers;
     try {
-      result = await client.callAsync('messages.getAllStickers', { hash: this.stickerSetsHash });
+      result = await client.call('messages.getAllStickers', { hash: this.stickerSetsHash });
     } catch (err) {
       throw new Error(JSON.stringify(err));
     }
@@ -59,7 +80,7 @@ export default class MediaService {
   async loadRecentStickers() {
     let result: MessagesRecentStickers;
     try {
-      result = await client.callAsync('messages.getRecentStickers', { hash: this.recentStickersHash });
+      result = await client.call('messages.getRecentStickers', { hash: this.recentStickersHash });
     } catch (err) {
       throw new Error(JSON.stringify(err));
     }
@@ -112,7 +133,7 @@ export default class MediaService {
 
     let res: MessagesMessages | undefined;
     try {
-      res = await client.callAsync('messages.search', payload);
+      res = await client.call('messages.search', payload);
     } catch (err) {
       // todo: handle the error
     } finally {
@@ -133,4 +154,109 @@ export default class MediaService {
     this.attachedFiles.next(files);
     if (this.main.popup.value !== 'sendMedia') this.main.showPopup('sendMedia');
   };
+
+  private audioInfos: Record<string, BehaviorSubject<MediaPlaybackState>> = {};
+
+  private getPlaybackState(doc: Document.document) {
+    let info = this.audioInfos[doc.id];
+    if (!info) {
+      info = new BehaviorSubject<MediaPlaybackState>({ downloadProgress: 0, playProgress: 0, status: MediaPlaybackStatus.NotStarted });
+      this.audioInfos[doc.id] = info;
+    }
+    return info;
+  }
+
+  audioInfo(doc: Document.document): Observable<Readonly<MediaPlaybackState>> {
+    return this.getPlaybackState(doc);
+  }
+
+  play(doc: Document.document, url: string, position?: number) {
+    const audioAttribute = getAttributeAudio(doc)!;
+
+    const time = position !== undefined ? position * audioAttribute.duration : 0;
+    if (this.docPlaying) {
+      if (this.docPlaying.id === doc.id) {
+        this.currentAudio!.currentTime = time;
+        return;
+      }
+      const currentAudioAttribute = getAttributeAudio(this.docPlaying)!;
+      if (currentAudioAttribute.voice) {
+        this.stopAudio(this.docPlaying);
+      } else {
+        this.pauseAudio(this.docPlaying);
+      }
+    }
+
+    this.currentAudioSource!.src = url;
+    this.docPlaying = doc;
+    this.currentAudio!.load();
+    this.currentAudio!.currentTime = time;
+    this.currentAudio!.play();
+    this.getPlaybackState(doc).next({ downloadProgress: 1, playProgress: position ?? 0, status: MediaPlaybackStatus.Playing });
+    this.audioPlayingTimer = setInterval(() => {
+      const progress = Math.min(1, this.currentAudio!.currentTime / audioAttribute.duration);
+      if (this.currentAudio!.ended) {
+        this.getPlaybackState(doc).next({ downloadProgress: 1, playProgress: 0, status: MediaPlaybackStatus.Stopped });
+        clearInterval(this.audioPlayingTimer);
+        delete this.docPlaying;
+      } else {
+        this.getPlaybackState(doc).next({ downloadProgress: 1, playProgress: progress, status: MediaPlaybackStatus.Playing });
+      }
+    }, Math.min(100, audioAttribute.duration * 10));
+  }
+
+  stopAudio(doc: Document.document) {
+    if (this.currentAudio && doc.id === this.docPlaying?.id) {
+      clearInterval(this.audioPlayingTimer);
+      this.currentAudio.pause();
+      this.getPlaybackState(this.docPlaying!).next({ downloadProgress: 0, playProgress: 0, status: MediaPlaybackStatus.Stopped });
+      delete this.docPlaying;
+    }
+  }
+
+  pauseAudio(doc: Document.document) {
+    if (this.currentAudio && doc.id === this.docPlaying?.id) {
+      clearInterval(this.audioPlayingTimer);
+      this.currentAudio.pause();
+      const state = this.getPlaybackState(doc);
+      state.next({ ...state.value, status: MediaPlaybackStatus.Stopped });
+      delete this.docPlaying;
+    }
+  }
+
+  resumeAudio(doc: Document.document) {
+    const state = this.getPlaybackState(doc);
+    this.playAudio(doc, state.value.playProgress);
+  }
+
+  playAudio(doc: Document.document, position?: number) {
+    if (!this.currentAudio) {
+      this.currentAudioSource = el('source');
+      this.currentAudio = el('audio', undefined, [this.currentAudioSource]);
+    }
+    const location = getDocumentLocation(doc);
+    let state = this.getPlaybackState(doc);
+    if (state.value.status === MediaPlaybackStatus.NotStarted) {
+      this.getPlaybackState(doc).next({ ...state.value, downloadProgress: 0, status: MediaPlaybackStatus.Downloading });
+    }
+    download(location, { size: doc.size }, (url) => {
+      this.play(doc, url, position);
+    }, (progress) => {
+      state = this.getPlaybackState(doc);
+      this.getPlaybackState(doc).next({ ...state.value, downloadProgress: progress / doc.size });
+    });
+  }
+
+  downloadAudio(doc: Document.document) {
+    const location = getDocumentLocation(doc);
+    let state = this.getPlaybackState(doc);
+    state.next({ downloadProgress: 0, playProgress: 0, status: MediaPlaybackStatus.Downloading });
+    download(location, { size: doc.size }, () => {
+      state.next({ downloadProgress: 1, playProgress: 0, status: MediaPlaybackStatus.Stopped });
+    }, (progress) => {
+      console.log(progress, doc.size);
+      state = this.getPlaybackState(doc);
+      this.getPlaybackState(doc).next({ ...state.value, downloadProgress: progress / doc.size });
+    });
+  }
 }

@@ -1,7 +1,7 @@
 import { BehaviorSubject, Subject } from 'rxjs';
 import { first } from 'rxjs/operators';
 import client from 'client/client';
-import { Message, Peer, MessagesGetMessages, MessagesSendMedia, InputMedia, Updates } from 'cache/types';
+import { Message, Peer, MessagesGetMessages, MessagesSendMedia, InputMedia, Updates } from 'client/schema';
 import { messageCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage, shortChatMessageToMessage } from 'helpers/api';
@@ -109,7 +109,7 @@ export default class MessagesService {
               .pipe(first(({ ids, loadingNewer, loadingOlder }) => (ids.length >= 3 || !(loadingNewer || loadingOlder))))
               .subscribe(() => {
                 if (nextChunk !== this.nextChunk) {
-                  if (process.env.NODE_ENV === 'development') {
+                  if (process.env.NODE_ENV !== 'production') {
                     // eslint-disable-next-line no-console
                     console.error(
                       'The `nextChunk.history` was updated after the chunk was removed from the message service.'
@@ -230,7 +230,7 @@ export default class MessagesService {
       ],
     };
 
-    const messages = await client.callAsync('messages.getMessages', params);
+    const messages = await client.call('messages.getMessages', params);
     if (messages._ !== 'messages.messagesNotModified' && messages.messages.length > 0) {
       messageCache.put(messages.messages);
       return messages.messages[0];
@@ -265,7 +265,7 @@ export default class MessagesService {
 
     let result: Updates | undefined;
     try {
-      result = await client.callAsync('messages.sendMessage', params);
+      result = await client.call('messages.sendMessage', params);
     } catch (err) {
       // todo handling errors
     }
@@ -292,7 +292,7 @@ export default class MessagesService {
     };
 
     try {
-      await client.callAsync('messages.sendMedia', params);
+      await client.call('messages.sendMedia', params);
       // console.log('After sending', err, result);
     } catch (err) {
       // todo handling errors

@@ -7,12 +7,15 @@
 /*                                                                                         */
 /* Do not make changes to this file unless you know what you are doing -- modify           */
 /* the tool instead.                                                                       */
+/*                                                                                         */
+/* Source: layer105.json                                                                   */
+/*                                                                                         */
 /*******************************************************************************************/
 
 /* CONSTRUCTORS */
 
 /**
- * Ref: https://core.telegram.org/type/Error
+ * @link https://core.telegram.org/type/Error
  */
 export type Error =
   | Error.error
@@ -27,7 +30,7 @@ export namespace Error {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputPeer
+ * @link https://core.telegram.org/type/InputPeer
  */
 export type InputPeer =
   | InputPeer.inputPeerEmpty
@@ -75,7 +78,7 @@ export namespace InputPeer {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputUser
+ * @link https://core.telegram.org/type/InputUser
  */
 export type InputUser =
   | InputUser.inputUserEmpty
@@ -105,7 +108,7 @@ export namespace InputUser {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputContact
+ * @link https://core.telegram.org/type/InputContact
  */
 export type InputContact =
   | InputContact.inputPhoneContact
@@ -122,7 +125,7 @@ export namespace InputContact {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputFile
+ * @link https://core.telegram.org/type/InputFile
  */
 export type InputFile =
   | InputFile.inputFile
@@ -146,7 +149,7 @@ export namespace InputFile {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputMedia
+ * @link https://core.telegram.org/type/InputMedia
  */
 export type InputMedia =
   | InputMedia.inputMediaEmpty
@@ -259,7 +262,7 @@ export namespace InputMedia {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputChatPhoto
+ * @link https://core.telegram.org/type/InputChatPhoto
  */
 export type InputChatPhoto =
   | InputChatPhoto.inputChatPhotoEmpty
@@ -282,7 +285,7 @@ export namespace InputChatPhoto {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputGeoPoint
+ * @link https://core.telegram.org/type/InputGeoPoint
  */
 export type InputGeoPoint =
   | InputGeoPoint.inputGeoPointEmpty
@@ -301,7 +304,7 @@ export namespace InputGeoPoint {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputPhoto
+ * @link https://core.telegram.org/type/InputPhoto
  */
 export type InputPhoto =
   | InputPhoto.inputPhotoEmpty
@@ -321,7 +324,7 @@ export namespace InputPhoto {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputFileLocation
+ * @link https://core.telegram.org/type/InputFileLocation
  */
 export type InputFileLocation =
   | InputFileLocation.inputFileLocation
@@ -385,7 +388,7 @@ export namespace InputFileLocation {
 }
 
 /**
- * Ref: https://core.telegram.org/type/Peer
+ * @link https://core.telegram.org/type/Peer
  */
 export type Peer =
   | Peer.peerUser
@@ -409,7 +412,7 @@ export namespace Peer {
 }
 
 /**
- * Ref: https://core.telegram.org/type/storage.FileType
+ * @link https://core.telegram.org/type/storage.FileType
  */
 export type StorageFileType =
   | StorageFileType.storageFileUnknown
@@ -458,7 +461,7 @@ export namespace StorageFileType {
 }
 
 /**
- * Ref: https://core.telegram.org/type/User
+ * @link https://core.telegram.org/type/User
  */
 export type User =
   | User.userEmpty
@@ -501,7 +504,7 @@ export namespace User {
 }
 
 /**
- * Ref: https://core.telegram.org/type/UserProfilePhoto
+ * @link https://core.telegram.org/type/UserProfilePhoto
  */
 export type UserProfilePhoto =
   | UserProfilePhoto.userProfilePhotoEmpty
@@ -522,7 +525,7 @@ export namespace UserProfilePhoto {
 }
 
 /**
- * Ref: https://core.telegram.org/type/UserStatus
+ * @link https://core.telegram.org/type/UserStatus
  */
 export type UserStatus =
   | UserStatus.userStatusEmpty
@@ -557,7 +560,7 @@ export namespace UserStatus {
 }
 
 /**
- * Ref: https://core.telegram.org/type/Chat
+ * @link https://core.telegram.org/type/Chat
  */
 export type Chat =
   | Chat.chatEmpty
@@ -632,7 +635,7 @@ export namespace Chat {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ChatFull
+ * @link https://core.telegram.org/type/ChatFull
  */
 export type ChatFull =
   | ChatFull.chatFull
@@ -692,7 +695,7 @@ export namespace ChatFull {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ChatParticipant
+ * @link https://core.telegram.org/type/ChatParticipant
  */
 export type ChatParticipant =
   | ChatParticipant.chatParticipant
@@ -720,7 +723,7 @@ export namespace ChatParticipant {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ChatParticipants
+ * @link https://core.telegram.org/type/ChatParticipants
  */
 export type ChatParticipants =
   | ChatParticipants.chatParticipantsForbidden
@@ -742,7 +745,7 @@ export namespace ChatParticipants {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ChatPhoto
+ * @link https://core.telegram.org/type/ChatPhoto
  */
 export type ChatPhoto =
   | ChatPhoto.chatPhotoEmpty
@@ -762,7 +765,7 @@ export namespace ChatPhoto {
 }
 
 /**
- * Ref: https://core.telegram.org/type/Message
+ * @link https://core.telegram.org/type/Message
  */
 export type Message =
   | Message.messageEmpty
@@ -820,7 +823,7 @@ export namespace Message {
 }
 
 /**
- * Ref: https://core.telegram.org/type/MessageMedia
+ * @link https://core.telegram.org/type/MessageMedia
  */
 export type MessageMedia =
   | MessageMedia.messageMediaEmpty
@@ -908,7 +911,7 @@ export namespace MessageMedia {
 }
 
 /**
- * Ref: https://core.telegram.org/type/MessageAction
+ * @link https://core.telegram.org/type/MessageAction
  */
 export type MessageAction =
   | MessageAction.messageActionEmpty
@@ -1039,7 +1042,7 @@ export namespace MessageAction {
 }
 
 /**
- * Ref: https://core.telegram.org/type/Dialog
+ * @link https://core.telegram.org/type/Dialog
  */
 export type Dialog =
   | Dialog.dialog
@@ -1076,7 +1079,7 @@ export namespace Dialog {
 }
 
 /**
- * Ref: https://core.telegram.org/type/Photo
+ * @link https://core.telegram.org/type/Photo
  */
 export type Photo =
   | Photo.photoEmpty
@@ -1101,7 +1104,7 @@ export namespace Photo {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PhotoSize
+ * @link https://core.telegram.org/type/PhotoSize
  */
 export type PhotoSize =
   | PhotoSize.photoSizeEmpty
@@ -1139,7 +1142,7 @@ export namespace PhotoSize {
 }
 
 /**
- * Ref: https://core.telegram.org/type/GeoPoint
+ * @link https://core.telegram.org/type/GeoPoint
  */
 export type GeoPoint =
   | GeoPoint.geoPointEmpty
@@ -1159,7 +1162,7 @@ export namespace GeoPoint {
 }
 
 /**
- * Ref: https://core.telegram.org/type/auth.SentCode
+ * @link https://core.telegram.org/type/auth.SentCode
  */
 export type AuthSentCode =
   | AuthSentCode.authSentCode
@@ -1176,7 +1179,7 @@ export namespace AuthSentCode {
 }
 
 /**
- * Ref: https://core.telegram.org/type/auth.Authorization
+ * @link https://core.telegram.org/type/auth.Authorization
  */
 export type AuthAuthorization =
   | AuthAuthorization.authAuthorization
@@ -1196,7 +1199,7 @@ export namespace AuthAuthorization {
 }
 
 /**
- * Ref: https://core.telegram.org/type/auth.ExportedAuthorization
+ * @link https://core.telegram.org/type/auth.ExportedAuthorization
  */
 export type AuthExportedAuthorization =
   | AuthExportedAuthorization.authExportedAuthorization
@@ -1211,7 +1214,7 @@ export namespace AuthExportedAuthorization {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputNotifyPeer
+ * @link https://core.telegram.org/type/InputNotifyPeer
  */
 export type InputNotifyPeer =
   | InputNotifyPeer.inputNotifyPeer
@@ -1237,7 +1240,7 @@ export namespace InputNotifyPeer {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputPeerNotifySettings
+ * @link https://core.telegram.org/type/InputPeerNotifySettings
  */
 export type InputPeerNotifySettings =
   | InputPeerNotifySettings.inputPeerNotifySettings
@@ -1254,7 +1257,7 @@ export namespace InputPeerNotifySettings {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PeerNotifySettings
+ * @link https://core.telegram.org/type/PeerNotifySettings
  */
 export type PeerNotifySettings =
   | PeerNotifySettings.peerNotifySettings
@@ -1271,7 +1274,7 @@ export namespace PeerNotifySettings {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PeerSettings
+ * @link https://core.telegram.org/type/PeerSettings
  */
 export type PeerSettings =
   | PeerSettings.peerSettings
@@ -1290,7 +1293,7 @@ export namespace PeerSettings {
 }
 
 /**
- * Ref: https://core.telegram.org/type/WallPaper
+ * @link https://core.telegram.org/type/WallPaper
  */
 export type WallPaper =
   | WallPaper.wallPaper
@@ -1312,7 +1315,7 @@ export namespace WallPaper {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ReportReason
+ * @link https://core.telegram.org/type/ReportReason
  */
 export type ReportReason =
   | ReportReason.inputReportReasonSpam
@@ -1350,7 +1353,7 @@ export namespace ReportReason {
 }
 
 /**
- * Ref: https://core.telegram.org/type/UserFull
+ * @link https://core.telegram.org/type/UserFull
  */
 export type UserFull =
   | UserFull.userFull
@@ -1377,7 +1380,7 @@ export namespace UserFull {
 }
 
 /**
- * Ref: https://core.telegram.org/type/Contact
+ * @link https://core.telegram.org/type/Contact
  */
 export type Contact =
   | Contact.contact
@@ -1392,7 +1395,7 @@ export namespace Contact {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ImportedContact
+ * @link https://core.telegram.org/type/ImportedContact
  */
 export type ImportedContact =
   | ImportedContact.importedContact
@@ -1407,7 +1410,7 @@ export namespace ImportedContact {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ContactBlocked
+ * @link https://core.telegram.org/type/ContactBlocked
  */
 export type ContactBlocked =
   | ContactBlocked.contactBlocked
@@ -1422,7 +1425,7 @@ export namespace ContactBlocked {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ContactStatus
+ * @link https://core.telegram.org/type/ContactStatus
  */
 export type ContactStatus =
   | ContactStatus.contactStatus
@@ -1437,7 +1440,7 @@ export namespace ContactStatus {
 }
 
 /**
- * Ref: https://core.telegram.org/type/contacts.Contacts
+ * @link https://core.telegram.org/type/contacts.Contacts
  */
 export type ContactsContacts =
   | ContactsContacts.contactsContactsNotModified
@@ -1457,7 +1460,7 @@ export namespace ContactsContacts {
 }
 
 /**
- * Ref: https://core.telegram.org/type/contacts.ImportedContacts
+ * @link https://core.telegram.org/type/contacts.ImportedContacts
  */
 export type ContactsImportedContacts =
   | ContactsImportedContacts.contactsImportedContacts
@@ -1474,7 +1477,7 @@ export namespace ContactsImportedContacts {
 }
 
 /**
- * Ref: https://core.telegram.org/type/contacts.Blocked
+ * @link https://core.telegram.org/type/contacts.Blocked
  */
 export type ContactsBlocked =
   | ContactsBlocked.contactsBlocked
@@ -1496,7 +1499,7 @@ export namespace ContactsBlocked {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.Dialogs
+ * @link https://core.telegram.org/type/messages.Dialogs
  */
 export type MessagesDialogs =
   | MessagesDialogs.messagesDialogs
@@ -1527,7 +1530,7 @@ export namespace MessagesDialogs {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.Messages
+ * @link https://core.telegram.org/type/messages.Messages
  */
 export type MessagesMessages =
   | MessagesMessages.messagesMessages
@@ -1568,7 +1571,7 @@ export namespace MessagesMessages {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.Chats
+ * @link https://core.telegram.org/type/messages.Chats
  */
 export type MessagesChats =
   | MessagesChats.messagesChats
@@ -1588,7 +1591,7 @@ export namespace MessagesChats {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.ChatFull
+ * @link https://core.telegram.org/type/messages.ChatFull
  */
 export type MessagesChatFull =
   | MessagesChatFull.messagesChatFull
@@ -1604,7 +1607,7 @@ export namespace MessagesChatFull {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.AffectedHistory
+ * @link https://core.telegram.org/type/messages.AffectedHistory
  */
 export type MessagesAffectedHistory =
   | MessagesAffectedHistory.messagesAffectedHistory
@@ -1620,7 +1623,7 @@ export namespace MessagesAffectedHistory {
 }
 
 /**
- * Ref: https://core.telegram.org/type/MessagesFilter
+ * @link https://core.telegram.org/type/MessagesFilter
  */
 export type MessagesFilter =
   | MessagesFilter.inputMessagesFilterEmpty
@@ -1694,7 +1697,7 @@ export namespace MessagesFilter {
 }
 
 /**
- * Ref: https://core.telegram.org/type/Update
+ * @link https://core.telegram.org/type/Update
  */
 export type Update =
   | Update.updateNewMessage
@@ -2184,7 +2187,7 @@ export namespace Update {
 }
 
 /**
- * Ref: https://core.telegram.org/type/updates.State
+ * @link https://core.telegram.org/type/updates.State
  */
 export type UpdatesState =
   | UpdatesState.updatesState
@@ -2202,7 +2205,7 @@ export namespace UpdatesState {
 }
 
 /**
- * Ref: https://core.telegram.org/type/updates.Difference
+ * @link https://core.telegram.org/type/updates.Difference
  */
 export type UpdatesDifference =
   | UpdatesDifference.updatesDifferenceEmpty
@@ -2242,7 +2245,7 @@ export namespace UpdatesDifference {
 }
 
 /**
- * Ref: https://core.telegram.org/type/Updates
+ * @link https://core.telegram.org/type/Updates
  */
 export type Updates =
   | Updates.updatesTooLong
@@ -2328,7 +2331,7 @@ export namespace Updates {
 }
 
 /**
- * Ref: https://core.telegram.org/type/photos.Photos
+ * @link https://core.telegram.org/type/photos.Photos
  */
 export type PhotosPhotos =
   | PhotosPhotos.photosPhotos
@@ -2350,7 +2353,7 @@ export namespace PhotosPhotos {
 }
 
 /**
- * Ref: https://core.telegram.org/type/photos.Photo
+ * @link https://core.telegram.org/type/photos.Photo
  */
 export type PhotosPhoto =
   | PhotosPhoto.photosPhoto
@@ -2365,7 +2368,7 @@ export namespace PhotosPhoto {
 }
 
 /**
- * Ref: https://core.telegram.org/type/upload.File
+ * @link https://core.telegram.org/type/upload.File
  */
 export type UploadFile =
   | UploadFile.uploadFile
@@ -2390,7 +2393,7 @@ export namespace UploadFile {
 }
 
 /**
- * Ref: https://core.telegram.org/type/DcOption
+ * @link https://core.telegram.org/type/DcOption
  */
 export type DcOption =
   | DcOption.dcOption
@@ -2412,7 +2415,7 @@ export namespace DcOption {
 }
 
 /**
- * Ref: https://core.telegram.org/type/Config
+ * @link https://core.telegram.org/type/Config
  */
 export type Config =
   | Config.config
@@ -2476,7 +2479,7 @@ export namespace Config {
 }
 
 /**
- * Ref: https://core.telegram.org/type/NearestDc
+ * @link https://core.telegram.org/type/NearestDc
  */
 export type NearestDc =
   | NearestDc.nearestDc
@@ -2492,7 +2495,7 @@ export namespace NearestDc {
 }
 
 /**
- * Ref: https://core.telegram.org/type/help.AppUpdate
+ * @link https://core.telegram.org/type/help.AppUpdate
  */
 export type HelpAppUpdate =
   | HelpAppUpdate.helpAppUpdate
@@ -2516,7 +2519,7 @@ export namespace HelpAppUpdate {
 }
 
 /**
- * Ref: https://core.telegram.org/type/help.InviteText
+ * @link https://core.telegram.org/type/help.InviteText
  */
 export type HelpInviteText =
   | HelpInviteText.helpInviteText
@@ -2530,7 +2533,7 @@ export namespace HelpInviteText {
 }
 
 /**
- * Ref: https://core.telegram.org/type/EncryptedChat
+ * @link https://core.telegram.org/type/EncryptedChat
  */
 export type EncryptedChat =
   | EncryptedChat.encryptedChatEmpty
@@ -2579,7 +2582,7 @@ export namespace EncryptedChat {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputEncryptedChat
+ * @link https://core.telegram.org/type/InputEncryptedChat
  */
 export type InputEncryptedChat =
   | InputEncryptedChat.inputEncryptedChat
@@ -2594,7 +2597,7 @@ export namespace InputEncryptedChat {
 }
 
 /**
- * Ref: https://core.telegram.org/type/EncryptedFile
+ * @link https://core.telegram.org/type/EncryptedFile
  */
 export type EncryptedFile =
   | EncryptedFile.encryptedFileEmpty
@@ -2616,7 +2619,7 @@ export namespace EncryptedFile {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputEncryptedFile
+ * @link https://core.telegram.org/type/InputEncryptedFile
  */
 export type InputEncryptedFile =
   | InputEncryptedFile.inputEncryptedFileEmpty
@@ -2650,7 +2653,7 @@ export namespace InputEncryptedFile {
 }
 
 /**
- * Ref: https://core.telegram.org/type/EncryptedMessage
+ * @link https://core.telegram.org/type/EncryptedMessage
  */
 export type EncryptedMessage =
   | EncryptedMessage.encryptedMessage
@@ -2676,7 +2679,7 @@ export namespace EncryptedMessage {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.DhConfig
+ * @link https://core.telegram.org/type/messages.DhConfig
  */
 export type MessagesDhConfig =
   | MessagesDhConfig.messagesDhConfigNotModified
@@ -2698,7 +2701,7 @@ export namespace MessagesDhConfig {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.SentEncryptedMessage
+ * @link https://core.telegram.org/type/messages.SentEncryptedMessage
  */
 export type MessagesSentEncryptedMessage =
   | MessagesSentEncryptedMessage.messagesSentEncryptedMessage
@@ -2718,7 +2721,7 @@ export namespace MessagesSentEncryptedMessage {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputDocument
+ * @link https://core.telegram.org/type/InputDocument
  */
 export type InputDocument =
   | InputDocument.inputDocumentEmpty
@@ -2738,7 +2741,7 @@ export namespace InputDocument {
 }
 
 /**
- * Ref: https://core.telegram.org/type/Document
+ * @link https://core.telegram.org/type/Document
  */
 export type Document =
   | Document.documentEmpty
@@ -2765,7 +2768,7 @@ export namespace Document {
 }
 
 /**
- * Ref: https://core.telegram.org/type/help.Support
+ * @link https://core.telegram.org/type/help.Support
  */
 export type HelpSupport =
   | HelpSupport.helpSupport
@@ -2780,7 +2783,7 @@ export namespace HelpSupport {
 }
 
 /**
- * Ref: https://core.telegram.org/type/NotifyPeer
+ * @link https://core.telegram.org/type/NotifyPeer
  */
 export type NotifyPeer =
   | NotifyPeer.notifyPeer
@@ -2806,7 +2809,7 @@ export namespace NotifyPeer {
 }
 
 /**
- * Ref: https://core.telegram.org/type/SendMessageAction
+ * @link https://core.telegram.org/type/SendMessageAction
  */
 export type SendMessageAction =
   | SendMessageAction.sendMessageTypingAction
@@ -2872,7 +2875,7 @@ export namespace SendMessageAction {
 }
 
 /**
- * Ref: https://core.telegram.org/type/contacts.Found
+ * @link https://core.telegram.org/type/contacts.Found
  */
 export type ContactsFound =
   | ContactsFound.contactsFound
@@ -2889,7 +2892,7 @@ export namespace ContactsFound {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputPrivacyKey
+ * @link https://core.telegram.org/type/InputPrivacyKey
  */
 export type InputPrivacyKey =
   | InputPrivacyKey.inputPrivacyKeyStatusTimestamp
@@ -2930,7 +2933,7 @@ export namespace InputPrivacyKey {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PrivacyKey
+ * @link https://core.telegram.org/type/PrivacyKey
  */
 export type PrivacyKey =
   | PrivacyKey.privacyKeyStatusTimestamp
@@ -2971,7 +2974,7 @@ export namespace PrivacyKey {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputPrivacyRule
+ * @link https://core.telegram.org/type/InputPrivacyRule
  */
 export type InputPrivacyRule =
   | InputPrivacyRule.inputPrivacyValueAllowContacts
@@ -3016,7 +3019,7 @@ export namespace InputPrivacyRule {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PrivacyRule
+ * @link https://core.telegram.org/type/PrivacyRule
  */
 export type PrivacyRule =
   | PrivacyRule.privacyValueAllowContacts
@@ -3061,7 +3064,7 @@ export namespace PrivacyRule {
 }
 
 /**
- * Ref: https://core.telegram.org/type/account.PrivacyRules
+ * @link https://core.telegram.org/type/account.PrivacyRules
  */
 export type AccountPrivacyRules =
   | AccountPrivacyRules.accountPrivacyRules
@@ -3077,7 +3080,7 @@ export namespace AccountPrivacyRules {
 }
 
 /**
- * Ref: https://core.telegram.org/type/AccountDaysTTL
+ * @link https://core.telegram.org/type/AccountDaysTTL
  */
 export type AccountDaysTTL =
   | AccountDaysTTL.accountDaysTTL
@@ -3091,7 +3094,7 @@ export namespace AccountDaysTTL {
 }
 
 /**
- * Ref: https://core.telegram.org/type/DocumentAttribute
+ * @link https://core.telegram.org/type/DocumentAttribute
  */
 export type DocumentAttribute =
   | DocumentAttribute.documentAttributeImageSize
@@ -3145,7 +3148,7 @@ export namespace DocumentAttribute {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.Stickers
+ * @link https://core.telegram.org/type/messages.Stickers
  */
 export type MessagesStickers =
   | MessagesStickers.messagesStickersNotModified
@@ -3164,7 +3167,7 @@ export namespace MessagesStickers {
 }
 
 /**
- * Ref: https://core.telegram.org/type/StickerPack
+ * @link https://core.telegram.org/type/StickerPack
  */
 export type StickerPack =
   | StickerPack.stickerPack
@@ -3179,7 +3182,7 @@ export namespace StickerPack {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.AllStickers
+ * @link https://core.telegram.org/type/messages.AllStickers
  */
 export type MessagesAllStickers =
   | MessagesAllStickers.messagesAllStickersNotModified
@@ -3198,7 +3201,7 @@ export namespace MessagesAllStickers {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.AffectedMessages
+ * @link https://core.telegram.org/type/messages.AffectedMessages
  */
 export type MessagesAffectedMessages =
   | MessagesAffectedMessages.messagesAffectedMessages
@@ -3213,7 +3216,7 @@ export namespace MessagesAffectedMessages {
 }
 
 /**
- * Ref: https://core.telegram.org/type/WebPage
+ * @link https://core.telegram.org/type/WebPage
  */
 export type WebPage =
   | WebPage.webPageEmpty
@@ -3259,7 +3262,7 @@ export namespace WebPage {
 }
 
 /**
- * Ref: https://core.telegram.org/type/Authorization
+ * @link https://core.telegram.org/type/Authorization
  */
 export type Authorization =
   | Authorization.authorization
@@ -3287,7 +3290,7 @@ export namespace Authorization {
 }
 
 /**
- * Ref: https://core.telegram.org/type/account.Authorizations
+ * @link https://core.telegram.org/type/account.Authorizations
  */
 export type AccountAuthorizations =
   | AccountAuthorizations.accountAuthorizations
@@ -3301,7 +3304,7 @@ export namespace AccountAuthorizations {
 }
 
 /**
- * Ref: https://core.telegram.org/type/account.Password
+ * @link https://core.telegram.org/type/account.Password
  */
 export type AccountPassword =
   | AccountPassword.accountPassword
@@ -3325,7 +3328,7 @@ export namespace AccountPassword {
 }
 
 /**
- * Ref: https://core.telegram.org/type/account.PasswordSettings
+ * @link https://core.telegram.org/type/account.PasswordSettings
  */
 export type AccountPasswordSettings =
   | AccountPasswordSettings.accountPasswordSettings
@@ -3340,7 +3343,7 @@ export namespace AccountPasswordSettings {
 }
 
 /**
- * Ref: https://core.telegram.org/type/account.PasswordInputSettings
+ * @link https://core.telegram.org/type/account.PasswordInputSettings
  */
 export type AccountPasswordInputSettings =
   | AccountPasswordInputSettings.accountPasswordInputSettings
@@ -3358,7 +3361,7 @@ export namespace AccountPasswordInputSettings {
 }
 
 /**
- * Ref: https://core.telegram.org/type/auth.PasswordRecovery
+ * @link https://core.telegram.org/type/auth.PasswordRecovery
  */
 export type AuthPasswordRecovery =
   | AuthPasswordRecovery.authPasswordRecovery
@@ -3372,7 +3375,7 @@ export namespace AuthPasswordRecovery {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ReceivedNotifyMessage
+ * @link https://core.telegram.org/type/ReceivedNotifyMessage
  */
 export type ReceivedNotifyMessage =
   | ReceivedNotifyMessage.receivedNotifyMessage
@@ -3386,7 +3389,7 @@ export namespace ReceivedNotifyMessage {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ExportedChatInvite
+ * @link https://core.telegram.org/type/ExportedChatInvite
  */
 export type ExportedChatInvite =
   | ExportedChatInvite.chatInviteEmpty
@@ -3404,7 +3407,7 @@ export namespace ExportedChatInvite {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ChatInvite
+ * @link https://core.telegram.org/type/ChatInvite
  */
 export type ChatInvite =
   | ChatInvite.chatInviteAlready
@@ -3430,7 +3433,7 @@ export namespace ChatInvite {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputStickerSet
+ * @link https://core.telegram.org/type/InputStickerSet
  */
 export type InputStickerSet =
   | InputStickerSet.inputStickerSetEmpty
@@ -3458,7 +3461,7 @@ export namespace InputStickerSet {
 }
 
 /**
- * Ref: https://core.telegram.org/type/StickerSet
+ * @link https://core.telegram.org/type/StickerSet
  */
 export type StickerSet =
   | StickerSet.stickerSet
@@ -3484,7 +3487,7 @@ export namespace StickerSet {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.StickerSet
+ * @link https://core.telegram.org/type/messages.StickerSet
  */
 export type MessagesStickerSet =
   | MessagesStickerSet.messagesStickerSet
@@ -3500,7 +3503,7 @@ export namespace MessagesStickerSet {
 }
 
 /**
- * Ref: https://core.telegram.org/type/BotCommand
+ * @link https://core.telegram.org/type/BotCommand
  */
 export type BotCommand =
   | BotCommand.botCommand
@@ -3515,7 +3518,7 @@ export namespace BotCommand {
 }
 
 /**
- * Ref: https://core.telegram.org/type/BotInfo
+ * @link https://core.telegram.org/type/BotInfo
  */
 export type BotInfo =
   | BotInfo.botInfo
@@ -3531,7 +3534,7 @@ export namespace BotInfo {
 }
 
 /**
- * Ref: https://core.telegram.org/type/KeyboardButton
+ * @link https://core.telegram.org/type/KeyboardButton
  */
 export type KeyboardButton =
   | KeyboardButton.keyboardButton
@@ -3601,7 +3604,7 @@ export namespace KeyboardButton {
 }
 
 /**
- * Ref: https://core.telegram.org/type/KeyboardButtonRow
+ * @link https://core.telegram.org/type/KeyboardButtonRow
  */
 export type KeyboardButtonRow =
   | KeyboardButtonRow.keyboardButtonRow
@@ -3615,7 +3618,7 @@ export namespace KeyboardButtonRow {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ReplyMarkup
+ * @link https://core.telegram.org/type/ReplyMarkup
  */
 export type ReplyMarkup =
   | ReplyMarkup.replyKeyboardHide
@@ -3648,7 +3651,7 @@ export namespace ReplyMarkup {
 }
 
 /**
- * Ref: https://core.telegram.org/type/MessageEntity
+ * @link https://core.telegram.org/type/MessageEntity
  */
 export type MessageEntity =
   | MessageEntity.messageEntityUnknown
@@ -3769,7 +3772,7 @@ export namespace MessageEntity {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputChannel
+ * @link https://core.telegram.org/type/InputChannel
  */
 export type InputChannel =
   | InputChannel.inputChannelEmpty
@@ -3795,7 +3798,7 @@ export namespace InputChannel {
 }
 
 /**
- * Ref: https://core.telegram.org/type/contacts.ResolvedPeer
+ * @link https://core.telegram.org/type/contacts.ResolvedPeer
  */
 export type ContactsResolvedPeer =
   | ContactsResolvedPeer.contactsResolvedPeer
@@ -3811,7 +3814,7 @@ export namespace ContactsResolvedPeer {
 }
 
 /**
- * Ref: https://core.telegram.org/type/MessageRange
+ * @link https://core.telegram.org/type/MessageRange
  */
 export type MessageRange =
   | MessageRange.messageRange
@@ -3826,7 +3829,7 @@ export namespace MessageRange {
 }
 
 /**
- * Ref: https://core.telegram.org/type/updates.ChannelDifference
+ * @link https://core.telegram.org/type/updates.ChannelDifference
  */
 export type UpdatesChannelDifference =
   | UpdatesChannelDifference.updatesChannelDifferenceEmpty
@@ -3863,7 +3866,7 @@ export namespace UpdatesChannelDifference {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ChannelMessagesFilter
+ * @link https://core.telegram.org/type/ChannelMessagesFilter
  */
 export type ChannelMessagesFilter =
   | ChannelMessagesFilter.channelMessagesFilterEmpty
@@ -3882,7 +3885,7 @@ export namespace ChannelMessagesFilter {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ChannelParticipant
+ * @link https://core.telegram.org/type/ChannelParticipant
  */
 export type ChannelParticipant =
   | ChannelParticipant.channelParticipant
@@ -3931,7 +3934,7 @@ export namespace ChannelParticipant {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ChannelParticipantsFilter
+ * @link https://core.telegram.org/type/ChannelParticipantsFilter
  */
 export type ChannelParticipantsFilter =
   | ChannelParticipantsFilter.channelParticipantsRecent
@@ -3972,7 +3975,7 @@ export namespace ChannelParticipantsFilter {
 }
 
 /**
- * Ref: https://core.telegram.org/type/channels.ChannelParticipants
+ * @link https://core.telegram.org/type/channels.ChannelParticipants
  */
 export type ChannelsChannelParticipants =
   | ChannelsChannelParticipants.channelsChannelParticipants
@@ -3992,7 +3995,7 @@ export namespace ChannelsChannelParticipants {
 }
 
 /**
- * Ref: https://core.telegram.org/type/channels.ChannelParticipant
+ * @link https://core.telegram.org/type/channels.ChannelParticipant
  */
 export type ChannelsChannelParticipant =
   | ChannelsChannelParticipant.channelsChannelParticipant
@@ -4007,7 +4010,7 @@ export namespace ChannelsChannelParticipant {
 }
 
 /**
- * Ref: https://core.telegram.org/type/help.TermsOfService
+ * @link https://core.telegram.org/type/help.TermsOfService
  */
 export type HelpTermsOfService =
   | HelpTermsOfService.helpTermsOfService
@@ -4025,7 +4028,7 @@ export namespace HelpTermsOfService {
 }
 
 /**
- * Ref: https://core.telegram.org/type/FoundGif
+ * @link https://core.telegram.org/type/FoundGif
  */
 export type FoundGif =
   | FoundGif.foundGif
@@ -4051,7 +4054,7 @@ export namespace FoundGif {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.FoundGifs
+ * @link https://core.telegram.org/type/messages.FoundGifs
  */
 export type MessagesFoundGifs =
   | MessagesFoundGifs.messagesFoundGifs
@@ -4066,7 +4069,7 @@ export namespace MessagesFoundGifs {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.SavedGifs
+ * @link https://core.telegram.org/type/messages.SavedGifs
  */
 export type MessagesSavedGifs =
   | MessagesSavedGifs.messagesSavedGifsNotModified
@@ -4085,7 +4088,7 @@ export namespace MessagesSavedGifs {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputBotInlineMessage
+ * @link https://core.telegram.org/type/InputBotInlineMessage
  */
 export type InputBotInlineMessage =
   | InputBotInlineMessage.inputBotInlineMessageMediaAuto
@@ -4141,7 +4144,7 @@ export namespace InputBotInlineMessage {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputBotInlineResult
+ * @link https://core.telegram.org/type/InputBotInlineResult
  */
 export type InputBotInlineResult =
   | InputBotInlineResult.inputBotInlineResult
@@ -4187,7 +4190,7 @@ export namespace InputBotInlineResult {
 }
 
 /**
- * Ref: https://core.telegram.org/type/BotInlineMessage
+ * @link https://core.telegram.org/type/BotInlineMessage
  */
 export type BotInlineMessage =
   | BotInlineMessage.botInlineMessageMediaAuto
@@ -4238,7 +4241,7 @@ export namespace BotInlineMessage {
 }
 
 /**
- * Ref: https://core.telegram.org/type/BotInlineResult
+ * @link https://core.telegram.org/type/BotInlineResult
  */
 export type BotInlineResult =
   | BotInlineResult.botInlineResult
@@ -4270,7 +4273,7 @@ export namespace BotInlineResult {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.BotResults
+ * @link https://core.telegram.org/type/messages.BotResults
  */
 export type MessagesBotResults =
   | MessagesBotResults.messagesBotResults
@@ -4290,7 +4293,7 @@ export namespace MessagesBotResults {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ExportedMessageLink
+ * @link https://core.telegram.org/type/ExportedMessageLink
  */
 export type ExportedMessageLink =
   | ExportedMessageLink.exportedMessageLink
@@ -4305,7 +4308,7 @@ export namespace ExportedMessageLink {
 }
 
 /**
- * Ref: https://core.telegram.org/type/MessageFwdHeader
+ * @link https://core.telegram.org/type/MessageFwdHeader
  */
 export type MessageFwdHeader =
   | MessageFwdHeader.messageFwdHeader
@@ -4326,7 +4329,7 @@ export namespace MessageFwdHeader {
 }
 
 /**
- * Ref: https://core.telegram.org/type/auth.CodeType
+ * @link https://core.telegram.org/type/auth.CodeType
  */
 export type AuthCodeType =
   | AuthCodeType.authCodeTypeSms
@@ -4347,7 +4350,7 @@ export namespace AuthCodeType {
 }
 
 /**
- * Ref: https://core.telegram.org/type/auth.SentCodeType
+ * @link https://core.telegram.org/type/auth.SentCodeType
  */
 export type AuthSentCodeType =
   | AuthSentCodeType.authSentCodeTypeApp
@@ -4376,7 +4379,7 @@ export namespace AuthSentCodeType {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.BotCallbackAnswer
+ * @link https://core.telegram.org/type/messages.BotCallbackAnswer
  */
 export type MessagesBotCallbackAnswer =
   | MessagesBotCallbackAnswer.messagesBotCallbackAnswer
@@ -4395,7 +4398,7 @@ export namespace MessagesBotCallbackAnswer {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.MessageEditData
+ * @link https://core.telegram.org/type/messages.MessageEditData
  */
 export type MessagesMessageEditData =
   | MessagesMessageEditData.messagesMessageEditData
@@ -4409,7 +4412,7 @@ export namespace MessagesMessageEditData {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputBotInlineMessageID
+ * @link https://core.telegram.org/type/InputBotInlineMessageID
  */
 export type InputBotInlineMessageID =
   | InputBotInlineMessageID.inputBotInlineMessageID
@@ -4425,7 +4428,7 @@ export namespace InputBotInlineMessageID {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InlineBotSwitchPM
+ * @link https://core.telegram.org/type/InlineBotSwitchPM
  */
 export type InlineBotSwitchPM =
   | InlineBotSwitchPM.inlineBotSwitchPM
@@ -4440,7 +4443,7 @@ export namespace InlineBotSwitchPM {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.PeerDialogs
+ * @link https://core.telegram.org/type/messages.PeerDialogs
  */
 export type MessagesPeerDialogs =
   | MessagesPeerDialogs.messagesPeerDialogs
@@ -4458,7 +4461,7 @@ export namespace MessagesPeerDialogs {
 }
 
 /**
- * Ref: https://core.telegram.org/type/TopPeer
+ * @link https://core.telegram.org/type/TopPeer
  */
 export type TopPeer =
   | TopPeer.topPeer
@@ -4473,7 +4476,7 @@ export namespace TopPeer {
 }
 
 /**
- * Ref: https://core.telegram.org/type/TopPeerCategory
+ * @link https://core.telegram.org/type/TopPeerCategory
  */
 export type TopPeerCategory =
   | TopPeerCategory.topPeerCategoryBotsPM
@@ -4514,7 +4517,7 @@ export namespace TopPeerCategory {
 }
 
 /**
- * Ref: https://core.telegram.org/type/TopPeerCategoryPeers
+ * @link https://core.telegram.org/type/TopPeerCategoryPeers
  */
 export type TopPeerCategoryPeers =
   | TopPeerCategoryPeers.topPeerCategoryPeers
@@ -4530,7 +4533,7 @@ export namespace TopPeerCategoryPeers {
 }
 
 /**
- * Ref: https://core.telegram.org/type/contacts.TopPeers
+ * @link https://core.telegram.org/type/contacts.TopPeers
  */
 export type ContactsTopPeers =
   | ContactsTopPeers.contactsTopPeersNotModified
@@ -4554,7 +4557,7 @@ export namespace ContactsTopPeers {
 }
 
 /**
- * Ref: https://core.telegram.org/type/DraftMessage
+ * @link https://core.telegram.org/type/DraftMessage
  */
 export type DraftMessage =
   | DraftMessage.draftMessageEmpty
@@ -4577,7 +4580,7 @@ export namespace DraftMessage {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.FeaturedStickers
+ * @link https://core.telegram.org/type/messages.FeaturedStickers
  */
 export type MessagesFeaturedStickers =
   | MessagesFeaturedStickers.messagesFeaturedStickersNotModified
@@ -4597,7 +4600,7 @@ export namespace MessagesFeaturedStickers {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.RecentStickers
+ * @link https://core.telegram.org/type/messages.RecentStickers
  */
 export type MessagesRecentStickers =
   | MessagesRecentStickers.messagesRecentStickersNotModified
@@ -4618,7 +4621,7 @@ export namespace MessagesRecentStickers {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.ArchivedStickers
+ * @link https://core.telegram.org/type/messages.ArchivedStickers
  */
 export type MessagesArchivedStickers =
   | MessagesArchivedStickers.messagesArchivedStickers
@@ -4633,7 +4636,7 @@ export namespace MessagesArchivedStickers {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.StickerSetInstallResult
+ * @link https://core.telegram.org/type/messages.StickerSetInstallResult
  */
 export type MessagesStickerSetInstallResult =
   | MessagesStickerSetInstallResult.messagesStickerSetInstallResultSuccess
@@ -4651,7 +4654,7 @@ export namespace MessagesStickerSetInstallResult {
 }
 
 /**
- * Ref: https://core.telegram.org/type/StickerSetCovered
+ * @link https://core.telegram.org/type/StickerSetCovered
  */
 export type StickerSetCovered =
   | StickerSetCovered.stickerSetCovered
@@ -4672,7 +4675,7 @@ export namespace StickerSetCovered {
 }
 
 /**
- * Ref: https://core.telegram.org/type/MaskCoords
+ * @link https://core.telegram.org/type/MaskCoords
  */
 export type MaskCoords =
   | MaskCoords.maskCoords
@@ -4689,7 +4692,7 @@ export namespace MaskCoords {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputStickeredMedia
+ * @link https://core.telegram.org/type/InputStickeredMedia
  */
 export type InputStickeredMedia =
   | InputStickeredMedia.inputStickeredMediaPhoto
@@ -4708,7 +4711,7 @@ export namespace InputStickeredMedia {
 }
 
 /**
- * Ref: https://core.telegram.org/type/Game
+ * @link https://core.telegram.org/type/Game
  */
 export type Game =
   | Game.game
@@ -4728,7 +4731,7 @@ export namespace Game {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputGame
+ * @link https://core.telegram.org/type/InputGame
  */
 export type InputGame =
   | InputGame.inputGameID
@@ -4749,7 +4752,7 @@ export namespace InputGame {
 }
 
 /**
- * Ref: https://core.telegram.org/type/HighScore
+ * @link https://core.telegram.org/type/HighScore
  */
 export type HighScore =
   | HighScore.highScore
@@ -4765,7 +4768,7 @@ export namespace HighScore {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.HighScores
+ * @link https://core.telegram.org/type/messages.HighScores
  */
 export type MessagesHighScores =
   | MessagesHighScores.messagesHighScores
@@ -4780,7 +4783,7 @@ export namespace MessagesHighScores {
 }
 
 /**
- * Ref: https://core.telegram.org/type/RichText
+ * @link https://core.telegram.org/type/RichText
  */
 export type RichText =
   | RichText.textEmpty
@@ -4875,7 +4878,7 @@ export namespace RichText {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PageBlock
+ * @link https://core.telegram.org/type/PageBlock
  */
 export type PageBlock =
   | PageBlock.pageBlockUnsupported
@@ -5063,7 +5066,7 @@ export namespace PageBlock {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PhoneCallDiscardReason
+ * @link https://core.telegram.org/type/PhoneCallDiscardReason
  */
 export type PhoneCallDiscardReason =
   | PhoneCallDiscardReason.phoneCallDiscardReasonMissed
@@ -5088,7 +5091,7 @@ export namespace PhoneCallDiscardReason {
 }
 
 /**
- * Ref: https://core.telegram.org/type/DataJSON
+ * @link https://core.telegram.org/type/DataJSON
  */
 export type DataJSON =
   | DataJSON.dataJSON
@@ -5102,7 +5105,7 @@ export namespace DataJSON {
 }
 
 /**
- * Ref: https://core.telegram.org/type/LabeledPrice
+ * @link https://core.telegram.org/type/LabeledPrice
  */
 export type LabeledPrice =
   | LabeledPrice.labeledPrice
@@ -5117,7 +5120,7 @@ export namespace LabeledPrice {
 }
 
 /**
- * Ref: https://core.telegram.org/type/Invoice
+ * @link https://core.telegram.org/type/Invoice
  */
 export type Invoice =
   | Invoice.invoice
@@ -5140,7 +5143,7 @@ export namespace Invoice {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PaymentCharge
+ * @link https://core.telegram.org/type/PaymentCharge
  */
 export type PaymentCharge =
   | PaymentCharge.paymentCharge
@@ -5155,7 +5158,7 @@ export namespace PaymentCharge {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PostAddress
+ * @link https://core.telegram.org/type/PostAddress
  */
 export type PostAddress =
   | PostAddress.postAddress
@@ -5174,7 +5177,7 @@ export namespace PostAddress {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PaymentRequestedInfo
+ * @link https://core.telegram.org/type/PaymentRequestedInfo
  */
 export type PaymentRequestedInfo =
   | PaymentRequestedInfo.paymentRequestedInfo
@@ -5191,7 +5194,7 @@ export namespace PaymentRequestedInfo {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PaymentSavedCredentials
+ * @link https://core.telegram.org/type/PaymentSavedCredentials
  */
 export type PaymentSavedCredentials =
   | PaymentSavedCredentials.paymentSavedCredentialsCard
@@ -5206,7 +5209,7 @@ export namespace PaymentSavedCredentials {
 }
 
 /**
- * Ref: https://core.telegram.org/type/WebDocument
+ * @link https://core.telegram.org/type/WebDocument
  */
 export type WebDocument =
   | WebDocument.webDocument
@@ -5232,7 +5235,7 @@ export namespace WebDocument {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputWebDocument
+ * @link https://core.telegram.org/type/InputWebDocument
  */
 export type InputWebDocument =
   | InputWebDocument.inputWebDocument
@@ -5249,7 +5252,7 @@ export namespace InputWebDocument {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputWebFileLocation
+ * @link https://core.telegram.org/type/InputWebFileLocation
  */
 export type InputWebFileLocation =
   | InputWebFileLocation.inputWebFileLocation
@@ -5274,7 +5277,7 @@ export namespace InputWebFileLocation {
 }
 
 /**
- * Ref: https://core.telegram.org/type/upload.WebFile
+ * @link https://core.telegram.org/type/upload.WebFile
  */
 export type UploadWebFile =
   | UploadWebFile.uploadWebFile
@@ -5292,7 +5295,7 @@ export namespace UploadWebFile {
 }
 
 /**
- * Ref: https://core.telegram.org/type/payments.PaymentForm
+ * @link https://core.telegram.org/type/payments.PaymentForm
  */
 export type PaymentsPaymentForm =
   | PaymentsPaymentForm.paymentsPaymentForm
@@ -5316,7 +5319,7 @@ export namespace PaymentsPaymentForm {
 }
 
 /**
- * Ref: https://core.telegram.org/type/payments.ValidatedRequestedInfo
+ * @link https://core.telegram.org/type/payments.ValidatedRequestedInfo
  */
 export type PaymentsValidatedRequestedInfo =
   | PaymentsValidatedRequestedInfo.paymentsValidatedRequestedInfo
@@ -5331,7 +5334,7 @@ export namespace PaymentsValidatedRequestedInfo {
 }
 
 /**
- * Ref: https://core.telegram.org/type/payments.PaymentResult
+ * @link https://core.telegram.org/type/payments.PaymentResult
  */
 export type PaymentsPaymentResult =
   | PaymentsPaymentResult.paymentsPaymentResult
@@ -5350,7 +5353,7 @@ export namespace PaymentsPaymentResult {
 }
 
 /**
- * Ref: https://core.telegram.org/type/payments.PaymentReceipt
+ * @link https://core.telegram.org/type/payments.PaymentReceipt
  */
 export type PaymentsPaymentReceipt =
   | PaymentsPaymentReceipt.paymentsPaymentReceipt
@@ -5373,7 +5376,7 @@ export namespace PaymentsPaymentReceipt {
 }
 
 /**
- * Ref: https://core.telegram.org/type/payments.SavedInfo
+ * @link https://core.telegram.org/type/payments.SavedInfo
  */
 export type PaymentsSavedInfo =
   | PaymentsSavedInfo.paymentsSavedInfo
@@ -5388,7 +5391,7 @@ export namespace PaymentsSavedInfo {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputPaymentCredentials
+ * @link https://core.telegram.org/type/InputPaymentCredentials
  */
 export type InputPaymentCredentials =
   | InputPaymentCredentials.inputPaymentCredentialsSaved
@@ -5420,7 +5423,7 @@ export namespace InputPaymentCredentials {
 }
 
 /**
- * Ref: https://core.telegram.org/type/account.TmpPassword
+ * @link https://core.telegram.org/type/account.TmpPassword
  */
 export type AccountTmpPassword =
   | AccountTmpPassword.accountTmpPassword
@@ -5435,7 +5438,7 @@ export namespace AccountTmpPassword {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ShippingOption
+ * @link https://core.telegram.org/type/ShippingOption
  */
 export type ShippingOption =
   | ShippingOption.shippingOption
@@ -5451,7 +5454,7 @@ export namespace ShippingOption {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputStickerSetItem
+ * @link https://core.telegram.org/type/InputStickerSetItem
  */
 export type InputStickerSetItem =
   | InputStickerSetItem.inputStickerSetItem
@@ -5467,7 +5470,7 @@ export namespace InputStickerSetItem {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputPhoneCall
+ * @link https://core.telegram.org/type/InputPhoneCall
  */
 export type InputPhoneCall =
   | InputPhoneCall.inputPhoneCall
@@ -5482,7 +5485,7 @@ export namespace InputPhoneCall {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PhoneCall
+ * @link https://core.telegram.org/type/PhoneCall
  */
 export type PhoneCall =
   | PhoneCall.phoneCallEmpty
@@ -5557,7 +5560,7 @@ export namespace PhoneCall {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PhoneConnection
+ * @link https://core.telegram.org/type/PhoneConnection
  */
 export type PhoneConnection =
   | PhoneConnection.phoneConnection
@@ -5575,7 +5578,7 @@ export namespace PhoneConnection {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PhoneCallProtocol
+ * @link https://core.telegram.org/type/PhoneCallProtocol
  */
 export type PhoneCallProtocol =
   | PhoneCallProtocol.phoneCallProtocol
@@ -5592,7 +5595,7 @@ export namespace PhoneCallProtocol {
 }
 
 /**
- * Ref: https://core.telegram.org/type/phone.PhoneCall
+ * @link https://core.telegram.org/type/phone.PhoneCall
  */
 export type PhonePhoneCall =
   | PhonePhoneCall.phonePhoneCall
@@ -5607,7 +5610,7 @@ export namespace PhonePhoneCall {
 }
 
 /**
- * Ref: https://core.telegram.org/type/upload.CdnFile
+ * @link https://core.telegram.org/type/upload.CdnFile
  */
 export type UploadCdnFile =
   | UploadCdnFile.uploadCdnFileReuploadNeeded
@@ -5626,7 +5629,7 @@ export namespace UploadCdnFile {
 }
 
 /**
- * Ref: https://core.telegram.org/type/CdnPublicKey
+ * @link https://core.telegram.org/type/CdnPublicKey
  */
 export type CdnPublicKey =
   | CdnPublicKey.cdnPublicKey
@@ -5641,7 +5644,7 @@ export namespace CdnPublicKey {
 }
 
 /**
- * Ref: https://core.telegram.org/type/CdnConfig
+ * @link https://core.telegram.org/type/CdnConfig
  */
 export type CdnConfig =
   | CdnConfig.cdnConfig
@@ -5655,7 +5658,7 @@ export namespace CdnConfig {
 }
 
 /**
- * Ref: https://core.telegram.org/type/LangPackString
+ * @link https://core.telegram.org/type/LangPackString
  */
 export type LangPackString =
   | LangPackString.langPackString
@@ -5686,7 +5689,7 @@ export namespace LangPackString {
 }
 
 /**
- * Ref: https://core.telegram.org/type/LangPackDifference
+ * @link https://core.telegram.org/type/LangPackDifference
  */
 export type LangPackDifference =
   | LangPackDifference.langPackDifference
@@ -5703,7 +5706,7 @@ export namespace LangPackDifference {
 }
 
 /**
- * Ref: https://core.telegram.org/type/LangPackLanguage
+ * @link https://core.telegram.org/type/LangPackLanguage
  */
 export type LangPackLanguage =
   | LangPackLanguage.langPackLanguage
@@ -5727,7 +5730,7 @@ export namespace LangPackLanguage {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ChannelAdminLogEventAction
+ * @link https://core.telegram.org/type/ChannelAdminLogEventAction
  */
 export type ChannelAdminLogEventAction =
   | ChannelAdminLogEventAction.channelAdminLogEventActionChangeTitle
@@ -5851,7 +5854,7 @@ export namespace ChannelAdminLogEventAction {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ChannelAdminLogEvent
+ * @link https://core.telegram.org/type/ChannelAdminLogEvent
  */
 export type ChannelAdminLogEvent =
   | ChannelAdminLogEvent.channelAdminLogEvent
@@ -5868,7 +5871,7 @@ export namespace ChannelAdminLogEvent {
 }
 
 /**
- * Ref: https://core.telegram.org/type/channels.AdminLogResults
+ * @link https://core.telegram.org/type/channels.AdminLogResults
  */
 export type ChannelsAdminLogResults =
   | ChannelsAdminLogResults.channelsAdminLogResults
@@ -5884,7 +5887,7 @@ export namespace ChannelsAdminLogResults {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ChannelAdminLogEventsFilter
+ * @link https://core.telegram.org/type/ChannelAdminLogEventsFilter
  */
 export type ChannelAdminLogEventsFilter =
   | ChannelAdminLogEventsFilter.channelAdminLogEventsFilter
@@ -5911,7 +5914,7 @@ export namespace ChannelAdminLogEventsFilter {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PopularContact
+ * @link https://core.telegram.org/type/PopularContact
  */
 export type PopularContact =
   | PopularContact.popularContact
@@ -5926,7 +5929,7 @@ export namespace PopularContact {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.FavedStickers
+ * @link https://core.telegram.org/type/messages.FavedStickers
  */
 export type MessagesFavedStickers =
   | MessagesFavedStickers.messagesFavedStickersNotModified
@@ -5946,7 +5949,7 @@ export namespace MessagesFavedStickers {
 }
 
 /**
- * Ref: https://core.telegram.org/type/RecentMeUrl
+ * @link https://core.telegram.org/type/RecentMeUrl
  */
 export type RecentMeUrl =
   | RecentMeUrl.recentMeUrlUnknown
@@ -5984,7 +5987,7 @@ export namespace RecentMeUrl {
 }
 
 /**
- * Ref: https://core.telegram.org/type/help.RecentMeUrls
+ * @link https://core.telegram.org/type/help.RecentMeUrls
  */
 export type HelpRecentMeUrls =
   | HelpRecentMeUrls.helpRecentMeUrls
@@ -6000,7 +6003,7 @@ export namespace HelpRecentMeUrls {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputSingleMedia
+ * @link https://core.telegram.org/type/InputSingleMedia
  */
 export type InputSingleMedia =
   | InputSingleMedia.inputSingleMedia
@@ -6017,7 +6020,7 @@ export namespace InputSingleMedia {
 }
 
 /**
- * Ref: https://core.telegram.org/type/WebAuthorization
+ * @link https://core.telegram.org/type/WebAuthorization
  */
 export type WebAuthorization =
   | WebAuthorization.webAuthorization
@@ -6039,7 +6042,7 @@ export namespace WebAuthorization {
 }
 
 /**
- * Ref: https://core.telegram.org/type/account.WebAuthorizations
+ * @link https://core.telegram.org/type/account.WebAuthorizations
  */
 export type AccountWebAuthorizations =
   | AccountWebAuthorizations.accountWebAuthorizations
@@ -6054,7 +6057,7 @@ export namespace AccountWebAuthorizations {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputMessage
+ * @link https://core.telegram.org/type/InputMessage
  */
 export type InputMessage =
   | InputMessage.inputMessageID
@@ -6077,7 +6080,7 @@ export namespace InputMessage {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputDialogPeer
+ * @link https://core.telegram.org/type/InputDialogPeer
  */
 export type InputDialogPeer =
   | InputDialogPeer.inputDialogPeer
@@ -6096,7 +6099,7 @@ export namespace InputDialogPeer {
 }
 
 /**
- * Ref: https://core.telegram.org/type/DialogPeer
+ * @link https://core.telegram.org/type/DialogPeer
  */
 export type DialogPeer =
   | DialogPeer.dialogPeer
@@ -6115,7 +6118,7 @@ export namespace DialogPeer {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.FoundStickerSets
+ * @link https://core.telegram.org/type/messages.FoundStickerSets
  */
 export type MessagesFoundStickerSets =
   | MessagesFoundStickerSets.messagesFoundStickerSetsNotModified
@@ -6134,7 +6137,7 @@ export namespace MessagesFoundStickerSets {
 }
 
 /**
- * Ref: https://core.telegram.org/type/FileHash
+ * @link https://core.telegram.org/type/FileHash
  */
 export type FileHash =
   | FileHash.fileHash
@@ -6150,7 +6153,7 @@ export namespace FileHash {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputClientProxy
+ * @link https://core.telegram.org/type/InputClientProxy
  */
 export type InputClientProxy =
   | InputClientProxy.inputClientProxy
@@ -6165,7 +6168,7 @@ export namespace InputClientProxy {
 }
 
 /**
- * Ref: https://core.telegram.org/type/help.ProxyData
+ * @link https://core.telegram.org/type/help.ProxyData
  */
 export type HelpProxyData =
   | HelpProxyData.helpProxyDataEmpty
@@ -6187,7 +6190,7 @@ export namespace HelpProxyData {
 }
 
 /**
- * Ref: https://core.telegram.org/type/help.TermsOfServiceUpdate
+ * @link https://core.telegram.org/type/help.TermsOfServiceUpdate
  */
 export type HelpTermsOfServiceUpdate =
   | HelpTermsOfServiceUpdate.helpTermsOfServiceUpdateEmpty
@@ -6207,7 +6210,7 @@ export namespace HelpTermsOfServiceUpdate {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputSecureFile
+ * @link https://core.telegram.org/type/InputSecureFile
  */
 export type InputSecureFile =
   | InputSecureFile.inputSecureFileUploaded
@@ -6231,7 +6234,7 @@ export namespace InputSecureFile {
 }
 
 /**
- * Ref: https://core.telegram.org/type/SecureFile
+ * @link https://core.telegram.org/type/SecureFile
  */
 export type SecureFile =
   | SecureFile.secureFileEmpty
@@ -6255,7 +6258,7 @@ export namespace SecureFile {
 }
 
 /**
- * Ref: https://core.telegram.org/type/SecureData
+ * @link https://core.telegram.org/type/SecureData
  */
 export type SecureData =
   | SecureData.secureData
@@ -6271,7 +6274,7 @@ export namespace SecureData {
 }
 
 /**
- * Ref: https://core.telegram.org/type/SecurePlainData
+ * @link https://core.telegram.org/type/SecurePlainData
  */
 export type SecurePlainData =
   | SecurePlainData.securePlainPhone
@@ -6290,7 +6293,7 @@ export namespace SecurePlainData {
 }
 
 /**
- * Ref: https://core.telegram.org/type/SecureValueType
+ * @link https://core.telegram.org/type/SecureValueType
  */
 export type SecureValueType =
   | SecureValueType.secureValueTypePersonalDetails
@@ -6351,7 +6354,7 @@ export namespace SecureValueType {
 }
 
 /**
- * Ref: https://core.telegram.org/type/SecureValue
+ * @link https://core.telegram.org/type/SecureValue
  */
 export type SecureValue =
   | SecureValue.secureValue
@@ -6373,7 +6376,7 @@ export namespace SecureValue {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputSecureValue
+ * @link https://core.telegram.org/type/InputSecureValue
  */
 export type InputSecureValue =
   | InputSecureValue.inputSecureValue
@@ -6394,7 +6397,7 @@ export namespace InputSecureValue {
 }
 
 /**
- * Ref: https://core.telegram.org/type/SecureValueHash
+ * @link https://core.telegram.org/type/SecureValueHash
  */
 export type SecureValueHash =
   | SecureValueHash.secureValueHash
@@ -6409,7 +6412,7 @@ export namespace SecureValueHash {
 }
 
 /**
- * Ref: https://core.telegram.org/type/SecureValueError
+ * @link https://core.telegram.org/type/SecureValueError
  */
 export type SecureValueError =
   | SecureValueError.secureValueErrorData
@@ -6482,7 +6485,7 @@ export namespace SecureValueError {
 }
 
 /**
- * Ref: https://core.telegram.org/type/SecureCredentialsEncrypted
+ * @link https://core.telegram.org/type/SecureCredentialsEncrypted
  */
 export type SecureCredentialsEncrypted =
   | SecureCredentialsEncrypted.secureCredentialsEncrypted
@@ -6498,7 +6501,7 @@ export namespace SecureCredentialsEncrypted {
 }
 
 /**
- * Ref: https://core.telegram.org/type/account.AuthorizationForm
+ * @link https://core.telegram.org/type/account.AuthorizationForm
  */
 export type AccountAuthorizationForm =
   | AccountAuthorizationForm.accountAuthorizationForm
@@ -6516,7 +6519,7 @@ export namespace AccountAuthorizationForm {
 }
 
 /**
- * Ref: https://core.telegram.org/type/account.SentEmailCode
+ * @link https://core.telegram.org/type/account.SentEmailCode
  */
 export type AccountSentEmailCode =
   | AccountSentEmailCode.accountSentEmailCode
@@ -6531,7 +6534,7 @@ export namespace AccountSentEmailCode {
 }
 
 /**
- * Ref: https://core.telegram.org/type/help.DeepLinkInfo
+ * @link https://core.telegram.org/type/help.DeepLinkInfo
  */
 export type HelpDeepLinkInfo =
   | HelpDeepLinkInfo.helpDeepLinkInfoEmpty
@@ -6551,7 +6554,7 @@ export namespace HelpDeepLinkInfo {
 }
 
 /**
- * Ref: https://core.telegram.org/type/SavedContact
+ * @link https://core.telegram.org/type/SavedContact
  */
 export type SavedContact =
   | SavedContact.savedPhoneContact
@@ -6568,7 +6571,7 @@ export namespace SavedContact {
 }
 
 /**
- * Ref: https://core.telegram.org/type/account.Takeout
+ * @link https://core.telegram.org/type/account.Takeout
  */
 export type AccountTakeout =
   | AccountTakeout.accountTakeout
@@ -6582,7 +6585,7 @@ export namespace AccountTakeout {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PasswordKdfAlgo
+ * @link https://core.telegram.org/type/PasswordKdfAlgo
  */
 export type PasswordKdfAlgo =
   | PasswordKdfAlgo.passwordKdfAlgoUnknown
@@ -6603,7 +6606,7 @@ export namespace PasswordKdfAlgo {
 }
 
 /**
- * Ref: https://core.telegram.org/type/SecurePasswordKdfAlgo
+ * @link https://core.telegram.org/type/SecurePasswordKdfAlgo
  */
 export type SecurePasswordKdfAlgo =
   | SecurePasswordKdfAlgo.securePasswordKdfAlgoUnknown
@@ -6626,7 +6629,7 @@ export namespace SecurePasswordKdfAlgo {
 }
 
 /**
- * Ref: https://core.telegram.org/type/SecureSecretSettings
+ * @link https://core.telegram.org/type/SecureSecretSettings
  */
 export type SecureSecretSettings =
   | SecureSecretSettings.secureSecretSettings
@@ -6642,7 +6645,7 @@ export namespace SecureSecretSettings {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputCheckPasswordSRP
+ * @link https://core.telegram.org/type/InputCheckPasswordSRP
  */
 export type InputCheckPasswordSRP =
   | InputCheckPasswordSRP.inputCheckPasswordEmpty
@@ -6662,7 +6665,7 @@ export namespace InputCheckPasswordSRP {
 }
 
 /**
- * Ref: https://core.telegram.org/type/SecureRequiredType
+ * @link https://core.telegram.org/type/SecureRequiredType
  */
 export type SecureRequiredType =
   | SecureRequiredType.secureRequiredType
@@ -6684,7 +6687,7 @@ export namespace SecureRequiredType {
 }
 
 /**
- * Ref: https://core.telegram.org/type/help.PassportConfig
+ * @link https://core.telegram.org/type/help.PassportConfig
  */
 export type HelpPassportConfig =
   | HelpPassportConfig.helpPassportConfigNotModified
@@ -6703,7 +6706,7 @@ export namespace HelpPassportConfig {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputAppEvent
+ * @link https://core.telegram.org/type/InputAppEvent
  */
 export type InputAppEvent =
   | InputAppEvent.inputAppEvent
@@ -6720,7 +6723,7 @@ export namespace InputAppEvent {
 }
 
 /**
- * Ref: https://core.telegram.org/type/JSONObjectValue
+ * @link https://core.telegram.org/type/JSONObjectValue
  */
 export type JSONObjectValue =
   | JSONObjectValue.jsonObjectValue
@@ -6735,7 +6738,7 @@ export namespace JSONObjectValue {
 }
 
 /**
- * Ref: https://core.telegram.org/type/JSONValue
+ * @link https://core.telegram.org/type/JSONValue
  */
 export type JSONValue =
   | JSONValue.jsonNull
@@ -6773,7 +6776,7 @@ export namespace JSONValue {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PageTableCell
+ * @link https://core.telegram.org/type/PageTableCell
  */
 export type PageTableCell =
   | PageTableCell.pageTableCell
@@ -6794,7 +6797,7 @@ export namespace PageTableCell {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PageTableRow
+ * @link https://core.telegram.org/type/PageTableRow
  */
 export type PageTableRow =
   | PageTableRow.pageTableRow
@@ -6808,7 +6811,7 @@ export namespace PageTableRow {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PageCaption
+ * @link https://core.telegram.org/type/PageCaption
  */
 export type PageCaption =
   | PageCaption.pageCaption
@@ -6823,7 +6826,7 @@ export namespace PageCaption {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PageListItem
+ * @link https://core.telegram.org/type/PageListItem
  */
 export type PageListItem =
   | PageListItem.pageListItemText
@@ -6842,7 +6845,7 @@ export namespace PageListItem {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PageListOrderedItem
+ * @link https://core.telegram.org/type/PageListOrderedItem
  */
 export type PageListOrderedItem =
   | PageListOrderedItem.pageListOrderedItemText
@@ -6863,7 +6866,7 @@ export namespace PageListOrderedItem {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PageRelatedArticle
+ * @link https://core.telegram.org/type/PageRelatedArticle
  */
 export type PageRelatedArticle =
   | PageRelatedArticle.pageRelatedArticle
@@ -6883,7 +6886,7 @@ export namespace PageRelatedArticle {
 }
 
 /**
- * Ref: https://core.telegram.org/type/Page
+ * @link https://core.telegram.org/type/Page
  */
 export type Page =
   | Page.page
@@ -6903,7 +6906,7 @@ export namespace Page {
 }
 
 /**
- * Ref: https://core.telegram.org/type/help.SupportName
+ * @link https://core.telegram.org/type/help.SupportName
  */
 export type HelpSupportName =
   | HelpSupportName.helpSupportName
@@ -6917,7 +6920,7 @@ export namespace HelpSupportName {
 }
 
 /**
- * Ref: https://core.telegram.org/type/help.UserInfo
+ * @link https://core.telegram.org/type/help.UserInfo
  */
 export type HelpUserInfo =
   | HelpUserInfo.helpUserInfoEmpty
@@ -6938,7 +6941,7 @@ export namespace HelpUserInfo {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PollAnswer
+ * @link https://core.telegram.org/type/PollAnswer
  */
 export type PollAnswer =
   | PollAnswer.pollAnswer
@@ -6953,7 +6956,7 @@ export namespace PollAnswer {
 }
 
 /**
- * Ref: https://core.telegram.org/type/Poll
+ * @link https://core.telegram.org/type/Poll
  */
 export type Poll =
   | Poll.poll
@@ -6970,7 +6973,7 @@ export namespace Poll {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PollAnswerVoters
+ * @link https://core.telegram.org/type/PollAnswerVoters
  */
 export type PollAnswerVoters =
   | PollAnswerVoters.pollAnswerVoters
@@ -6986,7 +6989,7 @@ export namespace PollAnswerVoters {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PollResults
+ * @link https://core.telegram.org/type/PollResults
  */
 export type PollResults =
   | PollResults.pollResults
@@ -7002,7 +7005,7 @@ export namespace PollResults {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ChatOnlines
+ * @link https://core.telegram.org/type/ChatOnlines
  */
 export type ChatOnlines =
   | ChatOnlines.chatOnlines
@@ -7016,7 +7019,7 @@ export namespace ChatOnlines {
 }
 
 /**
- * Ref: https://core.telegram.org/type/StatsURL
+ * @link https://core.telegram.org/type/StatsURL
  */
 export type StatsURL =
   | StatsURL.statsURL
@@ -7030,7 +7033,7 @@ export namespace StatsURL {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ChatAdminRights
+ * @link https://core.telegram.org/type/ChatAdminRights
  */
 export type ChatAdminRights =
   | ChatAdminRights.chatAdminRights
@@ -7051,7 +7054,7 @@ export namespace ChatAdminRights {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ChatBannedRights
+ * @link https://core.telegram.org/type/ChatBannedRights
  */
 export type ChatBannedRights =
   | ChatBannedRights.chatBannedRights
@@ -7077,7 +7080,7 @@ export namespace ChatBannedRights {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputWallPaper
+ * @link https://core.telegram.org/type/InputWallPaper
  */
 export type InputWallPaper =
   | InputWallPaper.inputWallPaper
@@ -7097,7 +7100,7 @@ export namespace InputWallPaper {
 }
 
 /**
- * Ref: https://core.telegram.org/type/account.WallPapers
+ * @link https://core.telegram.org/type/account.WallPapers
  */
 export type AccountWallPapers =
   | AccountWallPapers.accountWallPapersNotModified
@@ -7116,7 +7119,7 @@ export namespace AccountWallPapers {
 }
 
 /**
- * Ref: https://core.telegram.org/type/CodeSettings
+ * @link https://core.telegram.org/type/CodeSettings
  */
 export type CodeSettings =
   | CodeSettings.codeSettings
@@ -7132,7 +7135,7 @@ export namespace CodeSettings {
 }
 
 /**
- * Ref: https://core.telegram.org/type/WallPaperSettings
+ * @link https://core.telegram.org/type/WallPaperSettings
  */
 export type WallPaperSettings =
   | WallPaperSettings.wallPaperSettings
@@ -7149,7 +7152,7 @@ export namespace WallPaperSettings {
 }
 
 /**
- * Ref: https://core.telegram.org/type/AutoDownloadSettings
+ * @link https://core.telegram.org/type/AutoDownloadSettings
  */
 export type AutoDownloadSettings =
   | AutoDownloadSettings.autoDownloadSettings
@@ -7169,7 +7172,7 @@ export namespace AutoDownloadSettings {
 }
 
 /**
- * Ref: https://core.telegram.org/type/account.AutoDownloadSettings
+ * @link https://core.telegram.org/type/account.AutoDownloadSettings
  */
 export type AccountAutoDownloadSettings =
   | AccountAutoDownloadSettings.accountAutoDownloadSettings
@@ -7185,7 +7188,7 @@ export namespace AccountAutoDownloadSettings {
 }
 
 /**
- * Ref: https://core.telegram.org/type/EmojiKeyword
+ * @link https://core.telegram.org/type/EmojiKeyword
  */
 export type EmojiKeyword =
   | EmojiKeyword.emojiKeyword
@@ -7206,7 +7209,7 @@ export namespace EmojiKeyword {
 }
 
 /**
- * Ref: https://core.telegram.org/type/EmojiKeywordsDifference
+ * @link https://core.telegram.org/type/EmojiKeywordsDifference
  */
 export type EmojiKeywordsDifference =
   | EmojiKeywordsDifference.emojiKeywordsDifference
@@ -7223,7 +7226,7 @@ export namespace EmojiKeywordsDifference {
 }
 
 /**
- * Ref: https://core.telegram.org/type/EmojiURL
+ * @link https://core.telegram.org/type/EmojiURL
  */
 export type EmojiURL =
   | EmojiURL.emojiURL
@@ -7237,7 +7240,7 @@ export namespace EmojiURL {
 }
 
 /**
- * Ref: https://core.telegram.org/type/EmojiLanguage
+ * @link https://core.telegram.org/type/EmojiLanguage
  */
 export type EmojiLanguage =
   | EmojiLanguage.emojiLanguage
@@ -7251,7 +7254,7 @@ export namespace EmojiLanguage {
 }
 
 /**
- * Ref: https://core.telegram.org/type/FileLocation
+ * @link https://core.telegram.org/type/FileLocation
  */
 export type FileLocation =
   | FileLocation.fileLocationToBeDeprecated
@@ -7266,7 +7269,7 @@ export namespace FileLocation {
 }
 
 /**
- * Ref: https://core.telegram.org/type/Folder
+ * @link https://core.telegram.org/type/Folder
  */
 export type Folder =
   | Folder.folder
@@ -7285,7 +7288,7 @@ export namespace Folder {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputFolderPeer
+ * @link https://core.telegram.org/type/InputFolderPeer
  */
 export type InputFolderPeer =
   | InputFolderPeer.inputFolderPeer
@@ -7300,7 +7303,7 @@ export namespace InputFolderPeer {
 }
 
 /**
- * Ref: https://core.telegram.org/type/FolderPeer
+ * @link https://core.telegram.org/type/FolderPeer
  */
 export type FolderPeer =
   | FolderPeer.folderPeer
@@ -7315,7 +7318,7 @@ export namespace FolderPeer {
 }
 
 /**
- * Ref: https://core.telegram.org/type/messages.SearchCounter
+ * @link https://core.telegram.org/type/messages.SearchCounter
  */
 export type MessagesSearchCounter =
   | MessagesSearchCounter.messagesSearchCounter
@@ -7331,7 +7334,7 @@ export namespace MessagesSearchCounter {
 }
 
 /**
- * Ref: https://core.telegram.org/type/UrlAuthResult
+ * @link https://core.telegram.org/type/UrlAuthResult
  */
 export type UrlAuthResult =
   | UrlAuthResult.urlAuthResultRequest
@@ -7356,7 +7359,7 @@ export namespace UrlAuthResult {
 }
 
 /**
- * Ref: https://core.telegram.org/type/ChannelLocation
+ * @link https://core.telegram.org/type/ChannelLocation
  */
 export type ChannelLocation =
   | ChannelLocation.channelLocationEmpty
@@ -7375,7 +7378,7 @@ export namespace ChannelLocation {
 }
 
 /**
- * Ref: https://core.telegram.org/type/PeerLocated
+ * @link https://core.telegram.org/type/PeerLocated
  */
 export type PeerLocated =
   | PeerLocated.peerLocated
@@ -7391,7 +7394,7 @@ export namespace PeerLocated {
 }
 
 /**
- * Ref: https://core.telegram.org/type/RestrictionReason
+ * @link https://core.telegram.org/type/RestrictionReason
  */
 export type RestrictionReason =
   | RestrictionReason.restrictionReason
@@ -7407,7 +7410,7 @@ export namespace RestrictionReason {
 }
 
 /**
- * Ref: https://core.telegram.org/type/InputTheme
+ * @link https://core.telegram.org/type/InputTheme
  */
 export type InputTheme =
   | InputTheme.inputTheme
@@ -7427,7 +7430,7 @@ export namespace InputTheme {
 }
 
 /**
- * Ref: https://core.telegram.org/type/Theme
+ * @link https://core.telegram.org/type/Theme
  */
 export type Theme =
   | Theme.themeDocumentNotModified
@@ -7452,7 +7455,7 @@ export namespace Theme {
 }
 
 /**
- * Ref: https://core.telegram.org/type/account.Themes
+ * @link https://core.telegram.org/type/account.Themes
  */
 export type AccountThemes =
   | AccountThemes.accountThemesNotModified
@@ -7468,6 +7471,786 @@ export namespace AccountThemes {
     hash: number,
     themes: Theme[],
   };
+}
+
+export interface ConstructorDeclMap {
+  'error': Error.error,
+  'inputPeerEmpty': InputPeer.inputPeerEmpty,
+  'inputPeerSelf': InputPeer.inputPeerSelf,
+  'inputPeerChat': InputPeer.inputPeerChat,
+  'inputUserEmpty': InputUser.inputUserEmpty,
+  'inputUserSelf': InputUser.inputUserSelf,
+  'inputPhoneContact': InputContact.inputPhoneContact,
+  'inputFile': InputFile.inputFile,
+  'inputMediaEmpty': InputMedia.inputMediaEmpty,
+  'inputMediaUploadedPhoto': InputMedia.inputMediaUploadedPhoto,
+  'inputMediaPhoto': InputMedia.inputMediaPhoto,
+  'inputMediaGeoPoint': InputMedia.inputMediaGeoPoint,
+  'inputMediaContact': InputMedia.inputMediaContact,
+  'inputChatPhotoEmpty': InputChatPhoto.inputChatPhotoEmpty,
+  'inputChatUploadedPhoto': InputChatPhoto.inputChatUploadedPhoto,
+  'inputChatPhoto': InputChatPhoto.inputChatPhoto,
+  'inputGeoPointEmpty': InputGeoPoint.inputGeoPointEmpty,
+  'inputGeoPoint': InputGeoPoint.inputGeoPoint,
+  'inputPhotoEmpty': InputPhoto.inputPhotoEmpty,
+  'inputPhoto': InputPhoto.inputPhoto,
+  'inputFileLocation': InputFileLocation.inputFileLocation,
+  'peerUser': Peer.peerUser,
+  'peerChat': Peer.peerChat,
+  'storage.fileUnknown': StorageFileType.storageFileUnknown,
+  'storage.filePartial': StorageFileType.storageFilePartial,
+  'storage.fileJpeg': StorageFileType.storageFileJpeg,
+  'storage.fileGif': StorageFileType.storageFileGif,
+  'storage.filePng': StorageFileType.storageFilePng,
+  'storage.filePdf': StorageFileType.storageFilePdf,
+  'storage.fileMp3': StorageFileType.storageFileMp3,
+  'storage.fileMov': StorageFileType.storageFileMov,
+  'storage.fileMp4': StorageFileType.storageFileMp4,
+  'storage.fileWebp': StorageFileType.storageFileWebp,
+  'userEmpty': User.userEmpty,
+  'userProfilePhotoEmpty': UserProfilePhoto.userProfilePhotoEmpty,
+  'userProfilePhoto': UserProfilePhoto.userProfilePhoto,
+  'userStatusEmpty': UserStatus.userStatusEmpty,
+  'userStatusOnline': UserStatus.userStatusOnline,
+  'userStatusOffline': UserStatus.userStatusOffline,
+  'chatEmpty': Chat.chatEmpty,
+  'chat': Chat.chat,
+  'chatForbidden': Chat.chatForbidden,
+  'chatFull': ChatFull.chatFull,
+  'chatParticipant': ChatParticipant.chatParticipant,
+  'chatParticipantsForbidden': ChatParticipants.chatParticipantsForbidden,
+  'chatParticipants': ChatParticipants.chatParticipants,
+  'chatPhotoEmpty': ChatPhoto.chatPhotoEmpty,
+  'chatPhoto': ChatPhoto.chatPhoto,
+  'messageEmpty': Message.messageEmpty,
+  'message': Message.message,
+  'messageService': Message.messageService,
+  'messageMediaEmpty': MessageMedia.messageMediaEmpty,
+  'messageMediaPhoto': MessageMedia.messageMediaPhoto,
+  'messageMediaGeo': MessageMedia.messageMediaGeo,
+  'messageMediaContact': MessageMedia.messageMediaContact,
+  'messageMediaUnsupported': MessageMedia.messageMediaUnsupported,
+  'messageActionEmpty': MessageAction.messageActionEmpty,
+  'messageActionChatCreate': MessageAction.messageActionChatCreate,
+  'messageActionChatEditTitle': MessageAction.messageActionChatEditTitle,
+  'messageActionChatEditPhoto': MessageAction.messageActionChatEditPhoto,
+  'messageActionChatDeletePhoto': MessageAction.messageActionChatDeletePhoto,
+  'messageActionChatAddUser': MessageAction.messageActionChatAddUser,
+  'messageActionChatDeleteUser': MessageAction.messageActionChatDeleteUser,
+  'dialog': Dialog.dialog,
+  'photoEmpty': Photo.photoEmpty,
+  'photo': Photo.photo,
+  'photoSizeEmpty': PhotoSize.photoSizeEmpty,
+  'photoSize': PhotoSize.photoSize,
+  'photoCachedSize': PhotoSize.photoCachedSize,
+  'geoPointEmpty': GeoPoint.geoPointEmpty,
+  'geoPoint': GeoPoint.geoPoint,
+  'auth.sentCode': AuthSentCode.authSentCode,
+  'auth.authorization': AuthAuthorization.authAuthorization,
+  'auth.exportedAuthorization': AuthExportedAuthorization.authExportedAuthorization,
+  'inputNotifyPeer': InputNotifyPeer.inputNotifyPeer,
+  'inputNotifyUsers': InputNotifyPeer.inputNotifyUsers,
+  'inputNotifyChats': InputNotifyPeer.inputNotifyChats,
+  'inputPeerNotifySettings': InputPeerNotifySettings.inputPeerNotifySettings,
+  'peerNotifySettings': PeerNotifySettings.peerNotifySettings,
+  'peerSettings': PeerSettings.peerSettings,
+  'wallPaper': WallPaper.wallPaper,
+  'inputReportReasonSpam': ReportReason.inputReportReasonSpam,
+  'inputReportReasonViolence': ReportReason.inputReportReasonViolence,
+  'inputReportReasonPornography': ReportReason.inputReportReasonPornography,
+  'inputReportReasonChildAbuse': ReportReason.inputReportReasonChildAbuse,
+  'inputReportReasonOther': ReportReason.inputReportReasonOther,
+  'userFull': UserFull.userFull,
+  'contact': Contact.contact,
+  'importedContact': ImportedContact.importedContact,
+  'contactBlocked': ContactBlocked.contactBlocked,
+  'contactStatus': ContactStatus.contactStatus,
+  'contacts.contactsNotModified': ContactsContacts.contactsContactsNotModified,
+  'contacts.contacts': ContactsContacts.contactsContacts,
+  'contacts.importedContacts': ContactsImportedContacts.contactsImportedContacts,
+  'contacts.blocked': ContactsBlocked.contactsBlocked,
+  'contacts.blockedSlice': ContactsBlocked.contactsBlockedSlice,
+  'messages.dialogs': MessagesDialogs.messagesDialogs,
+  'messages.dialogsSlice': MessagesDialogs.messagesDialogsSlice,
+  'messages.messages': MessagesMessages.messagesMessages,
+  'messages.messagesSlice': MessagesMessages.messagesMessagesSlice,
+  'messages.chats': MessagesChats.messagesChats,
+  'messages.chatFull': MessagesChatFull.messagesChatFull,
+  'messages.affectedHistory': MessagesAffectedHistory.messagesAffectedHistory,
+  'inputMessagesFilterEmpty': MessagesFilter.inputMessagesFilterEmpty,
+  'inputMessagesFilterPhotos': MessagesFilter.inputMessagesFilterPhotos,
+  'inputMessagesFilterVideo': MessagesFilter.inputMessagesFilterVideo,
+  'inputMessagesFilterPhotoVideo': MessagesFilter.inputMessagesFilterPhotoVideo,
+  'inputMessagesFilterDocument': MessagesFilter.inputMessagesFilterDocument,
+  'inputMessagesFilterUrl': MessagesFilter.inputMessagesFilterUrl,
+  'inputMessagesFilterGif': MessagesFilter.inputMessagesFilterGif,
+  'updateNewMessage': Update.updateNewMessage,
+  'updateMessageID': Update.updateMessageID,
+  'updateDeleteMessages': Update.updateDeleteMessages,
+  'updateUserTyping': Update.updateUserTyping,
+  'updateChatUserTyping': Update.updateChatUserTyping,
+  'updateChatParticipants': Update.updateChatParticipants,
+  'updateUserStatus': Update.updateUserStatus,
+  'updateUserName': Update.updateUserName,
+  'updateUserPhoto': Update.updateUserPhoto,
+  'updates.state': UpdatesState.updatesState,
+  'updates.differenceEmpty': UpdatesDifference.updatesDifferenceEmpty,
+  'updates.difference': UpdatesDifference.updatesDifference,
+  'updates.differenceSlice': UpdatesDifference.updatesDifferenceSlice,
+  'updatesTooLong': Updates.updatesTooLong,
+  'updateShortMessage': Updates.updateShortMessage,
+  'updateShortChatMessage': Updates.updateShortChatMessage,
+  'updateShort': Updates.updateShort,
+  'updatesCombined': Updates.updatesCombined,
+  'updates': Updates.updates,
+  'photos.photos': PhotosPhotos.photosPhotos,
+  'photos.photosSlice': PhotosPhotos.photosPhotosSlice,
+  'photos.photo': PhotosPhoto.photosPhoto,
+  'upload.file': UploadFile.uploadFile,
+  'dcOption': DcOption.dcOption,
+  'config': Config.config,
+  'nearestDc': NearestDc.nearestDc,
+  'help.appUpdate': HelpAppUpdate.helpAppUpdate,
+  'help.noAppUpdate': HelpAppUpdate.helpNoAppUpdate,
+  'help.inviteText': HelpInviteText.helpInviteText,
+  'updateNewEncryptedMessage': Update.updateNewEncryptedMessage,
+  'updateEncryptedChatTyping': Update.updateEncryptedChatTyping,
+  'updateEncryption': Update.updateEncryption,
+  'updateEncryptedMessagesRead': Update.updateEncryptedMessagesRead,
+  'encryptedChatEmpty': EncryptedChat.encryptedChatEmpty,
+  'encryptedChatWaiting': EncryptedChat.encryptedChatWaiting,
+  'encryptedChatRequested': EncryptedChat.encryptedChatRequested,
+  'encryptedChat': EncryptedChat.encryptedChat,
+  'encryptedChatDiscarded': EncryptedChat.encryptedChatDiscarded,
+  'inputEncryptedChat': InputEncryptedChat.inputEncryptedChat,
+  'encryptedFileEmpty': EncryptedFile.encryptedFileEmpty,
+  'encryptedFile': EncryptedFile.encryptedFile,
+  'inputEncryptedFileEmpty': InputEncryptedFile.inputEncryptedFileEmpty,
+  'inputEncryptedFileUploaded': InputEncryptedFile.inputEncryptedFileUploaded,
+  'inputEncryptedFile': InputEncryptedFile.inputEncryptedFile,
+  'inputEncryptedFileLocation': InputFileLocation.inputEncryptedFileLocation,
+  'encryptedMessage': EncryptedMessage.encryptedMessage,
+  'encryptedMessageService': EncryptedMessage.encryptedMessageService,
+  'messages.dhConfigNotModified': MessagesDhConfig.messagesDhConfigNotModified,
+  'messages.dhConfig': MessagesDhConfig.messagesDhConfig,
+  'messages.sentEncryptedMessage': MessagesSentEncryptedMessage.messagesSentEncryptedMessage,
+  'messages.sentEncryptedFile': MessagesSentEncryptedMessage.messagesSentEncryptedFile,
+  'inputFileBig': InputFile.inputFileBig,
+  'inputEncryptedFileBigUploaded': InputEncryptedFile.inputEncryptedFileBigUploaded,
+  'updateChatParticipantAdd': Update.updateChatParticipantAdd,
+  'updateChatParticipantDelete': Update.updateChatParticipantDelete,
+  'updateDcOptions': Update.updateDcOptions,
+  'inputMediaUploadedDocument': InputMedia.inputMediaUploadedDocument,
+  'inputMediaDocument': InputMedia.inputMediaDocument,
+  'messageMediaDocument': MessageMedia.messageMediaDocument,
+  'inputDocumentEmpty': InputDocument.inputDocumentEmpty,
+  'inputDocument': InputDocument.inputDocument,
+  'inputDocumentFileLocation': InputFileLocation.inputDocumentFileLocation,
+  'documentEmpty': Document.documentEmpty,
+  'document': Document.document,
+  'help.support': HelpSupport.helpSupport,
+  'notifyPeer': NotifyPeer.notifyPeer,
+  'notifyUsers': NotifyPeer.notifyUsers,
+  'notifyChats': NotifyPeer.notifyChats,
+  'updateUserBlocked': Update.updateUserBlocked,
+  'updateNotifySettings': Update.updateNotifySettings,
+  'sendMessageTypingAction': SendMessageAction.sendMessageTypingAction,
+  'sendMessageCancelAction': SendMessageAction.sendMessageCancelAction,
+  'sendMessageRecordVideoAction': SendMessageAction.sendMessageRecordVideoAction,
+  'sendMessageUploadVideoAction': SendMessageAction.sendMessageUploadVideoAction,
+  'sendMessageRecordAudioAction': SendMessageAction.sendMessageRecordAudioAction,
+  'sendMessageUploadAudioAction': SendMessageAction.sendMessageUploadAudioAction,
+  'sendMessageUploadPhotoAction': SendMessageAction.sendMessageUploadPhotoAction,
+  'sendMessageUploadDocumentAction': SendMessageAction.sendMessageUploadDocumentAction,
+  'sendMessageGeoLocationAction': SendMessageAction.sendMessageGeoLocationAction,
+  'sendMessageChooseContactAction': SendMessageAction.sendMessageChooseContactAction,
+  'contacts.found': ContactsFound.contactsFound,
+  'updateServiceNotification': Update.updateServiceNotification,
+  'userStatusRecently': UserStatus.userStatusRecently,
+  'userStatusLastWeek': UserStatus.userStatusLastWeek,
+  'userStatusLastMonth': UserStatus.userStatusLastMonth,
+  'updatePrivacy': Update.updatePrivacy,
+  'inputPrivacyKeyStatusTimestamp': InputPrivacyKey.inputPrivacyKeyStatusTimestamp,
+  'privacyKeyStatusTimestamp': PrivacyKey.privacyKeyStatusTimestamp,
+  'inputPrivacyValueAllowContacts': InputPrivacyRule.inputPrivacyValueAllowContacts,
+  'inputPrivacyValueAllowAll': InputPrivacyRule.inputPrivacyValueAllowAll,
+  'inputPrivacyValueAllowUsers': InputPrivacyRule.inputPrivacyValueAllowUsers,
+  'inputPrivacyValueDisallowContacts': InputPrivacyRule.inputPrivacyValueDisallowContacts,
+  'inputPrivacyValueDisallowAll': InputPrivacyRule.inputPrivacyValueDisallowAll,
+  'inputPrivacyValueDisallowUsers': InputPrivacyRule.inputPrivacyValueDisallowUsers,
+  'privacyValueAllowContacts': PrivacyRule.privacyValueAllowContacts,
+  'privacyValueAllowAll': PrivacyRule.privacyValueAllowAll,
+  'privacyValueAllowUsers': PrivacyRule.privacyValueAllowUsers,
+  'privacyValueDisallowContacts': PrivacyRule.privacyValueDisallowContacts,
+  'privacyValueDisallowAll': PrivacyRule.privacyValueDisallowAll,
+  'privacyValueDisallowUsers': PrivacyRule.privacyValueDisallowUsers,
+  'account.privacyRules': AccountPrivacyRules.accountPrivacyRules,
+  'accountDaysTTL': AccountDaysTTL.accountDaysTTL,
+  'updateUserPhone': Update.updateUserPhone,
+  'documentAttributeImageSize': DocumentAttribute.documentAttributeImageSize,
+  'documentAttributeAnimated': DocumentAttribute.documentAttributeAnimated,
+  'documentAttributeSticker': DocumentAttribute.documentAttributeSticker,
+  'documentAttributeVideo': DocumentAttribute.documentAttributeVideo,
+  'documentAttributeAudio': DocumentAttribute.documentAttributeAudio,
+  'documentAttributeFilename': DocumentAttribute.documentAttributeFilename,
+  'messages.stickersNotModified': MessagesStickers.messagesStickersNotModified,
+  'messages.stickers': MessagesStickers.messagesStickers,
+  'stickerPack': StickerPack.stickerPack,
+  'messages.allStickersNotModified': MessagesAllStickers.messagesAllStickersNotModified,
+  'messages.allStickers': MessagesAllStickers.messagesAllStickers,
+  'updateReadHistoryInbox': Update.updateReadHistoryInbox,
+  'updateReadHistoryOutbox': Update.updateReadHistoryOutbox,
+  'messages.affectedMessages': MessagesAffectedMessages.messagesAffectedMessages,
+  'updateWebPage': Update.updateWebPage,
+  'webPageEmpty': WebPage.webPageEmpty,
+  'webPagePending': WebPage.webPagePending,
+  'webPage': WebPage.webPage,
+  'messageMediaWebPage': MessageMedia.messageMediaWebPage,
+  'authorization': Authorization.authorization,
+  'account.authorizations': AccountAuthorizations.accountAuthorizations,
+  'account.password': AccountPassword.accountPassword,
+  'account.passwordSettings': AccountPasswordSettings.accountPasswordSettings,
+  'account.passwordInputSettings': AccountPasswordInputSettings.accountPasswordInputSettings,
+  'auth.passwordRecovery': AuthPasswordRecovery.authPasswordRecovery,
+  'inputMediaVenue': InputMedia.inputMediaVenue,
+  'messageMediaVenue': MessageMedia.messageMediaVenue,
+  'receivedNotifyMessage': ReceivedNotifyMessage.receivedNotifyMessage,
+  'chatInviteEmpty': ExportedChatInvite.chatInviteEmpty,
+  'chatInviteExported': ExportedChatInvite.chatInviteExported,
+  'chatInviteAlready': ChatInvite.chatInviteAlready,
+  'chatInvite': ChatInvite.chatInvite,
+  'messageActionChatJoinedByLink': MessageAction.messageActionChatJoinedByLink,
+  'updateReadMessagesContents': Update.updateReadMessagesContents,
+  'inputStickerSetEmpty': InputStickerSet.inputStickerSetEmpty,
+  'inputStickerSetID': InputStickerSet.inputStickerSetID,
+  'inputStickerSetShortName': InputStickerSet.inputStickerSetShortName,
+  'stickerSet': StickerSet.stickerSet,
+  'messages.stickerSet': MessagesStickerSet.messagesStickerSet,
+  'user': User.user,
+  'botCommand': BotCommand.botCommand,
+  'botInfo': BotInfo.botInfo,
+  'keyboardButton': KeyboardButton.keyboardButton,
+  'keyboardButtonRow': KeyboardButtonRow.keyboardButtonRow,
+  'replyKeyboardHide': ReplyMarkup.replyKeyboardHide,
+  'replyKeyboardForceReply': ReplyMarkup.replyKeyboardForceReply,
+  'replyKeyboardMarkup': ReplyMarkup.replyKeyboardMarkup,
+  'inputPeerUser': InputPeer.inputPeerUser,
+  'inputUser': InputUser.inputUser,
+  'messageEntityUnknown': MessageEntity.messageEntityUnknown,
+  'messageEntityMention': MessageEntity.messageEntityMention,
+  'messageEntityHashtag': MessageEntity.messageEntityHashtag,
+  'messageEntityBotCommand': MessageEntity.messageEntityBotCommand,
+  'messageEntityUrl': MessageEntity.messageEntityUrl,
+  'messageEntityEmail': MessageEntity.messageEntityEmail,
+  'messageEntityBold': MessageEntity.messageEntityBold,
+  'messageEntityItalic': MessageEntity.messageEntityItalic,
+  'messageEntityCode': MessageEntity.messageEntityCode,
+  'messageEntityPre': MessageEntity.messageEntityPre,
+  'messageEntityTextUrl': MessageEntity.messageEntityTextUrl,
+  'updateShortSentMessage': Updates.updateShortSentMessage,
+  'inputChannelEmpty': InputChannel.inputChannelEmpty,
+  'inputChannel': InputChannel.inputChannel,
+  'peerChannel': Peer.peerChannel,
+  'inputPeerChannel': InputPeer.inputPeerChannel,
+  'channel': Chat.channel,
+  'channelForbidden': Chat.channelForbidden,
+  'contacts.resolvedPeer': ContactsResolvedPeer.contactsResolvedPeer,
+  'channelFull': ChatFull.channelFull,
+  'messageRange': MessageRange.messageRange,
+  'messages.channelMessages': MessagesMessages.messagesChannelMessages,
+  'messageActionChannelCreate': MessageAction.messageActionChannelCreate,
+  'updateChannelTooLong': Update.updateChannelTooLong,
+  'updateChannel': Update.updateChannel,
+  'updateNewChannelMessage': Update.updateNewChannelMessage,
+  'updateReadChannelInbox': Update.updateReadChannelInbox,
+  'updateDeleteChannelMessages': Update.updateDeleteChannelMessages,
+  'updateChannelMessageViews': Update.updateChannelMessageViews,
+  'updates.channelDifferenceEmpty': UpdatesChannelDifference.updatesChannelDifferenceEmpty,
+  'updates.channelDifferenceTooLong': UpdatesChannelDifference.updatesChannelDifferenceTooLong,
+  'updates.channelDifference': UpdatesChannelDifference.updatesChannelDifference,
+  'channelMessagesFilterEmpty': ChannelMessagesFilter.channelMessagesFilterEmpty,
+  'channelMessagesFilter': ChannelMessagesFilter.channelMessagesFilter,
+  'channelParticipant': ChannelParticipant.channelParticipant,
+  'channelParticipantSelf': ChannelParticipant.channelParticipantSelf,
+  'channelParticipantCreator': ChannelParticipant.channelParticipantCreator,
+  'channelParticipantsRecent': ChannelParticipantsFilter.channelParticipantsRecent,
+  'channelParticipantsAdmins': ChannelParticipantsFilter.channelParticipantsAdmins,
+  'channelParticipantsKicked': ChannelParticipantsFilter.channelParticipantsKicked,
+  'channels.channelParticipants': ChannelsChannelParticipants.channelsChannelParticipants,
+  'channels.channelParticipant': ChannelsChannelParticipant.channelsChannelParticipant,
+  'chatParticipantCreator': ChatParticipant.chatParticipantCreator,
+  'chatParticipantAdmin': ChatParticipant.chatParticipantAdmin,
+  'updateChatParticipantAdmin': Update.updateChatParticipantAdmin,
+  'messageActionChatMigrateTo': MessageAction.messageActionChatMigrateTo,
+  'messageActionChannelMigrateFrom': MessageAction.messageActionChannelMigrateFrom,
+  'channelParticipantsBots': ChannelParticipantsFilter.channelParticipantsBots,
+  'help.termsOfService': HelpTermsOfService.helpTermsOfService,
+  'updateNewStickerSet': Update.updateNewStickerSet,
+  'updateStickerSetsOrder': Update.updateStickerSetsOrder,
+  'updateStickerSets': Update.updateStickerSets,
+  'foundGif': FoundGif.foundGif,
+  'foundGifCached': FoundGif.foundGifCached,
+  'inputMediaGifExternal': InputMedia.inputMediaGifExternal,
+  'messages.foundGifs': MessagesFoundGifs.messagesFoundGifs,
+  'messages.savedGifsNotModified': MessagesSavedGifs.messagesSavedGifsNotModified,
+  'messages.savedGifs': MessagesSavedGifs.messagesSavedGifs,
+  'updateSavedGifs': Update.updateSavedGifs,
+  'inputBotInlineMessageMediaAuto': InputBotInlineMessage.inputBotInlineMessageMediaAuto,
+  'inputBotInlineMessageText': InputBotInlineMessage.inputBotInlineMessageText,
+  'inputBotInlineResult': InputBotInlineResult.inputBotInlineResult,
+  'botInlineMessageMediaAuto': BotInlineMessage.botInlineMessageMediaAuto,
+  'botInlineMessageText': BotInlineMessage.botInlineMessageText,
+  'botInlineResult': BotInlineResult.botInlineResult,
+  'messages.botResults': MessagesBotResults.messagesBotResults,
+  'updateBotInlineQuery': Update.updateBotInlineQuery,
+  'updateBotInlineSend': Update.updateBotInlineSend,
+  'inputMessagesFilterVoice': MessagesFilter.inputMessagesFilterVoice,
+  'inputMessagesFilterMusic': MessagesFilter.inputMessagesFilterMusic,
+  'inputPrivacyKeyChatInvite': InputPrivacyKey.inputPrivacyKeyChatInvite,
+  'privacyKeyChatInvite': PrivacyKey.privacyKeyChatInvite,
+  'exportedMessageLink': ExportedMessageLink.exportedMessageLink,
+  'messageFwdHeader': MessageFwdHeader.messageFwdHeader,
+  'updateEditChannelMessage': Update.updateEditChannelMessage,
+  'updateChannelPinnedMessage': Update.updateChannelPinnedMessage,
+  'messageActionPinMessage': MessageAction.messageActionPinMessage,
+  'auth.codeTypeSms': AuthCodeType.authCodeTypeSms,
+  'auth.codeTypeCall': AuthCodeType.authCodeTypeCall,
+  'auth.codeTypeFlashCall': AuthCodeType.authCodeTypeFlashCall,
+  'auth.sentCodeTypeApp': AuthSentCodeType.authSentCodeTypeApp,
+  'auth.sentCodeTypeSms': AuthSentCodeType.authSentCodeTypeSms,
+  'auth.sentCodeTypeCall': AuthSentCodeType.authSentCodeTypeCall,
+  'auth.sentCodeTypeFlashCall': AuthSentCodeType.authSentCodeTypeFlashCall,
+  'keyboardButtonUrl': KeyboardButton.keyboardButtonUrl,
+  'keyboardButtonCallback': KeyboardButton.keyboardButtonCallback,
+  'keyboardButtonRequestPhone': KeyboardButton.keyboardButtonRequestPhone,
+  'keyboardButtonRequestGeoLocation': KeyboardButton.keyboardButtonRequestGeoLocation,
+  'keyboardButtonSwitchInline': KeyboardButton.keyboardButtonSwitchInline,
+  'replyInlineMarkup': ReplyMarkup.replyInlineMarkup,
+  'messages.botCallbackAnswer': MessagesBotCallbackAnswer.messagesBotCallbackAnswer,
+  'updateBotCallbackQuery': Update.updateBotCallbackQuery,
+  'messages.messageEditData': MessagesMessageEditData.messagesMessageEditData,
+  'updateEditMessage': Update.updateEditMessage,
+  'inputBotInlineMessageMediaGeo': InputBotInlineMessage.inputBotInlineMessageMediaGeo,
+  'inputBotInlineMessageMediaVenue': InputBotInlineMessage.inputBotInlineMessageMediaVenue,
+  'inputBotInlineMessageMediaContact': InputBotInlineMessage.inputBotInlineMessageMediaContact,
+  'botInlineMessageMediaGeo': BotInlineMessage.botInlineMessageMediaGeo,
+  'botInlineMessageMediaVenue': BotInlineMessage.botInlineMessageMediaVenue,
+  'botInlineMessageMediaContact': BotInlineMessage.botInlineMessageMediaContact,
+  'inputBotInlineResultPhoto': InputBotInlineResult.inputBotInlineResultPhoto,
+  'inputBotInlineResultDocument': InputBotInlineResult.inputBotInlineResultDocument,
+  'botInlineMediaResult': BotInlineResult.botInlineMediaResult,
+  'inputBotInlineMessageID': InputBotInlineMessageID.inputBotInlineMessageID,
+  'updateInlineBotCallbackQuery': Update.updateInlineBotCallbackQuery,
+  'inlineBotSwitchPM': InlineBotSwitchPM.inlineBotSwitchPM,
+  'messages.peerDialogs': MessagesPeerDialogs.messagesPeerDialogs,
+  'topPeer': TopPeer.topPeer,
+  'topPeerCategoryBotsPM': TopPeerCategory.topPeerCategoryBotsPM,
+  'topPeerCategoryBotsInline': TopPeerCategory.topPeerCategoryBotsInline,
+  'topPeerCategoryCorrespondents': TopPeerCategory.topPeerCategoryCorrespondents,
+  'topPeerCategoryGroups': TopPeerCategory.topPeerCategoryGroups,
+  'topPeerCategoryChannels': TopPeerCategory.topPeerCategoryChannels,
+  'topPeerCategoryPeers': TopPeerCategoryPeers.topPeerCategoryPeers,
+  'contacts.topPeersNotModified': ContactsTopPeers.contactsTopPeersNotModified,
+  'contacts.topPeers': ContactsTopPeers.contactsTopPeers,
+  'messageEntityMentionName': MessageEntity.messageEntityMentionName,
+  'inputMessageEntityMentionName': MessageEntity.inputMessageEntityMentionName,
+  'inputMessagesFilterChatPhotos': MessagesFilter.inputMessagesFilterChatPhotos,
+  'updateReadChannelOutbox': Update.updateReadChannelOutbox,
+  'updateDraftMessage': Update.updateDraftMessage,
+  'draftMessageEmpty': DraftMessage.draftMessageEmpty,
+  'draftMessage': DraftMessage.draftMessage,
+  'messageActionHistoryClear': MessageAction.messageActionHistoryClear,
+  'messages.featuredStickersNotModified': MessagesFeaturedStickers.messagesFeaturedStickersNotModified,
+  'messages.featuredStickers': MessagesFeaturedStickers.messagesFeaturedStickers,
+  'updateReadFeaturedStickers': Update.updateReadFeaturedStickers,
+  'messages.recentStickersNotModified': MessagesRecentStickers.messagesRecentStickersNotModified,
+  'messages.recentStickers': MessagesRecentStickers.messagesRecentStickers,
+  'updateRecentStickers': Update.updateRecentStickers,
+  'messages.archivedStickers': MessagesArchivedStickers.messagesArchivedStickers,
+  'messages.stickerSetInstallResultSuccess': MessagesStickerSetInstallResult.messagesStickerSetInstallResultSuccess,
+  'messages.stickerSetInstallResultArchive': MessagesStickerSetInstallResult.messagesStickerSetInstallResultArchive,
+  'stickerSetCovered': StickerSetCovered.stickerSetCovered,
+  'updateConfig': Update.updateConfig,
+  'updatePtsChanged': Update.updatePtsChanged,
+  'inputMediaPhotoExternal': InputMedia.inputMediaPhotoExternal,
+  'inputMediaDocumentExternal': InputMedia.inputMediaDocumentExternal,
+  'stickerSetMultiCovered': StickerSetCovered.stickerSetMultiCovered,
+  'maskCoords': MaskCoords.maskCoords,
+  'documentAttributeHasStickers': DocumentAttribute.documentAttributeHasStickers,
+  'inputStickeredMediaPhoto': InputStickeredMedia.inputStickeredMediaPhoto,
+  'inputStickeredMediaDocument': InputStickeredMedia.inputStickeredMediaDocument,
+  'game': Game.game,
+  'inputBotInlineResultGame': InputBotInlineResult.inputBotInlineResultGame,
+  'inputBotInlineMessageGame': InputBotInlineMessage.inputBotInlineMessageGame,
+  'messageMediaGame': MessageMedia.messageMediaGame,
+  'inputMediaGame': InputMedia.inputMediaGame,
+  'inputGameID': InputGame.inputGameID,
+  'inputGameShortName': InputGame.inputGameShortName,
+  'keyboardButtonGame': KeyboardButton.keyboardButtonGame,
+  'messageActionGameScore': MessageAction.messageActionGameScore,
+  'highScore': HighScore.highScore,
+  'messages.highScores': MessagesHighScores.messagesHighScores,
+  'updates.differenceTooLong': UpdatesDifference.updatesDifferenceTooLong,
+  'updateChannelWebPage': Update.updateChannelWebPage,
+  'messages.chatsSlice': MessagesChats.messagesChatsSlice,
+  'textEmpty': RichText.textEmpty,
+  'textPlain': RichText.textPlain,
+  'textBold': RichText.textBold,
+  'textItalic': RichText.textItalic,
+  'textUnderline': RichText.textUnderline,
+  'textStrike': RichText.textStrike,
+  'textFixed': RichText.textFixed,
+  'textUrl': RichText.textUrl,
+  'textEmail': RichText.textEmail,
+  'textConcat': RichText.textConcat,
+  'pageBlockUnsupported': PageBlock.pageBlockUnsupported,
+  'pageBlockTitle': PageBlock.pageBlockTitle,
+  'pageBlockSubtitle': PageBlock.pageBlockSubtitle,
+  'pageBlockAuthorDate': PageBlock.pageBlockAuthorDate,
+  'pageBlockHeader': PageBlock.pageBlockHeader,
+  'pageBlockSubheader': PageBlock.pageBlockSubheader,
+  'pageBlockParagraph': PageBlock.pageBlockParagraph,
+  'pageBlockPreformatted': PageBlock.pageBlockPreformatted,
+  'pageBlockFooter': PageBlock.pageBlockFooter,
+  'pageBlockDivider': PageBlock.pageBlockDivider,
+  'pageBlockAnchor': PageBlock.pageBlockAnchor,
+  'pageBlockList': PageBlock.pageBlockList,
+  'pageBlockBlockquote': PageBlock.pageBlockBlockquote,
+  'pageBlockPullquote': PageBlock.pageBlockPullquote,
+  'pageBlockPhoto': PageBlock.pageBlockPhoto,
+  'pageBlockVideo': PageBlock.pageBlockVideo,
+  'pageBlockCover': PageBlock.pageBlockCover,
+  'pageBlockEmbed': PageBlock.pageBlockEmbed,
+  'pageBlockEmbedPost': PageBlock.pageBlockEmbedPost,
+  'pageBlockCollage': PageBlock.pageBlockCollage,
+  'pageBlockSlideshow': PageBlock.pageBlockSlideshow,
+  'webPageNotModified': WebPage.webPageNotModified,
+  'inputPrivacyKeyPhoneCall': InputPrivacyKey.inputPrivacyKeyPhoneCall,
+  'privacyKeyPhoneCall': PrivacyKey.privacyKeyPhoneCall,
+  'sendMessageGamePlayAction': SendMessageAction.sendMessageGamePlayAction,
+  'phoneCallDiscardReasonMissed': PhoneCallDiscardReason.phoneCallDiscardReasonMissed,
+  'phoneCallDiscardReasonDisconnect': PhoneCallDiscardReason.phoneCallDiscardReasonDisconnect,
+  'phoneCallDiscardReasonHangup': PhoneCallDiscardReason.phoneCallDiscardReasonHangup,
+  'phoneCallDiscardReasonBusy': PhoneCallDiscardReason.phoneCallDiscardReasonBusy,
+  'updateDialogPinned': Update.updateDialogPinned,
+  'updatePinnedDialogs': Update.updatePinnedDialogs,
+  'dataJSON': DataJSON.dataJSON,
+  'updateBotWebhookJSON': Update.updateBotWebhookJSON,
+  'updateBotWebhookJSONQuery': Update.updateBotWebhookJSONQuery,
+  'labeledPrice': LabeledPrice.labeledPrice,
+  'invoice': Invoice.invoice,
+  'inputMediaInvoice': InputMedia.inputMediaInvoice,
+  'paymentCharge': PaymentCharge.paymentCharge,
+  'messageActionPaymentSentMe': MessageAction.messageActionPaymentSentMe,
+  'messageMediaInvoice': MessageMedia.messageMediaInvoice,
+  'postAddress': PostAddress.postAddress,
+  'paymentRequestedInfo': PaymentRequestedInfo.paymentRequestedInfo,
+  'keyboardButtonBuy': KeyboardButton.keyboardButtonBuy,
+  'messageActionPaymentSent': MessageAction.messageActionPaymentSent,
+  'paymentSavedCredentialsCard': PaymentSavedCredentials.paymentSavedCredentialsCard,
+  'webDocument': WebDocument.webDocument,
+  'inputWebDocument': InputWebDocument.inputWebDocument,
+  'inputWebFileLocation': InputWebFileLocation.inputWebFileLocation,
+  'upload.webFile': UploadWebFile.uploadWebFile,
+  'payments.paymentForm': PaymentsPaymentForm.paymentsPaymentForm,
+  'payments.validatedRequestedInfo': PaymentsValidatedRequestedInfo.paymentsValidatedRequestedInfo,
+  'payments.paymentResult': PaymentsPaymentResult.paymentsPaymentResult,
+  'payments.paymentReceipt': PaymentsPaymentReceipt.paymentsPaymentReceipt,
+  'payments.savedInfo': PaymentsSavedInfo.paymentsSavedInfo,
+  'inputPaymentCredentialsSaved': InputPaymentCredentials.inputPaymentCredentialsSaved,
+  'inputPaymentCredentials': InputPaymentCredentials.inputPaymentCredentials,
+  'account.tmpPassword': AccountTmpPassword.accountTmpPassword,
+  'shippingOption': ShippingOption.shippingOption,
+  'updateBotShippingQuery': Update.updateBotShippingQuery,
+  'updateBotPrecheckoutQuery': Update.updateBotPrecheckoutQuery,
+  'inputStickerSetItem': InputStickerSetItem.inputStickerSetItem,
+  'updatePhoneCall': Update.updatePhoneCall,
+  'inputPhoneCall': InputPhoneCall.inputPhoneCall,
+  'phoneCallEmpty': PhoneCall.phoneCallEmpty,
+  'phoneCallWaiting': PhoneCall.phoneCallWaiting,
+  'phoneCallRequested': PhoneCall.phoneCallRequested,
+  'phoneCallAccepted': PhoneCall.phoneCallAccepted,
+  'phoneCall': PhoneCall.phoneCall,
+  'phoneCallDiscarded': PhoneCall.phoneCallDiscarded,
+  'phoneConnection': PhoneConnection.phoneConnection,
+  'phoneCallProtocol': PhoneCallProtocol.phoneCallProtocol,
+  'phone.phoneCall': PhonePhoneCall.phonePhoneCall,
+  'inputMessagesFilterPhoneCalls': MessagesFilter.inputMessagesFilterPhoneCalls,
+  'messageActionPhoneCall': MessageAction.messageActionPhoneCall,
+  'inputMessagesFilterRoundVoice': MessagesFilter.inputMessagesFilterRoundVoice,
+  'inputMessagesFilterRoundVideo': MessagesFilter.inputMessagesFilterRoundVideo,
+  'sendMessageRecordRoundAction': SendMessageAction.sendMessageRecordRoundAction,
+  'sendMessageUploadRoundAction': SendMessageAction.sendMessageUploadRoundAction,
+  'upload.fileCdnRedirect': UploadFile.uploadFileCdnRedirect,
+  'upload.cdnFileReuploadNeeded': UploadCdnFile.uploadCdnFileReuploadNeeded,
+  'upload.cdnFile': UploadCdnFile.uploadCdnFile,
+  'cdnPublicKey': CdnPublicKey.cdnPublicKey,
+  'cdnConfig': CdnConfig.cdnConfig,
+  'pageBlockChannel': PageBlock.pageBlockChannel,
+  'langPackString': LangPackString.langPackString,
+  'langPackStringPluralized': LangPackString.langPackStringPluralized,
+  'langPackStringDeleted': LangPackString.langPackStringDeleted,
+  'langPackDifference': LangPackDifference.langPackDifference,
+  'langPackLanguage': LangPackLanguage.langPackLanguage,
+  'updateLangPackTooLong': Update.updateLangPackTooLong,
+  'updateLangPack': Update.updateLangPack,
+  'channelParticipantAdmin': ChannelParticipant.channelParticipantAdmin,
+  'channelParticipantBanned': ChannelParticipant.channelParticipantBanned,
+  'channelParticipantsBanned': ChannelParticipantsFilter.channelParticipantsBanned,
+  'channelParticipantsSearch': ChannelParticipantsFilter.channelParticipantsSearch,
+  'channelAdminLogEventActionChangeTitle': ChannelAdminLogEventAction.channelAdminLogEventActionChangeTitle,
+  'channelAdminLogEventActionChangeAbout': ChannelAdminLogEventAction.channelAdminLogEventActionChangeAbout,
+  'channelAdminLogEventActionChangeUsername': ChannelAdminLogEventAction.channelAdminLogEventActionChangeUsername,
+  'channelAdminLogEventActionChangePhoto': ChannelAdminLogEventAction.channelAdminLogEventActionChangePhoto,
+  'channelAdminLogEventActionToggleInvites': ChannelAdminLogEventAction.channelAdminLogEventActionToggleInvites,
+  'channelAdminLogEventActionToggleSignatures': ChannelAdminLogEventAction.channelAdminLogEventActionToggleSignatures,
+  'channelAdminLogEventActionUpdatePinned': ChannelAdminLogEventAction.channelAdminLogEventActionUpdatePinned,
+  'channelAdminLogEventActionEditMessage': ChannelAdminLogEventAction.channelAdminLogEventActionEditMessage,
+  'channelAdminLogEventActionDeleteMessage': ChannelAdminLogEventAction.channelAdminLogEventActionDeleteMessage,
+  'channelAdminLogEventActionParticipantJoin': ChannelAdminLogEventAction.channelAdminLogEventActionParticipantJoin,
+  'channelAdminLogEventActionParticipantLeave': ChannelAdminLogEventAction.channelAdminLogEventActionParticipantLeave,
+  'channelAdminLogEventActionParticipantInvite': ChannelAdminLogEventAction.channelAdminLogEventActionParticipantInvite,
+  'channelAdminLogEventActionParticipantToggleBan': ChannelAdminLogEventAction.channelAdminLogEventActionParticipantToggleBan,
+  'channelAdminLogEventActionParticipantToggleAdmin': ChannelAdminLogEventAction.channelAdminLogEventActionParticipantToggleAdmin,
+  'channelAdminLogEvent': ChannelAdminLogEvent.channelAdminLogEvent,
+  'channels.adminLogResults': ChannelsAdminLogResults.channelsAdminLogResults,
+  'channelAdminLogEventsFilter': ChannelAdminLogEventsFilter.channelAdminLogEventsFilter,
+  'topPeerCategoryPhoneCalls': TopPeerCategory.topPeerCategoryPhoneCalls,
+  'pageBlockAudio': PageBlock.pageBlockAudio,
+  'popularContact': PopularContact.popularContact,
+  'messageActionScreenshotTaken': MessageAction.messageActionScreenshotTaken,
+  'messages.favedStickersNotModified': MessagesFavedStickers.messagesFavedStickersNotModified,
+  'messages.favedStickers': MessagesFavedStickers.messagesFavedStickers,
+  'updateFavedStickers': Update.updateFavedStickers,
+  'updateChannelReadMessagesContents': Update.updateChannelReadMessagesContents,
+  'inputMessagesFilterMyMentions': MessagesFilter.inputMessagesFilterMyMentions,
+  'updateContactsReset': Update.updateContactsReset,
+  'channelAdminLogEventActionChangeStickerSet': ChannelAdminLogEventAction.channelAdminLogEventActionChangeStickerSet,
+  'messageActionCustomAction': MessageAction.messageActionCustomAction,
+  'inputPaymentCredentialsApplePay': InputPaymentCredentials.inputPaymentCredentialsApplePay,
+  'inputPaymentCredentialsAndroidPay': InputPaymentCredentials.inputPaymentCredentialsAndroidPay,
+  'inputMessagesFilterGeo': MessagesFilter.inputMessagesFilterGeo,
+  'inputMessagesFilterContacts': MessagesFilter.inputMessagesFilterContacts,
+  'updateChannelAvailableMessages': Update.updateChannelAvailableMessages,
+  'channelAdminLogEventActionTogglePreHistoryHidden': ChannelAdminLogEventAction.channelAdminLogEventActionTogglePreHistoryHidden,
+  'inputMediaGeoLive': InputMedia.inputMediaGeoLive,
+  'messageMediaGeoLive': MessageMedia.messageMediaGeoLive,
+  'recentMeUrlUnknown': RecentMeUrl.recentMeUrlUnknown,
+  'recentMeUrlUser': RecentMeUrl.recentMeUrlUser,
+  'recentMeUrlChat': RecentMeUrl.recentMeUrlChat,
+  'recentMeUrlChatInvite': RecentMeUrl.recentMeUrlChatInvite,
+  'recentMeUrlStickerSet': RecentMeUrl.recentMeUrlStickerSet,
+  'help.recentMeUrls': HelpRecentMeUrls.helpRecentMeUrls,
+  'channels.channelParticipantsNotModified': ChannelsChannelParticipants.channelsChannelParticipantsNotModified,
+  'messages.messagesNotModified': MessagesMessages.messagesMessagesNotModified,
+  'inputSingleMedia': InputSingleMedia.inputSingleMedia,
+  'webAuthorization': WebAuthorization.webAuthorization,
+  'account.webAuthorizations': AccountWebAuthorizations.accountWebAuthorizations,
+  'inputMessageID': InputMessage.inputMessageID,
+  'inputMessageReplyTo': InputMessage.inputMessageReplyTo,
+  'inputMessagePinned': InputMessage.inputMessagePinned,
+  'messageEntityPhone': MessageEntity.messageEntityPhone,
+  'messageEntityCashtag': MessageEntity.messageEntityCashtag,
+  'messageActionBotAllowed': MessageAction.messageActionBotAllowed,
+  'inputDialogPeer': InputDialogPeer.inputDialogPeer,
+  'dialogPeer': DialogPeer.dialogPeer,
+  'messages.foundStickerSetsNotModified': MessagesFoundStickerSets.messagesFoundStickerSetsNotModified,
+  'messages.foundStickerSets': MessagesFoundStickerSets.messagesFoundStickerSets,
+  'fileHash': FileHash.fileHash,
+  'webDocumentNoProxy': WebDocument.webDocumentNoProxy,
+  'inputClientProxy': InputClientProxy.inputClientProxy,
+  'help.proxyDataEmpty': HelpProxyData.helpProxyDataEmpty,
+  'help.proxyDataPromo': HelpProxyData.helpProxyDataPromo,
+  'help.termsOfServiceUpdateEmpty': HelpTermsOfServiceUpdate.helpTermsOfServiceUpdateEmpty,
+  'help.termsOfServiceUpdate': HelpTermsOfServiceUpdate.helpTermsOfServiceUpdate,
+  'inputSecureFileUploaded': InputSecureFile.inputSecureFileUploaded,
+  'inputSecureFile': InputSecureFile.inputSecureFile,
+  'inputSecureFileLocation': InputFileLocation.inputSecureFileLocation,
+  'secureFileEmpty': SecureFile.secureFileEmpty,
+  'secureFile': SecureFile.secureFile,
+  'secureData': SecureData.secureData,
+  'securePlainPhone': SecurePlainData.securePlainPhone,
+  'securePlainEmail': SecurePlainData.securePlainEmail,
+  'secureValueTypePersonalDetails': SecureValueType.secureValueTypePersonalDetails,
+  'secureValueTypePassport': SecureValueType.secureValueTypePassport,
+  'secureValueTypeDriverLicense': SecureValueType.secureValueTypeDriverLicense,
+  'secureValueTypeIdentityCard': SecureValueType.secureValueTypeIdentityCard,
+  'secureValueTypeInternalPassport': SecureValueType.secureValueTypeInternalPassport,
+  'secureValueTypeAddress': SecureValueType.secureValueTypeAddress,
+  'secureValueTypeUtilityBill': SecureValueType.secureValueTypeUtilityBill,
+  'secureValueTypeBankStatement': SecureValueType.secureValueTypeBankStatement,
+  'secureValueTypeRentalAgreement': SecureValueType.secureValueTypeRentalAgreement,
+  'secureValueTypePassportRegistration': SecureValueType.secureValueTypePassportRegistration,
+  'secureValueTypeTemporaryRegistration': SecureValueType.secureValueTypeTemporaryRegistration,
+  'secureValueTypePhone': SecureValueType.secureValueTypePhone,
+  'secureValueTypeEmail': SecureValueType.secureValueTypeEmail,
+  'secureValue': SecureValue.secureValue,
+  'inputSecureValue': InputSecureValue.inputSecureValue,
+  'secureValueHash': SecureValueHash.secureValueHash,
+  'secureValueErrorData': SecureValueError.secureValueErrorData,
+  'secureValueErrorFrontSide': SecureValueError.secureValueErrorFrontSide,
+  'secureValueErrorReverseSide': SecureValueError.secureValueErrorReverseSide,
+  'secureValueErrorSelfie': SecureValueError.secureValueErrorSelfie,
+  'secureValueErrorFile': SecureValueError.secureValueErrorFile,
+  'secureValueErrorFiles': SecureValueError.secureValueErrorFiles,
+  'secureCredentialsEncrypted': SecureCredentialsEncrypted.secureCredentialsEncrypted,
+  'account.authorizationForm': AccountAuthorizationForm.accountAuthorizationForm,
+  'account.sentEmailCode': AccountSentEmailCode.accountSentEmailCode,
+  'messageActionSecureValuesSentMe': MessageAction.messageActionSecureValuesSentMe,
+  'messageActionSecureValuesSent': MessageAction.messageActionSecureValuesSent,
+  'help.deepLinkInfoEmpty': HelpDeepLinkInfo.helpDeepLinkInfoEmpty,
+  'help.deepLinkInfo': HelpDeepLinkInfo.helpDeepLinkInfo,
+  'savedPhoneContact': SavedContact.savedPhoneContact,
+  'account.takeout': AccountTakeout.accountTakeout,
+  'inputTakeoutFileLocation': InputFileLocation.inputTakeoutFileLocation,
+  'updateDialogUnreadMark': Update.updateDialogUnreadMark,
+  'messages.dialogsNotModified': MessagesDialogs.messagesDialogsNotModified,
+  'inputWebFileGeoPointLocation': InputWebFileLocation.inputWebFileGeoPointLocation,
+  'contacts.topPeersDisabled': ContactsTopPeers.contactsTopPeersDisabled,
+  'inputReportReasonCopyright': ReportReason.inputReportReasonCopyright,
+  'passwordKdfAlgoUnknown': PasswordKdfAlgo.passwordKdfAlgoUnknown,
+  'securePasswordKdfAlgoUnknown': SecurePasswordKdfAlgo.securePasswordKdfAlgoUnknown,
+  'securePasswordKdfAlgoPBKDF2HMACSHA512iter100000': SecurePasswordKdfAlgo.securePasswordKdfAlgoPBKDF2HMACSHA512iter100000,
+  'securePasswordKdfAlgoSHA512': SecurePasswordKdfAlgo.securePasswordKdfAlgoSHA512,
+  'secureSecretSettings': SecureSecretSettings.secureSecretSettings,
+  'passwordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow': PasswordKdfAlgo.passwordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow,
+  'inputCheckPasswordEmpty': InputCheckPasswordSRP.inputCheckPasswordEmpty,
+  'inputCheckPasswordSRP': InputCheckPasswordSRP.inputCheckPasswordSRP,
+  'secureValueError': SecureValueError.secureValueError,
+  'secureValueErrorTranslationFile': SecureValueError.secureValueErrorTranslationFile,
+  'secureValueErrorTranslationFiles': SecureValueError.secureValueErrorTranslationFiles,
+  'secureRequiredType': SecureRequiredType.secureRequiredType,
+  'secureRequiredTypeOneOf': SecureRequiredType.secureRequiredTypeOneOf,
+  'help.passportConfigNotModified': HelpPassportConfig.helpPassportConfigNotModified,
+  'help.passportConfig': HelpPassportConfig.helpPassportConfig,
+  'inputAppEvent': InputAppEvent.inputAppEvent,
+  'jsonObjectValue': JSONObjectValue.jsonObjectValue,
+  'jsonNull': JSONValue.jsonNull,
+  'jsonBool': JSONValue.jsonBool,
+  'jsonNumber': JSONValue.jsonNumber,
+  'jsonString': JSONValue.jsonString,
+  'jsonArray': JSONValue.jsonArray,
+  'jsonObject': JSONValue.jsonObject,
+  'updateUserPinnedMessage': Update.updateUserPinnedMessage,
+  'updateChatPinnedMessage': Update.updateChatPinnedMessage,
+  'inputNotifyBroadcasts': InputNotifyPeer.inputNotifyBroadcasts,
+  'notifyBroadcasts': NotifyPeer.notifyBroadcasts,
+  'textSubscript': RichText.textSubscript,
+  'textSuperscript': RichText.textSuperscript,
+  'textMarked': RichText.textMarked,
+  'textPhone': RichText.textPhone,
+  'textImage': RichText.textImage,
+  'pageBlockKicker': PageBlock.pageBlockKicker,
+  'pageTableCell': PageTableCell.pageTableCell,
+  'pageTableRow': PageTableRow.pageTableRow,
+  'pageBlockTable': PageBlock.pageBlockTable,
+  'pageCaption': PageCaption.pageCaption,
+  'pageListItemText': PageListItem.pageListItemText,
+  'pageListItemBlocks': PageListItem.pageListItemBlocks,
+  'pageListOrderedItemText': PageListOrderedItem.pageListOrderedItemText,
+  'pageListOrderedItemBlocks': PageListOrderedItem.pageListOrderedItemBlocks,
+  'pageBlockOrderedList': PageBlock.pageBlockOrderedList,
+  'pageBlockDetails': PageBlock.pageBlockDetails,
+  'pageRelatedArticle': PageRelatedArticle.pageRelatedArticle,
+  'pageBlockRelatedArticles': PageBlock.pageBlockRelatedArticles,
+  'pageBlockMap': PageBlock.pageBlockMap,
+  'page': Page.page,
+  'inputPrivacyKeyPhoneP2P': InputPrivacyKey.inputPrivacyKeyPhoneP2P,
+  'privacyKeyPhoneP2P': PrivacyKey.privacyKeyPhoneP2P,
+  'textAnchor': RichText.textAnchor,
+  'help.supportName': HelpSupportName.helpSupportName,
+  'help.userInfoEmpty': HelpUserInfo.helpUserInfoEmpty,
+  'help.userInfo': HelpUserInfo.helpUserInfo,
+  'messageActionContactSignUp': MessageAction.messageActionContactSignUp,
+  'updateMessagePoll': Update.updateMessagePoll,
+  'pollAnswer': PollAnswer.pollAnswer,
+  'poll': Poll.poll,
+  'pollAnswerVoters': PollAnswerVoters.pollAnswerVoters,
+  'pollResults': PollResults.pollResults,
+  'inputMediaPoll': InputMedia.inputMediaPoll,
+  'messageMediaPoll': MessageMedia.messageMediaPoll,
+  'chatOnlines': ChatOnlines.chatOnlines,
+  'statsURL': StatsURL.statsURL,
+  'photoStrippedSize': PhotoSize.photoStrippedSize,
+  'chatAdminRights': ChatAdminRights.chatAdminRights,
+  'chatBannedRights': ChatBannedRights.chatBannedRights,
+  'updateChatDefaultBannedRights': Update.updateChatDefaultBannedRights,
+  'inputWallPaper': InputWallPaper.inputWallPaper,
+  'inputWallPaperSlug': InputWallPaper.inputWallPaperSlug,
+  'channelParticipantsContacts': ChannelParticipantsFilter.channelParticipantsContacts,
+  'channelAdminLogEventActionDefaultBannedRights': ChannelAdminLogEventAction.channelAdminLogEventActionDefaultBannedRights,
+  'channelAdminLogEventActionStopPoll': ChannelAdminLogEventAction.channelAdminLogEventActionStopPoll,
+  'account.wallPapersNotModified': AccountWallPapers.accountWallPapersNotModified,
+  'account.wallPapers': AccountWallPapers.accountWallPapers,
+  'codeSettings': CodeSettings.codeSettings,
+  'wallPaperSettings': WallPaperSettings.wallPaperSettings,
+  'autoDownloadSettings': AutoDownloadSettings.autoDownloadSettings,
+  'account.autoDownloadSettings': AccountAutoDownloadSettings.accountAutoDownloadSettings,
+  'emojiKeyword': EmojiKeyword.emojiKeyword,
+  'emojiKeywordDeleted': EmojiKeyword.emojiKeywordDeleted,
+  'emojiKeywordsDifference': EmojiKeywordsDifference.emojiKeywordsDifference,
+  'emojiURL': EmojiURL.emojiURL,
+  'emojiLanguage': EmojiLanguage.emojiLanguage,
+  'inputPrivacyKeyForwards': InputPrivacyKey.inputPrivacyKeyForwards,
+  'privacyKeyForwards': PrivacyKey.privacyKeyForwards,
+  'inputPrivacyKeyProfilePhoto': InputPrivacyKey.inputPrivacyKeyProfilePhoto,
+  'privacyKeyProfilePhoto': PrivacyKey.privacyKeyProfilePhoto,
+  'fileLocationToBeDeprecated': FileLocation.fileLocationToBeDeprecated,
+  'inputPhotoFileLocation': InputFileLocation.inputPhotoFileLocation,
+  'inputPeerPhotoFileLocation': InputFileLocation.inputPeerPhotoFileLocation,
+  'inputStickerSetThumb': InputFileLocation.inputStickerSetThumb,
+  'folder': Folder.folder,
+  'dialogFolder': Dialog.dialogFolder,
+  'inputDialogPeerFolder': InputDialogPeer.inputDialogPeerFolder,
+  'dialogPeerFolder': DialogPeer.dialogPeerFolder,
+  'inputFolderPeer': InputFolderPeer.inputFolderPeer,
+  'folderPeer': FolderPeer.folderPeer,
+  'updateFolderPeers': Update.updateFolderPeers,
+  'inputUserFromMessage': InputUser.inputUserFromMessage,
+  'inputChannelFromMessage': InputChannel.inputChannelFromMessage,
+  'inputPeerUserFromMessage': InputPeer.inputPeerUserFromMessage,
+  'inputPeerChannelFromMessage': InputPeer.inputPeerChannelFromMessage,
+  'inputPrivacyKeyPhoneNumber': InputPrivacyKey.inputPrivacyKeyPhoneNumber,
+  'privacyKeyPhoneNumber': PrivacyKey.privacyKeyPhoneNumber,
+  'topPeerCategoryForwardUsers': TopPeerCategory.topPeerCategoryForwardUsers,
+  'topPeerCategoryForwardChats': TopPeerCategory.topPeerCategoryForwardChats,
+  'channelAdminLogEventActionChangeLinkedChat': ChannelAdminLogEventAction.channelAdminLogEventActionChangeLinkedChat,
+  'messages.searchCounter': MessagesSearchCounter.messagesSearchCounter,
+  'keyboardButtonUrlAuth': KeyboardButton.keyboardButtonUrlAuth,
+  'inputKeyboardButtonUrlAuth': KeyboardButton.inputKeyboardButtonUrlAuth,
+  'urlAuthResultRequest': UrlAuthResult.urlAuthResultRequest,
+  'urlAuthResultAccepted': UrlAuthResult.urlAuthResultAccepted,
+  'urlAuthResultDefault': UrlAuthResult.urlAuthResultDefault,
+  'inputPrivacyValueAllowChatParticipants': InputPrivacyRule.inputPrivacyValueAllowChatParticipants,
+  'inputPrivacyValueDisallowChatParticipants': InputPrivacyRule.inputPrivacyValueDisallowChatParticipants,
+  'privacyValueAllowChatParticipants': PrivacyRule.privacyValueAllowChatParticipants,
+  'privacyValueDisallowChatParticipants': PrivacyRule.privacyValueDisallowChatParticipants,
+  'messageEntityUnderline': MessageEntity.messageEntityUnderline,
+  'messageEntityStrike': MessageEntity.messageEntityStrike,
+  'messageEntityBlockquote': MessageEntity.messageEntityBlockquote,
+  'updatePeerSettings': Update.updatePeerSettings,
+  'channelLocationEmpty': ChannelLocation.channelLocationEmpty,
+  'channelLocation': ChannelLocation.channelLocation,
+  'peerLocated': PeerLocated.peerLocated,
+  'updatePeerLocated': Update.updatePeerLocated,
+  'channelAdminLogEventActionChangeLocation': ChannelAdminLogEventAction.channelAdminLogEventActionChangeLocation,
+  'inputReportReasonGeoIrrelevant': ReportReason.inputReportReasonGeoIrrelevant,
+  'channelAdminLogEventActionToggleSlowMode': ChannelAdminLogEventAction.channelAdminLogEventActionToggleSlowMode,
+  'auth.authorizationSignUpRequired': AuthAuthorization.authAuthorizationSignUpRequired,
+  'payments.paymentVerificationNeeded': PaymentsPaymentResult.paymentsPaymentVerificationNeeded,
+  'inputStickerSetAnimatedEmoji': InputStickerSet.inputStickerSetAnimatedEmoji,
+  'updateNewScheduledMessage': Update.updateNewScheduledMessage,
+  'updateDeleteScheduledMessages': Update.updateDeleteScheduledMessages,
+  'restrictionReason': RestrictionReason.restrictionReason,
+  'inputTheme': InputTheme.inputTheme,
+  'inputThemeSlug': InputTheme.inputThemeSlug,
+  'themeDocumentNotModified': Theme.themeDocumentNotModified,
+  'theme': Theme.theme,
+  'account.themesNotModified': AccountThemes.accountThemesNotModified,
+  'account.themes': AccountThemes.accountThemes,
+  'updateTheme': Update.updateTheme,
+  'inputPrivacyKeyAddedByPhone': InputPrivacyKey.inputPrivacyKeyAddedByPhone,
+  'privacyKeyAddedByPhone': PrivacyKey.privacyKeyAddedByPhone,
 }
 
 /* METHODS */
@@ -9159,7 +9942,7 @@ export interface MethodDeclMap {
   'account.reportPeer': { req: AccountReportPeer, res: boolean },
   'users.getUsers': { req: UsersGetUsers, res: User[] },
   'users.getFullUser': { req: UsersGetFullUser, res: UserFull },
-  'contacts.getContactIDs': { req: ContactsGetContactIDs, res: number[] },
+  'contacts.getContactIDs': { req: ContactsGetContactIDs, res: any },
   'contacts.getStatuses': { req: ContactsGetStatuses, res: ContactStatus[] },
   'contacts.getContacts': { req: ContactsGetContacts, res: ContactsContacts },
   'contacts.importContacts': { req: ContactsImportContacts, res: ContactsImportedContacts },
@@ -9194,7 +9977,7 @@ export interface MethodDeclMap {
   'updates.getDifference': { req: UpdatesGetDifference, res: UpdatesDifference },
   'photos.updateProfilePhoto': { req: PhotosUpdateProfilePhoto, res: UserProfilePhoto },
   'photos.uploadProfilePhoto': { req: PhotosUploadProfilePhoto, res: PhotosPhoto },
-  'photos.deletePhotos': { req: PhotosDeletePhotos, res: string[] },
+  'photos.deletePhotos': { req: PhotosDeletePhotos, res: any },
   'upload.saveFilePart': { req: UploadSaveFilePart, res: boolean },
   'upload.getFile': { req: UploadGetFile, res: UploadFile },
   'help.getConfig': { req: HelpGetConfig, res: Config },
@@ -9211,7 +9994,7 @@ export interface MethodDeclMap {
   'messages.sendEncrypted': { req: MessagesSendEncrypted, res: MessagesSentEncryptedMessage },
   'messages.sendEncryptedFile': { req: MessagesSendEncryptedFile, res: MessagesSentEncryptedMessage },
   'messages.sendEncryptedService': { req: MessagesSendEncryptedService, res: MessagesSentEncryptedMessage },
-  'messages.receivedQueue': { req: MessagesReceivedQueue, res: string[] },
+  'messages.receivedQueue': { req: MessagesReceivedQueue, res: any },
   'messages.reportEncryptedSpam': { req: MessagesReportEncryptedSpam, res: boolean },
   'upload.saveBigFilePart': { req: UploadSaveBigFilePart, res: boolean },
   'initConnection': { req: InitConnection, res: any },
@@ -9251,7 +10034,7 @@ export interface MethodDeclMap {
   'messages.uninstallStickerSet': { req: MessagesUninstallStickerSet, res: boolean },
   'messages.startBot': { req: MessagesStartBot, res: Updates },
   'help.getAppChangelog': { req: HelpGetAppChangelog, res: Updates },
-  'messages.getMessagesViews': { req: MessagesGetMessagesViews, res: number[] },
+  'messages.getMessagesViews': { req: MessagesGetMessagesViews, res: any },
   'channels.readHistory': { req: ChannelsReadHistory, res: boolean },
   'channels.deleteMessages': { req: ChannelsDeleteMessages, res: MessagesAffectedMessages },
   'channels.deleteUserHistory': { req: ChannelsDeleteUserHistory, res: MessagesAffectedHistory },
