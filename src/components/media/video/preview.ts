@@ -1,4 +1,4 @@
-import { Document } from 'cache/types';
+import { Document } from 'client/schema';
 import { div, text } from 'core/html';
 import { getAttributeVideo, getReadableDuration, getAttributeAnimated } from 'helpers/files';
 import photoRenderer, { PhotoOptions } from '../photo/photo';

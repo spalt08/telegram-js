@@ -1,5 +1,5 @@
 import { userCache } from 'cache';
-import { Message } from 'cache/types';
+import { Message } from 'client/schema';
 import { getAttributeSticker } from 'helpers/files';
 import { todoAssertHasValue } from 'helpers/other';
 

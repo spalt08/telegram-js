@@ -1,9 +1,9 @@
 import { div, text, img } from 'core/html';
-import { Peer, Message } from 'cache/types';
+import { Peer, Message } from 'client/schema';
 import { peerToInitials, peerToColorCode } from 'cache/accessors';
 import { getPeerPhotoInputLocation } from 'helpers/photo';
 import { unmount, mount } from 'core/dom';
-import media from 'client/media';
+import { cached, download } from 'client/media';
 import { auth } from 'services';
 import { savedmessages, avatarDeletedaccount } from 'components/icons';
 import { userCache } from 'cache';
@@ -57,12 +57,12 @@ export default function profileAvatar(peer: Peer, message?: Message, isForDialog
     return container;
   }
 
-  const url = media.cached(location);
+  const url = cached(location);
 
   // download file
   if (url === undefined) {
     preview(null);
-    media.get(location, preview);
+    download(location, {}, preview);
 
   // display from cache
   } else {

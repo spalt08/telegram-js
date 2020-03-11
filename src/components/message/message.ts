@@ -2,7 +2,7 @@ import { div, text, nothing } from 'core/html';
 import { useInterface, hasInterface, getInterface, useOnMount } from 'core/hooks';
 import { mount, unmount } from 'core/dom';
 import { messageCache, dialogCache } from 'cache';
-import { Peer, Message, Dialog } from 'cache/types';
+import { Peer, Message, Dialog } from 'client/schema';
 import { formattedMessage } from 'components/ui';
 import { profileAvatar, profileTitle } from 'components/profile';
 import webpagePreview from 'components/media/webpage/preview';

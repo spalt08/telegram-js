@@ -1,5 +1,5 @@
 import { dialogCache } from 'cache';
-import { Dialog, Peer } from 'cache/types';
+import { Dialog, Peer } from 'client/schema';
 import { peerToInputChannel, peerToInputPeer } from 'cache/accessors';
 import client from 'client/client';
 import { dialogPeerToDialogId } from 'helpers/api';

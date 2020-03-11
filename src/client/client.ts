@@ -1,211 +1,83 @@
-import { WorkerMessage, ClientError } from './worker.types';
-import { InputCheckPasswordSRP, InputFile, MethodDeclMap, UpdateDeclMap } from '../cache/types';
+import { InputCheckPasswordSRP, MethodDeclMap } from 'client/schema';
+import { EventResolver, APICallHeaders, APICallParams } from './types';
+import { task, request, listenMessage } from './context';
 
-/**
- * Worker callbacks
- */
-type RequestResolver<T> = (...args: [ClientError, undefined] | [null, T]) => void;
-type UpdateResolver<T> = (res: T) => void;
-type AnyResolver = (...payload: unknown[]) => void;
-type EventResolver = (event: any) => void;
-export type UploadResolver = (input: InputFile) => void;
-export type UploadProgressResolver = (uploaded: number, total: number) => void;
-export type DownloadOptions = { dc_id?: number, mime_type?: string, size: number };
-export type DownloadResolver = (url: string) => void;
-export type DownloadProgressResolver = (downloaded: number, total: number) => void;
-
+// Environment & Setup
+const debug = document.location.search.indexOf('debug') !== -1;
+let dc = +localStorage.getItem('dc')! || 2;
 let saveMetaField = 'meta';
 let test = false;
 
 if (document.location.search.indexOf('test') !== -1) {
   test = true;
+  saveMetaField = 'metatest';
 }
 
-if (test) saveMetaField = 'metatest';
+let meta = JSON.parse(localStorage.getItem(saveMetaField) || '{}');
+
 /**
- * Vars
+ * Update callbacks
  */
-
-let worker: Worker;
-if (process.env.NODE_ENV === 'test') {
-  const MockWorker = require('./mocks/worker'); // eslint-disable-line
-  worker = new MockWorker();
-} else {
-  const ClientWorker = require('./worker'); // eslint-disable-line
-  worker = new ClientWorker();
-}
-
-const requests: Record<string, RequestResolver<any>> = {};
-const queue: Record<string, AnyResolver> = {};
-const updates: Record<string, UpdateResolver<any>[]> = {};
-const eventListeners: Record<string, EventResolver[]> = {};
-const clientDebug = localStorage.getItem('debugmt') || document.location.search.indexOf('debug') !== -1;
-const dc = +localStorage.getItem('dc')! || 2;
-const svc = {
-  test,
-  baseDC: dc,
-  meta: JSON.parse(localStorage.getItem(saveMetaField) || '{}'),
-};
-
-export const uploadingFiles: Record<string, { ready: UploadResolver, progress?: UploadProgressResolver }> = {};
-export const downloadingFiles: Record<string, { ready: DownloadResolver, progress?: DownloadProgressResolver }> = {};
+const listeners: Record<string, EventResolver[]> = {};
 
 /**
  * Init client
  */
-worker.postMessage({
-  id: '',
-  type: 'init',
-  payload: {
-    dc,
-    test: svc.test,
-    debug: clientDebug,
-    meta: svc.meta,
-  },
-} as WorkerMessage);
+task('init', { dc, test, debug, meta });
 
 /**
  * Pass online / offline events
  */
-window.addEventListener('online', () => worker.postMessage({ type: 'windowEvent', payload: 'online' }));
-window.addEventListener('offline', () => worker.postMessage({ type: 'windowEvent', payload: 'offline' }));
+window.addEventListener('online', () => task('window_event', 'online'));
+window.addEventListener('offline', () => task('window_event', 'offline'));
 
-/**
- * Make RPC API request
- */
-function call(method: string, params: Record<string, any>, headers: Record<string, any> = {}) {
+function call<K extends keyof MethodDeclMap>(method: K, params: APICallParams<K>,
+  headers: APICallHeaders = {}): Promise<MethodDeclMap[K]['res']> {
   return new Promise((resolve, reject) => {
-    const id = method + Date.now().toString() + Math.random() * 1000;
-
-    worker.postMessage({
-      id,
-      type: 'call',
-      payload: { method, params, headers },
-    } as WorkerMessage);
-
-    requests[id] = (err: any, res: any) => {
-      if (err) {
-        reject(err);
-      }
-      resolve(res);
-    };
+    request('call', { method, params, headers }, ({ error, result }) => {
+      if (error) reject(error);
+      else resolve(result);
+    });
   });
 }
 
 /**
- * Any task wrapper
+ * Subscribe event
  */
-export function task(type: WorkerMessage['type'], payload: any, cb?: AnyResolver) {
-  const id = type + Date.now().toString() + Math.random() * 1000;
-  worker.postMessage({ id, type, payload } as WorkerMessage);
-  if (cb) queue[id] = cb;
+function on(type: string, cb: EventResolver) {
+  if (!listeners[type]) listeners[type] = [];
+  listeners[type].push(cb);
 }
 
 /**
- * Subscribe client event
+ * Subscribe update event
  */
-function subscribe(type: string, cb: EventResolver) {
-  if (!eventListeners[type]) eventListeners[type] = [];
-  eventListeners[type].push(cb);
+function onUpdate(type: string, cb: EventResolver) {
+  on(type, cb);
+  task('listen_update', type);
 }
 
 /**
- * Emit client event
+ * Emit event
  */
 function emit(type: string, data: any) {
-  if (!eventListeners[type]) eventListeners[type] = [];
+  if (!listeners[type]) listeners[type] = [];
 
-  for (let i = 0; i < eventListeners[type].length; i++) {
-    eventListeners[type][i](data);
+  for (let i = 0; i < listeners[type].length; i++) {
+    listeners[type][i](data);
   }
 }
 
 /**
- * Subscribe RPC update
+ * Listen worker incoming messages
  */
-function on(predicate: string, cb: UpdateResolver<any>) {
-  if (!updates[predicate]) {
-    updates[predicate] = [];
-
-    worker.postMessage({
-      id: predicate,
-      type: 'update',
-      payload: {},
-    } as WorkerMessage);
-  }
-
-  updates[predicate].push(cb);
-}
-
-/**
- * Message resolver
- */
-worker.onmessage = (event: MessageEvent) => {
-  if (!event.data || !event.data.type) return;
-
-  const data = event.data as WorkerMessage;
-
-  switch (data.type) {
-    case 'call':
-      if (requests[event.data.id]) requests[event.data.id](data.payload.err, data.payload.result);
-      delete requests[event.data.id];
-      break;
-
-    case 'update':
-      for (let i = 0; i < updates[event.data.id].length; i += 1) {
-        updates[event.data.id][i](data.payload);
-      }
-      break;
-
-    case 'meta':
-      svc.meta = data.payload;
-      break;
-
-    case 'network':
-      emit('networkChanged', data.payload);
-      break;
-
-    case 'upload_progress': {
-      const resolvers = uploadingFiles[data.payload.id];
-      if (resolvers && resolvers.progress) resolvers.progress(data.payload.uploaded, data.payload.total);
-      break;
-    }
-
-    case 'upload_ready': {
-      const resolvers = uploadingFiles[data.payload.id];
-      if (resolvers) {
-        resolvers.ready(data.payload.inputFile);
-        delete uploadingFiles[data.payload.id];
-      }
-      break;
-    }
-
-    case 'download_progress': {
-      const resolvers = downloadingFiles[data.payload.id];
-      if (resolvers && resolvers.progress) resolvers.progress(data.payload.downloaded, data.payload.total);
-      break;
-    }
-
-    case 'download_ready': {
-      const resolvers = downloadingFiles[data.payload.id];
-      if (resolvers) {
-        resolvers.ready(data.payload.url);
-        delete downloadingFiles[data.payload.id];
-      }
-      break;
-    }
-
-    default:
-      if (event.data.id && queue[event.data.id]) {
-        queue[event.data.id](data.payload);
-        delete queue[event.data.id];
-      }
-  }
-};
+listenMessage('update', (update) => emit(update._, update));
+listenMessage('meta_updated', (newMeta) => meta = newMeta);
+listenMessage('network_updated', (status) => emit('networkChanged', status));
 
 // Returns id of authorized user
 function getUserID(): number {
-  return svc.meta && svc.meta[dc] ? svc.meta[dc].userID as number : 0;
+  return meta && meta[dc] ? meta[dc].userID as number : 0;
 }
 
 // Returns base datacenter
@@ -215,51 +87,27 @@ function getBaseDC(): number {
 
 // Switches base datacenter
 function setBaseDC(dc_id: number) {
-  svc.baseDC = dc_id;
+  dc = dc_id;
   localStorage.setItem('dc', dc_id.toString());
 
-  worker.postMessage({
-    id: '',
-    type: 'switch_dc',
-    payload: dc_id,
-  } as WorkerMessage);
+  task('switch_dc', dc_id);
 }
 
 // Returns result of kdf hash algo
 function getPasswordKdfAsync(algo: any, password: string): Promise<InputCheckPasswordSRP> {
-  return new Promise((resolve) => task('password_kdf', { algo, password }, resolve));
+  return new Promise((resolve) => request('password_kdf', { algo, password }, resolve));
 }
 
 function authorize(dc_id: number) {
-  return new Promise((resolve) => task('authorize', dc_id, resolve));
+  return new Promise((resolve) => request('authorize', dc_id, resolve));
 }
 
-interface Client {
-  svc: typeof svc;
-  call<M extends keyof MethodDeclMap>(
-    method: M,
-    data: MethodDeclMap[M]['req'],
-    headers?: Record<string, unknown>,
-  ): Promise<MethodDeclMap[M]['res']>;
-  on: typeof subscribe;
-  updates: {
-    on: <U extends keyof UpdateDeclMap>(predicate: U, cb: UpdateResolver<UpdateDeclMap[U]>) => void;
-  };
-  getUserID: typeof getUserID;
-  getBaseDC: typeof getBaseDC;
-  setBaseDC: typeof setBaseDC;
-  getPasswordKdfAsync: typeof getPasswordKdfAsync;
-  authorize: typeof authorize;
-  storage: Storage;
-}
-
-const client: Client = {
-  svc,
+// Same API as Client without worker
+const client = {
+  svc: { meta, test },
   call,
-  on: subscribe,
-  updates: {
-    on,
-  },
+  on,
+  updates: { on: onUpdate },
   getUserID,
   getBaseDC,
   setBaseDC,
@@ -268,13 +116,14 @@ const client: Client = {
   storage: window.localStorage,
 };
 
+// debug
+(window as any).client = client;
+
 /**
  * Cache client meta after page closing
  */
 window.addEventListener('beforeunload', () => {
-  client.storage.setItem(saveMetaField, JSON.stringify(svc.meta));
+  client.storage.setItem(saveMetaField, JSON.stringify(meta));
 });
-
-(window as any).client = client;
 
 export default client;

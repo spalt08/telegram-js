@@ -15,7 +15,7 @@ export function isMounted(element: Node): boolean {
   return element.isConnected;
 }
 
-function triggerMountRecursive(element: Node) {
+export function triggerMountRecursive(element: Node) {
   // The parent is triggered as mounted means that the children are triggered too (if they use mount/unmount as expected)
   if (isMountTriggered(element) === true) {
     return;

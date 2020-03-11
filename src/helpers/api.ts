@@ -1,4 +1,4 @@
-import { Dialog, Peer, Message, Updates } from 'cache/types';
+import { Dialog, Peer, Message, Updates } from 'client/schema';
 import { ARCHIVE_FOLDER_ID, ROOT_FOLDER_ID } from 'const/api';
 import { todoAssertHasValue } from './other';
 

@@ -4,7 +4,7 @@ import { chatCache, userCache } from 'cache';
 import { getFirstLetters } from 'helpers/data';
 import { messageToDialogPeer, userIdToPeer } from 'helpers/api';
 import { todoAssertHasValue } from 'helpers/other';
-import { InputPeer, Message, Peer, FileLocation, User, Chat, InputUser, InputDialogPeer, InputChannel } from './types';
+import { InputPeer, Message, Peer, FileLocation, User, Chat, InputUser, InputDialogPeer, InputChannel } from 'client/schema';
 
 interface PeerReference {
   peer: InputPeer;

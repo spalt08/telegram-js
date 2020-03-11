@@ -1,5 +1,5 @@
 import { div } from 'core/html';
-import { Peer } from 'cache/types';
+import { Peer } from 'client/schema';
 import { profileAvatar } from 'components/profile';
 import { userCache } from 'cache';
 import { auth } from 'services';

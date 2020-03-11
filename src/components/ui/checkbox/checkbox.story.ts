@@ -5,7 +5,7 @@ import { action } from '@storybook/addon-actions';
 
 import checkbox from './checkbox';
 
-const stories = storiesOf('II. UI Elements | Checkbox', module)
+const stories = storiesOf('UI Elements | Checkbox', module)
   .addDecorator(centered);
 
 stories.add('Common Usage', () => (

@@ -2,7 +2,7 @@ import { div } from 'core/html';
 import { media } from 'services';
 import { materialSpinner, recent } from 'components/icons';
 import { useObservable, useInterface, getInterface, useOnMount } from 'core/hooks';
-import { Document, StickerSet } from 'cache/types';
+import { Document, StickerSet } from 'client/schema';
 import { mount, unmount, listen } from 'core/dom';
 import { BehaviorSubject } from 'rxjs';
 import { VirtualizedList } from 'components/ui';

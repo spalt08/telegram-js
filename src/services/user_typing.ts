@@ -1,4 +1,4 @@
-import { Peer, Update, SendMessageAction } from 'cache/types';
+import { Peer, Update, SendMessageAction } from 'client/schema';
 import { Subject, Observable, empty, BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 

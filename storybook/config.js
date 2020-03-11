@@ -1,7 +1,8 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { configure, addParameters } from '@storybook/html';
 import { create } from '@storybook/theming';
-import '../src/styles/global.scss';
+import 'styles/global.scss';
+import './styles.scss';
 
 addParameters({
   options: {

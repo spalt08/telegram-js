@@ -3,12 +3,12 @@ import { storiesOf } from '@storybook/html';
 import centered from '@storybook/addon-centered/html';
 import { withKnobs, button as buttonKnob } from '@storybook/addon-knobs';
 import { withMountTrigger } from 'storybook/decorators';
-import { Document, DocumentAttribute } from 'cache/types';
+import { Document, DocumentAttribute } from 'client/schema';
 import { getInterface } from 'core/hooks';
 
 import playButton from './play_button';
 
-const stories = storiesOf('II. UI Elements | Play Audio Button', module)
+const stories = storiesOf('UI Elements | Play Audio Button', module)
   .addDecorator(withKnobs)
   .addDecorator(withMountTrigger)
   .addDecorator(centered);

@@ -2,11 +2,11 @@ import { div, text } from 'core/html';
 import { getInterface, useObservable, WithInterfaceHook, useListenWhileMounted } from 'core/hooks';
 import { listen, mount, unmount } from 'core/dom';
 import { media as service, message } from 'services';
-import media from 'client/media';
+import { upload } from 'client/media';
 import { getReadableSize } from 'helpers/files';
 import { send } from 'components/icons';
 import messageTextarea from 'components/message/input/input_textarea';
-import { InputFile } from 'cache/types';
+import { InputFile } from 'client/schema';
 import { KeyboardKeys } from 'const';
 import popupCommon from '../popup_common';
 import './send_media.scss';
@@ -78,7 +78,7 @@ export default class SendMediaPopup {
     this.sendBtn.classList.add('disabled');
     this.count++;
 
-    media.upload(
+    upload(
       file,
 
       // ready

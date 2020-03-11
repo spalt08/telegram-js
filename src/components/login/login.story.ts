@@ -4,7 +4,7 @@ import { withMountTrigger } from 'storybook/decorators';
 
 import loginLayout from './login';
 
-const stories = storiesOf('I. Login | Layout', module)
+const stories = storiesOf('Login | Layout', module)
   .addDecorator(withMountTrigger);
 
 stories.add('Common', () => loginLayout());
