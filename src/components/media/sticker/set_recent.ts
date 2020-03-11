@@ -1,5 +1,5 @@
 import { text, div } from 'core/html';
-import { Document } from 'cache/types';
+import { Document } from 'client/schema';
 import { useInterface, getInterface } from 'core/hooks';
 import { media } from 'services';
 import stickerRenderer from './sticker';

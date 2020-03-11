@@ -1,4 +1,4 @@
-import { StorageFileType, Document, InputFileLocation, DocumentAttribute } from 'cache/types';
+import { StorageFileType, Document, InputFileLocation, DocumentAttribute } from 'client/schema';
 
 export function hexToStr(hex: string): string {
   let str = '';

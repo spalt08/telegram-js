@@ -2,7 +2,7 @@ import { debounceTime, switchMap, map } from 'rxjs/operators';
 import { timer } from 'rxjs';
 import client from 'client/client';
 import { userFullCache, chatCache, chatFullCache, userCache, pinnedMessageCache } from 'cache';
-import { Peer } from 'cache/types';
+import { Peer } from 'client/schema';
 import { peerToInputChannel, peerToInputUser } from 'cache/accessors';
 import MessageService from './message/message';
 

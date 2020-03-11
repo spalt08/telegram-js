@@ -1,4 +1,4 @@
-import { Peer, Message, MessagesFilter } from 'cache/types';
+import { Peer, Message, MessagesFilter } from 'client/schema';
 import { div } from 'core/html';
 import { VirtualizedList } from 'components/ui';
 import { BehaviorSubject } from 'rxjs';

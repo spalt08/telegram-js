@@ -1,11 +1,11 @@
-import { Document } from 'cache/types';
-import { hexBytesToArray, getAttributeAudio } from 'helpers/files';
+import { Document } from 'client/schema';
+import { getAttributeAudio } from 'helpers/files';
 import { listen, svgEl, mount } from 'core/dom';
 import { useInterface } from 'core/hooks';
 import './waveform.scss';
 
 // Ref: https://github.com/telegramdesktop/tdesktop/blob/0743e71ab6b928d2ee5bae1aed991849b1e2b291/Telegram/SourceFiles/data/data_document.cpp#L1018
-function decodeWaveform(encoded5bit: number[]) {
+function decodeWaveform(encoded5bit: string) {
   const bitsCount = encoded5bit.length * 8;
   const valuesCount = Math.floor(bitsCount / 5);
   if (!valuesCount) {
@@ -25,12 +25,12 @@ function decodeWaveform(encoded5bit: number[]) {
   for (let i = 0, l = valuesCount - 1; i !== l; ++i) {
     const byteIndex = Math.floor((i * 5) / 8);
     const bitShift = Math.floor((i * 5) % 8);
-    const value = (bitsData[byteIndex]) + (bitsData[byteIndex + 1] << 8);
+    const value = bitsData.charCodeAt(byteIndex) + (bitsData.charCodeAt(byteIndex + 1) << 8);
     result[i] = ((value >> bitShift) & 0x1F);
   }
   const lastByteIndex = Math.floor(((valuesCount - 1) * 5) / 8);
   const lastBitShift = Math.floor(((valuesCount - 1) * 5) % 8);
-  const lastValue = (bitsData[lastByteIndex]) + ((bitsData[lastByteIndex + 1] ?? 0) << 8);
+  const lastValue = bitsData.charCodeAt(lastByteIndex) + (bitsData.charCodeAt(lastByteIndex + 1) << 8);
   result[valuesCount - 1] = (lastValue >> lastBitShift) & 0x1F;
 
   return result;
@@ -51,8 +51,7 @@ function interpolateArray(data: number[], fitCount: number) {
 export default function waveform(doc: Document.document, barsCount: number, seek?: (position: number) => void) {
   const info = getAttributeAudio(doc);
 
-  const waveformBytes = hexBytesToArray(info?.waveform ?? '');
-  let waveformDecoded = decodeWaveform(waveformBytes);
+  let waveformDecoded = decodeWaveform(info?.waveform || '');
 
   let thumbX = -Infinity;
   let playProgress = -Infinity;

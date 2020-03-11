@@ -4,7 +4,7 @@ import { smile, attach, send } from 'components/icons';
 import { message, media } from 'services';
 import { getInterface, useListenWhileMounted, useObservable } from 'core/hooks';
 import { chatCache } from 'cache';
-import { Document } from 'cache/types';
+import { Document } from 'client/schema';
 import stickMojiPanel from './input_stickmoji';
 import messageTextarea from './input_textarea';
 import './input.scss';

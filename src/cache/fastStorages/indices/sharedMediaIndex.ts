@@ -1,4 +1,4 @@
-import { Peer, Message } from 'cache/types';
+import { Peer, Message } from 'client/schema';
 import { peerToId } from 'helpers/api';
 import { Subject, ReplaySubject, Observable } from 'rxjs';
 import Collection from '../collection';

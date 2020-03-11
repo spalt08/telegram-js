@@ -10,7 +10,7 @@ import message from 'components/message/message';
 import { sectionSpinner, VirtualizedList } from 'components/ui';
 import * as icons from 'components/icons';
 import messageInput from 'components/message/input/input';
-import { Peer } from 'cache/types';
+import { Peer } from 'client/schema';
 import { compareSamePeerMessageIds, peerMessageToId, peerToId } from 'helpers/api';
 import { messageCache, dialogCache } from 'cache';
 import header from './header/header';

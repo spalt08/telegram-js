@@ -1,12 +1,12 @@
 import { BehaviorSubject, Observable } from 'rxjs';
 import client from 'client/client';
-import { Document, Peer, StickerSet, MessagesFilter, MessagesAllStickers, MessagesRecentStickers, MessagesMessages } from 'cache/types';
+import { Document, Peer, StickerSet, MessagesFilter, MessagesAllStickers, MessagesRecentStickers, MessagesMessages } from 'client/schema';
 import { el } from 'core/dom';
 import { peerToInputPeer } from 'cache/accessors';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToId } from 'helpers/api';
 import { getDocumentLocation, getAttributeAudio } from 'helpers/files';
-import media from 'client/media';
+import { download } from 'client/media';
 import MainService from './main';
 
 export enum MediaPlaybackStatus {
@@ -158,10 +158,10 @@ export default class MediaService {
   private audioInfos: Record<string, BehaviorSubject<MediaPlaybackState>> = {};
 
   private getPlaybackState(doc: Document.document) {
-    let info = this.audioInfos[doc.file_reference];
+    let info = this.audioInfos[doc.id];
     if (!info) {
       info = new BehaviorSubject<MediaPlaybackState>({ downloadProgress: 0, playProgress: 0, status: MediaPlaybackStatus.NotStarted });
-      this.audioInfos[doc.file_reference] = info;
+      this.audioInfos[doc.id] = info;
     }
     return info;
   }
@@ -175,7 +175,7 @@ export default class MediaService {
 
     const time = position !== undefined ? position * audioAttribute.duration : 0;
     if (this.docPlaying) {
-      if (this.docPlaying.file_reference === doc.file_reference) {
+      if (this.docPlaying.id === doc.id) {
         this.currentAudio!.currentTime = time;
         return;
       }
@@ -206,7 +206,7 @@ export default class MediaService {
   }
 
   stopAudio(doc: Document.document) {
-    if (this.currentAudio && doc.file_reference === this.docPlaying?.file_reference) {
+    if (this.currentAudio && doc.id === this.docPlaying?.id) {
       clearInterval(this.audioPlayingTimer);
       this.currentAudio.pause();
       this.getPlaybackState(this.docPlaying!).next({ downloadProgress: 0, playProgress: 0, status: MediaPlaybackStatus.Stopped });
@@ -215,7 +215,7 @@ export default class MediaService {
   }
 
   pauseAudio(doc: Document.document) {
-    if (this.currentAudio && doc.file_reference === this.docPlaying?.file_reference) {
+    if (this.currentAudio && doc.id === this.docPlaying?.id) {
       clearInterval(this.audioPlayingTimer);
       this.currentAudio.pause();
       const state = this.getPlaybackState(doc);
@@ -239,7 +239,7 @@ export default class MediaService {
     if (state.value.status === MediaPlaybackStatus.NotStarted) {
       this.getPlaybackState(doc).next({ ...state.value, downloadProgress: 0, status: MediaPlaybackStatus.Downloading });
     }
-    media.download(location, { size: doc.size }, (url) => {
+    download(location, { size: doc.size }, (url) => {
       this.play(doc, url, position);
     }, (progress) => {
       state = this.getPlaybackState(doc);
@@ -251,9 +251,10 @@ export default class MediaService {
     const location = getDocumentLocation(doc);
     let state = this.getPlaybackState(doc);
     state.next({ downloadProgress: 0, playProgress: 0, status: MediaPlaybackStatus.Downloading });
-    media.download(location, { size: doc.size }, () => {
+    download(location, { size: doc.size }, () => {
       state.next({ downloadProgress: 1, playProgress: 0, status: MediaPlaybackStatus.Stopped });
     }, (progress) => {
+      console.log(progress, doc.size);
       state = this.getPlaybackState(doc);
       this.getPlaybackState(doc).next({ ...state.value, downloadProgress: progress / doc.size });
     });

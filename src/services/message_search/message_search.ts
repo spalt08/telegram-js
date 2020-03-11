@@ -5,7 +5,7 @@ import makeSearchSession, {
   SearchRequest,
   emptySearchResult,
 } from './message_search_session';
-import { Peer } from '../../cache/types';
+import { Peer } from '../../client/schema';
 
 export default class MessageSearchService {
   public readonly result = new BehaviorSubject<SearchResult>(emptySearchResult);

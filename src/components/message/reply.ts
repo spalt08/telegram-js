@@ -5,7 +5,7 @@ import photoRenderer from 'components/media/photo/photo';
 import { listen, unmount, mount } from 'core/dom';
 import { div } from 'core/html';
 import { messageCache } from 'cache';
-import { Peer, Message } from 'cache/types';
+import { Peer, Message } from 'client/schema';
 import { todoAssertHasValue } from 'helpers/other';
 import { message as service } from 'services';
 import messageShort from './short';

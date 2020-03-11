@@ -4,14 +4,14 @@ import { Country } from 'const/country';
 import client from 'client/client';
 import { API_HASH, API_ID } from 'const/api';
 import { unformat } from 'helpers/phone';
-import media from 'client/media';
+import { upload } from 'client/media';
 import {
   AuthSendCode,
   AuthCheckPassword,
   AuthSentCode,
   AuthAuthorization,
   AccountPassword,
-} from 'cache/types';
+} from 'client/schema';
 
 export const enum AuthStage {
   Unauthorized,
@@ -272,7 +272,7 @@ export default class AuthService {
   protected setProfilePhoto() {
     if (!this.profilePhoto) return;
 
-    media.upload(this.profilePhoto, async (inputFile) => {
+    upload(this.profilePhoto, async (inputFile) => {
       await client.call('photos.uploadProfilePhoto', { file: inputFile });
       // console.log(result);
     });

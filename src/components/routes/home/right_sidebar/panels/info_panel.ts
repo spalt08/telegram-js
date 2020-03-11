@@ -2,7 +2,7 @@ import { div, text, nothing } from 'core/html';
 import { main, auth } from 'services';
 import { RightSidebarPanel } from 'services/main';
 import roundButton from 'components/ui/round_button/round_button';
-import { Peer } from 'cache/types';
+import { Peer } from 'client/schema';
 import { profileAvatar, profileTitle } from 'components/profile';
 import { onlineStatus } from 'components/ui';
 import { close, edit, more } from 'components/icons';

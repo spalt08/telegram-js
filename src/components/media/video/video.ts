@@ -1,7 +1,7 @@
-import { Document } from 'cache/types';
+import { Document } from 'client/schema';
 import { div, text, nothing, video } from 'core/html';
 import { getDocumentLocation, getAttributeVideo } from 'helpers/files';
-import media from 'client/media';
+import { download, cached as getCached } from 'client/media';
 import { unmount, mount, listenOnce, listen } from 'core/dom';
 import { useOnMount } from 'core/hooks';
 import photoRenderer, { PhotoOptions } from '../photo/photo';
@@ -15,7 +15,7 @@ export default function videoRenderer(document: Document.document, photoOptions:
   if (!videoAttribute) return nothing;
 
   const videoEl = video({ autoplay: true, loop: true });
-  let cached = media.cached(location);
+  let cached = getCached(location);
   const container = div`.video`(videoEl);
 
   let progressTextNode: Node | undefined;
@@ -61,7 +61,7 @@ export default function videoRenderer(document: Document.document, photoOptions:
     if (videoEl.src) videoEl.play();
 
     if (!cached) {
-      media.download(
+      download(
         location,
         { dc_id: document.dc_id, size: document.size, mime_type: document.mime_type },
 
