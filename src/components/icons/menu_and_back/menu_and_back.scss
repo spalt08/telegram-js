@@ -1,0 +1,38 @@
+.menuAndBackIcon {
+  transition-duration: 160ms;
+  transition-timing-function: ease-in-out;
+
+  * {
+    transition-duration: inherit;
+    transition-timing-function: inherit;
+  }
+
+  rect {
+    fill: currentColor;
+    transition-property: width, transform;
+  }
+
+  g {
+    transform: rotate(-180deg);
+    transform-origin: 50% 50%;
+    transition-property: transform;
+  }
+
+  &.-back {
+    g {
+      transform: rotate(0);
+    }
+
+    rect {
+      &:nth-child(1) {
+        width: 11.9PX; // ≈ initial length - 2 (thickness) * √2 + 2 (thickness)
+        transform: translate(0, 5PX) rotate(-45deg);
+      }
+
+      &:nth-child(3) {
+        width: 11.9PX;
+        transform: translate(0, -5PX) rotate(45deg);
+      }
+    }
+  }
+}

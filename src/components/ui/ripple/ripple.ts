@@ -31,7 +31,7 @@ export default function ripple({ tag = 'div', className = '', contentClass = '',
   });
 
   if (onClick) {
-    // After the ripple listener to show the animation first on click
+    // After the ripple listener to call getBoundingClientRect and show the animation first on click
     listen(element, 'click', onClick);
   }
 

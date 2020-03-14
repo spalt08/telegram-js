@@ -5,7 +5,7 @@ import { messageToDialogPeer } from 'helpers/api';
 import { profileAvatar, profileTitle } from 'components/profile';
 import { messageToSenderPeer } from 'cache/accessors';
 import { MaybeObservable } from 'core/types';
-import { mount, unmount } from 'core/dom';
+import { mount, unmountChildren } from 'core/dom';
 import { useMaybeObservable } from 'core/hooks';
 import { message as messageService } from 'services';
 import './found_message.scss';
@@ -35,9 +35,7 @@ export default function foundMessage(messageUniqueId: string, searchQuery: Maybe
     useMaybeObservable(messageEl, searchQuery, (query) => {
       if (query !== lastSearchQuery) {
         lastSearchQuery = query;
-        while (messageEl.firstChild) {
-          unmount(messageEl.firstChild);
-        }
+        unmountChildren(messageEl);
         mount(messageEl, highlightSearchMatch(message.message, query));
       }
     });
