@@ -94,9 +94,6 @@
     z-index: 2;
     width: $size;
     height: $size;
-
-    circle {
-      stroke: $icon-color;
-    }
+    color: $icon-color;
   }
 }

@@ -6,7 +6,7 @@
     height: 100%;
     width: 100%;
   }
-  
+
   &__mediarow {
     display: flex;
     justify-content: flex-start;
@@ -43,12 +43,11 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    color: #4ea4f5;
 
     svg {
       width: 30px;
       height: 30px;
-
-      & circle { stroke: #4ea4f5; }
     }
   }
 }

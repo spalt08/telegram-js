@@ -4,6 +4,7 @@ import './material_spinner.scss';
 
 const materialSpinnerSvg = /*#__PURE__*/svgCodeToComponent(materialSpinnerCode); // eslint-disable-line spaced-comment
 
+// To colorize, just set the `color` CSS property.
 // eslint-disable-next-line quote-props
 export default function materialSpinner({ className, 'class': _class, ...props }: Record<string, unknown> = {}) {
   const givenClassName = className || _class || '';

@@ -1,4 +1,5 @@
 .materialSpinner circle {
+  stroke: currentColor;
   animation: materialSpinner__dash 1.5s ease-in-out infinite, materialSpinner__rotate 2s linear infinite;
   transform-origin: center;
 }

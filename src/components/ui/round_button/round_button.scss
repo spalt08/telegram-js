@@ -46,10 +46,7 @@
     height: $size;
     top: calc(50% - #{$size / 2});
     right: 13px;
-
-    circle {
-      stroke: #FFFFFF;
-    }
+    color: #fff;
   }
 
   &.loading {

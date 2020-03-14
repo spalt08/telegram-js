@@ -32,7 +32,7 @@
 
     &:hover::before {
       display: block;
-    } 
+    }
   }
 
   &__thumb::before, &__thumb &__circleprogress {
@@ -41,7 +41,7 @@
     background-color: rgba(0, 0, 0, 0.3);
     border-radius: 20px;
     top: 5px;
-    left: 5px;  
+    left: 5px;
     z-index: 2;
   }
 
@@ -113,8 +113,7 @@
     align-items: center;
     justify-content: center;
 
-    & svg { width: 30px; height: 30px; }
-    & circle { stroke: #fff; }
+    svg { width: 30px; height: 30px; color: #fff }
   }
 
   &__info {
