@@ -9,7 +9,7 @@ import { getDocumentLocation, getAttributeAudio } from 'helpers/files';
 import { download } from 'client/media';
 import MainService from './main';
 
-export enum MediaPlaybackStatus {
+export const enum MediaPlaybackStatus {
   NotStarted,
   Downloading,
   Playing,
