@@ -99,12 +99,12 @@
       left: 50%;
       transform: translate(-50%, -50%);
       background: rgba(0, 0, 0, 0.3);
+      color: white;
       border-radius: 50%;
 
       svg {
         transform: scale(0.97);
         circle {
-          stroke: white;
           stroke-width: 1.5;
         }
       }

@@ -1,3 +1,5 @@
+$animation-duration: 0.4s;
+
 .photo {
   position: relative;
   background: transparent;
@@ -11,9 +13,9 @@
     left: calc(50% - 24px);
     top: calc(50% - 24px);
     right: auto;
-    height: auto;
-    margin: 0 auto;
+    bottom: auto;
     background: rgba(0, 0, 0, 0.2);
+    color: #fff;
     width: 48px;
     height: 48px;
     border-radius: 50%;
@@ -25,11 +27,11 @@
     svg {
       width: 30px;
       height: 30px;
-
-      circle {
-        stroke: #FFFFFF;
-      }
     }
+  }
+
+  &__unblur {
+    animation: unblur $animation-duration ease;
   }
 
   &__background {
@@ -41,14 +43,12 @@
     background-position: center;
     background-size: cover;
     filter: blur(6px);
-    transform: scale(1.06);
     z-index: 0;
     opacity: 0.4;
   }
 
   &__thumbnail {
     filter: blur(6px);
-    transform: scale(1.06);
     z-index: 1;
 
     &.no-blur {
@@ -58,7 +58,7 @@
 
     &.removed {
       position: absolute;
-      animation: thumbRemoved .4s ease;
+      animation: thumbRemoved $animation-duration ease;
     }
   }
 
@@ -78,5 +78,14 @@
 @keyframes thumbRemoved {
   to {
     opacity: 0;
+  }
+}
+
+@keyframes unblur {
+  from {
+    filter: blur(6px);
+  }
+  to {
+    filter: none;
   }
 }

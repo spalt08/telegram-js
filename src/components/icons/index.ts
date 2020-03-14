@@ -165,6 +165,8 @@ export const logout = /*#__PURE__*/svgCodeToComponent(logoutCode);
 
 export { default as materialSpinner } from './material_spinner/material_spinner';
 
+export { default as menuAndBack } from './menu_and_back/menu_and_back';
+
 import menuCode from './menu.svg?raw';
 export const menu = /*#__PURE__*/svgCodeToComponent(menuCode);
 

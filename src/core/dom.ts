@@ -255,7 +255,7 @@ export function el(tag: string, props: Record<string, any> = {}, children: Node[
   return element;
 }
 
-export function svgEl<T extends keyof SVGElementTagNameMap>(tag: T, props?: Record<string, any>, ...children: SVGElement[]) {
+export function svgEl<T extends keyof SVGElementTagNameMap>(tag: T, props?: Record<string, any>, children: SVGElement[] = []) {
   const element = document.createElementNS('http://www.w3.org/2000/svg', tag);
 
   // Setting props

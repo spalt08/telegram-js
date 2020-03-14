@@ -183,7 +183,7 @@ module.exports = (env, argv) => {
       }),
       ...(analyze ? [
         new BundleAnalyzerPlugin({
-          analyzerPort: 3001,
+          analyzerPort: 3002,
         }),
       ] : []),
     ],

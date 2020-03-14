@@ -1,12 +1,12 @@
 import { Document } from 'client/schema';
 import { play, pause, close } from 'components/icons';
-import download from 'components/icons/download_button/download_button.svg?raw';
 import { svgCodeToComponent } from 'core/factory';
 import { MediaPlaybackStatus } from 'services/media';
 import { media as mediaService } from 'services';
 import { useObservable, useInterface } from 'core/hooks';
 import { div } from 'core/html';
 import { unmount } from 'core/dom';
+import download from './download_button.svg?raw';
 import './play_button.scss';
 
 export default function playButton(doc: Document.document) {
