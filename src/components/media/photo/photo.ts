@@ -35,6 +35,7 @@ export default function photoRenderer(photo: Photo.photo | Document.document,
   const orientation = size.w >= size.h ? 'landscape' : 'portrait';
   const location = getPhotoLocation(photo, size.type);
   let url = cached(location);
+  const loadedFromCache = !!url;
 
   let thumbSrc: string | null = null;
 
@@ -99,7 +100,7 @@ export default function photoRenderer(photo: Photo.photo | Document.document,
       listenOnce(thumbnail, 'animationend', () => thumbnail && unmount(thumbnail));
     }
 
-    mount(container, image = img({ src, alt: 'Message Photo' }));
+    mount(container, image = img`${loadedFromCache ? '' : 'unblur'}`({ src, alt: 'Message Photo' }), thumbnail);
   };
 
   // load or render cached
