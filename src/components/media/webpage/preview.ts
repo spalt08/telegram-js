@@ -15,34 +15,34 @@ export default function webpagePreview(webpage: WebPage) {
   //   photo = div`.webpage-preview__photo`(photoPreview(webpage.photo));
   // }
 
+  const header = div`.webpage-preview__header`(text(webpage.site_name || ''));
   const title = div`.webpage-preview__title`(text(webpage.title || ''));
   const description = text(webpage.description || '');
-  const content = div`.webpage-preview__content`(title, description);
+  const content = div`.webpage-preview__content`(header, title, description);
 
   if (webpage._ === 'webPage' && webpage.photo?._ === 'photo') {
     switch (webpage.type) {
       case 'photo':
       case 'video': {
-        const photoEl = div`.webpage-preview__photo`(photo(webpage.photo, { fit: 'contain', width: 320, height: 320, showLoader: false }));
-        mount(content, photoEl);
+        const photoEl = div`.webpage-preview__photo`(
+          photo(webpage.photo, { fit: 'contain', width: 320, height: 320, showLoader: false }),
+        );
+        mount(content, photoEl, header);
 
         break;
       }
 
       default: {
-        const photoEl = div`.webpage-preview__photo.small`(photo(webpage.photo, { fit: 'cover', width: 60, height: 60, showLoader: false }));
-        mount(content, photoEl, title);
+        const photoEl = div`.webpage-preview__photo.small`(
+          photo(webpage.photo, { fit: 'cover', width: 60, height: 60, showLoader: false }),
+        );
+        mount(content, photoEl, header);
         mount(content, div({ style: { clear: 'both' } }));
       }
     }
   }
 
-  const element = div`.webpage-preview`(
-    div`.webpage-preview__header`(text(webpage.site_name || '')),
+  return div`.webpage-preview ${`webtype-${webpage.type}`}`(
     content,
   );
-
-  element.classList.add(`webtype-${webpage.type}`);
-
-  return element;
 }

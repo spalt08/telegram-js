@@ -1,35 +1,51 @@
+// CSS API variables: --accent-color
+
 .webpage-preview {
-  border-left: 2px solid #4EA4F5;
-  padding-left: 6px;
-  font-size: 15px;
+  display: flex;
+  font-size: 14px;
   white-space: pre-wrap;
   overflow-wrap: break-word;
-  margin-bottom: 10px;
+  line-height: round(16/14 * 1000) / 1000;
 
-  &__header {
-    color: #4EA4F5;
-    font-size: 14px;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  &::before {
+    content: '';
+    flex: none;
+    width: 2px;
+    border-radius: 1px;
+    background: var(--accent-color, #4EA4F5);
+    margin-right: 8px;
   }
 
   &__photo {
     border-radius: 4px;
     overflow: hidden;
     max-width: 100%;
-    margin-top: 6px;
+    margin-bottom: 6px;
+
+    &.small {
+      float: right;
+      width: 60px;
+      margin-left: 6px;
+      margin-top: 0;
+    }
+  }
+
+  &__content {
+    flex: auto;
+    min-width: 0;
+  }
+
+  &__header {
+    color: var(--accent-color, #4EA4F5);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 3px;
   }
 
   &__title {
     font-weight: 500;
-  }
-
-  &__photo.small {
-    float: right;
-    width: 60px;
-    margin-left: 6px;
-    margin-top: 0;
+    margin-bottom: 3px;
   }
 }

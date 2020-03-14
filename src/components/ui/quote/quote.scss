@@ -1,22 +1,34 @@
+// CSS API variables: --accent-color
+
 .quote {
-  border-left: 2px solid #4EA4F5;
-  padding-left: 6px;
   display: flex;
   justify-content: flex-start;
   align-items: center;
+  line-height: 1.2;
+
+  &::before {
+    content: '';
+    flex: none;
+    align-self: stretch;
+    width: 2px;
+    border-radius: 1px;
+    background: var(--accent-color, #4EA4F5);
+    margin-right: 7px;
+  }
 
   &__content {
-    overflow: hidden;
-    flex: 1 70%;
+    min-width: 0;
+    flex: auto;
   }
 
   &__title {
-    color: #4EA4F5;
+    color: var(--accent-color, #4EA4F5);;
     font-size: 14px;
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin: -2px 0 0;
   }
 
   &__message {
@@ -24,19 +36,17 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: #707579;
-
-    &.media {
-      color: #707579;
-    }
+    margin: 3px 0 -1px;
   }
 
   &__img {
+    flex: none;
     border-radius: 3px;
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
+    margin-left: -3px;
     object-fit: cover;
     overflow: hidden;
-    margin-right: 6px;
+    margin-right: 8px;
   }
 }

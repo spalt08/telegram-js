@@ -213,5 +213,7 @@ export function peerToColorCode(peer: Peer) {
 // todo: Handle messages sent by a channel in a chat: https://github.com/spalt08/telegram-js/issues/31
 export function messageToSenderPeer(message: Exclude<Message, Message.messageEmpty>): Peer {
   const channel = message.to_id._ === 'peerChannel' ? chatCache.get(message.to_id.channel_id) : undefined;
-  return channel && channel._ === 'channel' && !channel.megagroup ? message.to_id : userIdToPeer(todoAssertHasValue(message.from_id));
+  return channel && channel._ === 'channel' && !channel.megagroup
+    ? message.to_id
+    : userIdToPeer(todoAssertHasValue(message.from_id));
 }

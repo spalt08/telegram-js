@@ -1,6 +1,7 @@
 @import '~styles/variables.scss';
 
-$messageBubblePadding: 7PX 9PX;
+$messageSidePadding: 10PX;
+$messageBubblePadding: 7PX $messageSidePadding;
 $messageDistance: 4PX;
 
 .message-day {
@@ -211,21 +212,43 @@ $messageDistance: 4PX;
   }
 
   &__reply {
-    padding: $messageBubblePadding;
-    cursor: pointer;
-    height: 36px;
-    box-sizing: content-box;
+    $ripplePadding: 5PX 5PX;
+
+    padding: 10px $messageSidePadding;
     background: #FFFFFF;
     border-radius: 6px;
     min-width: 0;
 
+    &_ripple {
+      cursor: pointer;
+      transition: background-color .2s ease;
+      border-radius: 5px;
+      margin: #{- nth($ripplePadding, 1)} #{- nth($ripplePadding, 2)};
+
+      &:hover {
+        background: rgba(#707579, 0.08);
+      }
+
+      &_content {
+        padding: $ripplePadding;
+        box-sizing: content-box;
+        min-height: 32px;
+      }
+    }
+
     .message.out & {
       background: #EEFFDE;
+
+      &_ripple_content:hover {
+        background: rgba(#000, 0.08);
+      }
     }
   }
 
-  &__reply + &__text {
+  &__reply + &__text,
+  &__media-padded + &__text {
     padding-top: 0;
+    margin-top: -3px;
   }
 
   &__profile {
@@ -239,7 +262,7 @@ $messageDistance: 4PX;
   }
 
   &__media-padded {
-    padding: $messageBubblePadding;
+    padding: 10px $messageSidePadding;
   }
 
   &__text + &__media-padded {
@@ -250,16 +273,19 @@ $messageDistance: 4PX;
     padding-top: 0;
   }
 
+  &__reply + &__media-padded {
+    padding-top: 3px;
+  }
+
   &__title {
     font-size: 14px;
     font-weight: 500;
     color: var(--accent-color);
-    line-height: 150%;
+    line-height: 1.2;
     display: none;
-    padding: $messageBubblePadding;
-    padding-bottom: 0;
+    padding: 7px $messageSidePadding 0;
+    margin-bottom: -4px;
     white-space: nowrap;
-    overflow: hidden;
     text-overflow: ellipsis;
 
     @each $i, $color in $user-bg-colors {
@@ -314,14 +340,6 @@ $messageDistance: 4PX;
 
     &__bubble {
       border-radius: 12.5px 6px 6px 12.5px;
-
-      & .quote, & .webpage-preview {
-        border-left-color: var(--accent-color);
-      }
-
-      & .quote__title, & .webpage-preview__header {
-        color: var(--accent-color);
-      }
 
       &.only-photo, &.only-sticker {
         background: none;

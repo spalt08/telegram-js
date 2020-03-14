@@ -5,13 +5,15 @@ import './ripple.scss';
 
 interface Props extends Record<string, any> {
   tag?: keyof HTMLElementTagNameMap;
+  className?: string;
   contentClass?: string;
+  onClick?(event: MouseEvent): void;
 }
 
 /**
  * Any HTML element with click ripple animation
  */
-export default function ripple({ tag = 'div', className = '', contentClass = '', ...props }: Props, children: Node[] = []) {
+export default function ripple({ tag = 'div', className = '', contentClass = '', onClick, ...props }: Props, children: Node[] = []) {
   const contentEl = div`.ripple__content ${contentClass}`(...children);
   const element = el(tag, { className: `ripple ${className}`, ...props }, [contentEl]);
 
@@ -27,6 +29,11 @@ export default function ripple({ tag = 'div', className = '', contentClass = '',
 
     mount(element, effect);
   });
+
+  if (onClick) {
+    // After the ripple listener to show the animation first on click
+    listen(element, 'click', onClick);
+  }
 
   return useInterface(element, {
     mountChild(...moreChildren: Node[]) {
