@@ -43,10 +43,9 @@ export default function stickerPanel(onSelect?: (sticker: Document) => void) {
 
   listen(tabs.recent, 'click', () => list.focus('recent'));
 
-  const innerContainer = div`.sticker-panel__container`(loader);
   const container = (
     div`.sticker-panel`(
-      innerContainer,
+      loader,
       tabsEl,
     )
   );
@@ -73,9 +72,9 @@ export default function stickerPanel(onSelect?: (sticker: Document) => void) {
       }
 
       if (loader) {
+        mount(container, list.container, loader);
         unmount(loader);
         loader = undefined;
-        mount(innerContainer, list.container);
       }
 
       items.next([...items.value, ...newSets]);
@@ -91,9 +90,9 @@ export default function stickerPanel(onSelect?: (sticker: Document) => void) {
       items.next(['recent', ...items.value]);
 
       if (loader) {
+        mount(container, list.container, loader);
         unmount(loader);
         loader = undefined;
-        mount(innerContainer, list.container);
       }
 
       media.loadStickerSets();

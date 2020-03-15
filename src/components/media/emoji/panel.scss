@@ -5,23 +5,20 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  align-items: center;
 
   &__tabs {
+    flex: none;
     height: 48px;
     border-top: 1px solid #dedfe2;
     text-align: center;
     width: 100%;
     display: flex;
-    flex-direction: row;
     justify-content: space-between;
     align-items: center;
     padding: 2px 16px;
   }
 
   &__tab {
-    display: inline-block;
-    width: 12.5%;
     width: 24px;
     height: 24px;
     cursor: pointer;
@@ -42,7 +39,6 @@
   }
 
   &__content {
-    flex: 1 100%;
-    width: 100%;
+    flex: auto;
   }
 }

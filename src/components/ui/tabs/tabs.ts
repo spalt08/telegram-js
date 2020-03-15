@@ -11,9 +11,10 @@ interface TabsInterface {
 type TabsItems = Record<string, HTMLElement>;
 type Props = {
   className?: string,
+  headerAlign?: 'center' | 'space-between' | 'stretch';
 };
 
-export default function tabsPanel({ className = '' }: Props, tabs: TabsItems) {
+export default function tabsPanel({ className = '', headerAlign = 'center' }: Props, tabs: TabsItems) {
   const tabsIndexes = Object.keys(tabs);
 
   let selected = 0;
@@ -21,15 +22,19 @@ export default function tabsPanel({ className = '' }: Props, tabs: TabsItems) {
 
   const tabsEl: HTMLElement[] = [];
 
-  for (let i = 0; i < tabsIndexes.length; i += 1) tabsEl[i] = div`.tabs-panel__tab`(text(tabsIndexes[i]));
+  for (let i = 0; i < tabsIndexes.length; i += 1) {
+    tabsEl[i] = div`.tabs-panel__tab`(
+      div(text(tabsIndexes[i])),
+    );
+  }
 
   const contentEl = div`.tabs-panel__container`(tabs[tabsIndexes[selected]]);
   const container = div`.tabs-panel${className}`(
-    div`.tabs-panel__header`(...tabsEl),
+    div`.tabs-panel__header ${`-${headerAlign}`}`(...tabsEl),
     contentEl,
   );
 
-  tabsEl[selected].classList.add('active');
+  tabsEl[selected].classList.add('-active');
 
   const change = (nextSelected: number) => {
     if (isLocked) return;
@@ -46,8 +51,8 @@ export default function tabsPanel({ className = '' }: Props, tabs: TabsItems) {
     // trigger interface if exists
     if (hasInterface<TabsInterface>(removingEl) && getInterface(removingEl).shouldRemove) getInterface(removingEl).shouldRemove();
 
-    tabsEl[selected].classList.remove('active');
-    tabsEl[nextSelected].classList.add('active');
+    tabsEl[selected].classList.remove('-active');
+    tabsEl[nextSelected].classList.add('-active');
 
     appearingEl.classList.add(`appearing-${direction}`);
     removingEl.classList.add(`removing-${direction}`);

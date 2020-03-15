@@ -17,7 +17,7 @@ export default function stickMojiPanel({ onSelectEmoji, onSelectSticker }: Props
     Stickers: stickerPanel(onSelectSticker),
   } as Record<string, HTMLElement>;
 
-  const container = tabsPanel({ className: 'stickmoji-panel' }, panels);
+  const container = tabsPanel({ className: 'stickmoji-panel', headerAlign: 'center' }, panels);
 
 
   listenOnce(container, 'transitionend', () => {

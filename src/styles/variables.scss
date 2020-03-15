@@ -31,3 +31,10 @@ $break-widescreen: 1680px;
     }
   }
 }
+
+@mixin scrollbar-width($width) {
+  &::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+}

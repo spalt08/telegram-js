@@ -6,7 +6,7 @@ import linksPanel from './links_panel';
 import './shared_media.scss';
 
 export default function sharedMediaPanel(peer: Peer) {
-  return tabsPanel({ className: 'shared-media' }, {
+  return tabsPanel({ className: 'shared-media', headerAlign: 'space-between' }, {
     Media: mediaPanel(peer),
     Docs: docsPanel(peer),
     Links: linksPanel(peer),
