@@ -4,58 +4,82 @@
   flex-direction: column;
   justify-content: space-between;
   overflow: hidden;
-  display: flex;  
+  display: flex;
   position: relative;
 
   &__header {
-    height: 42px;
+    flex: none;
+    height: 48px;
     display: flex;
-    flex-direction: row;
-    justify-content: center;
     border-bottom: 1px solid #dedfe2;
     width: 100%;
+
+    &.-center {
+      justify-content: center;
+    }
+
+    &.-space-between {
+      justify-content: space-between;
+    }
   }
 
   &__tab {
-    display: inline-block;
+    $transition-duration: 0.2s;
+
+    display: flex;
+    justify-content: center;
     color: #7b8083;
-    font-weight: 500;
-    margin: 0px 22px;
-    line-height: 42px;
-    font-size: 1rem;
-    transition: color .2s ease;
+    padding: 0 26px;
+    margin: 0 0 -1px;
+    border-radius: 4px 4px 0 0;
     cursor: pointer;
-    position: relative;
+    transition: all $transition-duration;
 
-    &::after {
-      position: absolute;
-      content: '';
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      border-top-left-radius: 2PX;
-      border-top-right-radius: 2PX;
-      height: 3.5PX;
-      opacity: 0;
-      background-color: #4EA4F5;
-      transition: opacity .2s ease-out;
+    > div {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      font-weight: 500;
+      font-size: 16px;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: -2px;
+        right: -2px;
+        height: 4px;
+        background: #4EA4F5;
+        border-radius: 2px 2px 0 0;
+        opacity: 0;
+        transition: opacity $transition-duration ease-out;
+      }
     }
 
-    &.active::after {
-      opacity: 1;
+    &:hover {
+      background: rgba(#707579, 0.08);
     }
 
-    &:first-child { margin-left: 15px; }
-    &:last-child { margin-right: 15px; }
-
-    &:hover, &.active {
+    &.-active {
       color: #4EA4F5;
+
+      > div::after {
+        opacity: 1;
+      }
     }
   }
 
+  &__header.-stretch &__tab {
+    flex: 1 1 auto;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
   &__container {
-    flex: 1 100%;
+    flex: 1 100%; // If you set it to `auto`, the content won't have 100% height in Safari
     overflow: hidden;
+    min-height: 0;
 
     & > div {
       transition: transform .3s ease-out;

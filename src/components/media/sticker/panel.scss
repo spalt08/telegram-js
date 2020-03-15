@@ -1,15 +1,15 @@
+@import '~styles/variables.scss';
 
 .sticker-panel {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  align-items: center;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  align-items: center;
 
   &__tabs {
+    flex: none;
     height: 48px;
     border-top: 1px solid #dedfe2;
     text-align: left;
@@ -19,36 +19,13 @@
     overflow-y: hidden;
     white-space: nowrap;
 
-    scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
-    scrollbar-width: thin;
-
-    &::-webkit-scrollbar {
-      height: 4px;
-    }
-
-    /* Track */
-    &::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    /* Handle */
-    &::-webkit-scrollbar-thumb {
-      background: rgba(0, 0, 0, 0.3);
-      cursor: pointer;
-      border-radius: 4px;
-    }
-
-    /* Handle on hover */
-    &::-webkit-scrollbar-thumb:hover {
-      background: rgba(0, 0, 0, 0.6)
-    }
+    @include scrollbar-width(4px);
   }
 
   &__tab {
     display: inline-block;
-    width: 12.5%;
     width: 48px;
-    height: 48px;
+    height: 47px;
     vertical-align: top;
     border-radius: 4px;
     cursor: pointer;
@@ -63,7 +40,7 @@
     }
 
     &:hover {
-      background-color: #f5f5f5;
+      background-color: rgba(#707579, 0.08);
     }
 
     svg {
@@ -90,22 +67,21 @@
     }
   }
 
-  &__container {
-    flex: 1 50%;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-
-  }
-
   &__list {
-    width: 100%;
+    flex: auto;
+
+    .sticker-set {
+      margin: 0 10px;
+
+      &:not(:first-child) {
+        margin-top: 20px;
+      }
+    }
   }
 
   &__loader {
+    flex: none;
+    margin: auto;
     width: 30px;
     height: 30px;
     color: #4EA4F5;
