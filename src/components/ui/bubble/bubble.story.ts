@@ -13,9 +13,12 @@ const stories = storiesOf('UI Elements | Bubble', module)
   .addDecorator(withChatLayout)
   .addDecorator(withKnobs);
 
+const img200x300 = img({ class: 'raw', style: { width: '200px', height: '300px' }, src: 'https://picsum.photos/200/300' });
+const img200x100 = img({ class: 'raw', style: { width: '200px', height: '100px' }, src: 'https://picsum.photos/200/100' });
+
 stories.add('Common Usage', () => {
   const out = boolean('Out', false);
-  const messageControl = bubble(out, div(text('Line 1')), div(text('Line 2')), div(text('Line 3')));
+  const messageControl = bubble(out, false, false, div(text('Line 1')), div(text('Line 2')), div(text('Line 3')));
   const isFirst = boolean('First', false);
   const isLast = boolean('Last', false);
   getInterface(messageControl).updateBorders(isFirst, isLast);
@@ -24,7 +27,7 @@ stories.add('Common Usage', () => {
 
 stories.add('Image Full', () => {
   const out = boolean('Out', false);
-  const messageControl = bubble(out, img({ class: 'raw', src: 'https://picsum.photos/200/300' }));
+  const messageControl = bubble(out, true, true, img200x300);
   const isFirst = boolean('First', false);
   const isLast = boolean('Last', false);
   getInterface(messageControl).updateBorders(isFirst, isLast);
@@ -33,7 +36,7 @@ stories.add('Image Full', () => {
 
 stories.add('Image Top', () => {
   const out = boolean('Out', false);
-  const messageControl = bubble(out, img({ class: 'raw', src: 'https://picsum.photos/200/100' }), div(text('Description')));
+  const messageControl = bubble(out, false, false, img200x100, div(text('Description')));
   const isFirst = boolean('First', false);
   const isLast = boolean('Last', false);
   getInterface(messageControl).updateBorders(isFirst, isLast);
@@ -42,7 +45,7 @@ stories.add('Image Top', () => {
 
 stories.add('Image Bottom', () => {
   const out = boolean('Out', false);
-  const messageControl = bubble(out, true, div(text('Description')), img({ class: 'raw', src: 'https://picsum.photos/200/100' }));
+  const messageControl = bubble(out, true, false, div(text('Description')), img200x100);
   const isFirst = boolean('First', false);
   const isLast = boolean('Last', false);
   getInterface(messageControl).updateBorders(isFirst, isLast);
