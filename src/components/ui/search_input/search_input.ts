@@ -57,6 +57,12 @@ export default function searchInput({ placeholder, className = '', isLoading, on
   });
 
   return useInterface(element, {
+    get value() {
+      return inputEl.value;
+    },
+    set value(value: string) {
+      inputEl.value = value;
+    },
     focus() {
       inputEl.focus();
     },
