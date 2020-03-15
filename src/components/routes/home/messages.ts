@@ -101,7 +101,7 @@ export default function messages({ className = '' }: Props = {}) {
     });
   }
 
-  const scrollBar = virtualScrollBar();
+  const scrollBar = virtualScrollBar((offset) => scroll.scrollToOffset(offset));
 
   scroll = new VirtualizedList({
     className: 'messages__list',

@@ -855,6 +855,19 @@ export class VirtualizedList {
     requestAnimationFrame(animateScroll);
   }
 
+  scrollToOffset(offset: number) {
+    console.log(offset);
+    const scrollTo = this.heights.getByDistance(offset, true);
+    if (scrollTo.index < this.first || scrollTo.index > this.last) {
+      this.scrollVirtualizedTo(this.heights.getByDistance(offset, true).item);
+      const firstVisible = this.heights.getByIndex(this.first);
+      this.container.scrollTop = offset - firstVisible.outerDistance;
+    } else {
+      const firstVisible = this.heights.getByIndex(this.first);
+      this.container.scrollTop = offset - firstVisible.outerDistance;
+    }
+  }
+
   getItemInfo(item: string) {
     const firstItemInfo = this.heights.getByIndex(this.first);
     const itemInfo = this.heights.getByIndex(this.currentIndices[item]);
