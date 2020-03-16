@@ -23,7 +23,7 @@ stories.add('Common Usage', () => {
 });
 
 stories.add('Image Full', () => {
-  const img500x300 = img({ class: 'raw', style: { width: '500px', height: '300px' }, src: 'https://picsum.photos/500/300' });
+  const img500x300 = img({ class: 'raw', src: 'https://picsum.photos/500/300' });
   const out = boolean('Out', false);
   const messageControl = bubble(out, true, true, img500x300);
   const isFirst = boolean('First', true);
@@ -33,7 +33,7 @@ stories.add('Image Full', () => {
 });
 
 stories.add('Image Top', () => {
-  const img400x300 = img({ class: 'raw', style: { width: '400px', height: '300px' }, src: 'https://picsum.photos/400/300' });
+  const img400x300 = img({ class: 'raw', src: 'https://picsum.photos/400/300' });
   const out = boolean('Out', false);
   const messageControl = bubble(out, false, false, img400x300, div(text('Some Text')));
   const isFirst = boolean('First', true);
@@ -43,7 +43,7 @@ stories.add('Image Top', () => {
 });
 
 stories.add('Image Bottom', () => {
-  const img400x300 = img({ class: 'raw', style: { width: '400px', height: '300px' }, src: 'https://picsum.photos/400/300' });
+  const img400x300 = img({ class: 'raw', src: 'https://picsum.photos/400/300' });
   const out = boolean('Out', false);
   const messageControl = bubble(out, true, false, div(text('Quoted Message')), img400x300);
   const isFirst = boolean('First', true);

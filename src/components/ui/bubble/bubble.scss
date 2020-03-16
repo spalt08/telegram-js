@@ -163,3 +163,25 @@
     z-index: 0;
   }
 }
+
+@media 
+(-webkit-min-device-pixel-ratio: 2), 
+(min-resolution: 192dpi) { 
+  &.last.masked &__content {
+    mask-border: url(~assets/bubble_in-last@3x.png) 44 44 44 66;
+  }
+
+  &.first.last.masked &__content {
+    mask-border: url(~assets/bubble_in-whole@3x.png) 44 44 44 66;
+  }
+
+  &.out.last.masked &__content {
+    margin-left: 0;
+    margin-right: -7PX;
+    mask-border: url(~assets/bubble_out-last@3x.png) 44 66 44 44;
+  }
+
+  &.out.first.last.masked &__content {
+    mask-border: url(~assets/bubble_out-whole@3x.png) 44 66 44 44;
+  }
+}
