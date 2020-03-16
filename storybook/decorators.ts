@@ -15,9 +15,14 @@ export function withMountTrigger(getStory: StoryFn<Node>, context: StoryContext)
 
 const centeredWrappers: Record<string, Node> = {};
 
-export function staticCentered(child: Node, context?: StoryContext) {
+export function centered(getStory: StoryFn<Node>, context?: StoryContext) {
+  const next = getStory(context);
+
   if (!context) return '';
-  if (!centeredWrappers[context.id]) centeredWrappers[context.id] = div`.storybook__static-centered`(child);
+  if (!centeredWrappers[context.id] || centeredWrappers[context.id].firstChild !== next) {
+    centeredWrappers[context.id] = div`.storybook__static-centered`(next);
+  }
+
   return centeredWrappers[context.id];
 }
 
