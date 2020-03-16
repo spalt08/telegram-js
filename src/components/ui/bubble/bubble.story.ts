@@ -13,41 +13,41 @@ const stories = storiesOf('UI Elements | Bubble', module)
   .addDecorator(withChatLayout)
   .addDecorator(withKnobs);
 
-const img200x300 = img({ class: 'raw', style: { width: '200px', height: '300px' }, src: 'https://picsum.photos/200/300' });
-const img200x100 = img({ class: 'raw', style: { width: '200px', height: '100px' }, src: 'https://picsum.photos/200/100' });
-
 stories.add('Common Usage', () => {
   const out = boolean('Out', false);
   const messageControl = bubble(out, false, false, div(text('Line 1')), div(text('Line 2')), div(text('Line 3')));
-  const isFirst = boolean('First', false);
-  const isLast = boolean('Last', false);
+  const isFirst = boolean('First', true);
+  const isLast = boolean('Last', true);
   getInterface(messageControl).updateBorders(isFirst, isLast);
   return messageControl;
 });
 
 stories.add('Image Full', () => {
+  const img500x300 = img({ class: 'raw', style: { width: '500px', height: '300px' }, src: 'https://picsum.photos/500/300' });
   const out = boolean('Out', false);
-  const messageControl = bubble(out, true, true, img200x300);
-  const isFirst = boolean('First', false);
-  const isLast = boolean('Last', false);
+  const messageControl = bubble(out, true, true, img500x300);
+  const isFirst = boolean('First', true);
+  const isLast = boolean('Last', true);
   getInterface(messageControl).updateBorders(isFirst, isLast);
   return messageControl;
 });
 
 stories.add('Image Top', () => {
+  const img400x300 = img({ class: 'raw', style: { width: '400px', height: '300px' }, src: 'https://picsum.photos/400/300' });
   const out = boolean('Out', false);
-  const messageControl = bubble(out, false, false, img200x100, div(text('Description')));
-  const isFirst = boolean('First', false);
-  const isLast = boolean('Last', false);
+  const messageControl = bubble(out, false, false, img400x300, div(text('Some Text')));
+  const isFirst = boolean('First', true);
+  const isLast = boolean('Last', true);
   getInterface(messageControl).updateBorders(isFirst, isLast);
   return messageControl;
 });
 
 stories.add('Image Bottom', () => {
+  const img400x300 = img({ class: 'raw', style: { width: '400px', height: '300px' }, src: 'https://picsum.photos/400/300' });
   const out = boolean('Out', false);
-  const messageControl = bubble(out, true, false, div(text('Description')), img200x100);
-  const isFirst = boolean('First', false);
-  const isLast = boolean('Last', false);
+  const messageControl = bubble(out, true, false, div(text('Quoted Message')), img400x300);
+  const isFirst = boolean('First', true);
+  const isLast = boolean('Last', true);
   getInterface(messageControl).updateBorders(isFirst, isLast);
   return messageControl;
 });

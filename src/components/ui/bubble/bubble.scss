@@ -4,35 +4,31 @@
   position: relative;
   --bubble-background: #ffffff;
   min-height: 30PX;
-  display: inline-flex;
-  margin-left: 7PX;
-
-  &.out {
-    margin-left: 0;
-    margin-right: 7PX;
-  }
 
   &.last {
-    margin-left: 0;
-    margin-right: 0;
-  }
-
-  &.last &__content {
-    margin-left: 7PX;
-  }
-
-  &.last.out &__content {
-    margin-left: 0;
-    margin-right: 7PX;
-  }
-
-  &.last &__content > .raw {
     margin-left: -7PX;
   }
 
-  &.last.out &__content > .raw {
+  &.last.out {
     margin-left: 0;
     margin-right: -7PX;
+  }
+
+  &.last.masked &__content > * {
+    margin-left: 7PX;
+  }
+
+  &.last.masked &__content > .raw {
+    margin-left: 0;
+  }
+
+  &.last.out.masked &__content > * {
+    margin-left: 0;
+    margin-right: 7PX;
+  }
+
+  &.last.out.masked &__content > .raw {
+    margin-right: 0;
   }
 
   &__shadow {
@@ -70,20 +66,16 @@
     border-bottom-left-radius: 0;
   }
 
-  &.last &__background {
-    margin-left: 7PX;
-
-    &::after {
-      position: absolute;
-      left: -7PX;
-      width: 7PX;
-      bottom: 0;
-      height: 17PX;
-      z-index: 2;
-      content: '';
-      background-image: url(~assets/message_corner@2x.png);
-      background-size: 100%;
-    }
+  &.last &__background::after {
+    position: absolute;
+    left: -7PX;
+    width: 7PX;
+    bottom: 0;
+    height: 17PX;
+    z-index: 2;
+    content: '';
+    background-image: url(~assets/message_corner@2x.png);
+    background-size: 100%;
   }
 
   &.out &__background, &.out &__content {
@@ -98,15 +90,34 @@
     border-bottom-right-radius: 0;
   }
 
-  &.last.out &__background {
-    margin-left: 0;
-    margin-right: 7PX;
+  &.last.out &__background::after {
+    background-image: url(~assets/message_corner-out@2x.png);
+    left: auto;
+    right: -7PX;
+  }
 
-    &::after {
-      background-image: url(~assets/message_corner-out@2x.png);
-      left: auto;
-      right: -7PX;
-    }
+  // masks
+  &:not(.last) &__content, &:not(.masked) &__content {
+    overflow: hidden;
+  }
+
+  &.last.masked &__content {
+    margin-left: -7PX;
+    mask-border: url(~assets/bubble_in-last@2x.png) 29 29 29 44;
+  }
+
+  &.first.last.masked &__content {
+    mask-border: url(~assets/bubble_in-whole@2x.png) 29 29 29 44;
+  }
+
+  &.out.last.masked &__content {
+    margin-left: 0;
+    margin-right: -7PX;
+    mask-border: url(~assets/bubble_out-last@2x.png) 29 44 29 29;
+  }
+
+  &.out.first.last.masked &__content {
+    mask-border: url(~assets/bubble_out-whole@2x.png) 29 44 29 29;
   }
 
   // shadows
@@ -115,7 +126,6 @@
   }
 
   &.last &__shadow {
-    margin-left: 7PX;
     border-image: url(~assets/message_in-lower@2x.png) 49 49 49 49 fill;
   }
 
@@ -132,8 +142,6 @@
   }
 
   &.out.last &__shadow {
-    margin-left: 0;
-    margin-right: 7PX;
     border-image: url(~assets/message_out-lower@2x.png) 49 49 49 49 fill;
   }
 
