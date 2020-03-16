@@ -1,50 +1,50 @@
+/* eslint-disable max-len */
 /* eslint-disable import/no-extraneous-dependencies */
 import { storiesOf } from '@storybook/html';
-import { withKnobs, boolean, text } from '@storybook/addon-knobs';
+import { withKnobs, text, boolean } from '@storybook/addon-knobs';
 import { withMountTrigger, withChatLayout } from 'storybook/decorators';
-import { Document, DocumentAttribute, Message, MessageMedia, Peer } from 'client/schema';
-import { messageCache } from 'cache';
+import { Message, Peer, User, Chat } from 'client/schema';
+import { messageCache, userCache, chatCache } from 'cache';
+import { peerMessageToId } from 'helpers/api';
+
+import commonMessage from 'mocks/messages/common.json';
+import walter from 'mocks/users/walter.json';
+import losPollos from 'mocks/chats/los_pollos.json';
 
 import message from './message';
 
-const stories = storiesOf('Messages | With Audio', module)
+
+// Stories with media
+require('./stories/audio.story');
+require('./stories/photo.story');
+
+// Stories with text
+const stories = storiesOf('Messages | Regular', module)
   .addDecorator(withMountTrigger)
   .addDecorator(withChatLayout)
   .addDecorator(withKnobs);
 
-stories.add('Common Usage', () => {
-  const doc: Document.document = {
-    _: 'document',
-    id: '1',
-    access_hash: '1',
-    file_reference: '1',
-    date: 0,
-    mime_type: '?',
-    size: 100,
-    dc_id: 1,
-    attributes: [
-      {
-        _: 'documentAttributeAudio',
-        performer: text('Performer', 'Artist'),
-        title: text('Title', 'Title'),
-        duration: 27,
-      } as DocumentAttribute.documentAttributeAudio,
-    ],
-  };
+stories.add('Single with User', () => {
+  commonMessage.message = text('Message', 'You clearly don’t know who you’re talking to, so let me clue you in. I am not in danger, Skyler. I am the danger. A guy opens his door and gets shot, and you think that of me? No! I am the one who knocks!');
+  commonMessage.out = boolean('Out', false);
 
-  const peer = { _: 'peerUser', user_id: 1 } as Peer;
-  const msg = {
-    _: 'message',
-    out: boolean('Out', false),
-    id: 1,
-    to_id: peer,
-    from_id: 1,
-    date: Date.now(),
-    message: 'test',
-    media: { _: 'messageMediaDocument', document: doc } as MessageMedia.messageMediaDocument,
-  } as Message.message;
-  messageCache.remove('users_1');
-  messageCache.put(msg);
-  const messageControl = message('users_1', peer);
-  return messageControl;
+  messageCache.put(commonMessage as Message);
+  userCache.put(walter as User);
+
+  return message(peerMessageToId(commonMessage.to_id as Peer, commonMessage.id), commonMessage.to_id as Peer);
+});
+
+stories.add('Single at Chat', () => {
+  const peer: Peer = { _: 'peerChat', chat_id: losPollos.id };
+  const chatMsgFromCommon = { ...commonMessage } as Message.message;
+
+  chatMsgFromCommon.message = text('Message', 'You clearly don’t know who you’re talking to, so let me clue you in. I am not in danger, Skyler. I am the danger. A guy opens his door and gets shot, and you think that of me? No! I am the one who knocks!');
+  chatMsgFromCommon.out = boolean('Out', false);
+  chatMsgFromCommon.to_id = peer as any;
+
+  messageCache.put(chatMsgFromCommon);
+  userCache.put(walter as User);
+  chatCache.put(losPollos as Chat);
+
+  return message(peerMessageToId(peer, chatMsgFromCommon.id), peer);
 });

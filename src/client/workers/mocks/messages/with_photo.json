@@ -1,0 +1,31 @@
+{
+  "_": "message",
+  "out": true,
+  "mentioned": false,
+  "media_unread": false,
+  "silent": false,
+  "post": false,
+  "from_scheduled": false,
+  "legacy": false,
+  "edit_hide": false,
+  "id": 1470679,
+  "from_id": 1,
+  "to_id": {
+      "_": "peerChat",
+      "chat_id": 157854402
+  },
+  "via_bot_id": 0,
+  "reply_to_msg_id": 0,
+  "date": 1584388646,
+  "message": "test",
+  "media": {
+      "_": "messageMediaPhoto",
+      "ttl_seconds": 0
+  },
+  "entities": [],
+  "views": 0,
+  "edit_date": 0,
+  "post_author": "",
+  "grouped_id": 0,
+  "restriction_reason": []
+}

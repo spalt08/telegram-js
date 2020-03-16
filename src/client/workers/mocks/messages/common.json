@@ -1,0 +1,27 @@
+{
+  "_": "message",
+  "out": false,
+  "mentioned": false,
+  "media_unread": false,
+  "silent": false,
+  "post": false,
+  "from_scheduled": false,
+  "legacy": false,
+  "edit_hide": false,
+  "id": 1466492,
+  "from_id": 1,
+  "to_id": {
+      "_": "peerUser",
+      "user_id": 1
+  },
+  "via_bot_id": 0,
+  "reply_to_msg_id": 0,
+  "date": 1583841813,
+  "message": "test",
+  "entities": [],
+  "views": 0,
+  "edit_date": 0,
+  "post_author": "",
+  "grouped_id": "",
+  "restriction_reason": []
+}

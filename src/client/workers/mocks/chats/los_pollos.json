@@ -1,0 +1,20 @@
+{
+  "_": "chat",
+  "creator": false,
+  "kicked": false,
+  "left": false,
+  "deactivated": true,
+  "id": 157854402,
+  "title": "Los Pollos Hermanos",
+  "photo": {
+      "_": "chatPhotoEmpty"
+  },
+  "participants_count": 0,
+  "date": 1473175039,
+  "version": 8,
+  "migrated_to": {
+      "_": "inputChannel",
+      "channel_id": 1076008711,
+      "access_hash": "b516172ee24e9901"
+  }
+}
