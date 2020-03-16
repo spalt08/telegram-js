@@ -1,13 +1,24 @@
+/* eslint-disable import/no-extraneous-dependencies */
+
+import { StoryContext, StoryFn } from '@storybook/addons';
 import { triggerMountRecursive } from 'core/dom';
 import { div } from 'core/html';
 import chamomile from 'assets/chamomile-blurred.jpg';
 import { emptyCache } from 'client/media';
 import 'components/routes/home/home.scss';
 
-export function withMountTrigger(creator: () => Node) {
-  const element = creator();
+export function withMountTrigger(getStory: StoryFn<Node>, context: StoryContext) {
+  const element = getStory(context);
   triggerMountRecursive(element);
   return element;
+}
+
+const centeredWrappers: Record<string, Node> = {};
+
+export function staticCentered(child: Node, context?: StoryContext) {
+  if (!context) return '';
+  if (!centeredWrappers[context.id]) centeredWrappers[context.id] = div`.storybook__static-centered`(child);
+  return centeredWrappers[context.id];
 }
 
 export function withEmptyFileCache(creator: () => Node) {
