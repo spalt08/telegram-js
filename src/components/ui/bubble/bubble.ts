@@ -1,7 +1,6 @@
 import { div } from 'core/html';
 import { useInterface } from 'core/hooks';
 import './bubble.scss';
-import { unmount } from 'core/dom';
 
 // Chrome and Safari on MacOS scale up png masks, while Windows browsers do not.
 // At the same time, Windows browsers scale down svg masks, while MacOS browsers don't.
@@ -16,11 +15,10 @@ export default function bubble(out: boolean, masked: boolean, onlyMedia: boolean
   const shadow = div`.bubble__shadow`();
   const background = div`.bubble__background`();
   const content = div`.bubble__content`(...children);
-  const element = div`.bubble${masked ? 'masked' : ''}${isMac ? 'svg' : ''}`(shadow, background, content);
 
-  if (onlyMedia) {
-    unmount(background);
-  }
+  const layers = onlyMedia ? [shadow, content] : [shadow, background, content];
+
+  const element = div`.bubble${masked ? 'masked' : ''}${isMac ? 'svg' : ''}`(...layers);
 
   if (out) {
     element.classList.add('out');

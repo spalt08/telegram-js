@@ -15,39 +15,39 @@ const stories = storiesOf('UI Elements | Bubble', module)
 
 stories.add('Common Usage', () => {
   const out = boolean('Out', false);
-  const messageControl = bubble(out, false, false, div(text('Line 1')), div(text('Line 2')), div(text('Line 3')));
+  const bubbleControl = bubble(out, false, false, div(text('Line 1')), div(text('Line 2')), div(text('Line 3')));
   const isFirst = boolean('First', true);
   const isLast = boolean('Last', true);
-  getInterface(messageControl).updateBorders(isFirst, isLast);
-  return messageControl;
+  getInterface(bubbleControl).updateBorders(isFirst, isLast);
+  return bubbleControl;
 });
 
 stories.add('Image Full', () => {
   const img500x300 = img({ class: 'raw', src: 'https://picsum.photos/500/300' });
   const out = boolean('Out', false);
-  const messageControl = bubble(out, true, true, img500x300);
+  const bubbleControl = bubble(out, true, true, img500x300);
   const isFirst = boolean('First', true);
   const isLast = boolean('Last', true);
-  getInterface(messageControl).updateBorders(isFirst, isLast);
-  return messageControl;
+  getInterface(bubbleControl).updateBorders(isFirst, isLast);
+  return bubbleControl;
 });
 
 stories.add('Image Top', () => {
   const img400x300 = img({ class: 'raw', src: 'https://picsum.photos/400/300' });
   const out = boolean('Out', false);
-  const messageControl = bubble(out, false, false, img400x300, div(text('Some Text')));
+  const bubbleControl = bubble(out, false, false, img400x300, div(text('Some Text')));
   const isFirst = boolean('First', true);
   const isLast = boolean('Last', true);
-  getInterface(messageControl).updateBorders(isFirst, isLast);
-  return messageControl;
+  getInterface(bubbleControl).updateBorders(isFirst, isLast);
+  return bubbleControl;
 });
 
 stories.add('Image Bottom', () => {
   const img400x300 = img({ class: 'raw', src: 'https://picsum.photos/400/300' });
   const out = boolean('Out', false);
-  const messageControl = bubble(out, true, false, div(text('Quoted Message')), img400x300);
+  const bubbleControl = bubble(out, true, false, div(text('Quoted Message')), img400x300);
   const isFirst = boolean('First', true);
   const isLast = boolean('Last', true);
-  getInterface(messageControl).updateBorders(isFirst, isLast);
-  return messageControl;
+  getInterface(bubbleControl).updateBorders(isFirst, isLast);
+  return bubbleControl;
 });
