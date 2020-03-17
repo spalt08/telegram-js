@@ -110,21 +110,21 @@
 
   &.last.masked &__content {
     margin-left: -7PX;
-    mask-border: url("data:image/svg+xml;charset=utf-8,<svg width='37' height='30' viewBox='0 0 37 30' xmlns='http://www.w3.org/2000/svg'><path d='M 12.5 0 a 12.5 12.5 0 0 0 -12.5 12.5 v 5 a 12.5 12.5 0 0 0 12.5 12.5 h 17.5      h 6 c 0.281 0 0.548 -0.118 0.737 -0.325 c 0.373 -0.407 0.345 -1.04 -0.062 -1.413 q -3.269 -2.994 -4.626 -6.48 c -1.173 -3.016 -1.857 -5.943 -2.05 -8.782 v -7     a 6 6 0 0 0 -6 -6 z'/></svg>") 0 0 0 0;
+    mask-border: url(~assets/bubble_in-last@2x.svg) 15 15 15 21;
   }
 
   &.first.last.masked &__content {
-    mask-border: url(~assets/bubble_in-whole@2x.png) 29 29 29 44;
+    mask-border: url(~assets/bubble_in-whole@2x.svg) 15 15 15 21;
   }
 
   &.out.last.masked &__content {
     margin-left: 0;
     margin-right: -7PX;
-    // mask-border: url("data:image/svg+xml;charset=utf-8,<svg width='74' height='74' viewBox='0 0 111 111' xmlns='http://www.w3.org/2000/svg'><path d='M 37.5 0 a 37.5 37.5 0 0 0 -37.5 37.5 v 36 a 37.5 37.5 0 0 0 37.5 37.5 h 52.5      h 18 c 0.8430000000000001 0 1.6440000000000001 -0.354 2.211 -0.9750000000000001 c 1.119 -1.2209999999999999 1.035 -3.12 -0.186 -4.239 q -9.807 -8.982000000000001 -13.878 -19.44 c -3.519 -9.048 -5.571 -17.829 -6.1499999999999995 -26.346 v -42     a 18 18 0 0 0 -18 -18 z'/></svg>") 29 44 29 29;
+    mask-border: url(~assets/bubble_out-last@2x.svg) 15 21 15 15;
   }
 
   &.out.first.last.masked &__content {
-    // mask-border: url(~assets/bubble_out-whole@2x.svg) 29 44 29 29;
+    mask-border: url(~assets/bubble_out-whole@2x.svg) 15 21 15 15;
   }
 
   // shadows
@@ -169,51 +169,4 @@
     flex-direction: column;
     z-index: 0;
   }
-
-  @media only screen and (-webkit-min-device-pixel-ratio: 2),
-  only screen and (min--moz-device-pixel-ratio: 2),
-  only screen and (-o-min-device-pixel-ratio: 2/1),
-  only screen and (min-device-pixel-ratio: 2),
-  only screen and (min-resolution: 192dpi),
-  only screen and (min-resolution: 2dppx) {
-    // &.last.masked &__content {
-    //   mask-border: url(~assets/bubble_in-last@3x.png) 44 44 44 66;
-    // }
-
-    // &.first.last.masked &__content {
-    //   mask-border: url(~assets/bubble_in-whole@3x.png) 44 44 44 66;
-    // }
-
-    &.out.last.masked &__content {
-      mask-border: url(~assets/bubble_out-last@2x.svg) 29 44 29 29;
-    }
-
-    &.out.first.last.masked &__content {
-      mask-border: url(~assets/bubble_out-whole@2x.svg) 29 44 29 29;
-    }
-  }
-
-  @media only screen and (-webkit-min-device-pixel-ratio: 3),
-  only screen and (min--moz-device-pixel-ratio: 3),
-  only screen and (-o-min-device-pixel-ratio: 3/1),
-  only screen and (min-device-pixel-ratio: 3),
-  only screen and (min-resolution: 288dpi),
-  only screen and (min-resolution: 3dppx) {
-    // &.last.masked &__content {
-    //   mask-border: url(~assets/bubble_in-last@3x.png) 44 44 44 66;
-    // }
-
-    // &.first.last.masked &__content {
-    //   mask-border: url(~assets/bubble_in-whole@3x.png) 44 44 44 66;
-    // }
-
-    // &.out.last.masked &__content {
-    //   mask-border: url(~assets/bubble_out-last@3x.png) 44 66 44 44;
-    // }
-
-    &.out.first.last.masked &__content {
-      mask-border: url("~assets/bubble_out-whole@3x.svg") 45 65 45 45;
-    }
-  }
 }
-
