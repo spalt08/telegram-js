@@ -5,11 +5,11 @@
   --bubble-background: #ffffff;
   min-height: 30PX;
 
-  &.last {
+  &.last.masked {
     margin-left: -7PX;
   }
 
-  &.last.out {
+  &.last.out.masked {
     margin-left: 0;
     margin-right: -7PX;
   }
@@ -127,6 +127,22 @@
     mask-border: url(~assets/bubble_out-whole@2x.png) 30 43 30 30;
   }
 
+  &.last.masked.svg &__content {
+    mask-border: url(~assets/bubble_in-last@2x.svg) 15 15 15 21;
+  }
+
+  &.first.last.masked.svg &__content {
+    mask-border: url(~assets/bubble_in-whole@2x.svg) 15 15 15 21;
+  }
+
+  &.out.last.masked.svg &__content {
+    mask-border: url(~assets/bubble_out-last@2x.svg) 15 21 15 15;
+  }
+
+  &.out.first.last.masked.svg &__content {
+    mask-border: url(~assets/bubble_out-whole@2x.svg) 15 21 15 15;
+  }
+
   // shadows
   &.first &__shadow {
     border-image: url(~assets/message_in-upper@2x.png) 49 49 49 49 fill;
@@ -189,6 +205,9 @@
     &.last.masked &__background {
       margin-left: 0;
       margin-right: 0;
+      border-bottom-left-radius: 12.5px;
+      border-bottom-right-radius: 12.5px;
+      &::after { content:none; }
     }
 
     &.last.masked &__content>* {
