@@ -56,6 +56,35 @@ $messageDistance: 4PX;
     max-width: 75%;
     display: inline-block;
     width: auto;
+    z-index: 0;
+  }
+
+  & .only-sticker, &.out &.only-sticker {
+    background: none;
+    display: flex;
+    align-items: flex-start;
+
+    .message__reply {
+      max-width: 400px;
+    }
+  }
+  & .only-sticker { position: relative; flex-direction: row-reverse; }
+  &.out .only-sticker { flex-direction: row; }
+
+  & .as-emoji { padding-top: 10px; }
+
+  &.with-video {
+    transform: translate3d(0, 0, 0);
+  }
+
+  & .only-photo .message__date, & .only-sticker .message__date {
+    background: rgba(0, 0, 0, 0.3);
+    color: #FFFFFF;
+    display: inline-block;
+    padding: 4px 6px 3px;
+    border-radius: 16px;
+    right: 4px;
+    z-index: 2;
   }
 
   .bubble {
@@ -63,46 +92,8 @@ $messageDistance: 4PX;
     &.with-webpage-media { width: 340px; }
     &.with-photo { width: 320px; }
 
-    &.as-emoji { padding-top: 10px; }
-
-    &.only-sticker, .message.out &.only-sticker {
-      background: none;
-      display: flex;
-      align-items: flex-start;
-
-      &::after {
-        background: none !important;
-        content: none !important;
-      }
-
-      &::before {
-        display: none !important;
-        content: none !important;
-      }
-
-      .message__reply {
-        max-width: 400px;
-      }
-    }
-    &.only-sticker { flex-direction: row-reverse; }
-    .message.out &.only-sticker { flex-direction: row; }
-
     &.only-photo {
       max-width: 320px;
-    }
-
-    &.with-video {
-      transform: translate3d(0, 0, 0);
-    }
-
-    &.only-photo .message__date, &.only-sticker .message__date {
-      background: rgba(0, 0, 0, 0.3);
-      color: #FFFFFF;
-      display: inline-block;
-      padding: 4px 6px 3px;
-      border-radius: 16px;
-      right: 4px;
-      z-index: 2;
     }
 
     .message.out &.only-photo .message__date, .message.out &.only-sticker .message__date {
