@@ -1,0 +1,45 @@
+{
+  "_": "user",
+  "self": true,
+  "contact": true,
+  "mutual_contact": true,
+  "deleted": false,
+  "bot": false,
+  "bot_chat_history": false,
+  "bot_nochats": false,
+  "verified": false,
+  "restricted": false,
+  "min": false,
+  "bot_inline_geo": false,
+  "support": false,
+  "scam": false,
+  "id": 1,
+  "access_hash": "aabbccddaabbccdd",
+  "first_name": "Walter",
+  "last_name": "White",
+  "username": "wwhite",
+  "phone": "79991112233",
+  "photo": {
+      "_": "userProfilePhoto",
+      "photo_id": "aabbccddaabbccdd",
+      "photo_small": {
+          "_": "fileLocationToBeDeprecated",
+          "volume_id": "000000000d4b327a",
+          "local_id": 111111
+      },
+      "photo_big": {
+          "_": "fileLocationToBeDeprecated",
+          "volume_id": "000000000d4b327a",
+          "local_id": 111111
+      },
+      "dc_id": 2
+  },
+  "status": {
+      "_": "userStatusOffline",
+      "was_online": 1584390894
+  },
+  "bot_info_version": 0,
+  "restriction_reason": [],
+  "bot_inline_placeholder": "",
+  "lang_code": ""
+}
