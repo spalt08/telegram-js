@@ -300,7 +300,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
   let isFirst = false;
   let isLast = false;
 
-  const getBorders = () => ({ isFirst, isLast });
+  const getBorders = () => ({ first: isFirst, last: isLast });
 
   const setBorders = (first: boolean, last: boolean) => {
     isFirst = first;
