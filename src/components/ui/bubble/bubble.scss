@@ -4,6 +4,7 @@
   --bubble-background: #ffffff;
   position: relative;
   min-height: 30PX;
+  z-index: 0;
 
   &.last.masked &__content>* {
     margin-left: 7PX;
@@ -31,7 +32,7 @@
     bottom: -10PX;
     border-style: solid;
     border-width: 25PX;
-    z-index: -1;
+    z-index: 0;
     border-image: url(./images/shadow_in-central.png) 49 49 49 49 fill;
   }
 
@@ -42,7 +43,7 @@
     right: 0;
     bottom: 0;
     background: var(--bubble-background);
-    z-index: -1;
+    z-index: 1;
   }
 
   & &__background,
@@ -66,7 +67,6 @@
     width: 7PX;
     bottom: 0;
     height: 17PX;
-    z-index: 2;
     content: '';
     background-image: url(./images/bubble_tail-in.png);
     background-size: 100%;
@@ -174,7 +174,8 @@
   & &__content {
     display: flex;
     flex-direction: column;
-    z-index: 0;
+    position: relative;
+    z-index: 2;
   }
 
   // Fallback for browsers that don't support mask-border (e.g. Firefox)

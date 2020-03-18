@@ -1,7 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { storiesOf } from '@storybook/html';
 import centered from '@storybook/addon-centered/html';
-import { withKnobs, boolean } from '@storybook/addon-knobs';
+import { withKnobs, boolean, number } from '@storybook/addon-knobs';
 import { withMountTrigger, withChatLayout } from 'storybook/decorators';
 import { div, text, img } from 'core/html';
 import { getInterface } from 'core/hooks';
@@ -50,4 +50,43 @@ stories.add('Image Bottom', () => {
   const isLast = boolean('Last', true);
   getInterface(bubbleControl).updateBorders(isFirst, isLast);
   return bubbleControl;
+});
+
+const storiesPerf = storiesOf('UI Elements | Bubble', module)
+  .addDecorator(withMountTrigger)
+  .addDecorator(withChatLayout)
+  .addDecorator(withKnobs);
+
+storiesPerf.add('Performance Test', () => {
+  const bubblesCount = number('Bubbles count', 100, { range: true, min: 1, max: 10000 });
+  const imgSize = number('Image size (px)', 100, { range: true, min: 40, max: 500 });
+  const image = img({ class: 'raw', src: `https://picsum.photos/${imgSize}/${imgSize}` });
+  const createBubble = (container: HTMLElement) => {
+    const out = boolean('Out', false);
+    const i = img({ class: 'raw', src: image.src });
+    const bubbleControl = bubble({ out, masked: true, onlyMedia: true }, i);
+    const isFirst = boolean('First', true);
+    const isLast = boolean('Last', true);
+    getInterface(bubbleControl).updateBorders(isFirst, isLast);
+    bubbleControl.style.position = 'absolute';
+    bubbleControl.style.top = `${Math.random() * (container.clientHeight - imgSize)}px`;
+    bubbleControl.style.left = `${Math.random() * (container.clientWidth - imgSize)}px`;
+    return bubbleControl;
+  };
+  const fillWithBubbles = (container: HTMLElement) => {
+    const d = div({ style: { width: '100%', height: '100%' } });
+    for (let i = 0; i < bubblesCount; i++) {
+      d.append(createBubble(container));
+    }
+    container.append(d);
+  };
+  const container = div({ style: { position: 'relative', width: '100%', height: '100%' } });
+  image.onload = () => {
+    setTimeout(() => {
+      console.time('bubble');
+      fillWithBubbles(container);
+      console.timeEnd('bubble');
+    }, 0);
+  }
+  return container;
 });
