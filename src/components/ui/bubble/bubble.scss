@@ -5,15 +5,6 @@
   position: relative;
   min-height: 30PX;
 
-  &.last.masked {
-    margin-left: -7PX;
-  }
-
-  &.out.last.masked {
-    margin-left: 0;
-    margin-right: -7PX;
-  }
-
   &.last.masked &__content>* {
     margin-left: 7PX;
   }

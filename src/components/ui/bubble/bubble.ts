@@ -11,14 +11,26 @@ export type BubbleInterface = {
   updateBorders: (first: boolean, last: boolean) => void;
 };
 
-export default function bubble(out: boolean, masked: boolean, onlyMedia: boolean, ...children: Node[]) {
+interface Props {
+  className?: string,
+  out?: boolean;
+  masked?: boolean;
+  onlyMedia?: boolean;
+}
+
+export default function bubble({
+  className = '',
+  out = false,
+  masked = false,
+  onlyMedia = false,
+}: Props, ...children: Node[]) {
   const shadow = div`.bubble__shadow`();
   const background = div`.bubble__background`();
   const content = div`.bubble__content`(...children);
 
   const layers = onlyMedia ? [shadow, content] : [shadow, background, content];
 
-  const element = div`.bubble${masked ? 'masked' : ''}${isMac ? 'svg' : ''}`(...layers);
+  const element = div`.bubble${className}${masked ? 'masked' : ''}${isMac ? 'svg' : ''}`(...layers);
 
   if (out) {
     element.classList.add('out');
