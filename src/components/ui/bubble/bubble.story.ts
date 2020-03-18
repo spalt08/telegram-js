@@ -60,33 +60,31 @@ const storiesPerf = storiesOf('UI Elements | Bubble', module)
 storiesPerf.add('Performance Test', () => {
   const bubblesCount = number('Bubbles count', 100, { range: true, min: 1, max: 10000 });
   const imgSize = number('Image size (px)', 100, { range: true, min: 40, max: 500 });
+  const out = boolean('Out', false);
+  const isFirst = boolean('First', true);
+  const isLast = boolean('Last', true);
   const image = img({ class: 'raw', src: `https://picsum.photos/${imgSize}/${imgSize}` });
-  const createBubble = (container: HTMLElement) => {
-    const out = boolean('Out', false);
+  const createBubble = (cWidth: number, cHeight: number) => {
     const i = img({ class: 'raw', src: image.src });
     const bubbleControl = bubble({ out, masked: true, onlyMedia: true }, i);
-    const isFirst = boolean('First', true);
-    const isLast = boolean('Last', true);
     getInterface(bubbleControl).updateBorders(isFirst, isLast);
     bubbleControl.style.position = 'absolute';
-    bubbleControl.style.top = `${Math.random() * (container.clientHeight - imgSize)}px`;
-    bubbleControl.style.left = `${Math.random() * (container.clientWidth - imgSize)}px`;
+    bubbleControl.style.left = `${Math.random() * (cWidth - imgSize)}px`;
+    bubbleControl.style.top = `${Math.random() * (cHeight - imgSize)}px`;
     return bubbleControl;
   };
   const fillWithBubbles = (container: HTMLElement) => {
-    const d = div({ style: { width: '100%', height: '100%' } });
+    const width = container.clientWidth;
+    const height = container.clientHeight;
     for (let i = 0; i < bubblesCount; i++) {
-      d.append(createBubble(container));
+      container.append(createBubble(width, height));
     }
-    container.append(d);
   };
   const container = div({ style: { position: 'relative', width: '100%', height: '100%' } });
   image.onload = () => {
-    setTimeout(() => {
-      console.time('bubble');
-      fillWithBubbles(container);
-      console.timeEnd('bubble');
-    }, 0);
+    console.time('bubble');
+    fillWithBubbles(container);
+    console.timeEnd('bubble');
   }
   return container;
 });
