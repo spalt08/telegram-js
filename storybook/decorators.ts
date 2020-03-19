@@ -13,17 +13,19 @@ export function withMountTrigger(getStory: StoryFn<Node>, context: StoryContext)
   return element;
 }
 
-const centeredWrappers: Record<string, Node> = {};
+const centeredWrappers = new WeakMap<Node, Node>();
 
+/**
+ * Use it instead of @storybook/addon-centered/html when you need the story DOM to be not reattached on a knob change
+ */
 export function centered(getStory: StoryFn<Node>, context?: StoryContext) {
   const next = getStory(context);
 
-  if (!context) return '';
-  if (!centeredWrappers[context.id] || centeredWrappers[context.id].firstChild !== next) {
-    centeredWrappers[context.id] = div`.storybook__static-centered`(next);
+  if (!centeredWrappers.has(next)) {
+    centeredWrappers.set(next, div`.storybook__static-centered`(next));
   }
 
-  return centeredWrappers[context.id];
+  return centeredWrappers.get(next)!;
 }
 
 export function withEmptyFileCache(creator: () => Node) {
