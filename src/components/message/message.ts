@@ -138,7 +138,7 @@ const renderMessage = (msg: Message.message, peer: Peer) => {
   if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document' && getAttributeVideo(msg.media.document)) {
     const extraClass = msg.message ? 'with-photo' : 'only-photo';
     const previewEl = videoPreview(msg.media.document, {
-      fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined });
+      fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined }, peer, msg);
     const messageEl = msg.message ? div`.message__text`(formattedMessage(msg)) : nothing;
 
     return (

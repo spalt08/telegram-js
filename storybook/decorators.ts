@@ -5,6 +5,7 @@ import { triggerMountRecursive } from 'core/dom';
 import { div } from 'core/html';
 import chamomile from 'assets/chamomile-blurred.jpg';
 import { emptyCache } from 'client/media';
+import popup from 'components/popup/popup';
 import 'components/routes/home/home.scss';
 
 export function withMountTrigger(getStory: StoryFn<Node>, context: StoryContext) {
@@ -40,6 +41,9 @@ export function withChamomileBackground(creator: () => Node) {
   return el;
 }
 
+const popupEl = popup();
+triggerMountRecursive(popupEl);
+
 export function withChatLayout(creator: () => Node) {
   return (
     div`.home`(
@@ -48,6 +52,7 @@ export function withChatLayout(creator: () => Node) {
           creator(),
         ),
       ),
+      popupEl,
     )
   );
 }
