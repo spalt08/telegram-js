@@ -1,10 +1,6 @@
 import { div } from 'core/html';
-import { useInterface } from 'core/hooks';
+import { useInterface, WithInterfaceHook } from 'core/hooks';
 import './bubble.scss';
-
-export type BubbleInterface = {
-  updateBorders: (first: boolean, last: boolean) => void;
-};
 
 interface Props {
   className?: string,
@@ -40,3 +36,5 @@ export default function bubble({
     updateBorders,
   });
 }
+
+export type BubbleInterface = ReturnType<typeof bubble> extends WithInterfaceHook<infer I> ? I : never;
