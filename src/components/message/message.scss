@@ -58,81 +58,41 @@ $messageDistance: 4PX;
     width: auto;
   }
 
-  &__bubble {
-    background: var(--bubble-background);
-    overflow: visible;
-    position: relative;
-    border-radius: 6px 12.5px 12.5px 6px;
+  & .only-sticker, &.out &.only-sticker {
+    background: none;
+    display: flex;
+    align-items: flex-start;
 
+    .message__reply {
+      max-width: 400px;
+    }
+  }
+  & .only-sticker { position: relative; flex-direction: row-reverse; }
+  &.out .only-sticker { flex-direction: row; }
+
+  & .as-emoji { padding-top: 10px; }
+
+  &.with-video {
+    transform: translate3d(0, 0, 0);
+  }
+
+  & .only-photo .message__date, & .only-sticker .message__date {
+    background: rgba(0, 0, 0, 0.3);
+    color: #FFFFFF;
+    display: inline-block;
+    padding: 4px 6px 3px;
+    border-radius: 16px;
+    right: 4px;
+    z-index: 2;
+  }
+
+  .bubble {
     &.with-webpage { max-width: 440px; }
     &.with-webpage-media { width: 340px; }
-    &.with-photo {
-      width: 320px;
-
-      .photo {
-        border-radius: 4px;
-        overflow: hidden;
-      }
-    }
-
-    &.as-emoji { padding-top: 10px; }
-
-    &.only-sticker, .message.out &.only-sticker {
-      background: none;
-      display: flex;
-      align-items: flex-start;
-
-      &::after {
-        background: none !important;
-        content: none !important;
-      }
-
-      &::before {
-        display: none !important;
-        content: none !important;
-      }
-
-      .message__reply {
-        max-width: 400px;
-      }
-    }
-    &.only-sticker { flex-direction: row-reverse; }
-    .message.out &.only-sticker { flex-direction: row; }
+    &.with-photo { width: 320px; }
 
     &.only-photo {
-      background: none;
       max-width: 320px;
-      max-height: 320px;
-      overflow: hidden;
-      box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.15);
-
-      &::after {
-        background: none !important;
-        content: none !important;
-      }
-
-      &::before {
-        display: none !important;
-        content: none !important;
-      }
-    }
-
-    &.with-video {
-      transform: translate3d(0, 0, 0);
-    }
-
-    .message.last &.only-photo {
-      border-bottom-left-radius: 12.5px;
-    }
-
-    &.only-photo .message__date, &.only-sticker .message__date {
-      background: rgba(0, 0, 0, 0.3);
-      color: #FFFFFF;
-      display: inline-block;
-      padding: 4px 6px 3px;
-      border-radius: 16px;
-      right: 4px;
-      z-index: 2;
     }
 
     .message.out &.only-photo .message__date, .message.out &.only-sticker .message__date {
@@ -142,20 +102,6 @@ $messageDistance: 4PX;
 
     .message.out.unread &.only-photo .message__date {
       background-image: url(~assets/message-status-unread-white@2x.png) !important;
-    }
-
-    &::before {
-      display: block;
-      content: "";
-      position: absolute;
-      top: -10px;
-      left: -10px;
-      right: -10px;
-      bottom: -10px;
-      border-style: solid;
-      border-width: 25px;
-      z-index: -1;
-      border-image: url(~assets/message_in-central@2x.png) 49 49 49 49 fill;
     }
   }
 
@@ -316,35 +262,9 @@ $messageDistance: 4PX;
     &__title { display: block; }
   }
 
-  &.last .message {
-    &__bubble{
-      border-bottom-left-radius: 0;
-
-      &::after {
-        position: absolute;
-        left: -7px;
-        width: 7px;
-        bottom: 0px;
-        height: 17px;
-        z-index: 2;
-        content: '';
-        background-image: url(~assets/message_corner@2x.png);
-        background-size: 100%;
-      }
-    }
-  }
-
   &.out .message {
     &__align {
       justify-content: flex-end;
-    }
-
-    &__bubble {
-      border-radius: 12.5px 6px 6px 12.5px;
-
-      &.only-photo, &.only-sticker {
-        background: none;
-      }
     }
 
     &__date {
@@ -371,43 +291,12 @@ $messageDistance: 4PX;
     background-image: url(~assets/message-status-unread@2x.png) !important;
   }
 
-  &.first.out .message {
-    &__bubble {
-      border-top-right-radius: 12.5px;
-    }
-  }
-
-  &.last.out .message {
-    &__bubble {
-      border-bottom-right-radius: 0;
-
-      &.only-photo {
-        border-bottom-right-radius: 12.5px;
-      }
-
-      &::after {
-        background-image: url(~assets/message_corner-out@2x.png);
-        left: auto;
-        right: -7px;
-      }
-    }
-  }
-
   &.chat &__align { padding-left: 58px; }
   &.chat.out &__align, &.chat.last &__align { padding-left: 20px; }
   &.chat &__align.with-reply-markup.rm-rows-1 &__profile { margin-bottom: 45px; }
   &.chat &__align.with-reply-markup.rm-rows-2 &__profile { margin-bottom: 85px; }
   &.chat &__align.with-reply-markup.rm-rows-3 &__profile { margin-bottom: 125px; }
   &.chat &__align.with-reply-markup.rm-rows-4 &__profile { margin-bottom: 165px; }
-
-  // shadows
-  &.first &__bubble::before { border-image: url(~assets/message_in-upper@2x.png) 49 49 49 49 fill; }
-  &.last &__bubble::before { border-image: url(~assets/message_in-lower@2x.png) 49 49 49 49 fill; }
-  &.first.last &__bubble::before { border-image: url(~assets/message_in-whole@2x.png) 49 49 49 49 fill; }
-  &.out &__bubble::before { border-image: url(~assets/message_out-central@2x.png) 49 49 49 49 fill; }
-  &.out.first &__bubble::before { border-image: url(~assets/message_out-upper@2x.png) 49 49 49 49 fill; }
-  &.out.last &__bubble::before { border-image: url(~assets/message_out-lower@2x.png) 49 49 49 49 fill; }
-  &.out.first.last &__bubble::before { border-image: url(~assets/message_out-whole@2x.png) 49 49 49 49 fill; }
 
   &.out {
     --bubble-background: #eeffde;
