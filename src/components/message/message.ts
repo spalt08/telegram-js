@@ -3,7 +3,7 @@ import { useInterface, hasInterface, getInterface, useOnMount } from 'core/hooks
 import { mount, unmount } from 'core/dom';
 import { messageCache, dialogCache } from 'cache';
 import { Peer, Message, Dialog } from 'client/schema';
-import { formattedMessage, bubble, BubbleInterface, messageInfo } from 'components/ui';
+import { formattedMessage, bubble, BubbleInterface, messageInfo, MessageInfoInterface } from 'components/ui';
 import { profileAvatar, profileTitle } from 'components/profile';
 import webpagePreview from 'components/media/webpage/preview';
 import photoPreview from 'components/media/photo/preview';
@@ -21,6 +21,7 @@ import { todoAssertHasValue } from 'helpers/other';
 import messageSerivce from './service';
 import messageReply from './reply';
 import replyMarkupRenderer from './reply_markup';
+
 import './message.scss';
 
 type MessageInterface = {
@@ -37,7 +38,7 @@ const now = new Date();
 const timezoneOffset = now.getTimezoneOffset() * 60;
 
 // message renderer
-const renderMessage = (msg: Message.message, peer: Peer) => {
+const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info: Node } => {
   const out = msg.out ?? false;
   const info = messageInfo({ className: 'message__info', status: 'read' }, msg);
   const hasReply = !!msg.reply_to_msg_id;
@@ -54,25 +55,27 @@ const renderMessage = (msg: Message.message, peer: Peer) => {
   if (!msg.media || msg.media._ === 'messageMediaEmpty') {
     // Display only emoji
     if (msg.message.length <= 6 && isEmoji(msg.message)) {
-      return (
-        div`.as-emoji.only-sticker`(
+      return {
+        message: div`.as-emoji.only-sticker`(
           reply,
           div`.message__emoji${`e${msg.message.length / 2}`}`(text(msg.message)),
           info,
-        )
-      );
+        ),
+        info,
+      };
     }
 
     // regular
-    return (
-      bubble(
+    return {
+      message: bubble(
         { out },
         title,
         reply,
         div`.message__text`(formattedMessage(msg)),
         info,
-      )
-    );
+      ),
+      info,
+    };
   }
 
   // with webpage
@@ -80,16 +83,17 @@ const renderMessage = (msg: Message.message, peer: Peer) => {
     const type = msg.media.webpage._ === 'webPage' ? msg.media.webpage.type : '';
     const extraClass = (type === 'video' || type === 'photo') ? 'with-webpage-media' : 'with-webpage';
 
-    return (
-      bubble(
+    return {
+      message: bubble(
         { out, className: extraClass },
         title,
         reply,
         div`.message__text`(formattedMessage(msg)),
         msg.media.webpage._ === 'webPage' ? div`.message__media-padded`(webpagePreview(msg.media.webpage)) : nothing,
         info,
-      )
-    );
+      ),
+      info,
+    };
   }
 
   // with photo
@@ -102,28 +106,30 @@ const renderMessage = (msg: Message.message, peer: Peer) => {
     if (!hasMessage && photoEl instanceof Element) photoEl.classList.add('raw');
     const messageEl = msg.message ? div`.message__text`(formattedMessage(msg)) : nothing;
 
-    return (
-      bubble(
+    return {
+      message: bubble(
         { out, className: extraClass, masked: !hasMessage, onlyMedia: !hasReply && !hasMessage },
         reply,
         photoEl || nothing,
         messageEl,
         info,
-      )
-    );
+      ),
+      info,
+    };
   }
 
   // with sticker
   if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document' && getAttributeSticker(msg.media.document)) {
     const attr = getAttributeSticker(msg.media.document);
 
-    return (
-      div`.only-sticker`(
+    return {
+      message: div`.only-sticker`(
         reply,
         stickerRenderer(msg.media.document, { size: '200px', autoplay: true, onClick: () => attr && main.showPopup('stickerSet', attr.stickerset) }),
         info,
-      )
-    );
+      ),
+      info,
+    };
   }
 
   // with video gif
@@ -135,15 +141,16 @@ const renderMessage = (msg: Message.message, peer: Peer) => {
     if (!hasMessage && video instanceof Element) video.classList.add('raw');
     const messageEl = msg.message ? div`.message__text`(formattedMessage(msg)) : nothing;
 
-    return (
-      bubble(
+    return {
+      message: bubble(
         { out, className: extraClass, masked: !hasMessage, onlyMedia: !hasReply && !hasMessage },
         reply,
         video,
         messageEl,
         info,
-      )
-    );
+      ),
+      info,
+    };
   }
 
   // with video
@@ -155,71 +162,77 @@ const renderMessage = (msg: Message.message, peer: Peer) => {
     if (!hasMessage && previewEl instanceof Element) previewEl.classList.add('raw');
     const messageEl = hasMessage ? div`.message__text`(formattedMessage(msg)) : nothing;
 
-    return (
-      bubble(
+    return {
+      message: bubble(
         { out, className: extraClass, masked: !hasMessage, onlyMedia: !hasReply && !hasMessage },
         reply,
         previewEl || nothing,
         messageEl,
         info,
-      )
-    );
+      ),
+      info,
+    };
   }
 
   // with audio
   if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document' && getAttributeAudio(msg.media.document)) {
     const previewEl = audio(msg.media.document);
 
-    return (
-      bubble(
+    return {
+      message: bubble(
         { out },
         reply,
         div`.message__media-padded`(previewEl),
         info,
-      )
-    );
+      ),
+      info,
+    };
   }
 
   // with document
   if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document') {
     const messageEl = msg.message ? div`.message__text`(formattedMessage(msg)) : nothing;
 
-    return (
-      bubble(
+    return {
+      message: bubble(
         { out },
         reply,
         div`.message__media-padded`(documentFile(msg.media.document)),
         messageEl,
         info,
-      )
-    );
+      ),
+      info,
+    };
   }
 
   // console.log(msg.media);
 
   // fallback
-  return (
-    bubble(
+  return {
+    message: bubble(
       { out },
       title,
       reply,
       div`.message__text.fallback`(
         text('This type of message is not implemented yet'),
       ),
-    )
-  );
+      info,
+    ),
+    info,
+  };
 };
 
 export default function message(id: string, peer: Peer, onUpdateHeight?: (id: string) => void) {
   const element = div`.message`();
   const subject = messageCache.useItemBehaviorSubject(element, id);
 
-  let container: HTMLElement | undefined;
+  let container: Node | undefined;
   let aligner: HTMLElement | undefined;
-  let wrapper: HTMLElement | undefined;
-  let renderedMessage: HTMLElement | undefined;
-  // let dayLabel: HTMLElement | undefined;
-  let profilePicture: HTMLElement | undefined;
+  let wrapper: Node | undefined;
+  let renderedMessage: Node | undefined;
+  let renderedInfo: Node | undefined;
+  // let dayLabel: Node | undefined;
+  let profilePicture: Node | undefined;
   let replyMarkup: Node | undefined;
 
   // previous message before update
@@ -257,26 +270,34 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
       wrapper = div`.message__wrap`();
       aligner = div`.message__align`(wrapper);
       mount(container, aligner);
-
-      // if unread
-      const dialog = dialogCache.get(peerToId(peer));
-      if (dialog?._ === 'dialog' && dialog.read_outbox_max_id < msg.id) {
-        element.classList.add('unread');
-
-        const unsubscribe = dialogCache.watchItem(peerToId(peer), (nextDialog: Dialog) => {
-          if (nextDialog._ === 'dialog' && nextDialog.read_outbox_max_id >= msg.id) {
-            element.classList.remove('unread');
-            unsubscribe();
-          }
-        });
-      }
     }
 
     // re-rendering
     if (!renderedMessage || !cached || (cached._ === 'message' && msg.message !== cached.message)) {
       if (renderedMessage) unmount(renderedMessage);
 
-      renderedMessage = renderMessage(msg, peer);
+      const rm = renderMessage(msg, peer);
+
+      renderedMessage = rm.message;
+      renderedInfo = rm.info;
+
+      // if unread
+      const dialog = dialogCache.get(peerToId(peer));
+      if (dialog?._ === 'dialog' && dialog.read_outbox_max_id < msg.id) {
+        if (hasInterface<MessageInfoInterface>(renderedInfo)) {
+          getInterface(renderedInfo).updateStatus('unread');
+
+          const unsubscribe = dialogCache.watchItem(peerToId(peer), (nextDialog: Dialog) => {
+            if (nextDialog._ === 'dialog' && nextDialog.read_outbox_max_id >= msg.id) {
+              if (hasInterface<MessageInfoInterface>(renderedInfo)) {
+                getInterface(renderedInfo).updateStatus('read');
+              }
+              unsubscribe();
+            }
+          });
+        }
+      }
+
       mount(wrapper, renderedMessage);
 
       if (onUpdateHeight) onUpdateHeight(id);

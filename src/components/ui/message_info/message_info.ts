@@ -1,6 +1,7 @@
 import { Message } from 'client/schema';
 import { div, text } from 'core/html';
 import { formatNumber } from 'helpers/other';
+import { WithInterfaceHook, useInterface } from 'core/hooks';
 import datetime from '../datetime/datetime';
 
 import './message_info.scss';
@@ -42,9 +43,21 @@ export default function messageInfo({ className, status }: Props, message: Messa
 
   element.classList.toggle('-no-message', !message.message);
   element.classList.toggle('-out', message.out);
+
+  let currentStatus: ReadStatus = status;
   if (message.out) {
     element.classList.add(`-${status}`);
   }
 
-  return element;
+  return useInterface(element, {
+    updateStatus: (newStatus: ReadStatus) => {
+      if (message.out && currentStatus !== newStatus) {
+        element.classList.remove(`-${currentStatus}`);
+        element.classList.add(`-${newStatus}`);
+        currentStatus = newStatus;
+      }
+    },
+  });
 }
+
+export type MessageInfoInterface = ReturnType<typeof messageInfo> extends WithInterfaceHook<infer I> ? I : never;

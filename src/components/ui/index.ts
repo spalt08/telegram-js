@@ -22,4 +22,4 @@ export { default as waveform } from './waveform/waveform';
 export { default as audioSeekbar } from './audio_seekbar/audio_seekbar';
 export { default as playButton } from './play_button/play_button';
 export { BubbleInterface, default as bubble } from './bubble/bubble';
-export { default as messageInfo } from './message_info/message_info';
+export { MessageInfoInterface, default as messageInfo } from './message_info/message_info';
