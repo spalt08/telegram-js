@@ -103,6 +103,20 @@ $messageDistance: 4PX;
     margin-bottom: 0;
   }
 
+  & .only-audio &__info, & .only-document &__info {
+    position: absolute;
+    right: 7PX;
+    bottom: 2PX;
+    z-index: 1;
+    transform: none;
+    margin-bottom: 0;
+  }
+
+  &:not(.out) .only-sticker &__info {
+    left: calc(100% - 50PX);
+    right: auto;
+  }
+
   &__text {
     padding: $messageBubblePadding;
     font-size: 15px;
