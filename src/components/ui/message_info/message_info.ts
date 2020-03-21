@@ -58,7 +58,10 @@ export default function messageInfo({ className, status }: Props, message: Messa
     element.title = new Date(message.date * 1000).toLocaleString();
   }
 
-  const onlyMedia = (!message.message || (message.message.length <= 6 && isEmoji(message.message))) && !!message.media && isMedia(message.media);
+  const media = message.media && isMedia(message.media);
+  const onlyMedia = (!message.message && media)
+    || (message.message.length <= 6 && isEmoji(message.message) && !message.media)
+    || (!message.message && message.media && media);
   element.classList.toggle('-only-media', onlyMedia);
   element.classList.toggle('-out', message.out);
 

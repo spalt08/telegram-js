@@ -85,7 +85,7 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
   }
 
   // with webpage
-  if (msg.media._ === 'messageMediaWebPage') {
+  if (msg.media._ === 'messageMediaWebPage' && msg.media.webpage._ !== 'webPageEmpty') {
     const type = msg.media.webpage._ === 'webPage' ? msg.media.webpage.type : '';
     const extraClass = (type === 'video' || type === 'photo') ? 'with-webpage-media' : 'with-webpage';
 
@@ -94,9 +94,8 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
         { out, className: extraClass },
         title,
         reply,
-        div`.message__text`(formattedMessage(msg)),
+        div`.message__text`(formattedMessage(msg), info),
         msg.media.webpage._ === 'webPage' ? div`.message__media-padded`(webpagePreview(msg.media.webpage)) : nothing,
-        info,
       ),
       info,
     };
