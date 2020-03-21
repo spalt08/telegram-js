@@ -1,10 +1,12 @@
-import { Message } from 'client/schema';
+import { Message, MessageMedia } from 'client/schema';
 import { div, text } from 'core/html';
 import { formatNumber } from 'helpers/other';
 import { WithInterfaceHook, useInterface } from 'core/hooks';
+import { getAttributeVideo, getAttributeSticker } from 'helpers/files';
 import datetime from '../datetime/datetime';
 
 import './message_info.scss';
+import { isEmoji } from 'helpers/message';
 
 type ReadStatus =
   | 'sending'
@@ -15,6 +17,21 @@ type ReadStatus =
 interface Props {
   className?: string,
   status: ReadStatus,
+}
+
+function isMedia(media: MessageMedia): boolean {
+  switch (media._) {
+    case 'messageMediaPhoto':
+    case 'messageMediaGeo':
+    case 'messageMediaGeoLive':
+      return true;
+    case 'messageMediaDocument':
+      return media.document && media.document._ !== 'documentEmpty'
+        ? !!(getAttributeVideo(media.document) || getAttributeSticker(media.document))
+        : false;
+    default:
+      return false;
+  }
 }
 
 export default function messageInfo({ className, status }: Props, message: Message.message) {
@@ -41,7 +58,8 @@ export default function messageInfo({ className, status }: Props, message: Messa
     element.title = new Date(message.date * 1000).toLocaleString();
   }
 
-  element.classList.toggle('-no-message', !message.message);
+  const onlyMedia = (!message.message || (message.message.length <= 6 && isEmoji(message.message))) && !!message.media && isMedia(message.media);
+  element.classList.toggle('-only-media', onlyMedia);
   element.classList.toggle('-out', message.out);
 
   let currentStatus: ReadStatus = status;

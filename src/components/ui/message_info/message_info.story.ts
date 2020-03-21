@@ -14,7 +14,7 @@ stories.add('Common Usage', () => {
   const msg = { ...commonMessage } as Message.message;
   msg.views = number('Views', 135600);
   msg.message = boolean('Only Media', false) ? '' : 'some text';
-  msg.post_author = text('Post Author', 'Pavel Durov');
+  msg.post_author = text('Post Author', 'Walter White');
   msg.out = boolean('Out', false);
   const status = optionsKnob('Status', { Sending: 'sending', Unread: 'unread', Read: 'read', Error: 'error' }, 'unread', { display: 'inline-radio' });
   if (boolean('Edited', false)) {

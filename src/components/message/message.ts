@@ -1,4 +1,4 @@
-import { div, text, nothing } from 'core/html';
+import { div, text, nothing, span } from 'core/html';
 import { useInterface, hasInterface, getInterface, useOnMount } from 'core/hooks';
 import { mount, unmount } from 'core/dom';
 import { messageCache, dialogCache } from 'cache';
@@ -37,6 +37,13 @@ type MessageInterface = {
 const now = new Date();
 const timezoneOffset = now.getTimezoneOffset() * 60;
 
+function messageText(msg: Message.message, info: Node) {
+  if (msg.message) {
+    return div`.message__text`(formattedMessage(msg), info);
+  }
+  return info;
+}
+
 // message renderer
 const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info: Node } => {
   const out = msg.out ?? false;
@@ -71,8 +78,7 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
         { out },
         title,
         reply,
-        div`.message__text`(formattedMessage(msg)),
-        info,
+        messageText(msg, info),
       ),
       info,
     };
@@ -104,15 +110,13 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
       fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined,
     });
     if (!hasMessage && photoEl instanceof Element) photoEl.classList.add('raw');
-    const messageEl = msg.message ? div`.message__text`(formattedMessage(msg)) : nothing;
 
     return {
       message: bubble(
         { out, className: extraClass, masked: !hasMessage, onlyMedia: !hasReply && !hasMessage },
         reply,
         photoEl || nothing,
-        messageEl,
-        info,
+        messageText(msg, info),
       ),
       info,
     };
@@ -139,15 +143,13 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
       fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined,
     });
     if (!hasMessage && video instanceof Element) video.classList.add('raw');
-    const messageEl = msg.message ? div`.message__text`(formattedMessage(msg)) : nothing;
 
     return {
       message: bubble(
         { out, className: extraClass, masked: !hasMessage, onlyMedia: !hasReply && !hasMessage },
         reply,
         video,
-        messageEl,
-        info,
+        messageText(msg, info),
       ),
       info,
     };
@@ -160,15 +162,13 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
       fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined,
     });
     if (!hasMessage && previewEl instanceof Element) previewEl.classList.add('raw');
-    const messageEl = hasMessage ? div`.message__text`(formattedMessage(msg)) : nothing;
 
     return {
       message: bubble(
         { out, className: extraClass, masked: !hasMessage, onlyMedia: !hasReply && !hasMessage },
         reply,
         previewEl || nothing,
-        messageEl,
-        info,
+        messageText(msg, info),
       ),
       info,
     };
@@ -176,14 +176,15 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
 
   // with audio
   if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document' && getAttributeAudio(msg.media.document)) {
+    const extraClass = hasMessage ? 'with-audio' : 'only-audio';
     const previewEl = audio(msg.media.document);
 
     return {
       message: bubble(
-        { out },
+        { out, className: extraClass },
         reply,
         div`.message__media-padded`(previewEl),
-        info,
+        messageText(msg, info),
       ),
       info,
     };
@@ -191,15 +192,13 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
 
   // with document
   if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document') {
-    const messageEl = msg.message ? div`.message__text`(formattedMessage(msg)) : nothing;
-
+    const extraClass = hasMessage ? 'with-document' : 'only-document';
     return {
       message: bubble(
-        { out },
+        { out, className: extraClass },
         reply,
         div`.message__media-padded`(documentFile(msg.media.document)),
-        messageEl,
-        info,
+        messageText(msg, info),
       ),
       info,
     };
@@ -210,13 +209,13 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
   // fallback
   return {
     message: bubble(
-      { out },
+      { out, className: 'not-implemented' },
       title,
       reply,
-      div`.message__text.fallback`(
-        text('This type of message is not implemented yet'),
+      div`.message__text`(
+        span`.fallback`(text('This type of message is not implemented yet')),
+        info,
       ),
-      info,
     ),
     info,
   };

@@ -87,11 +87,20 @@ $messageDistance: 4PX;
   }
 
   &__info {
+    user-select: none;
+    float: right;
+    transform: translate(3px, 9px);
+    margin-left: 5px;
+    margin-bottom: 3px;
+  }
+
+  & .only-sticker &__info, & .only-photo &__info, & .only-audio &__info, & .only-document &__info, & .with-webpage &__info {
     position: absolute;
     right: 5PX;
     bottom: 3PX;
-    user-select: none;
     z-index: 1;
+    transform: none;
+    margin-bottom: 0;
   }
 
   &__text {
@@ -99,13 +108,6 @@ $messageDistance: 4PX;
     font-size: 15px;
     white-space: pre-wrap;
     overflow-wrap: break-word;
-
-    &:after {
-      content: '';
-      display: inline-block;
-      width: 48px;
-      height: 12px;
-    }
 
     & a {
       color: #50A2E9;
@@ -126,7 +128,7 @@ $messageDistance: 4PX;
       color: #4e7391;
     }
 
-    &.fallback {
+    & .fallback {
       font-size: 14px;
       font-style: italic;
       color: #707579;
