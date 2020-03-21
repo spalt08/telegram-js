@@ -14,7 +14,7 @@
   g {
     transform: rotate(-180deg);
     transform-origin: 50% 50%;
-    transition-property: transform;
+    transition-property: transform, transform; // The first value is ignored in Safari in this element. If the repeat is removed, the animation will break.
   }
 
   &.-back {

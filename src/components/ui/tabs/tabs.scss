@@ -77,7 +77,7 @@
   }
 
   &__container {
-    flex: 1 100%; // If you set it to `auto`, the content won't have 100% height in Safari
+    flex: 1; // If you set it to `auto`, the content won't have 100% height in Safari
     overflow: hidden;
     min-height: 0;
 

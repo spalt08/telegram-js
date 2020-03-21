@@ -1,4 +1,4 @@
-/* eslint-disable import/no-extraneous-dependencies */
+/* eslint-disable import/no-extraneous-dependencies,no-console */
 import { storiesOf } from '@storybook/html';
 import centered from '@storybook/addon-centered/html';
 import { withKnobs, boolean, number } from '@storybook/addon-knobs';
@@ -85,6 +85,6 @@ storiesPerf.add('Performance Test', () => {
     console.time('bubble');
     fillWithBubbles(container);
     console.timeEnd('bubble');
-  }
+  };
   return container;
 });
