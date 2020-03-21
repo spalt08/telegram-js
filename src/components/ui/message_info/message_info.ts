@@ -1,17 +1,22 @@
 import { Message } from 'client/schema';
 import { div, text } from 'core/html';
-import { datetime } from 'components/ui';
 import { formatNumber } from 'helpers/other';
+import datetime from '../datetime/datetime';
 
 import './message_info.scss';
 
-export type ReadStatus =
+type ReadStatus =
   | 'sending'
   | 'unread'
   | 'read'
   | 'error';
 
-export default function messageInfo(message: Message.message, status: ReadStatus) {
+interface Props {
+  className?: string,
+  status: ReadStatus,
+}
+
+export default function messageInfo({ className, status }: Props, message: Message.message) {
   const children: Node[] = [];
   if (message.views && !message.out) {
     children.push(div`.messageInfo_views`(text(`${formatNumber(message.views)}`), div`.messageInfo__eye`()));
@@ -27,7 +32,7 @@ export default function messageInfo(message: Message.message, status: ReadStatus
   if (message.out) {
     children.push(div`.messageInfo__status`());
   }
-  const element = div`.messageInfo`(...children);
+  const element = div`.messageInfo${className}`(...children);
 
   if (message.edit_date && !message.edit_hide) {
     element.title = `${new Date(message.date * 1000).toLocaleString()}\nEdited: ${new Date(message.edit_date * 1000).toLocaleString()}`;

@@ -5,6 +5,7 @@ import { message, media } from 'services';
 import { getInterface, useListenWhileMounted, useObservable } from 'core/hooks';
 import { chatCache } from 'cache';
 import { Document } from 'client/schema';
+import { bubble } from 'components/ui';
 import stickMojiPanel from './input_stickmoji';
 import messageTextarea from './input_textarea';
 import './input.scss';
@@ -33,9 +34,9 @@ export default function messageInput() {
   });
 
   const container = div`.msginput__container`(
-    div`.msginput__bubble_wrap`(
-      stickmojiPanelEl,
-      div`.msginput__bubble`(
+    stickmojiPanelEl,
+    bubble({ className: 'msginput__bubble -first -last' },
+      div`.msginput__bubble-content`(
         emojiIcon,
         textarea,
         attachIcon,

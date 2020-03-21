@@ -1,5 +1,6 @@
 import { div } from 'core/html';
 import { useInterface, WithInterfaceHook } from 'core/hooks';
+
 import './bubble.scss';
 
 interface Props {

@@ -20,7 +20,7 @@ stories.add('Common Usage', () => {
   if (boolean('Edited', false)) {
     msg.edit_date = msg.date + 10000;
   }
-  const messageInfoControl = messageInfo(msg, status);
+  const messageInfoControl = messageInfo({ status }, msg);
   const maxWidth = number('Max width (px)', 300, { range: true, min: 1, max: 500 });
   if (maxWidth > 0) {
     messageInfoControl.style.maxWidth = `${maxWidth}px`;

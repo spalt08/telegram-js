@@ -3,7 +3,7 @@ import { useInterface, hasInterface, getInterface, useOnMount } from 'core/hooks
 import { mount, unmount } from 'core/dom';
 import { messageCache, dialogCache } from 'cache';
 import { Peer, Message, Dialog } from 'client/schema';
-import { formattedMessage, bubble, BubbleInterface } from 'components/ui';
+import { formattedMessage, bubble, BubbleInterface, messageInfo } from 'components/ui';
 import { profileAvatar, profileTitle } from 'components/profile';
 import webpagePreview from 'components/media/webpage/preview';
 import photoPreview from 'components/media/photo/preview';
@@ -20,7 +20,6 @@ import { main } from 'services';
 import { todoAssertHasValue } from 'helpers/other';
 import messageSerivce from './service';
 import messageReply from './reply';
-import messageDate from './date';
 import replyMarkupRenderer from './reply_markup';
 import './message.scss';
 
@@ -40,7 +39,7 @@ const timezoneOffset = now.getTimezoneOffset() * 60;
 // message renderer
 const renderMessage = (msg: Message.message, peer: Peer) => {
   const out = msg.out ?? false;
-  const date = messageDate(msg);
+  const info = messageInfo({ className: 'message__info', status: 'read' }, msg);
   const hasReply = !!msg.reply_to_msg_id;
   const hasMessage = !!msg.message;
   const reply = hasReply ? messageReply(msg.reply_to_msg_id!, peer, msg) : nothing;
@@ -59,7 +58,7 @@ const renderMessage = (msg: Message.message, peer: Peer) => {
         div`.as-emoji.only-sticker`(
           reply,
           div`.message__emoji${`e${msg.message.length / 2}`}`(text(msg.message)),
-          date,
+          info,
         )
       );
     }
@@ -71,7 +70,7 @@ const renderMessage = (msg: Message.message, peer: Peer) => {
         title,
         reply,
         div`.message__text`(formattedMessage(msg)),
-        date,
+        info,
       )
     );
   }
@@ -88,7 +87,7 @@ const renderMessage = (msg: Message.message, peer: Peer) => {
         reply,
         div`.message__text`(formattedMessage(msg)),
         msg.media.webpage._ === 'webPage' ? div`.message__media-padded`(webpagePreview(msg.media.webpage)) : nothing,
-        date,
+        info,
       )
     );
   }
@@ -109,7 +108,7 @@ const renderMessage = (msg: Message.message, peer: Peer) => {
         reply,
         photoEl || nothing,
         messageEl,
-        date,
+        info,
       )
     );
   }
@@ -122,7 +121,7 @@ const renderMessage = (msg: Message.message, peer: Peer) => {
       div`.only-sticker`(
         reply,
         stickerRenderer(msg.media.document, { size: '200px', autoplay: true, onClick: () => attr && main.showPopup('stickerSet', attr.stickerset) }),
-        date,
+        info,
       )
     );
   }
@@ -142,7 +141,7 @@ const renderMessage = (msg: Message.message, peer: Peer) => {
         reply,
         video,
         messageEl,
-        date,
+        info,
       )
     );
   }
@@ -162,7 +161,7 @@ const renderMessage = (msg: Message.message, peer: Peer) => {
         reply,
         previewEl || nothing,
         messageEl,
-        date,
+        info,
       )
     );
   }
@@ -176,7 +175,7 @@ const renderMessage = (msg: Message.message, peer: Peer) => {
         { out },
         reply,
         div`.message__media-padded`(previewEl),
-        date,
+        info,
       )
     );
   }
@@ -191,7 +190,7 @@ const renderMessage = (msg: Message.message, peer: Peer) => {
         reply,
         div`.message__media-padded`(documentFile(msg.media.document)),
         messageEl,
-        date,
+        info,
       )
     );
   }

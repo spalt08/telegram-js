@@ -76,16 +76,6 @@ $messageDistance: 4PX;
     transform: translate3d(0, 0, 0);
   }
 
-  & .only-photo .message__date, & .only-sticker .message__date {
-    background: rgba(0, 0, 0, 0.3);
-    color: #FFFFFF;
-    display: inline-block;
-    padding: 4px 6px 3px;
-    border-radius: 16px;
-    right: 4px;
-    z-index: 2;
-  }
-
   .bubble {
     &.with-webpage { max-width: 440px; }
     &.with-webpage-media { width: 340px; }
@@ -94,27 +84,14 @@ $messageDistance: 4PX;
     &.only-photo {
       max-width: 320px;
     }
-
-    .message.out &.only-photo .message__date, .message.out &.only-sticker .message__date {
-      color: #FFFFFF;
-      background-image: url(~assets/message-status-read-white@2x.png);
-    }
-
-    .message.out.unread &.only-photo .message__date {
-      background-image: url(~assets/message-status-unread-white@2x.png) !important;
-    }
   }
 
-  &__date {
+  &__info {
     position: absolute;
-    font-size: 11px;
-    color: #A3ADB6;
-    font-weight: 400;
     right: 5PX;
     bottom: 3PX;
-    line-height: 100%;
     user-select: none;
-    padding-right: 2PX;
+    z-index: 1;
   }
 
   &__text {
@@ -267,15 +244,6 @@ $messageDistance: 4PX;
       justify-content: flex-end;
     }
 
-    &__date {
-      padding-right: 16PX;
-      background-image: url(~assets/message-status-read@2x.png);
-      background-position: center right;
-      background-repeat: no-repeat;
-      background-size: 14PX auto;
-      color: var(--accent-color);
-    }
-
     &__text {
       & code, & pre {
         color: var(--accent-color);
@@ -285,10 +253,6 @@ $messageDistance: 4PX;
     &__title {
       display: none;
     }
-  }
-
-  &.out.unread .message__date {
-    background-image: url(~assets/message-status-unread@2x.png) !important;
   }
 
   &.chat &__align { padding-left: 58px; }
