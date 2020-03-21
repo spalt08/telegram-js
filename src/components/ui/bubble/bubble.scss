@@ -1,33 +1,23 @@
-@import '~styles/variables.scss';
-
 .bubble {
-  position: relative;
   --bubble-background: #ffffff;
+  position: relative;
   min-height: 30PX;
+  z-index: 0;
 
-  &.last.masked {
-    margin-left: -7PX;
-  }
-
-  &.last.out.masked {
-    margin-left: 0;
-    margin-right: -7PX;
-  }
-
-  &.last.masked &__content>* {
+  &.-last.-masked &__content>* {
     margin-left: 7PX;
   }
 
-  &.last.masked &__content>.raw {
+  &.-last.-masked &__content>.raw {
     margin-left: 0;
   }
 
-  &.last.out.masked &__content>* {
+  &.-out.-last.-masked &__content>* {
     margin-left: 0;
     margin-right: 7PX;
   }
 
-  &.last.out.masked &__content>.raw {
+  &.-out.-last.-masked &__content>.raw {
     margin-right: 0;
   }
 
@@ -40,8 +30,8 @@
     bottom: -10PX;
     border-style: solid;
     border-width: 25PX;
-    z-index: -1;
-    border-image: url(~assets/message_in-central@2x.png) 49 49 49 49 fill;
+    z-index: 0;
+    border-image: url(./images/shadow_in-central.png) 49 49 49 49 fill;
   }
 
   & &__background {
@@ -51,7 +41,7 @@
     right: 0;
     bottom: 0;
     background: var(--bubble-background);
-    z-index: -1;
+    z-index: 1;
   }
 
   & &__background,
@@ -59,120 +49,103 @@
     border-radius: 6PX 12.5PX 12.5PX 6PX;
   }
 
-  &.first &__background,
-  &.first &__content {
+  &.-first &__background,
+  &.-first &__content {
     border-top-left-radius: 12.5PX;
   }
 
-  &.last &__background,
-  &.last &__content {
+  &.-last &__background,
+  &.-last &__content {
     border-bottom-left-radius: 0;
   }
 
-  &.last &__background::after {
+  &.-last &__background::after {
     position: absolute;
     left: -7PX;
     width: 7PX;
     bottom: 0;
     height: 17PX;
-    z-index: 2;
     content: '';
-    background-image: url(~assets/message_corner@2x.png);
+    background-image: url(./images/bubble_tail-in.png);
     background-size: 100%;
   }
 
-  &.out &__background,
-  &.out &__content {
+  &.-out &__background,
+  &.-out &__content {
     border-radius: 12.5PX 6PX 6PX 12.5PX;
   }
 
-  &.first.out &__background,
-  &.first.out &__content {
+  &.-out.-first &__background,
+  &.-out.-first &__content {
     border-top-right-radius: 12.5PX;
   }
 
-  &.last.out &__background,
-  &.last.out &__content {
+  &.-out.-last &__background,
+  &.-out.-last &__content {
     border-bottom-right-radius: 0;
   }
 
-  &.last.out &__background::after {
-    background-image: url(~assets/message_corner-out@2x.png);
+  &.-out.-last &__background::after {
+    background-image: url(./images/bubble_tail-out.png);
     left: auto;
     right: -7PX;
   }
 
   // masks
-  &:not(.last) &__content,
-  &:not(.masked) &__content {
+  &:not(.-last) &__content,
+  &:not(.-masked) &__content {
     overflow: hidden;
   }
 
-  &.last.masked &__content {
+  &.-last.-masked &__content {
     margin-left: -7PX;
-    mask-border: url(~assets/bubble_in-last@2x.png) 30 30 30 43;
+    mask-border: url(./images/bubble_in-last.png) 30 30 30 43 / 15px 15px 15px 21px;
   }
 
-  &.first.last.masked &__content {
-    mask-border: url(~assets/bubble_in-whole@2x.png) 30 30 30 43;
+  &.-first.-last.-masked &__content {
+    mask-border: url(./images/bubble_in-first-last.png) 30 30 30 43 / 15px 15px 15px 21px;
   }
 
-  &.out.last.masked &__content {
+  &.-out.-last.-masked &__content {
     margin-left: 0;
     margin-right: -7PX;
-    mask-border: url(~assets/bubble_out-last@2x.png) 30 43 30 30;
+    mask-border: url(./images/bubble_out-last.png) 30 43 30 30 / 15px 21px 15px 15px;
   }
 
-  &.out.first.last.masked &__content {
-    mask-border: url(~assets/bubble_out-whole@2x.png) 30 43 30 30;
-  }
-
-  &.last.masked.svg &__content {
-    mask-border: url(~assets/bubble_in-last@2x.svg) 15 15 15 21;
-  }
-
-  &.first.last.masked.svg &__content {
-    mask-border: url(~assets/bubble_in-whole@2x.svg) 15 15 15 21;
-  }
-
-  &.out.last.masked.svg &__content {
-    mask-border: url(~assets/bubble_out-last@2x.svg) 15 21 15 15;
-  }
-
-  &.out.first.last.masked.svg &__content {
-    mask-border: url(~assets/bubble_out-whole@2x.svg) 15 21 15 15;
+  &.-out.-first.-last.-masked &__content {
+    mask-border: url(./images/bubble_out-first-last.png) 30 43 30 30 / 15px 21px 15px 15px;
   }
 
   // shadows
-  &.first &__shadow {
-    border-image: url(~assets/message_in-upper@2x.png) 49 49 49 49 fill;
+  &.-first &__shadow {
+    border-image: url(./images/shadow_in-upper.png) 49 49 49 49 fill;
   }
 
-  &.last &__shadow {
-    border-image: url(~assets/message_in-lower@2x.png) 49 49 49 49 fill;
+  &.-last &__shadow {
+    border-image: url(./images/shadow_in-lower.png) 49 49 49 49 fill;
   }
 
-  &.first.last &__shadow {
-    border-image: url(~assets/message_in-whole@2x.png) 49 49 49 49 fill;
+  &.-first.-last &__shadow {
+    border-image: url(./images/shadow_in-whole.png) 49 49 49 49 fill;
   }
 
-  &.out &__shadow {
-    border-image: url(~assets/message_out-central@2x.png) 49 49 49 49 fill;
+  &.-out &__shadow {
+    border-image: url(./images/shadow_out-central.png) 49 49 49 49 fill;
   }
 
-  &.out.first &__shadow {
-    border-image: url(~assets/message_out-upper@2x.png) 49 49 49 49 fill;
+  &.-out.-first &__shadow {
+    border-image: url(./images/shadow_out-upper.png) 49 49 49 49 fill;
   }
 
-  &.out.last &__shadow {
-    border-image: url(~assets/message_out-lower@2x.png) 49 49 49 49 fill;
+  &.-out.-last &__shadow {
+    border-image: url(./images/shadow_out-lower.png) 49 49 49 49 fill;
   }
 
-  &.out.first.last &__shadow {
-    border-image: url(~assets/message_out-whole@2x.png) 49 49 49 49 fill;
+  &.-out.-first.-last &__shadow {
+    border-image: url(./images/shadow_out-whole.png) 49 49 49 49 fill;
   }
 
-  &.out {
+  &.-out {
     --bubble-background: #eeffde;
     --accent-color: #4fae4f;
     --accent-color-inactive: #4fae4f;
@@ -183,26 +156,33 @@
   & &__content {
     display: flex;
     flex-direction: column;
-    z-index: 0;
+    position: relative;
+    z-index: 2;
   }
 
+  // Fallback for browsers that don't support mask-border (e.g. Firefox)
   @supports not(mask-border: url()) {
-    &.last.masked &__content, &.out.last.masked &__content {
+    &.-last.-masked, &.-out.-last.-masked {
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    &.-last.-masked &__content, &.-out.-last.-masked &__content {
       overflow: hidden;
       margin-left: 0;
       margin-right: 0;
     }
 
-    &.last.masked &__content {
+    &.-last.-masked &__content {
       border-bottom-left-radius: 6PX;
     }
 
-    &.out.last.masked &__content {
+    &.-out.-last.-masked &__content {
       border-bottom-left-radius: 12.5PX;
       border-bottom-right-radius: 6PX;
     }
 
-    &.last.masked &__background {
+    &.-last.-masked &__background {
       margin-left: 0;
       margin-right: 0;
       border-bottom-left-radius: 12.5px;
@@ -210,25 +190,25 @@
       &::after { content:none; }
     }
 
-    &.last.masked &__content>* {
+    &.-last.-masked &__content>* {
       margin-left: 0;
       margin-right: 0;
     }
 
-    &.last &__shadow {
-      border-image: url(~assets/message_in-central@2x.png) 49 49 49 49 fill;
+    &.-last.-masked &__shadow {
+      border-image: url(./images/shadow_in-central.png) 49 49 49 49 fill;
     }
   
-    &.first.last &__shadow {
-      border-image: url(~assets/message_in-upper@2x.png) 49 49 49 49 fill;
+    &.-first.-last.-masked &__shadow {
+      border-image: url(./images/shadow_in-upper.png) 49 49 49 49 fill;
     }
   
-    &.out.last &__shadow {
-      border-image: url(~assets/message_out-central@2x.png) 49 49 49 49 fill;
+    &.-out.-last.-masked &__shadow {
+      border-image: url(./images/shadow_out-central.png) 49 49 49 49 fill;
     }
   
-    &.out.first.last &__shadow {
-      border-image: url(~assets/message_out-upper@2x.png) 49 49 49 49 fill;
+    &.-out.-first.-last.-masked &__shadow {
+      border-image: url(./images/shadow_out-upper.png) 49 49 49 49 fill;
     }
   }
 }

@@ -1,34 +1,34 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { storiesOf } from '@storybook/html';
-import centered from '@storybook/addon-centered/html';
 import { action } from '@storybook/addon-actions';
-import { withKnobs, boolean as booleanKnob, number as numberKnob, text as textKnob } from '@storybook/addon-knobs';
-import { withMountTrigger } from 'storybook/decorators';
-
+import * as knobs from '@storybook/addon-knobs';
+import { centered, withMountTrigger } from 'storybook/decorators';
+import { BehaviorSubject } from 'rxjs';
 import { div } from 'core/html';
 import { getInterface } from 'core/hooks';
 import searchInput from './search_input';
 
 const stories = storiesOf('UI Elements | Search Input', module)
-  .addDecorator(withKnobs)
+  .addDecorator(knobs.withKnobs)
   .addDecorator(withMountTrigger)
   .addDecorator(centered);
 
-stories.add('Common', () => {
-  const value = textKnob('Initial value', 'A very long long long long text');
-  const placeholder = textKnob('Placeholder', 'Search');
-  const isLoading = booleanKnob('Loading', false);
-  const width = numberKnob('Width (px)', 265, { min: 0 });
+const placeholder = new BehaviorSubject('');
+const isLoading = new BehaviorSubject(false);
+const input = searchInput({
+  placeholder,
+  isLoading,
+  onChange: action('change'),
+  onFocus: action('focus'),
+  onBlur: action('blur'),
+});
+const element = div(input);
 
-  const input = searchInput({
-    placeholder,
-    isLoading,
-    onChange: action('change'),
-    onFocus: action('focus'),
-    onBlur: action('blur'),
-  });
-  getInterface(input).value = value;
-  return div({
-    style: { width: `${width}px` },
-  }, input);
+stories.add('Common', () => {
+  getInterface(input).value = knobs.text('Initial value', 'A very long long long long text');
+  placeholder.next(knobs.text('Placeholder', 'Search'));
+  isLoading.next(knobs.boolean('Loading', false));
+  element.style.width = `${knobs.number('Width (px)', 265, { min: 0 })}px`;
+
+  return element;
 });

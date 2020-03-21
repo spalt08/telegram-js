@@ -109,7 +109,7 @@ export function highlightLinks(message: string) {
   return span(...parts);
 }
 
-export function formattedMessage(message: Message.message) {
+export function formattedMessage(message: Message.message | string) {
   if (typeof message === 'string') return highlightLinks(message);
 
   const root = createTreeNode(message.message);

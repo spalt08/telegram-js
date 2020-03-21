@@ -1,0 +1,86 @@
+.messageInfo {
+  --foreground-color: #A0AAB3;
+  --eye-url: url(./images/eye@2x.png);
+
+  &.-out {
+    --foreground-color: #4FAE4E;
+    &.-error {
+      --foreground-color: #DF3F40;
+    }
+  }
+
+  &.-sending {
+    --status-url: url(./images/sending@2x.png) 0 0 / 17PX 14PX;
+  }
+
+  &.-unread {
+    --status-url: url(./images/unread@2x.png) 0 0 / 17PX 14PX;
+  }
+
+  &.-read {
+    --status-url: url(./images/read@2x.png) 0 0 / 17PX 14PX;
+  }
+
+  &.-error {
+    --status-url: url(./images/error@2x.png) 0 0 / 17PX 14PX;
+  }
+
+  &.-only-media {
+    padding-left: 4px;
+    padding-right: 4px;
+    --foreground-color: white;
+    --background-color: rgba(0, 0, 0, 0.3);
+    --eye-url: url(./images/eye-white@2x.png);
+    --status-url: url(./images/sending-white@2x.png) 0 0 / 17PX 14PX;
+
+    &.-sending {
+      --status-url: url(./images/sending-white@2x.png) 0 0 / 17PX 14PX;
+    }
+
+    &.-unread {
+      --status-url: url(./images/unread-white@2x.png) 0 0 / 17PX 14PX;
+    }
+
+    &.-read {
+      --status-url: url(./images/read-white@2x.png) 0 0 / 17PX 14PX;
+    }
+
+    &.-error {
+      --status-url: url(./images/error-white@2x.png) 0 0 / 17PX 14PX;
+    }
+  }
+
+  display: inline-flex;
+  align-items: center;
+  white-space: pre;
+  font-size: 12px;
+  background-color: var(--background-color, transparent);
+  border-radius: 100px;
+  color: var(--foreground-color, black);
+
+  &_views {
+    margin-right: 8px;
+    display: flex;
+    align-items: center;
+  }
+
+  &_author {
+    flex-shrink: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__eye {
+    margin-left: 2px;
+    width: 15PX;
+    height: 10PX;
+    background: var(--eye-url) 0 0 / 15PX 10PX;
+  }
+
+  &__status {
+    margin-left: 2px;
+    width: 17px;
+    height: 14px;
+    background: var(--status-url);
+  }
+}
