@@ -3,7 +3,7 @@
   flex-direction: column;
   overflow: hidden;
 
-  &__menu {
+  &__head {
     flex: none;
     height: 60px;
     display: flex;
@@ -11,13 +11,8 @@
     justify-content: space-between;
     align-items: center;
     padding: 0 20px;
-    cursor: not-allowed;
 
-    > * {
-      pointer-events: none;
-    }
-
-    &_icon {
+    &_button {
       flex: none;
       margin: 0 12px 0 -8px;
     }
@@ -27,24 +22,56 @@
     }
   }
 
-  &__dialogs {
-    overflow: hidden;
+  &__body {
     flex: 1;
-    display: flex;
-    flex-direction: column;
     position: relative;
-    max-height: calc(100% - 62px);
+  }
 
-    .dialogs {
-      height: 100%;
-      flex: 1 50%;
+  &__layer {
+    $transition-scale: 1.1;
+    $transition-duration: 160ms;
+    $transition-timing: ease-in-out;
 
-      &__spinner {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transition: all $transition-duration $transition-timing;
+    will-change: transform, opacity;
+
+    &.-down {
+      opacity: 0;
+      transform: scale(#{1 / $transition-scale});
+      pointer-events: none;
+    }
+
+    &.-up {
+      opacity: 0;
+      transform: scale($transition-scale);
+      pointer-events: none;
+    }
+
+    &.-appearFromUp {
+      animation: leftSidebarAppearFromUp $transition-duration $transition-timing;
+    }
+
+    @keyframes leftSidebarAppearFromUp {
+      from {
+        opacity: 0;
+        transform: scale($transition-scale);
       }
+    }
+  }
+
+  .dialogs {
+    height: 100%;
+
+    &__spinner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
     }
   }
 }
