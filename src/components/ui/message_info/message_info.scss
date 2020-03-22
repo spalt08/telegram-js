@@ -4,7 +4,7 @@
 
   &.-out {
     --foreground-color: #4FAE4E;
-    &.-error {
+    &.-error:not(.-only-media) {
       --foreground-color: #DF3F40;
     }
   }
