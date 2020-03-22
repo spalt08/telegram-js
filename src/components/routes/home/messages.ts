@@ -3,11 +3,11 @@ import { BehaviorSubject, combineLatest } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { button, div } from 'core/html';
 import { listen, mount, unmount } from 'core/dom';
-import { useObservable, getInterface } from 'core/hooks';
+import { useObservable } from 'core/hooks';
 import { message as service, dialog as dialogService } from 'services';
 import { Direction as MessageDirection } from 'services/message/types';
 import message from 'components/message/message';
-import { sectionSpinner, virtualScrollBar, VirtualizedList } from 'components/ui';
+import { sectionSpinner, VirtualizedList } from 'components/ui';
 import * as icons from 'components/icons';
 import messageInput from 'components/message/input/input';
 import { Peer } from 'client/schema';
@@ -101,8 +101,6 @@ export default function messages({ className = '' }: Props = {}) {
     });
   }
 
-  const scrollBar = virtualScrollBar((offset) => scroll.scrollToOffset(offset));
-
   scroll = new VirtualizedList({
     className: 'messages__list',
     items: itemsSubject,
@@ -113,7 +111,6 @@ export default function messages({ className = '' }: Props = {}) {
     renderer: (id: string) => message(id, service.activePeer.value!, (mid: string) => scroll.pendingRecalculate.push(mid)),
     onReachTop: () => service.loadMoreHistory(MessageDirection.Older),
     onReachBottom: () => service.loadMoreHistory(MessageDirection.Newer),
-    onScrollChange: getInterface(scrollBar).onScrollChange,
     onFocus: (id: string) => {
       updateDownButtonState(id);
 
@@ -126,7 +123,6 @@ export default function messages({ className = '' }: Props = {}) {
   });
 
   mount(historySection, scroll.container);
-  mount(historySection, scrollBar);
 
   useObservable(element, service.activePeer, () => {
     scroll.clear();

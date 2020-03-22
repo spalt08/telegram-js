@@ -1,4 +1,4 @@
-import { useInterface, useListenWhileMounted } from 'core/hooks';
+import { useInterface, useListenWhileMounted, WithInterfaceHook } from 'core/hooks';
 import { div } from 'core/html';
 import './virtual_scroll_bar.scss';
 import { listen } from 'core/dom';
@@ -47,3 +47,5 @@ export default function virtualScrollBar(scrollTo: (offset: number) => void) {
     },
   });
 }
+
+export type VirtualScrollBarInterface = ReturnType<typeof virtualScrollBar> extends WithInterfaceHook<infer I> ? I : never;

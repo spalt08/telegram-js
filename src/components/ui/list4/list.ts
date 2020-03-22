@@ -1,7 +1,10 @@
 import { BehaviorSubject } from 'rxjs';
 import { el, listen, mount, unmount, listenOnce } from 'core/dom';
-import { useOnMount, useListenWhileMounted, useMaybeObservable } from 'core/hooks';
+import { useOnMount, useListenWhileMounted, useMaybeObservable, getInterface, hasInterface } from 'core/hooks';
+import { div } from 'core/html';
 import { DistanceTree } from './distance_tree/distance_tree';
+import virtualScrollBar, { VirtualScrollBarInterface } from '../virtual_scroll_bar/virtual_scroll_bar';
+
 import './list.scss';
 
 type Props = {
@@ -21,7 +24,6 @@ type Props = {
   onFocus?: (item: string) => void,
   onReachTop?: () => void,
   onReachBottom?: () => void,
-  onScrollChange?: (totalHeight: number, viewportHeight: number, offset: number) => void,
 };
 
 type LocalPosition = {
@@ -51,6 +53,10 @@ export class VirtualizedList {
   /** HTML container: gets height and scrolls */
   public readonly container: HTMLElement;
 
+  public readonly scrollBar: HTMLElement;
+
+  public readonly scrollPane: HTMLElement;
+
   /** Scrollable view size */
   viewport: DOMRect;
 
@@ -75,7 +81,6 @@ export class VirtualizedList {
     onFocus?: (item: string) => void,
     onReachTop?: () => void,
     onReachBottom?: () => void,
-    onScrollChange?: (totalHeight: number, viewportHeight: number, offset: number) => void,
   };
 
   /** Renderer function for elements */
@@ -138,9 +143,11 @@ export class VirtualizedList {
     onFocus,
     onReachTop,
     onReachBottom,
-    onScrollChange,
   }: Props) {
-    this.container = el(tag || 'div', { className: `list ${className || ''} ${pivotBottom ? '-reversed' : ''}` });
+    this.scrollPane = div`.list__scroll-pane`();
+    this.scrollBar = virtualScrollBar((offset) => this.scrollToOffset(offset));
+
+    this.container = el(tag || 'div', { className: `list ${className || ''} ${pivotBottom ? '-reversed' : ''}` }, [this.scrollPane, this.scrollBar]);
 
     this.renderer = renderer;
     this.cfg = {
@@ -154,7 +161,6 @@ export class VirtualizedList {
       onReachBottom,
       highlightFocused,
       focusFromBottom,
-      onScrollChange,
     };
 
     // set initial viewport and handle its updates
@@ -171,11 +177,11 @@ export class VirtualizedList {
     });
 
     // on container scrolled
-    listen(this.container, 'scroll', () => {
+    listen(this.scrollPane, 'scroll', () => {
       // release focused
       // if (this.focused && !this.isLocked) this.focused = undefined;
 
-      const offset = this.container.scrollTop;
+      const offset = this.scrollPane.scrollTop;
 
       // prevent repeating or disabled events
       if (offset === this.scrollTop || this.isLocked) return;
@@ -186,7 +192,7 @@ export class VirtualizedList {
       // if (offset < 0) return;
       // if (offset + this.viewport.height > this.scrollHeight) return;
 
-      const width = this.container.scrollWidth;
+      const width = this.scrollPane.scrollWidth;
       if (width !== this.scrollWidth) this.updateViewport();
 
       this.virtualize();
@@ -196,9 +202,9 @@ export class VirtualizedList {
 
   updateViewport = () => {
     const oldWidth = this.viewport.width;
-    this.viewport = this.container.getBoundingClientRect();
-    this.scrollHeight = this.container.scrollHeight;
-    this.scrollWidth = this.container.scrollWidth;
+    this.viewport = this.scrollPane.getBoundingClientRect();
+    this.scrollHeight = this.scrollPane.scrollHeight;
+    this.scrollWidth = this.scrollPane.scrollWidth;
 
     if (oldWidth !== this.viewport.width) {
       this.heightsCache = {};
@@ -208,9 +214,9 @@ export class VirtualizedList {
   };
 
   updateScrollPosition = () => {
-    if (this.cfg.onScrollChange) {
+    if (hasInterface<VirtualScrollBarInterface>(this.scrollBar)) {
       const { outerDistance: firstItemOffset } = this.heights.getByIndex(this.first);
-      this.cfg.onScrollChange(this.heights.totalLength(), this.viewport.height, firstItemOffset + this.container.scrollTop);
+      getInterface(this.scrollBar).onScrollChange(this.heights.totalLength(), this.viewport.height, firstItemOffset + this.scrollPane.scrollTop);
     }
   };
 
@@ -237,7 +243,7 @@ export class VirtualizedList {
 
   // mount item
   mount(item: string, before?: string) {
-    mount(this.container, this.elements[item], before ? this.elements[before] : undefined);
+    mount(this.scrollPane, this.elements[item], before ? this.elements[before] : undefined);
     if (!this.heightsCache[item]) this.pendingRecalculate.push(item);
   }
 
@@ -245,7 +251,7 @@ export class VirtualizedList {
   mountBeforeNode(item: string, before?: Node) {
     const elm = this.elements[item];
     unmount(elm);
-    mount(this.container, elm, before);
+    mount(this.scrollPane, elm, before);
     if (!this.heightsCache[item]) this.pendingRecalculate.push(item);
   }
 
@@ -428,8 +434,8 @@ export class VirtualizedList {
       nextVisible.push(nextItem);
     }
 
-    this.container.scrollTop = this.prevScrollTop = this.scrollTop -= (this.scrollHeight - this.container.scrollHeight);
-    this.scrollHeight = this.container.scrollHeight;
+    this.scrollPane.scrollTop = this.prevScrollTop = this.scrollTop -= (this.scrollHeight - this.scrollPane.scrollHeight);
+    this.scrollHeight = this.scrollPane.scrollHeight;
     this.updateScrollPosition();
 
     let offset = 0;
@@ -550,11 +556,11 @@ export class VirtualizedList {
 
       for (let i = 0; i < count; i += 1) this.mount(this.current[++this.last]);
 
-      this.scrollHeight = this.container.scrollHeight;
+      this.scrollHeight = this.scrollPane.scrollHeight;
 
       // set initial scroll position
       if (this.cfg.pivotBottom) {
-        this.container.scrollTop = this.prevScrollTop = this.scrollTop = this.scrollHeight - this.viewport.height;
+        this.scrollPane.scrollTop = this.prevScrollTop = this.scrollTop = this.scrollHeight - this.viewport.height;
         this.updateScrollPosition();
       }
 
@@ -613,7 +619,7 @@ export class VirtualizedList {
 
     // update scroll inner content height
     if (prevFirst !== this.first || prevLast !== this.last) {
-      this.scrollHeight = this.container.scrollHeight;
+      this.scrollHeight = this.scrollPane.scrollHeight;
     }
 
     // keep scroll position if top elements was added
@@ -625,12 +631,12 @@ export class VirtualizedList {
       }
 
       this.scrollTop = Math.floor(this.scrollTop + deltaHeight);
-      const deferred = this.container.scrollTop = this.prevScrollTop = this.scrollTop;
+      const deferred = this.scrollPane.scrollTop = this.prevScrollTop = this.scrollTop;
       this.updateScrollPosition();
 
       // fix chrome
       requestAnimationFrame(() => {
-        if (Math.abs(this.container.scrollTop - deferred) > 20) this.container.scrollTop = this.prevScrollTop = this.scrollTop = deferred;
+        if (Math.abs(this.scrollPane.scrollTop - deferred) > 20) this.scrollPane.scrollTop = this.prevScrollTop = this.scrollTop = deferred;
       });
     }
 
@@ -643,13 +649,13 @@ export class VirtualizedList {
       }
 
       this.scrollTop = Math.floor(this.scrollTop - deltaHeight);
-      const deferred = this.container.scrollTop = this.prevScrollTop = this.scrollTop;
+      const deferred = this.scrollPane.scrollTop = this.prevScrollTop = this.scrollTop;
       this.updateScrollPosition();
 
       // fix chrome
       requestAnimationFrame(() => {
-        if (Math.abs(this.container.scrollTop - deferred) > 20) {
-          this.container.scrollTop = this.prevScrollTop = this.scrollTop = deferred;
+        if (Math.abs(this.scrollPane.scrollTop - deferred) > 20) {
+          this.scrollPane.scrollTop = this.prevScrollTop = this.scrollTop = deferred;
           this.updateScrollPosition();
         }
       });
@@ -763,8 +769,8 @@ export class VirtualizedList {
     this.updateViewport();
     this.updateHeights(true);
 
-    this.scrollHeight = this.container.scrollHeight;
-    this.container.scrollTop = this.prevScrollTop = this.scrollTop = this.getScrollToValue(item);
+    this.scrollHeight = this.scrollPane.scrollHeight;
+    this.scrollPane.scrollTop = this.prevScrollTop = this.scrollTop = this.getScrollToValue(item);
     this.updateTopElement();
     this.updateScrollPosition();
 
@@ -792,7 +798,7 @@ export class VirtualizedList {
     const finish = () => {
       this.isLocked = false;
       this.elements[item].classList.remove('focused');
-      this.container.scrollTop = this.prevScrollTop = this.scrollTop = this.getScrollToValue(item);
+      this.scrollPane.scrollTop = this.prevScrollTop = this.scrollTop = this.getScrollToValue(item);
       this.updateScrollPosition();
       this.virtualize();
     };
@@ -837,14 +843,14 @@ export class VirtualizedList {
       const percentage = Math.min(1, progress / duration);
 
       if (percentage > 0) {
-        this.container.scrollTo(0, y + ease(percentage) * dy);
+        this.scrollPane.scrollTo(0, y + ease(percentage) * dy);
         this.updateScrollPosition();
       }
 
       if (percentage < 1) {
         requestAnimationFrame(animateScroll);
       } else {
-        this.scrollTop = this.container.scrollTop;
+        this.scrollTop = this.scrollPane.scrollTop;
         elm.classList.remove('focused');
         this.isLocked = false;
         this.updateTopElement();
@@ -861,10 +867,10 @@ export class VirtualizedList {
     if (scrollTo.index < this.first || scrollTo.index > this.last) {
       this.scrollVirtualizedTo(this.heights.getByDistance(offset, true).item);
       const firstVisible = this.heights.getByIndex(this.first);
-      this.container.scrollTop = offset - firstVisible.outerDistance;
+      this.scrollPane.scrollTop = offset - firstVisible.outerDistance;
     } else {
       const firstVisible = this.heights.getByIndex(this.first);
-      this.container.scrollTop = offset - firstVisible.outerDistance;
+      this.scrollPane.scrollTop = offset - firstVisible.outerDistance;
     }
   }
 

@@ -24,7 +24,7 @@
   }
   &__before, &__after {
     flex-basis: 0;
-    // transition: flex-basis .05s ease-out;
+    transition: flex-basis .05s ease-out;
   }
 }
 
