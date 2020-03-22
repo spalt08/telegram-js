@@ -12,3 +12,22 @@ export function todoAssertHasValue<T>(value: T | null | undefined): T {
   }
   return value!;
 }
+
+const abbrev = 'KMB';
+
+function round(n: number, precision: number) {
+  const prec = 10 ** precision;
+  return Math.round(n * prec) / prec;
+}
+
+/**
+ * Formats number to a human readable format like 6K or 1.1M.
+ * @link https://stackoverflow.com/a/10600491
+ * @param n number to be formatted
+ */
+export function formatNumber(n: number) {
+  let base = Math.floor(Math.log(Math.abs(n)) / Math.log(1000));
+  const suffix = abbrev[Math.min(2, base - 1)];
+  base = abbrev.indexOf(suffix) + 1;
+  return suffix ? round(n / (1000 ** base), 1) + suffix : `${n}`;
+}

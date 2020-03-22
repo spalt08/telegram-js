@@ -3,6 +3,8 @@ import { div, strong, text } from 'core/html';
 import { profileTitle } from 'components/profile';
 import './service.scss';
 import { todoAssertHasValue } from 'helpers/other';
+import { userCache } from 'cache';
+import { userToTitle } from 'cache/accessors';
 
 export default function messageSerivce(originalPeer: Peer, msg: Message.messageService) {
   const peer: Peer = msg.from_id !== 0
@@ -16,7 +18,7 @@ export default function messageSerivce(originalPeer: Peer, msg: Message.messageS
       innerContent = [
         strong(profileTitle(peer)),
         text(' created the group '),
-        strong(text(msg.action.title)),
+        strong(text(`«${msg.action.title}»`)),
       ];
       break;
 
@@ -32,7 +34,7 @@ export default function messageSerivce(originalPeer: Peer, msg: Message.messageS
       innerContent = [
         strong(profileTitle(peer)),
         text(' changed title to '),
-        strong(text(msg.action.title)),
+        strong(text(`«${msg.action.title}»`)),
       ];
       break;
 
@@ -43,13 +45,16 @@ export default function messageSerivce(originalPeer: Peer, msg: Message.messageS
       ];
       break;
 
-    case 'messageActionChatAddUser':
+    case 'messageActionChatAddUser': {
+      const addedUsers = msg.action.users.map((userId) => userToTitle(userCache.get(userId)));
+
       innerContent = [
         strong(profileTitle(peer)),
-        text(' joined the group'),
+        text(' added '),
+        strong(text(addedUsers.join(', '))),
       ];
       break;
-
+    }
     case 'messageActionChatDeleteUser':
       innerContent = [
         strong(profileTitle(peer)),
@@ -62,7 +67,7 @@ export default function messageSerivce(originalPeer: Peer, msg: Message.messageS
       innerContent = [
         strong(profileTitle(peer)),
         text(' created channel '),
-        strong(text(msg.action.title)),
+        strong(text(`«${msg.action.title}»`)),
       ];
       break;
 
@@ -75,7 +80,7 @@ export default function messageSerivce(originalPeer: Peer, msg: Message.messageS
     case 'messageActionChannelMigrateFrom':
       innerContent = [
         text('Channel was created from group '),
-        strong(text(msg.action.title)),
+        strong(text(`«${msg.action.title}»`)),
       ];
       break;
 

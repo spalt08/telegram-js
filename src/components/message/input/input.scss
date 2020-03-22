@@ -44,6 +44,7 @@
   }
 
   &__container {
+    position: relative;
     margin: 0 auto;
     padding: 5px 0px 18px;
     max-width: 700px;
@@ -53,45 +54,14 @@
     align-items: flex-end;
   }
 
-  &__bubble_wrap {
-    position: relative;
-    flex: 1 50%;
-
-    &::after {
-      position: absolute;
-      left: 100%;
-      width: 7px;
-      bottom: 0;
-      height: 17px;
-      z-index: 2;
-      content: '';
-      background-image: url(~assets/message_corner@2x.png);
-      background-size: 100%;
-      transform: scaleX(-1);
-
-      @include safari-only() {
-        margin-left: -1px;
-      }
-    }
-
-    &::before {
-      position: absolute;
-      left: -10px;
-      top: -10px;
-      right: -10px;
-      bottom: -10px;
-      content: '';
-      border-image: url(~assets/message_out-whole@2x.png) 49 49 49 49 fill;
-      z-index: 0;
-      border-style: solid;
-      border-width: 25px;
+  &__bubble {
+    width: 100%;
+    .bubble__shadow, .bubble__background {
+      transform: scale(-1, 1);
     }
   }
 
-  &__bubble {
-    background: #FFFFFF;
-    border-radius: 10px;
-    border-bottom-right-radius: 0px;
+  &__bubble-content {
     width: 100%;
     min-height: 54px;
     z-index: 1;
@@ -103,6 +73,7 @@
   }
 
   &__btn {
+    flex-shrink: 0;
     display: inline-flex;
     justify-content: center;
     align-items: center;

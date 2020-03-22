@@ -76,16 +76,6 @@ $messageDistance: 4PX;
     transform: translate3d(0, 0, 0);
   }
 
-  & .only-photo .message__date, & .only-sticker .message__date {
-    background: rgba(0, 0, 0, 0.3);
-    color: #FFFFFF;
-    display: inline-block;
-    padding: 4px 6px 3px;
-    border-radius: 16px;
-    right: 4px;
-    z-index: 2;
-  }
-
   .bubble {
     &.with-webpage { max-width: 440px; }
     &.with-webpage-media { width: 340px; }
@@ -94,27 +84,37 @@ $messageDistance: 4PX;
     &.only-photo {
       max-width: 320px;
     }
-
-    .message.out &.only-photo .message__date, .message.out &.only-sticker .message__date {
-      color: #FFFFFF;
-      background-image: url(~assets/message-status-read-white@2x.png);
-    }
-
-    .message.out.unread &.only-photo .message__date {
-      background-image: url(~assets/message-status-unread-white@2x.png) !important;
-    }
   }
 
-  &__date {
+  &__info {
+    user-select: none;
+    float: right;
+    transform: translate(3px, 9px);
+    margin-left: 5px;
+    margin-bottom: 3px;
+  }
+
+  & .only-sticker &__info, & .only-photo &__info, & .only-audio &__info, & .only-document &__info, & .with-webpage &__info, & .with-webpage-media &__info {
     position: absolute;
-    font-size: 11px;
-    color: #A3ADB6;
-    font-weight: 400;
     right: 5PX;
     bottom: 3PX;
-    line-height: 100%;
-    user-select: none;
-    padding-right: 2PX;
+    z-index: 1;
+    transform: none;
+    margin-bottom: 0;
+  }
+
+  & .only-audio &__info, & .only-document &__info {
+    position: absolute;
+    right: 7PX;
+    bottom: 2PX;
+    z-index: 1;
+    transform: none;
+    margin-bottom: 0;
+  }
+
+  &:not(.out) .only-sticker &__info {
+    left: calc(100% - 50PX);
+    right: auto;
   }
 
   &__text {
@@ -122,13 +122,6 @@ $messageDistance: 4PX;
     font-size: 15px;
     white-space: pre-wrap;
     overflow-wrap: break-word;
-
-    &:after {
-      content: '';
-      display: inline-block;
-      width: 48px;
-      height: 12px;
-    }
 
     & a {
       color: #50A2E9;
@@ -149,7 +142,7 @@ $messageDistance: 4PX;
       color: #4e7391;
     }
 
-    &.fallback {
+    & .fallback {
       font-size: 14px;
       font-style: italic;
       color: #707579;
@@ -267,15 +260,6 @@ $messageDistance: 4PX;
       justify-content: flex-end;
     }
 
-    &__date {
-      padding-right: 16PX;
-      background-image: url(~assets/message-status-read@2x.png);
-      background-position: center right;
-      background-repeat: no-repeat;
-      background-size: 14PX auto;
-      color: var(--accent-color);
-    }
-
     &__text {
       & code, & pre {
         color: var(--accent-color);
@@ -285,10 +269,6 @@ $messageDistance: 4PX;
     &__title {
       display: none;
     }
-  }
-
-  &.out.unread .message__date {
-    background-image: url(~assets/message-status-unread@2x.png) !important;
   }
 
   &.chat &__align { padding-left: 58px; }
