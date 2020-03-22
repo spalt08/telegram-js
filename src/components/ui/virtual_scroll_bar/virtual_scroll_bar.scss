@@ -4,12 +4,7 @@
   bottom: 0;
   right: 0;
   width: 10px;
-  padding: 2px;
-  display: flex;
-  flex-direction: column;
-  border-radius: 5px;
-  background-color: transparent;
-  transition: background-color .3s, opacity 1s;
+  transition: opacity 1s;
   opacity: 0;
 
   &.visible {
@@ -17,17 +12,19 @@
   }
 
   &__thumb {
-    height: 100%;
-    min-height: 50px;
+    position: absolute;
+    left: 2px;
+    right: 2px;
     border-radius: 3px;
     background: rgba(0, 0, 0, .3);
-  }
-  &__before, &__after {
-    flex-basis: 0;
-    transition: flex-basis .05s ease-out;
-  }
-}
+    cursor: grab;
 
-.virtualScrollBar:hover {
-  background-color: rgba(0, 0, 0, .1);
+    .-grabbing & {
+      cursor: grabbing;
+    }
+  }
+
+  &.-grabbing, &:hover {
+    opacity: 1;
+  }
 }

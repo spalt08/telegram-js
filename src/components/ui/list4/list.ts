@@ -53,7 +53,7 @@ export class VirtualizedList {
   /** HTML container: gets height and scrolls */
   public readonly container: HTMLElement;
 
-  public readonly scrollBar: HTMLElement;
+  public readonly scrollBar: ReturnType<typeof virtualScrollBar>;
 
   public readonly scrollPane: HTMLElement;
 
@@ -147,7 +147,14 @@ export class VirtualizedList {
     this.scrollPane = div`.list__scroll-pane`();
     this.scrollBar = virtualScrollBar((offset) => this.scrollToOffset(offset));
 
-    this.container = el(tag || 'div', { className: `list ${className || ''} ${pivotBottom ? '-reversed' : ''}` }, [this.scrollPane, this.scrollBar]);
+    this.container = el(
+      tag || 'div',
+      { className: `list ${className || ''} ${pivotBottom ? '-reversed' : ''}` },
+      [
+        this.scrollPane,
+        this.scrollBar,
+      ],
+    );
 
     this.renderer = renderer;
     this.cfg = {
@@ -202,15 +209,16 @@ export class VirtualizedList {
 
   updateViewport = () => {
     const oldWidth = this.viewport.width;
-    this.viewport = this.scrollPane.getBoundingClientRect();
-    this.scrollHeight = this.scrollPane.scrollHeight;
-    this.scrollWidth = this.scrollPane.scrollWidth;
+    this.viewport = this.container.getBoundingClientRect();
+    this.scrollHeight = this.container.scrollHeight;
+    this.scrollWidth = this.container.scrollWidth;
 
     if (oldWidth !== this.viewport.width) {
       this.heightsCache = {};
       this.updateHeights(true);
       this.updateTopElement();
     }
+    this.updateScrollPosition();
   };
 
   updateScrollPosition = () => {
@@ -862,7 +870,6 @@ export class VirtualizedList {
   }
 
   scrollToOffset(offset: number) {
-    console.log(offset);
     const scrollTo = this.heights.getByDistance(offset, true);
     if (scrollTo.index < this.first || scrollTo.index > this.last) {
       this.scrollVirtualizedTo(this.heights.getByDistance(offset, true).item);
