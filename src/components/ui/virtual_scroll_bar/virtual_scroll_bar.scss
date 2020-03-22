@@ -19,12 +19,17 @@
     background: rgba(0, 0, 0, .3);
     cursor: grab;
 
-    .-grabbing & {
-      cursor: grabbing;
-    }
   }
 
-  &.-grabbing, &:hover {
+  body.-grabbing, &:hover {
     opacity: 1;
   }
+}
+
+body.-grabbing {
+  cursor: grabbing !important;
+}
+
+body.-grabbing * {
+  cursor: inherit !important;
 }

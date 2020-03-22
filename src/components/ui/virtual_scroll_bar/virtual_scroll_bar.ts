@@ -1,4 +1,4 @@
-import { useInterface, useListenWhileMounted, WithInterfaceHook } from 'core/hooks';
+import { useInterface, WithInterfaceHook, useOnUnmount } from 'core/hooks';
 import { div } from 'core/html';
 import { listen } from 'core/dom';
 
@@ -15,7 +15,7 @@ export default function virtualScrollBar(scrollTo: (offset: number) => void) {
   let clickOffset: number | undefined;
   let lastScrollUpdate: { totalHeight: number, viewportHeight: number, offset: number } | undefined;
 
-  // desiredHeight of thumb is calculated as totalHeight / viewportHeight,
+  // desiredHeight of thumb is calculated as clientHeight * (viewportHeight / totalHeight),
   // where totalHeight is total scroll height of virtualized container (including not materialized children).
   // actualHeight = max(MIN_THUMB_HEIGHT, desiredHeight)
   let thumbStyle = {
@@ -42,13 +42,7 @@ export default function virtualScrollBar(scrollTo: (offset: number) => void) {
     thumbStyle = { top, desiredHeight, actualHeight };
   };
 
-  listen(thumb, 'mousedown', (e) => {
-    e.preventDefault();
-    clickOffset = (e.clientY - thumb.getBoundingClientRect().top);
-    container.classList.add('-grabbing');
-  });
-
-  useListenWhileMounted(thumb, window, 'mousemove', (e: MouseEvent) => {
+  const onMouseMove = (e: MouseEvent) => {
     if (clickOffset && lastScrollUpdate) {
       e.preventDefault();
       const clientRect = container.getBoundingClientRect();
@@ -57,14 +51,30 @@ export default function virtualScrollBar(scrollTo: (offset: number) => void) {
       const virtualOffset = thumbOffset * (lastScrollUpdate.totalHeight / container.clientHeight);
       scrollTo(virtualOffset);
     }
-  });
+  };
 
-  useListenWhileMounted(thumb, window, 'mouseup', (e: MouseEvent) => {
+  const onMouseUp = (e: MouseEvent) => {
     if (clickOffset) {
-      container.classList.remove('-grabbing');
       e.preventDefault();
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      document.body.classList.remove('-grabbing');
       clickOffset = undefined;
     }
+  };
+
+  listen(thumb, 'mousedown', (e) => {
+    e.preventDefault();
+    clickOffset = (e.clientY - thumb.getBoundingClientRect().top);
+    document.body.classList.add('-grabbing');
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  });
+
+  useOnUnmount(thumb, () => {
+    window.removeEventListener('mousemove', onMouseMove);
+    window.removeEventListener('mouseup', onMouseUp);
   });
 
   let timer: any = 0;
