@@ -5,6 +5,7 @@ import { getInterface } from 'core/hooks';
 import { mount, unmount } from 'core/dom';
 import { roundButton, searchInput } from 'components/ui';
 import * as icons from 'components/icons';
+import { globalSearch } from 'services';
 import dialogs from './dialogs';
 import searchResult from './search_result';
 import './left_sidebar.scss';
@@ -32,19 +33,28 @@ export default function leftSidebar({ className = '' }: Props = {}) {
   const searchInputEl = searchInput({
     placeholder: 'Search',
     className: 'leftSidebar__head_search',
-    onFocus() {
+    isLoading: combineLatest([globalSearch.isSearching, isSearchActive]).pipe(map(([isSearching, isActive]) => isSearching && isActive)),
+    onFocus(value) {
+      globalSearch.search(value);
       isSearchFocused.next(true);
     },
     onBlur() {
       isSearchFocused.next(false);
     },
     onChange(value) {
+      globalSearch.search(value);
       isSearchFilled.next(!!value);
     },
   });
 
   const dialogsLayer = dialogs({ className: 'leftSidebar__layer' });
   let searchResultLayer: HTMLElement | undefined;
+
+  const handleButtonMousedown = (event: MouseEvent) => {
+    // To not blur the search input during the back button is being clicked.
+    // Otherwise the menu will be opened when the input is empty and the button is clicked.
+    event.preventDefault();
+  };
 
   const handleButtonClick = () => {
     if (isSearchActive.value) {
@@ -53,6 +63,8 @@ export default function leftSidebar({ className = '' }: Props = {}) {
       isSearchFilled.next(false); // Not called automatically by the input
     } else {
       // This is a mock of opening the menu
+      // eslint-disable-next-line no-console
+      console.log('Opening the menu...');
     }
   };
 
@@ -73,6 +85,7 @@ export default function leftSidebar({ className = '' }: Props = {}) {
         searchResultLayer = searchResult({
           className: 'leftSidebar__layer -appearFromUp',
           onTransitionEnd: handleSearchResultTransitionEnd,
+          onAnimationEnd: handleSearchResultTransitionEnd,
         });
         mount(dialogsLayer.parentNode!, searchResultLayer);
       }
@@ -88,7 +101,11 @@ export default function leftSidebar({ className = '' }: Props = {}) {
     div`.leftSidebar ${className}`(
       div`.leftSidebar__head`(
         roundButton(
-          { className: 'leftSidebar__head_button', onClick: handleButtonClick },
+          {
+            className: 'leftSidebar__head_button',
+            onMouseDown: handleButtonMousedown,
+            onClick: handleButtonClick,
+          },
           icons.menuAndBack({ state: isSearchActive.pipe(map((isActive) => isActive ? 'back' : 'menu')) }),
         ),
         searchInputEl,

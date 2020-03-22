@@ -12,7 +12,7 @@ const SEARCH_REQUEST_DEBOUNCE = 500;
 export type SearchRequest = string; // It may get other filter in future (e.g. date)
 
 interface SearchResponse {
-  messageIds: number[];
+  ids: number[];
   count: number;
   isEnd: boolean;
 }
@@ -72,7 +72,7 @@ async function makeSearchRequest(
       // eslint-disable-next-line no-console
       console.error('Failed to search for messages', error);
     }
-    return { messageIds: [], count: 0, isEnd: false };
+    return { ids: [], count: 0, isEnd: false };
   }
 
   if (data._ === 'messages.messagesNotModified') {
@@ -86,13 +86,13 @@ async function makeSearchRequest(
   const messageIds = data.messages.map((message) => message.id);
   const count = data._ === 'messages.messages' ? data.messages.length : data.count;
   const isEnd = data._ === 'messages.messages' || data.messages.length < LOAD_CHUNK_LENGTH * 0.9; // Decrease just in case
-  return { messageIds, count, isEnd };
+  return { ids: messageIds, count, isEnd };
 }
 
 function responseToResult(request: SearchRequest, response: SearchResponse): SearchResult {
   return {
     request,
-    ids: response.messageIds,
+    ids: response.ids,
     count: response.count,
     isFull: response.isEnd,
   };
@@ -101,7 +101,7 @@ function responseToResult(request: SearchRequest, response: SearchResponse): Sea
 const emptySearchRequest: SearchRequest = '';
 
 const emptySearchResponse: SearchResponse = {
-  messageIds: [],
+  ids: [],
   count: 0,
   isEnd: true,
 };
@@ -128,7 +128,10 @@ export default function makeSearchSession(peer: Peer): SearchSession {
       const response = await makeSearchRequest(peer, request, null);
       return response;
     },
-    onOutput(request, response, isDebounceComplete): void {
+    onStart() {
+      isSearching.next(true);
+    },
+    onOutput(request, response, isDebounceComplete) {
       // Ignore the results that come before the final result that matches the latest request
       if (!isDebounceComplete) {
         return;
@@ -136,6 +139,7 @@ export default function makeSearchSession(peer: Peer): SearchSession {
 
       result.next(responseToResult(request, response));
       isSearching.next(false);
+      isLoadingMore.next(false);
     },
   });
 
@@ -148,9 +152,6 @@ export default function makeSearchSession(peer: Peer): SearchSession {
       return;
     }
 
-    if (!isSearching.value) {
-      isSearching.next(true);
-    }
     debouncedSearch.run(request, isSearchRequestEmpty(request));
   }
 
@@ -176,17 +177,17 @@ export default function makeSearchSession(peer: Peer): SearchSession {
 
     isLoadingMore.next(true);
 
-    const { messageIds: loadedIds, isEnd: isSearchEnd } = await makeSearchRequest(peer, startRequest, startIds[startIds.length - 1]);
+    const { ids: loadedIds, count: loadedCount, isEnd: isSearchEnd } = await makeSearchRequest(peer, startRequest, startIds[startIds.length - 1]);
     if (isDestroyed) {
       return;
     }
-    const { ids: endIds, request: endRequest } = result.value;
+    const { ids: endIds, count: endCount, request: endRequest } = result.value;
     if (areSearchRequestsEqual(startRequest, endRequest)) {
       mergeOrderedArrays(endIds, loadedIds, (id1, id2) => id2 - id1);
       result.next({
-        // Use the previous count for a case of a loading error (in which case the `count` will be `0`)
-        ...result.value,
+        request: endRequest,
         ids: endIds,
+        count: loadedCount || endCount,
         isFull: isSearchEnd,
       });
       isLoadingMore.next(false);

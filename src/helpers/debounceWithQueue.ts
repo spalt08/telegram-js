@@ -4,6 +4,7 @@ export interface Options<TInput, TOutput> {
   performOnInit?: boolean;
   shouldPerform?(prevInput: TInput, nextInput: TInput): boolean;
   perform(input: TInput): Promise<TOutput>;
+  onStart?(): void; // Called when an input has been started performing and no input has been performing before
   onOutput?(input: TInput, output: TOutput, isComplete: boolean): void; // isComplete=true means that there is no input being performed now
 }
 
@@ -84,12 +85,29 @@ export default function makeDebounceWithQueue<TInput, TOutput>({
   performOnInit,
   shouldPerform = () => true,
   perform,
+  onStart = () => {},
   onOutput = () => {},
 }: Options<TInput, TOutput>): DebounceWithQueue<TInput, TOutput> {
   let latestInput = initialInput;
+  let isBusy = false;
   let isDestroyed = false;
   let addToQueueTimeout = 0;
   let performQueue: ShortQueue<TInput, TOutput> | undefined;
+
+  function setBusy(value: boolean) {
+    if (value !== isBusy) {
+      isBusy = value;
+
+      if (isBusy) {
+        try {
+          onStart();
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      }
+    }
+  }
 
   function isDebouncingNow() {
     return !!addToQueueTimeout;
@@ -101,7 +119,11 @@ export default function makeDebounceWithQueue<TInput, TOutput>({
     if (!performQueue) {
       performQueue = makeShortQueue(perform, shouldPerform, (input, output, isQueueComplete) => {
         // console.log('debounceWithQueue - queue output', { input, output, isQueueComplete, isDebouncingNow: isDebouncingNow() });
-        onOutput(input, output, isQueueComplete && !isDebouncingNow());
+        const isComplete = isQueueComplete && !isDebouncingNow();
+        if (isComplete) {
+          setBusy(false);
+        }
+        onOutput(input, output, isComplete);
       });
     }
     performQueue.run(latestInput);
@@ -126,6 +148,8 @@ export default function makeDebounceWithQueue<TInput, TOutput>({
     latestInput = input;
     clearTimeout(addToQueueTimeout);
     addToQueueTimeout = 0;
+
+    setBusy(true);
 
     if (forceNow) {
       if (performQueue) {

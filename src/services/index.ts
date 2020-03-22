@@ -1,5 +1,6 @@
 import AuthService from './auth';
 import DialogService from './dialog/dialog';
+import GlobalSearchService from './global_search';
 import MessageService from './message/message';
 import MainService from './main';
 import MediaService from './media';
@@ -20,3 +21,4 @@ export const peer = new PeerService(message);
 export const dialog = new DialogService(message);
 export const media = new MediaService(main);
 export const messageSearch = new MessageSearchService();
+export const globalSearch = new GlobalSearchService();
