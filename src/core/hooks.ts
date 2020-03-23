@@ -10,7 +10,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { listen, unlisten } from './dom'; // eslint-disable-line import/no-cycle
 import { MaybeObservable } from './types';
 
-interface LifecycleListeners {
+interface Lifecycle {
   mount?: Array<() => void>;
   unmount?: Array<() => void>;
   isMountTriggered?: boolean;
@@ -18,7 +18,7 @@ interface LifecycleListeners {
 
 interface Hooks {
   interface?: unknown;
-  lifecycle?: LifecycleListeners;
+  lifecycle?: Lifecycle;
 }
 
 export interface WithInterfaceHook<TInterface> {
@@ -40,6 +40,18 @@ function ensureWithHooks(base: Node): Hooks {
   }
 
   return hooks;
+}
+
+function ensureWithLifecycle(base: Node): Lifecycle {
+  const hooks = ensureWithHooks(base);
+
+  if (hooks.lifecycle) {
+    return hooks.lifecycle;
+  }
+
+  const lifecycle = {};
+  hooks.lifecycle = lifecycle;
+  return lifecycle;
 }
 
 /**
@@ -86,9 +98,7 @@ export function hasInterface<T = unknown>(base: any): base is WithInterfaceHook<
  * triggerMount(element);
  */
 export function useOnMount(base: Node, onMount: () => void): () => void {
-  const hooks = ensureWithHooks(base);
-  const lifecycle = hooks.lifecycle || {};
-  hooks.lifecycle = lifecycle;
+  const lifecycle = ensureWithLifecycle(base);
   lifecycle.mount = lifecycle.mount || [];
   lifecycle.mount.push(onMount);
 
@@ -117,9 +127,7 @@ export function useOnMount(base: Node, onMount: () => void): () => void {
  * triggerUnmount(element);
  */
 export function useOnUnmount(base: Node, onUnmount: () => void): () => void {
-  const hooks = ensureWithHooks(base);
-  const lifecycle = hooks.lifecycle || {};
-  hooks.lifecycle = lifecycle;
+  const lifecycle = ensureWithLifecycle(base);
   lifecycle.unmount = lifecycle.unmount || [];
   lifecycle.unmount.push(onUnmount);
 
@@ -138,10 +146,12 @@ export function useOnUnmount(base: Node, onUnmount: () => void): () => void {
  * Triggers the mount event listeners on the element (does nothing if there are no listeners or it's already mounted)
  */
 export function triggerMount(base: Node) {
-  const hooks = nodesHooks.get(base);
-  if (hooks && hooks.lifecycle && hooks.lifecycle.mount && !hooks.lifecycle.isMountTriggered) {
-    hooks.lifecycle.isMountTriggered = true;
-    [...hooks.lifecycle.mount].forEach((onMount) => onMount());
+  const lifecycle = ensureWithLifecycle(base);
+  if (!lifecycle.isMountTriggered) {
+    lifecycle.isMountTriggered = true;
+    if (lifecycle.mount) {
+      [...lifecycle.mount].forEach((onMount) => onMount());
+    }
   }
 }
 
@@ -149,10 +159,12 @@ export function triggerMount(base: Node) {
  * Triggers the unmount event listeners on the element (does nothing if there are no listeners or it's already unmounted)
  */
 export function triggerUnmount(base: Node) {
-  const hooks = nodesHooks.get(base);
-  if (hooks && hooks.lifecycle && hooks.lifecycle.unmount && hooks.lifecycle.isMountTriggered) {
-    hooks.lifecycle.isMountTriggered = false;
-    [...hooks.lifecycle.unmount].forEach((onUnmount) => onUnmount());
+  const lifecycle = nodesHooks.get(base)?.lifecycle; // eslint-disable-line @typescript-eslint/no-use-before-define
+  if (lifecycle?.isMountTriggered) { // eslint-disable-line @typescript-eslint/no-use-before-define
+    lifecycle.isMountTriggered = false;
+    if (lifecycle.unmount) {
+      [...lifecycle.unmount].forEach((onUnmount) => onUnmount());
+    }
   }
 }
 
@@ -161,11 +173,7 @@ export function triggerUnmount(base: Node) {
  * Undefined means not subscribed or never mounted before.
  */
 export function isMountTriggered(base: Node): boolean | undefined {
-  const hooks = nodesHooks.get(base);
-  if (!hooks) {
-    return undefined;
-  }
-  return hooks.lifecycle && hooks.lifecycle.isMountTriggered;
+  return nodesHooks.get(base)?.lifecycle?.isMountTriggered;
 }
 
 /**
