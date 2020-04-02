@@ -11,6 +11,19 @@ export function peerToId(peer: Peer): string {
   }
 }
 
+export function peerIdToPeer(id: string): Peer {
+  if (id.startsWith('channel_')) {
+    return { _: 'peerChannel', channel_id: Number(id.slice(8)) };
+  }
+  if (id.startsWith('chat_')) {
+    return { _: 'peerChat', chat_id: Number(id.slice(5)) };
+  }
+  if (id.startsWith('user_')) {
+    return { _: 'peerUser', user_id: Number(id.slice(5)) };
+  }
+  throw TypeError('Unknown peer type');
+}
+
 export function dialogPeerToDialogId(peer: Peer) {
   return peerToId(peer);
 }

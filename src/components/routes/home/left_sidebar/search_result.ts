@@ -5,13 +5,19 @@ import { useObservable } from 'core/hooks';
 import { globalSearch } from 'services';
 import { SearchResult, SearchResultType } from 'services/global_search';
 import { VirtualizedList } from 'components/ui';
-import { peerToId } from 'helpers/api';
-import { foundMessage } from 'components/sidebar';
+import { peerIdToPeer, peerToId } from 'helpers/api';
+import { contact, foundMessage } from 'components/sidebar';
 import './search_result.scss';
 
 interface Props extends Record<string, any> {
   className?: string;
 }
+
+const sectionHeaders: Record<string, string> = {
+  contactPeersHeader: 'Contacts and Chats',
+  globalPeersHeader: 'Global Search',
+  messagesHeader: 'Messages',
+};
 
 function searchResultToListItems(result: SearchResult) {
   switch (result.type) {
@@ -48,7 +54,24 @@ function listItem(id: string, searchQuery: Observable<string>) {
   if (id.startsWith('message_')) {
     return foundMessage(id.slice(8), searchQuery);
   }
-  return div(text(id));
+  if (id.startsWith('contactPeer_')) {
+    return contact({
+      peer: peerIdToPeer(id.slice(12)),
+      searchQuery,
+      highlightOnline: false,
+    });
+  }
+  if (id.startsWith('globalPeer_')) {
+    return contact({
+      peer: peerIdToPeer(id.slice(11)),
+      searchQuery,
+      highlightOnline: false,
+      showUsername: true,
+    });
+  }
+  return div`.globalSearchResult__sectionHeader`(
+    div(text(sectionHeaders[id] ?? id)),
+  );
 }
 
 export default function searchResult({ className = '', ...props }: Props = {}) {
