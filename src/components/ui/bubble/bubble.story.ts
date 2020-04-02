@@ -23,7 +23,7 @@ stories.add('Common Usage', () => {
 });
 
 stories.add('Image Full', () => {
-  const img500x300 = img({ class: 'raw', src: 'https://picsum.photos/500/300' });
+  const img500x300 = img({ class: 'raw', style: { display: 'block' }, src: 'https://picsum.photos/500/300' });
   const out = boolean('Out', false);
   const bubbleControl = bubble({ out, masked: true, onlyMedia: true }, img500x300);
   const isFirst = boolean('First', true);
@@ -33,7 +33,7 @@ stories.add('Image Full', () => {
 });
 
 stories.add('Image Top', () => {
-  const img400x300 = img({ class: 'raw', src: 'https://picsum.photos/400/300' });
+  const img400x300 = img({ class: 'raw', style: { display: 'block' }, src: 'https://picsum.photos/400/300' });
   const out = boolean('Out', false);
   const bubbleControl = bubble({ out }, img400x300, div(text('Some Text')));
   const isFirst = boolean('First', true);
@@ -43,7 +43,7 @@ stories.add('Image Top', () => {
 });
 
 stories.add('Image Bottom', () => {
-  const img400x300 = img({ class: 'raw', src: 'https://picsum.photos/400/300' });
+  const img400x300 = img({ class: 'raw', style: { display: 'block' }, src: 'https://picsum.photos/400/300' });
   const out = boolean('Out', false);
   const bubbleControl = bubble({ out, masked: true }, div(text('Quoted Message')), img400x300);
   const isFirst = boolean('First', true);
@@ -63,7 +63,7 @@ storiesPerf.add('Performance Test', () => {
   const out = boolean('Out', false);
   const isFirst = boolean('First', true);
   const isLast = boolean('Last', true);
-  const image = img({ class: 'raw', src: `https://picsum.photos/${imgSize}/${imgSize}` });
+  const image = img({ class: 'raw', style: { display: 'block' }, src: `https://picsum.photos/${imgSize}/${imgSize}` });
   const createBubble = (cWidth: number, cHeight: number) => {
     const i = img({ class: 'raw', src: image.src });
     const bubbleControl = bubble({ out, masked: true, onlyMedia: true }, i);
