@@ -1,9 +1,10 @@
 import { Peer } from 'client/schema';
 import { MaybeObservable } from 'core/types';
 import { div, text } from 'core/html';
-import { ripple } from 'components/ui';
-import { profileAvatar, profileTitle } from 'components/profile';
+import { makeTextMatchHighlightComponent, ripple } from 'components/ui';
+import { profileAvatar } from 'components/profile';
 import { message as messageService } from 'services';
+import { peerToTitle } from 'cache/accessors';
 import './contact.scss';
 
 interface Props {
@@ -13,7 +14,15 @@ interface Props {
   searchQuery?: MaybeObservable<string>;
 }
 
+const nameHighlight = makeTextMatchHighlightComponent({
+  inputMaxScanLength: 100,
+  outputMaxLength: 100,
+  outputMaxStartOffset: Infinity,
+});
+
 export default function contact({ peer, showUsername, highlightOnline, searchQuery = '' }: Props) {
+  const [, nameObservable] = peerToTitle(peer);
+
   return div`.contact`(
     ripple({
       className: 'contact__ripple',
@@ -24,9 +33,7 @@ export default function contact({ peer, showUsername, highlightOnline, searchQue
     }, [
       profileAvatar(peer),
       div`.contact__main`(
-        div`.contact__name`(
-          profileTitle(peer),
-        ),
+        nameHighlight({ tag: 'div', props: { class: 'contact__name' }, text: nameObservable, query: searchQuery }),
         div`.contact__description`(
           text('To be continued...'), // todo: Add peer summary
         ),

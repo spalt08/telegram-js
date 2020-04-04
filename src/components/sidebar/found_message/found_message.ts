@@ -1,14 +1,18 @@
 import { div, text } from 'core/html';
-import { datetime, highlightSearchMatch, ripple } from 'components/ui';
+import { datetime, makeTextMatchHighlightComponent, ripple } from 'components/ui';
 import { messageCache } from 'cache';
 import { messageToDialogPeer } from 'helpers/api';
 import { profileAvatar, profileTitle } from 'components/profile';
 import { messageToSenderPeer } from 'cache/accessors';
 import { MaybeObservable } from 'core/types';
-import { mount, unmountChildren } from 'core/dom';
-import { useMaybeObservable } from 'core/hooks';
 import { message as messageService } from 'services';
 import './found_message.scss';
+
+const messageHighlight = makeTextMatchHighlightComponent({
+  inputMaxScanLength: 1000,
+  outputMaxLength: 100,
+  outputMaxStartOffset: 10,
+});
 
 export default function foundMessage(messageUniqueId: string, searchQuery: MaybeObservable<string> = '') {
   const message = messageCache.get(messageUniqueId);
@@ -29,20 +33,6 @@ export default function foundMessage(messageUniqueId: string, searchQuery: Maybe
   const dialogPeer = messageToDialogPeer(message);
   const senderPeer = messageToSenderPeer(message);
 
-  const messageEl = div`.foundMessage__message`();
-  if (message._ === 'message') {
-    let lastSearchQuery: string | undefined;
-    useMaybeObservable(messageEl, searchQuery, (query) => {
-      if (query !== lastSearchQuery) {
-        lastSearchQuery = query;
-        unmountChildren(messageEl);
-        mount(messageEl, highlightSearchMatch(message.message, query));
-      }
-    });
-  } else {
-    messageEl.textContent = '(service message)';
-  }
-
   return div`.foundMessage`(
     ripple({
       className: 'foundMessage__ripple',
@@ -59,7 +49,9 @@ export default function foundMessage(messageUniqueId: string, searchQuery: Maybe
           ),
           datetime({ timestamp: message.date, className: 'foundMessage__time' }),
         ),
-        messageEl,
+        message._ === 'message'
+          ? messageHighlight({ tag: 'div', props: { class: 'foundMessage__message' }, text: message.message, query: searchQuery })
+          : div`.foundMessage__message`(text('(service message)')),
       ),
     ]),
   );
