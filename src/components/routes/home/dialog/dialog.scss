@@ -2,25 +2,19 @@
   $color-transition-duration: 0.2s;
 
   width: 100%;
-  padding: 0px 8px;
-  padding-bottom: 2px;
-  border-bottom: 1px solid transparent;
+  padding: 2px 8px;
 
   &__wrapper {
-    height: 76px;
-  }
+    &.-pinned + &:not(.-pinned) {
+      padding-top: 6px;
 
-  &__wrapper.lastpin {
-    height: 81px;
-  }
-
-  &__wrapper.lastpin .dialog {
-    border-bottom-color: #EDEEF0;
-    padding-bottom: 4px;
-  }
-
-  &__wrapper:last-child .dialog {
-    padding-bottom: 0px;
+      &::before {
+        content: '';
+        display: block;
+        border-top: 1px solid #EDEEF0;
+        margin-bottom: 6px;
+      }
+    }
   }
 
   &__clickable {
@@ -36,13 +30,12 @@
 
     &_content {
       display: flex;
-      flex-direction: row;
-      width: 100%;
-      height: 54px;
+      align-items: center;
     }
   }
 
   &__picture {
+    flex: none;
     width: 54px;
     height: 54px;
     position: relative;
@@ -60,8 +53,8 @@
     border-radius: 50%;
     background-color: #05C630;
     border: 2PX solid #FFFFFF;
-    right: 2px;
-    bottom: 0px;
+    right: 1px;
+    bottom: 1px;
     transform: scale(0);
     transform-origin: center;
     transition: transform 0.2s ease-in-out, border-color $color-transition-duration;
@@ -75,9 +68,9 @@
   }
 
   &__content {
-    padding-left: 10px;
-    flex: 1 50%;
-    max-width: calc(100% - 55px);
+    margin: 0 0 -2px 9px;
+    flex: 1;
+    min-width: 0; // To force the text overflow cut
   }
 
   &__header {
@@ -91,9 +84,9 @@
     color: #000000;
     font-weight: 500;
     font-size: 16px;
-    line-height: 190%;
     white-space: nowrap;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: visible;
     text-overflow: ellipsis;
   }
 
@@ -102,7 +95,7 @@
     font-weight: 300;
     padding-left: 20px;
     color: #5F6369;
-    margin-top: 7.5px;
+    margin-top: 3px;
 
     &.out {
       background-image: url(~assets/message-status-read@2x.png);
@@ -118,8 +111,8 @@
   }
 
   &__preview {
+    margin-top: 3px;
     display: flex;
-    flex-direction: row;
     justify-content: space-between;
     align-items: flex-start;
   }
@@ -128,8 +121,6 @@
     color: #707579;
     font-weight: 300;
     font-size: 16px;
-    overflow: hidden;
-    line-height: 115%;
     position: relative;
     flex: 1 50%;
     word-break: break-word;
@@ -147,12 +138,12 @@
     background-color: #4CCD5E;
     color: #FFFFFF;
     padding: 0 7PX;
-    height: 22PX;
-    min-width: 22PX;
-    line-height: 22px;
-    font-size: 12PX;
+    height: 24px;
+    min-width: 24px;
+    line-height: 24px;
+    font-size: 14px;
     font-weight: 500;
-    border-radius: 11PX;
+    border-radius: 12px;
     text-align: center;
     margin-left: 10px;
     transform: scale(1);
@@ -169,15 +160,21 @@
 
   &__pin {
     background-color: #C4C9CC;
-    height: 22PX;
-    width: 22PX;
+    height: 24px;
+    width: 24px;
+    margin-left: 10px;
     display: flex;
     justify-content: center;
     align-items: center;
     border-radius: 50%;
 
-    & .icon path {
-      fill: #FFFFFF;
+    .icon {
+      width: 100%;
+      height: 100%;
+
+      path {
+        fill: #FFFFFF;
+      }
     }
   }
 }

@@ -109,17 +109,6 @@ export default function dialogPreview(id: string) {
     } else {
       date.textContent = '';
     }
-
-    // hadnle last pin
-    if (pinned && container.parentElement && container.parentElement.previousSibling instanceof HTMLElement) {
-      const prev = container.parentElement.previousSibling;
-      if (prev.classList.contains('lastpin')) prev.classList.remove('lastpin');
-      if (!container.parentElement.classList.contains('lastpin')) container.parentElement.classList.add('lastpin');
-    }
-
-    if (!pinned && container.parentElement && container.parentElement.classList.contains('lastpin')) {
-      container.parentElement.classList.remove('lastpin');
-    }
   });
 
   useObservable(clickable, isSelectedObservable, (selected) => {
@@ -143,5 +132,5 @@ export default function dialogPreview(id: string) {
 
   mount(container, clickable);
 
-  return div`.dialog__wrapper${pinned ? 'lastpin' : ''}`(container);
+  return div`.dialog__wrapper${pinned ? '-pinned' : ''}`(container);
 }
