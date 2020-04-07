@@ -44,6 +44,11 @@
     z-index: 1;
   }
 
+  & &__content {
+    position: relative;
+    z-index: 2;
+  }
+
   & &__background,
   & &__content {
     border-radius: 6PX 12.5PX 12.5PX 6PX;
@@ -151,13 +156,6 @@
     --accent-color-inactive: #4fae4f;
     --voice-message-bar: rgb(79, 174, 79);
     --voice-message-bar-transparent: rgba(79, 174, 79, 0.5);
-  }
-
-  & &__content {
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    z-index: 2;
   }
 
   // Fallback for browsers that don't support mask-border (e.g. Firefox)
