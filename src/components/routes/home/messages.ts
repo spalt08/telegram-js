@@ -104,11 +104,10 @@ export default function messages({ className = '' }: Props = {}) {
   scroll = new VirtualizedList({
     className: 'messages__list',
     items: itemsSubject,
-    pivotBottom: true,
     threshold: 2,
     batch: 35,
     focusFromBottom: true,
-    renderer: (id: string) => message(id, service.activePeer.value!, (mid: string) => scroll.pendingRecalculate.push(mid)),
+    renderer: (id: string) => message(id, service.activePeer.value!, (mid: string) => scroll.updateHeight(mid)),
     onReachTop: () => service.loadMoreHistory(MessageDirection.Older),
     onReachBottom: () => service.loadMoreHistory(MessageDirection.Newer),
     onFocus: (id: string) => {

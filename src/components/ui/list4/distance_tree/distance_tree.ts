@@ -192,6 +192,7 @@ class TreeNode<T> implements ITreeNode<T> {
     }
     if (index > this._left.size()) {
       const result = this._right.getByIndex(index - this._left.size() - 1);
+      result.index += this._left.size() + 1;
       result.outerDistance += this._left.totalLength() + this.length();
       return result;
     }
@@ -244,12 +245,16 @@ export class DistanceTree<T> {
    * @param clampToBounds if true, returns first/last element when distance is out of range. Otherwise, throws error.
    */
   public getByDistance(distance: number, clampToBounds = true): Readonly<ItemInfo<T>> {
-    if (distance < 0 || distance > this._root.totalLength()) {
+    const totalLength = this._root.totalLength();
+    if (distance < 0 || distance >= totalLength) {
       if (clampToBounds) {
-        distance = Math.max(0, Math.min(distance, this._root.totalLength()));
-      } else {
-        throw Error('distance is out of range.');
+        if (distance < 0) {
+          return this.getByIndex(0);
+        }
+        return this.getByIndex(this._root.size() - 1);
       }
+
+      throw Error('distance is out of range.');
     }
     return this._root.getByDistance(distance);
   }
