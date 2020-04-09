@@ -82,6 +82,7 @@ export class VirtualizedList {
   scrollBegin = 0;
   scrollFinish = 0;
   scrollChange = 0;
+  awaitUpdate = false;
 
   /** Element that should be focused */
   focused?: string;
@@ -156,6 +157,7 @@ export class VirtualizedList {
 
   // pefrom list update with flip animations
   private update(next: readonly string[]) {
+    this.awaitUpdate = false;
     const currSet = new Set(this.current);
     const nextSet = new Set(next);
     const removedSet = new Set<string>();
@@ -223,38 +225,52 @@ export class VirtualizedList {
     // Easing into the target.
     const scrollTop = this.scrollTop = this.scrollBegin - easeIn(1, this.scrollChange, 60 * 0.2);
 
-    const firstItemInfo = this.heights.getByDistance(scrollTop, true);
-    const lastItemInfo = this.heights.getByDistance(scrollTop + this.viewport.height, true);
+    const firstItemInfo = this.heights.getByDistance(Math.floor((scrollTop - this.cfg.threshold) / this.cfg.threshold) * this.cfg.threshold, true);
+    const lastItemInfo = this.heights.getByDistance(Math.ceil((scrollTop + this.viewport.height + this.cfg.threshold) / this.cfg.threshold) * this.cfg.threshold, true);
     const visibleItems = new Set();
-    const firstIdx = this.currentIndices.get(firstItemInfo.item);
-    const lastIdx = this.currentIndices.get(lastItemInfo.item);
-    if (firstIdx !== undefined && lastIdx !== undefined) {
-      for (let i = firstIdx; i <= lastIdx; i++) {
-        const item = this.current[i];
-        const elem = this.ensureElement(item);
-        if (!this.mountedElements.has(item)) {
-          mount(this.scrollPane, elem);
-        }
-        this.mountedElements.set(item, elem);
-        this.heights.updateLength(i, elem.offsetHeight);
-        const itemInfo = this.heights.getByIndex(i);
-        elem.style.transform = `translateY(${itemInfo.outerDistance - scrollTop}px)`;
-        visibleItems.add(item);
+    const firstIdx = Math.max(0, this.currentIndices.get(firstItemInfo.item) ?? 0);
+    const lastIdx = Math.min(this.current.length - 1, this.currentIndices.get(lastItemInfo.item) ?? Number.MAX_VALUE);
+    for (let i = firstIdx; i <= lastIdx; i++) {
+      const item = this.current[i];
+      const elem = this.ensureElement(item);
+      if (!this.mountedElements.has(item)) {
+        mount(this.scrollPane, elem);
+        console.error('m');
       }
+      this.mountedElements.set(item, elem);
+      // console.error(this.mountedElements.size);
+      this.heights.updateLength(i, elem.offsetHeight);
+      const itemInfo = this.heights.getByIndex(i);
+      elem.style.transform = `translateY(${itemInfo.outerDistance - scrollTop}px)`;
+      visibleItems.add(item);
     }
     this.mountedElements.forEach((e, i) => {
       if (!visibleItems.has(i)) {
         unmount(e);
+        console.error('unm');
         this.mountedElements.delete(i);
       }
     });
     getInterface(this.scrollBar).onScrollChange(this.heights.totalLength(), this.viewport.height, scrollTop);
 
-    // if (this.scrollTop !== this.targetScrollTop) {
-    this.raf = requestAnimationFrame(() => {
-      this.virtualize();
-    });
-    // }
+    const awaitUpdate = this.awaitUpdate;
+    if (!awaitUpdate && scrollTop < this.cfg.threshold && this.cfg.onReachTop) {
+      this.awaitUpdate = true;
+      console.log('onReachTop');
+      this.cfg.onReachTop();
+    }
+
+    if (!awaitUpdate && scrollTop + this.viewport.height > this.heights.totalLength() - this.cfg.threshold && this.cfg.onReachBottom) {
+      this.awaitUpdate = true;
+      console.log('onReachBottom');
+      this.cfg.onReachBottom();
+    }
+
+    if (Math.abs(this.scrollTop - this.scrollFinish) > 0.5) {
+      this.raf = requestAnimationFrame(() => {
+        this.virtualize();
+      });
+    }
   }
 
   public updateHeight(item: string) {
@@ -273,7 +289,7 @@ export class VirtualizedList {
   scrollToOffset(offset: number) {
     cancelAnimationFrame(this.raf);
     this.raf = 0;
-    const newTargetScrollTop = Math.max(0, offset);
+    const newTargetScrollTop = Math.max(0, Math.min(offset, this.heights.totalLength() - this.viewport.height));
     this.scrollFinish = newTargetScrollTop;
     this.virtualize();
     // if (newTargetScrollTop !== this.targetScrollTop) {

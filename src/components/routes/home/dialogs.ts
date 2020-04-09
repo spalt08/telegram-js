@@ -23,9 +23,8 @@ export default function dialogs({ className = '' }: Props = {}) {
   const listEl = new VirtualizedList({
     className: 'dialogs',
     items: service.dialogs,
-    threshold: 2,
-    batch: 30,
-    pivotBottom: false,
+    threshold: 1000,
+    batch: 10,
     renderer: dialog,
     onReachBottom: () => service.loadMoreDialogs(),
   });

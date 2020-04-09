@@ -104,7 +104,7 @@ export default function messages({ className = '' }: Props = {}) {
   scroll = new VirtualizedList({
     className: 'messages__list',
     items: itemsSubject,
-    threshold: 2,
+    threshold: 1000,
     batch: 35,
     focusFromBottom: true,
     renderer: (id: string) => message(id, service.activePeer.value!, (mid: string) => scroll.updateHeight(mid)),
