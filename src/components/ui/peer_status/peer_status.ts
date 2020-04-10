@@ -201,9 +201,7 @@ export function peerChannelSimpleStatus(peer: Peer.peerChannel, props?: Props) {
       if (channel?._ !== 'channel' || channel.participants_count === undefined) {
         return blankStatus;
       }
-      return channel.broadcast
-        ? `${formatCount(todoAssertHasValue(channel.participants_count))} subscribers`
-        : `${formatCount(todoAssertHasValue(channel.participants_count))} members`;
+      return `${formatCount(todoAssertHasValue(channel.participants_count))} ${channel.broadcast ? 'subscribers' : 'members'}`;
     }),
     distinctUntilChanged(),
   );
