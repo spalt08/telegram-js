@@ -1,7 +1,7 @@
 import { Peer } from 'client/schema';
 import { MaybeObservable } from 'core/types';
-import { div, text } from 'core/html';
-import { makeTextMatchHighlightComponent, ripple } from 'components/ui';
+import { div } from 'core/html';
+import { makeTextMatchHighlightComponent, peerSimpleStatus, ripple } from 'components/ui';
 import { profileAvatar } from 'components/profile';
 import { message as messageService } from 'services';
 import { peerToTitle } from 'cache/accessors';
@@ -35,7 +35,7 @@ export default function contact({ peer, showUsername, highlightOnline, searchQue
       div`.contact__main`(
         nameHighlight({ tag: 'div', props: { class: 'contact__name' }, text: nameObservable, query: searchQuery }),
         div`.contact__description`(
-          text('To be continued...'), // todo: Add peer summary
+          peerSimpleStatus(peer, { tag: 'span', noHighlight: !highlightOnline }),
         ),
       ),
     ]),

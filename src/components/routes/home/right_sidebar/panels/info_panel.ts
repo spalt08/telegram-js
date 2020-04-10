@@ -3,7 +3,7 @@ import { main, auth } from 'services';
 import { RightSidebarPanel } from 'services/main';
 import { Peer } from 'client/schema';
 import { profileAvatar, profileTitle } from 'components/profile';
-import { onlineStatus, roundButton } from 'components/ui';
+import { peerFullStatus, roundButton } from 'components/ui';
 import { close, edit, more } from 'components/icons';
 import peerInfo from './peer_info';
 import './info_panel.scss';
@@ -25,7 +25,7 @@ export default function infoPanel(peer: Peer) {
         roundButton({ disabled: true }, more())),
       div`.infoPanel__avatar`(profileAvatar(peer, undefined, true)),
       div`.infoPanel__name`(profileTitle(peer, true)),
-      hideMyInfo(peer, div`.infoPanel__status`(onlineStatus(peer))),
+      hideMyInfo(peer, div`.infoPanel__status`(peerFullStatus(peer))),
       hideMyInfo(peer, peerInfo(peer)),
       sharedMediaPanel(peer),
     )

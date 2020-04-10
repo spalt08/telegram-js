@@ -1,4 +1,4 @@
-import { Dialog, Peer, Message, Updates } from 'client/schema';
+import { Dialog, Peer, Message, Updates, UserStatus } from 'client/schema';
 import { ARCHIVE_FOLDER_ID, ROOT_FOLDER_ID } from 'const/api';
 import { todoAssertHasValue } from './other';
 
@@ -126,4 +126,21 @@ export function isDialogArchived(dialog: Dialog) {
 export function getDialogLastReadMessageId(dialog: Dialog.dialog) {
   // Not perfect but suitable for most cases
   return dialog.unread_count > 0 ? dialog.read_inbox_max_id : dialog.top_message;
+}
+
+export function areUserStatusesEqual(status1: UserStatus | undefined, status2: UserStatus | undefined): boolean {
+  if (status1 === status2) {
+    return true;
+  }
+  if (status1 === undefined || status2 === undefined) {
+    return false;
+  }
+  if (status1._ !== status2._) {
+    return false;
+  }
+  switch (status1._) {
+    case 'userStatusOnline': return status1.expires === (status2 as typeof status1).expires;
+    case 'userStatusOffline': return status1.was_online === (status2 as typeof status1).was_online;
+    default: return true;
+  }
 }

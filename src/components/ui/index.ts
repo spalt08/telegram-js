@@ -11,7 +11,7 @@ export { VirtualizedList, default as list } from './list3/list';
 export { default as sectionSpinner } from './section_spinner/section_spinner';
 export { default as emoji } from './emoji/emoji';
 export { formattedMessage, highlightLinks } from './formatted_message';
-export { default as onlineStatus } from './online_status/online_status';
+export { peerSimpleStatus, peerFullStatus } from './peer_status/peer_status';
 export { default as infoListItem } from './info_list_item/info_list_item';
 export { default as searchInput } from './search_input/search_input';
 export { makeTextMatchHighlighter, makeTextMatchHighlightComponent, telegramSearchWordSeparator } from './highlight_text_match';
