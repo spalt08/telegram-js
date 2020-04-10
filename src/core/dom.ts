@@ -98,6 +98,14 @@ export function dispatch(element: EventTarget, eventName: string, bubbles = fals
  * Mounts Node to parent Node
  */
 export function mount(parent: Node, child: Node, before?: Node) {
+  // Fragment gets empty after being mounted so the trigger code below doesn't work. The lines below are a workaround.
+  if (child instanceof DocumentFragment) {
+    while (child.firstChild) {
+      mount(parent, child.firstChild, before);
+    }
+    return;
+  }
+
   if (before) {
     parent.insertBefore(child, before);
   } else {
