@@ -1,7 +1,6 @@
 import { MaybeObservable } from 'core/types';
-import { svgCodeToComponent } from 'core/factory';
+import { em, span } from 'core/html';
 import { useMaybeObservable } from 'core/hooks';
-import iconCode from './menu_and_back.svg?raw';
 import './menu_and_back.scss';
 
 export type State = 'menu' | 'back';
@@ -11,31 +10,33 @@ interface Props extends Record<string, any> {
   class?: string;
 }
 
-const iconSvg = /*#__PURE__*/svgCodeToComponent(iconCode); // eslint-disable-line spaced-comment
-
 /**
  * And icon that can make an animated transition form "menu" to "back" and vise versa.
  *
  * To colorize, just set the `color` CSS property.
  * To change the transition duration or timing function, set the CSS properties directly to this element.
+ * To change the size set the `font-size` CSS property.
  */
 // eslint-disable-next-line quote-props
 export default function menuAndBack({ state, className, 'class': _class, ...props }: Props) {
   const givenClassName = className || _class || '';
-  const svgElement = iconSvg({ class: `menuAndBackIcon ${givenClassName}`, ...props });
+  const element = span`.menuAndBackIcon ${givenClassName}`(
+    props,
+    span(em(), em(), em()), // The HTML animation works much smoother than an SVG animation in the global search transition
+  );
   let currentState: State | undefined;
 
   const stateToClass = (_state: State) => `-${_state}`;
 
-  useMaybeObservable(svgElement, state, (newState) => {
+  useMaybeObservable(element, state, (newState) => {
     if (newState !== currentState) {
       if (currentState) {
-        svgElement.classList.remove(stateToClass(currentState));
+        element.classList.remove(stateToClass(currentState));
       }
-      svgElement.classList.add(stateToClass(newState));
+      element.classList.add(stateToClass(newState));
       currentState = newState;
     }
   });
 
-  return svgElement;
+  return element;
 }

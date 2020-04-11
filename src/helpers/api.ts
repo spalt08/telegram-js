@@ -128,6 +128,10 @@ export function getDialogLastReadMessageId(dialog: Dialog.dialog) {
   return dialog.unread_count > 0 ? dialog.read_inbox_max_id : dialog.top_message;
 }
 
+export function arePeersSame(peer1: Peer | null | undefined, peer2: Peer | null | undefined) {
+  return (!!peer1 && peerToId(peer1)) === (!!peer2 && peerToId(peer2));
+}
+
 export function areUserStatusesEqual(status1: UserStatus | undefined, status2: UserStatus | undefined): boolean {
   if (status1 === status2) {
     return true;
