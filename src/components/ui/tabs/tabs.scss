@@ -35,7 +35,7 @@
     cursor: pointer;
     transition: all $transition-duration;
 
-    > div {
+    &_content {
       display: flex;
       align-items: center;
       text-align: center;

@@ -1,6 +1,7 @@
 import { div, text } from 'core/html';
-import { listenOnce, unmount, mount, listen } from 'core/dom';
+import { listenOnce, unmount, mount } from 'core/dom';
 import { useInterface, hasInterface, getInterface } from 'core/hooks';
+import ripple from '../ripple/ripple';
 import './tabs.scss';
 
 interface TabsInterface {
@@ -21,11 +22,17 @@ export default function tabsPanel({ className = '', headerAlign = 'center' }: Pr
   let isLocked = false;
 
   const tabsEl: HTMLElement[] = [];
+  let change: (index: number) => void;
 
   for (let i = 0; i < tabsIndexes.length; i += 1) {
-    tabsEl[i] = div`.tabs-panel__tab`(
-      div(text(tabsIndexes[i])),
-    );
+    // The ripple here gives rendering glitches in Safari. Also is slows the UI in the stimoji panel.
+    tabsEl[i] = ripple({
+      className: 'tabs-panel__tab',
+      contentClass: 'tabs-panel__tab_content',
+      onClick: () => change(i), // eslint-disable-line no-loop-func
+    }, [
+      text(tabsIndexes[i]),
+    ]);
   }
 
   const contentEl = div`.tabs-panel__container`(tabs[tabsIndexes[selected]]);
@@ -36,7 +43,7 @@ export default function tabsPanel({ className = '', headerAlign = 'center' }: Pr
 
   tabsEl[selected].classList.add('-active');
 
-  const change = (nextSelected: number) => {
+  change = (nextSelected: number) => {
     if (isLocked) return;
     if (selected === nextSelected) return;
 
@@ -71,8 +78,6 @@ export default function tabsPanel({ className = '', headerAlign = 'center' }: Pr
 
     mount(contentEl, appearingEl);
   };
-
-  for (let i = 0; i < tabsIndexes.length; i += 1) listen(tabsEl[i], 'click', () => change(i));
 
   return useInterface(container, {
     change,
