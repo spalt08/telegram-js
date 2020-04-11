@@ -64,12 +64,17 @@ export function makeTextMatchHighlighter({
       );
 
       if (match) {
-        let start = match.index;
+        let start: number;
 
-        const prefixToCheck = input.slice(Math.max(0, start - outputMaxStartOffset), start);
-        const prefixMatch = /(^|\s)\S+\s*$/.exec(prefixToCheck);
-        if (prefixMatch) {
-          start = start - prefixToCheck.length + prefixMatch.index + prefixMatch[1].length;
+        if (match.index > outputMaxStartOffset) {
+          start = match.index;
+          const prefixToCheck = input.slice(start - outputMaxStartOffset, start);
+          const prefixMatch = /(^|\s)\S+\s*$/.exec(prefixToCheck);
+          if (prefixMatch) {
+            start = start - prefixToCheck.length + prefixMatch.index + prefixMatch[1].length;
+          }
+        } else {
+          start = 0;
         }
 
         return fragment(
