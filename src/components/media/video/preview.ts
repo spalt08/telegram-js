@@ -1,4 +1,4 @@
-import { Document } from 'client/schema';
+import { Document } from 'mtproto-js';
 import { div, text } from 'core/html';
 import { getAttributeVideo, getReadableDuration, getAttributeAnimated } from 'helpers/files';
 import photoRenderer, { PhotoOptions } from '../photo/photo';

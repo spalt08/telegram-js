@@ -1,4 +1,4 @@
-import { StorageFileType, Document, InputFileLocation, DocumentAttribute } from 'client/schema';
+import { StorageFileType, Document, InputFileLocation, DocumentAttribute } from 'mtproto-js';
 
 export function hexToStr(hex: string): string {
   let str = '';

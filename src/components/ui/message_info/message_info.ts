@@ -1,4 +1,4 @@
-import { Message, MessageMedia } from 'client/schema';
+import { Message, MessageMedia } from 'mtproto-js';
 import { div, text } from 'core/html';
 import { formatNumber } from 'helpers/other';
 import { WithInterfaceHook, useInterface } from 'core/hooks';

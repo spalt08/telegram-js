@@ -1,5 +1,5 @@
 /* eslint-disable prefer-destructuring, prefer-template, max-len */
-import { PhotoSize, InputFileLocation, Peer, Message, Document, StickerSet, InputStickerSet, Photo } from 'client/schema';
+import { PhotoSize, InputFileLocation, Peer, Message, Document, StickerSet, InputStickerSet, Photo } from 'mtproto-js';
 import { peerToInputPeer, getPeerPhotoLocation } from 'cache/accessors';
 import { blobToUrl, strToBlob } from './files';
 

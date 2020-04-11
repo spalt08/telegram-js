@@ -1,5 +1,5 @@
 import { userCache } from 'cache';
-import { Message } from 'client/schema';
+import { Message } from 'mtproto-js';
 import { getAttributeSticker } from 'helpers/files';
 import { todoAssertHasValue } from 'helpers/other';
 

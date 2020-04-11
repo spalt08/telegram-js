@@ -1,4 +1,4 @@
-import { Photo, Document } from 'client/schema';
+import { Photo, Document } from 'mtproto-js';
 import { div, img, nothing } from 'core/html';
 import { materialSpinner } from 'components/icons';
 import { mount, unmount, listenOnce } from 'core/dom';

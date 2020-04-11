@@ -5,7 +5,7 @@ import { number, select, withKnobs } from '@storybook/addon-knobs';
 import { withMountTrigger, withEmptyFileCache } from 'storybook/decorators';
 import photoSquare from 'mocks/photos/photo_square.json';
 import photoLandscape from 'mocks/photos/photo_landscape.json';
-import { Photo } from 'client/schema';
+import { Photo } from 'mtproto-js';
 import photoRenderer from './photo';
 
 const stories = storiesOf('Media | Photo', module)

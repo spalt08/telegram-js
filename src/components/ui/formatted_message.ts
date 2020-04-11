@@ -1,4 +1,4 @@
-import { MessageEntity, Message } from 'client/schema';
+import { MessageEntity, Message } from 'mtproto-js';
 import { strong, text, code, pre, em, a, fragment, span } from 'core/html';
 import { mount } from 'core/dom';
 import { newWindowLinkAttributes } from 'const';

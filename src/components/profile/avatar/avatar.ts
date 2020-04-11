@@ -1,5 +1,5 @@
 import { div, text, img } from 'core/html';
-import { Peer, Message } from 'client/schema';
+import { Peer, Message } from 'mtproto-js';
 import { peerToInitials, peerToColorCode } from 'cache/accessors';
 import { getPeerPhotoInputLocation } from 'helpers/photo';
 import { mount } from 'core/dom';

@@ -1,4 +1,4 @@
-import { Dialog, Peer, Message, Updates } from 'client/schema';
+import { Dialog, Peer, Message, Updates } from 'mtproto-js';
 import { ARCHIVE_FOLDER_ID, ROOT_FOLDER_ID } from 'const/api';
 import { todoAssertHasValue } from './other';
 

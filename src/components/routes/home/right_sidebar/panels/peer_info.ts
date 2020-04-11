@@ -1,4 +1,4 @@
-import { Peer } from 'client/schema';
+import { Peer } from 'mtproto-js';
 import { userCache, chatCache, userFullCache, chatFullCache } from 'cache';
 import { div, nothing } from 'core/html';
 import { info, username, phone } from 'components/icons';

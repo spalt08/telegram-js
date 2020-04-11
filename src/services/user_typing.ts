@@ -1,4 +1,4 @@
-import { Peer, Update, SendMessageAction } from 'client/schema';
+import { Peer, Update, SendMessageAction } from 'mtproto-js';
 import { Subject, Observable, empty, BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 

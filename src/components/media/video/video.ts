@@ -1,4 +1,4 @@
-import { Document } from 'client/schema';
+import { Document } from 'mtproto-js';
 import { div, text, nothing, video } from 'core/html';
 import { getDocumentLocation, getAttributeVideo } from 'helpers/files';
 import { download, cached as getCached } from 'client/media';

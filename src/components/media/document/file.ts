@@ -1,4 +1,4 @@
-import { Document, Message } from 'client/schema';
+import { Document, Message } from 'mtproto-js';
 import { div, text } from 'core/html';
 import { getAttributeFilename, getReadableSize, getDocumentLocation } from 'helpers/files';
 import { downloadByUrl } from 'helpers/other';

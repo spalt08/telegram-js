@@ -1,4 +1,4 @@
-import { InputCheckPasswordSRP, MethodDeclMap } from 'client/schema';
+import { InputCheckPasswordSRP, MethodDeclMap, UpdateDeclMap } from 'mtproto-js';
 import { EventResolver, APICallHeaders, APICallParams } from './types';
 import { task, request, listenMessage } from './context';
 
@@ -52,7 +52,7 @@ function on(type: string, cb: EventResolver) {
 /**
  * Subscribe update event
  */
-function onUpdate(type: string, cb: EventResolver) {
+function onUpdate(type: keyof UpdateDeclMap, cb: EventResolver) {
   on(type, cb);
   task('listen_update', type);
 }
@@ -94,7 +94,7 @@ function setBaseDC(dc_id: number) {
 }
 
 // Returns result of kdf hash algo
-function getPasswordKdfAsync(algo: any, password: string): Promise<InputCheckPasswordSRP> {
+function getPasswordKdfAsync(algo: any, password: string): Promise<InputCheckPasswordSRP.inputCheckPasswordSRP> {
   return new Promise((resolve) => request('password_kdf', { algo, password }, resolve));
 }
 

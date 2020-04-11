@@ -1,4 +1,4 @@
-import { WebPage } from 'client/schema';
+import { WebPage } from 'mtproto-js';
 import { nothing, div, text } from 'core/html';
 import photo from 'components/media/photo/photo';
 import './preview.scss';

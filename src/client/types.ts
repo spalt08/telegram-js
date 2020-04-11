@@ -1,5 +1,7 @@
-import { Transports, ClientError, TransportState, AuthKey } from 'mtproto-js';
-import { InputFile, AccountPassword, InputCheckPasswordSRP, InputFileLocation, Update, MethodDeclMap } from 'client/schema';
+import {
+  Transports, ClientError, TransportState, AuthKey, UpdateDeclMap, MethodDeclMap, InputFile, AccountPassword,
+  InputCheckPasswordSRP, InputFileLocation, Update, User, Chat, Updates,
+} from 'mtproto-js';
 
 export type APICallHeaders = {
   dc?: number,
@@ -28,7 +30,7 @@ export interface WorkerTaskPayloadMap {
   };
   'switch_dc': number,
   'window_event': string,
-  'listen_update': string,
+  'listen_update': keyof UpdateDeclMap,
 }
 
 /**
@@ -36,7 +38,7 @@ export interface WorkerTaskPayloadMap {
  */
 export interface WorkerRequestPayloadMap {
   'call': {
-    method: string,
+    method: keyof MethodDeclMap,
     params: Record<string, any>,
     headers: APICallHeaders,
   },
@@ -75,7 +77,7 @@ export type WorkerMessageOutcoming = WorkerRequest | WorkerTask & { id?: undefin
  * Worker incoming notifications with task progress or result
  */
 export interface WorkerNotificationPayloadMap {
-  'update': Update;
+  'update': Updates | Update | User | Chat;
   'meta_updated': Record<number, any>;
   'network_updated': TransportState;
   'upload_progress': {
@@ -106,7 +108,7 @@ export interface WorkerResponsePayloadMap {
     error: ClientError,
     result: any, // JSON
   };
-  'password_kdf': InputCheckPasswordSRP,
+  'password_kdf': InputCheckPasswordSRP.inputCheckPasswordSRP,
   'authorization_complete': AuthKey,
   'tgs_loaded': any, // JSON
 }

@@ -10,7 +10,7 @@ import {
   MessagesDialogs,
   MessagesPeerDialogs,
   MessagesMessages,
-} from 'client/schema';
+} from 'mtproto-js';
 import { peerToInputDialogPeer, peerToInputPeer } from 'cache/accessors';
 
 import MessageService from '../message/message';

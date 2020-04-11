@@ -48,7 +48,7 @@ function processMessage(msg: WorkerMessageOutcoming) {
 
     case 'call': {
       const { id, payload: { method, params, headers } } = msg;
-      client.call(method, params, headers, (error, result) => respond(id, 'rpc_result', { error, result: result?.json() }));
+      client.call(method, params, headers, (error, result) => respond(id, 'rpc_result', { error, result }));
       break;
     }
 
