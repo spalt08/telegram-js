@@ -6,7 +6,7 @@ import { dialogCache, messageCache } from 'cache';
 import { datetime, ripple } from 'components/ui';
 import { message } from 'services';
 import { pinnedchat } from 'components/icons';
-import { getDialogLastReadMessageId, peerMessageToId, peerToId } from 'helpers/api';
+import { peerMessageToId, peerToId } from 'helpers/api';
 import { profileTitle } from 'components/profile';
 import dialogMessage from './dialog_message';
 import dialogPicture from './dialog_picture';
@@ -41,12 +41,8 @@ export default function dialogPreview(id: string) {
 
   const dialogSubject = dialogCache.useItemBehaviorSubject(container, id);
 
-  function isSelected(activePeer = message.activePeer.value) {
-    return !!activePeer && peerToId(activePeer) === id;
-  }
-
   const isSelectedObservable = message.activePeer.pipe(
-    map(isSelected),
+    map((activePeer) => !!activePeer && peerToId(activePeer) === id),
     distinctUntilChanged(),
   );
 
@@ -121,20 +117,7 @@ export default function dialogPreview(id: string) {
     clickable.classList.toggle('-selected', selected);
   });
 
-  listen(clickable, 'click', () => {
-    const currentDialog = dialogSubject.value;
-    let targetMessage: number | undefined;
-
-    if (isSelected()) {
-      // Scroll to the bottom when a selected dialog is clicked
-      targetMessage = Infinity;
-    } else if (currentDialog?._ === 'dialog') {
-      const lastReadId = getDialogLastReadMessageId(currentDialog);
-      targetMessage = lastReadId === currentDialog.top_message ? Infinity : lastReadId;
-    }
-
-    message.selectPeer(peer, targetMessage);
-  });
+  listen(clickable, 'click', () => message.selectPeer(peer));
 
   return container;
 }
