@@ -7,14 +7,14 @@ import { useOnMount } from 'core/hooks';
 import photoRenderer, { PhotoOptions } from '../photo/photo';
 import './video.scss';
 
-export default function videoRenderer(document: Document.document, photoOptions: PhotoOptions = {}) {
+export default function videoRenderer(document: Document.document, photoOptions: PhotoOptions = {}, controls: boolean | undefined = undefined) {
   const thumbnail = photoRenderer(document, { ...photoOptions, showLoader: false });
   const location = getDocumentLocation(document, '');
   const videoAttribute = getAttributeVideo(document);
 
   if (!videoAttribute) return nothing;
 
-  const videoEl = video({ autoplay: true, loop: true });
+  const videoEl = video({ autoplay: true, loop: true, controls });
   let cached = getCached(location);
   const container = div`.video`(videoEl);
 

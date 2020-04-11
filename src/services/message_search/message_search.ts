@@ -1,11 +1,11 @@
 import { BehaviorSubject, Subscription } from 'rxjs';
+import { Peer } from 'mtproto-js';
 import makeSearchSession, {
   SearchSession,
   SearchResult,
   SearchRequest,
   emptySearchResult,
 } from './message_search_session';
-import { Peer } from '../../client/schema';
 
 export default class MessageSearchService {
   public readonly result = new BehaviorSubject<SearchResult>(emptySearchResult);

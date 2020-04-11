@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
-import { Photo, Message, Peer, InputStickerSet } from 'mtproto-js';
+import { Photo, Message, Peer, InputStickerSet, Document } from 'mtproto-js';
 import { PhotoOptions } from 'components/media/photo/photo';
 
 export const enum RightSidebarPanel {
@@ -34,6 +34,7 @@ export default class MainService {
   showPopup(type: 'sendMedia'): void;
   showPopup(type: 'stickerSet', ctx: InputStickerSet): void;
   showPopup(type: 'photo', ctx: { rect: DOMRect, options: PhotoOptions, photo: Photo, peer: Peer, message: Message }): void;
+  showPopup(type: 'video', ctx: { rect: DOMRect, video: Document.document, peer?: Peer, message?: Message }): void;
   showPopup(type: string, ctx?: any): void {
     this.popupCtx = ctx;
     this.popup.next(type);
