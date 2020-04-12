@@ -250,40 +250,40 @@ export default class DialogsService {
     this.messageService.pushMessages(data.messages);
   }
 
-  protected async preloadMessages(dialogs: Dialog[]) {
-    for (let i = 0; i < dialogs.length; i++) {
-      const dialog = dialogs[i];
-      if (dialog._ !== 'dialog' || dialog.unread_count > 0) {
-        continue;
-      }
+  protected async preloadMessages(_dialogs: Dialog[]) {
+    // for (let i = 0; i < dialogs.length; i++) {
+    //   const dialog = dialogs[i];
+    //   if (dialog._ !== 'dialog' || dialog.unread_count > 0) {
+    //     continue;
+    //   }
 
-      // Postpone a bit to let more important requests go
-      // eslint-disable-next-line no-await-in-loop
-      await new Promise((resolve) => setTimeout(resolve, 100));
+    //   // Postpone a bit to let more important requests go
+    //   // eslint-disable-next-line no-await-in-loop
+    //   await new Promise((resolve) => setTimeout(resolve, 100));
 
-      let messages: MessagesMessages;
-      try {
-        // eslint-disable-next-line no-await-in-loop
-        messages = await client.call('messages.getHistory', {
-          peer: peerToInputPeer(dialogs[i].peer),
-          offset_id: 0,
-          offset_date: 0,
-          add_offset: -10,
-          limit: 20,
-          max_id: 0,
-          min_id: 0,
-          hash: 0,
-        }, {
-          thread: 2,
-        });
-      } catch (err) {
-        return;
-      }
-      if (messages._ !== 'messages.messagesNotModified') {
-        userCache.put(messages.users);
-        chatCache.put(messages.chats);
-        messageCache.indices.history.putNewestMessages(messages.messages);
-      }
-    }
+    //   let messages: MessagesMessages;
+    //   try {
+    //     // eslint-disable-next-line no-await-in-loop
+    //     messages = await client.call('messages.getHistory', {
+    //       peer: peerToInputPeer(dialogs[i].peer),
+    //       offset_id: 0,
+    //       offset_date: 0,
+    //       add_offset: -10,
+    //       limit: 20,
+    //       max_id: 0,
+    //       min_id: 0,
+    //       hash: 0,
+    //     }, {
+    //       thread: 2,
+    //     });
+    //   } catch (err) {
+    //     return;
+    //   }
+    //   if (messages._ !== 'messages.messagesNotModified') {
+    //     userCache.put(messages.users);
+    //     chatCache.put(messages.chats);
+    //     messageCache.indices.history.putNewestMessages(messages.messages);
+    //   }
+    // }
   }
 }
