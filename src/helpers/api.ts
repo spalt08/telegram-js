@@ -103,7 +103,7 @@ export function shortChatMessageToMessage(message: Updates.updateShortChatMessag
 }
 
 export function isDialogInRootFolder(dialog: Dialog) {
-  return dialog._ === 'dialogFolder' || dialog.folder_id === ROOT_FOLDER_ID;
+  return dialog._ === 'dialogFolder' || dialog.folder_id === ROOT_FOLDER_ID || !dialog.folder_id;
 }
 
 export function isDialogArchived(dialog: Dialog) {
