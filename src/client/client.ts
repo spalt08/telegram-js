@@ -83,7 +83,7 @@ listenMessage('network_updated', (status) => emit('networkChanged', status));
 
 // Returns id of authorized user
 function getUserID(): number {
-  return meta && meta[dc] ? meta[dc].userID as number : 0;
+  return (meta && meta.userID) || 0;
 }
 
 // Returns base datacenter
@@ -125,7 +125,6 @@ const client = {
       pfs: true,
       dcs: {},
     };
-    console.log(meta);
   },
 };
 
