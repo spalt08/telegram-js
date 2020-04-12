@@ -114,6 +114,7 @@ const client = {
   getPasswordKdfAsync,
   authorize,
   storage: window.localStorage,
+  clear: () => { meta = {}; },
 };
 
 // debug
