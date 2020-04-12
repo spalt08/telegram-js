@@ -5,15 +5,21 @@ import { task, request, listenMessage } from './context';
 // Environment & Setup
 const debug = document.location.search.indexOf('debug') !== -1;
 let dc = +localStorage.getItem('dc')! || 2;
-let saveMetaField = 'meta';
+let saveMetaField = 'metadata';
 let test = false;
 
 if (document.location.search.indexOf('test') !== -1) {
   test = true;
-  saveMetaField = 'metatest';
+  saveMetaField = 'metadatatest';
 }
 
-let meta = JSON.parse(localStorage.getItem(saveMetaField) || '{}');
+const metaParsed = localStorage.getItem(saveMetaField);
+let meta = metaParsed ? JSON.parse(metaParsed) : { pfs: true, dcs: {} };
+
+for (let i = 0; i < 5; i++) {
+  if (meta.dcs[i] && meta.dcs[i].permanentKey) meta.dcs[i].permanentKey.key = new Uint32Array(meta.dcs[i].permanentKey.key);
+  if (meta.dcs[i] && meta.dcs[i].temporaryKey) meta.dcs[i].temporaryKey.key = new Uint32Array(meta.dcs[i].temporaryKey.key);
+}
 
 /**
  * Update callbacks
@@ -114,7 +120,13 @@ const client = {
   getPasswordKdfAsync,
   authorize,
   storage: window.localStorage,
-  clear: () => { meta = {}; },
+  clear: () => {
+    meta = {
+      pfs: true,
+      dcs: {},
+    };
+    console.log(meta);
+  },
 };
 
 // debug
@@ -124,6 +136,11 @@ const client = {
  * Cache client meta after page closing
  */
 window.addEventListener('beforeunload', () => {
+  for (let i = 0; i < 5; i++) {
+    if (meta.dcs[i] && meta.dcs[i].permanentKey) meta.dcs[i].permanentKey.key = Array.from(meta.dcs[i].permanentKey.key);
+    if (meta.dcs[i] && meta.dcs[i].temporaryKey) meta.dcs[i].temporaryKey.key = Array.from(meta.dcs[i].temporaryKey.key);
+  }
+
   client.storage.setItem(saveMetaField, JSON.stringify(meta));
 });
 
