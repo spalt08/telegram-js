@@ -3,10 +3,10 @@ import { div, text } from 'core/html';
 import { formatNumber } from 'helpers/other';
 import { WithInterfaceHook, useInterface } from 'core/hooks';
 import { getAttributeVideo, getAttributeSticker } from 'helpers/files';
+import { isEmoji } from 'helpers/message';
 import datetime from '../datetime/datetime';
 
 import './message_info.scss';
-import { isEmoji } from 'helpers/message';
 
 type ReadStatus =
   | 'sending'
