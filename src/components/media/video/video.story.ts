@@ -3,7 +3,7 @@ import { storiesOf } from '@storybook/html';
 import { number, select, withKnobs, boolean } from '@storybook/addon-knobs';
 import { withMountTrigger, withEmptyFileCache, centered } from 'storybook/decorators';
 import videoStreaming from 'mocks/documents/video_streaming.json';
-import { Document } from 'client/schema';
+import { Document } from 'mtproto-js';
 import videoRenderer from './video';
 
 const stories = storiesOf('Media | Video', module)

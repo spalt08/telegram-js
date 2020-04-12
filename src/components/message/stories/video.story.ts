@@ -2,7 +2,7 @@
 import { storiesOf } from '@storybook/html';
 import { withKnobs, boolean, text } from '@storybook/addon-knobs';
 import { withMountTrigger, withChatLayout } from 'storybook/decorators';
-import { Message, Peer } from 'client/schema';
+import { Message, Peer } from 'mtproto-js';
 import { messageCache } from 'cache';
 import { peerMessageToId } from 'helpers/api';
 

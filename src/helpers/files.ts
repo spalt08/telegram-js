@@ -20,13 +20,7 @@ export function hexBytesToArray(hex: string): number[] {
   return result;
 }
 
-export function strToBlob(str: string, type: string) {
-  const buf = new Uint8Array(str.length);
-
-  for (let i = 0; i < str.length; i += 1) {
-    buf[i] = str.charCodeAt(i);
-  }
-
+export function arrayToBlob(buf: ArrayBuffer, type: string) {
   return new Blob([buf], { type });
 }
 

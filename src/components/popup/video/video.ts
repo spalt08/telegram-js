@@ -1,5 +1,5 @@
 import { div, nothing, text } from 'core/html';
-import { Message, Peer, Document } from 'client/schema';
+import { Message, Peer, Document } from 'mtproto-js';
 import { listen, mount } from 'core/dom';
 import { getInterface, hasInterface, useListenWhileMounted } from 'core/hooks';
 import { close } from 'components/icons';
