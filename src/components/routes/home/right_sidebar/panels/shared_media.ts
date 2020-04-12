@@ -1,4 +1,4 @@
-import { Peer } from 'client/schema';
+import { Peer } from 'mtproto-js';
 import { tabsPanel } from 'components/ui';
 import mediaPanel from './media_panel';
 import docsPanel from './docs_panel';

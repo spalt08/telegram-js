@@ -2,7 +2,7 @@
 import { storiesOf } from '@storybook/html';
 import centered from '@storybook/addon-centered/html';
 import { withKnobs, number, boolean, text, optionsKnob } from '@storybook/addon-knobs';
-import { Message } from 'client/schema';
+import { Message } from 'mtproto-js';
 import commonMessage from 'mocks/messages/common.json';
 import messageInfo from './message_info';
 

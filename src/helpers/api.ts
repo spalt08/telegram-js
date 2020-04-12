@@ -1,4 +1,4 @@
-import { Dialog, Peer, Message, Updates } from 'client/schema';
+import { Dialog, Peer, Message, Updates } from 'mtproto-js';
 import { ARCHIVE_FOLDER_ID, ROOT_FOLDER_ID } from 'const/api';
 import { todoAssertHasValue } from './other';
 
@@ -103,7 +103,7 @@ export function shortChatMessageToMessage(message: Updates.updateShortChatMessag
 }
 
 export function isDialogInRootFolder(dialog: Dialog) {
-  return dialog._ === 'dialogFolder' || dialog.folder_id === ROOT_FOLDER_ID;
+  return dialog._ === 'dialogFolder' || dialog.folder_id === ROOT_FOLDER_ID || !dialog.folder_id;
 }
 
 export function isDialogArchived(dialog: Dialog) {
@@ -113,4 +113,8 @@ export function isDialogArchived(dialog: Dialog) {
 export function getDialogLastReadMessageId(dialog: Dialog.dialog) {
   // Not perfect but suitable for most cases
   return dialog.unread_count > 0 ? dialog.read_inbox_max_id : dialog.top_message;
+}
+
+export function arePeersSame(peer1: Peer | null | undefined, peer2: Peer | null | undefined) {
+  return (!!peer1 && peerToId(peer1)) === (!!peer2 && peerToId(peer2));
 }

@@ -4,7 +4,7 @@ import { smile, attach, send } from 'components/icons';
 import { message, media } from 'services';
 import { getInterface, useListenWhileMounted, useObservable } from 'core/hooks';
 import { chatCache } from 'cache';
-import { Document } from 'client/schema';
+import { Document } from 'mtproto-js';
 import { bubble } from 'components/ui';
 import stickMojiPanel from './input_stickmoji';
 import messageTextarea from './input_textarea';

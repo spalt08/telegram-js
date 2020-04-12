@@ -1,7 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { chatCache, messageCache, userCache } from 'cache';
-import { Peer, MessagesSearch, MessagesFilter, MessagesMessages } from 'client/schema';
+import { Peer, MessagesSearch, MessagesFilter, MessagesMessages } from 'mtproto-js';
 import { peerToInputPeer } from 'cache/accessors';
 import { mergeOrderedArrays } from 'helpers/data';
 import debounceWithQueue from '../../helpers/debounceWithQueue';

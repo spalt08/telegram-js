@@ -1,5 +1,5 @@
 import { div, nothing, text } from 'core/html';
-import { Message, Peer, Photo } from 'client/schema';
+import { Message, Peer, Photo } from 'mtproto-js';
 import './photo.scss';
 import { cached } from 'client/media';
 import { getPhotoLocation, getOrientation, getSize } from 'helpers/photo';

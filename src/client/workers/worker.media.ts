@@ -1,7 +1,6 @@
-import { InputFileLocation, InputFile } from 'client/schema';
+import { InputFileLocation, InputFile, Client } from 'mtproto-js';
 import { DownloadOptions } from 'client/types';
 import { typeToMime } from 'helpers/files';
-import { Client, TLConstructor, TLBytes, Bytes } from 'mtproto-js';
 
 // constants
 const DOWNLOAD_CHUNK_LIMIT = 512 * 1024;
@@ -16,7 +15,7 @@ const downloading: Record<string, {
   chunks: Uint8Array[],
 }> = {};
 const uploading: Record<string, {
-  data: Bytes,
+  data: Uint8Array,
   size: number,
   name: string,
   partSize: number,
@@ -61,21 +60,19 @@ function downloadFileChunkLoop(client: Client, id: string, part: number, notify:
     }
 
     // todo handling errors
-    if (err) {
+    if (err || !result || result._ === 'upload.fileCdnRedirect') {
       throw new Error(`Error while donwloading file: ${JSON.stringify(err)}`);
       return;
     }
 
-    if (!err && result && result instanceof TLConstructor && result.params.bytes instanceof TLBytes) {
-      const chunk = result.params.bytes.buffer;
-      if (chunk) downloading[id].chunks.push(chunk.buffer);
-      else throw new Error('Unexpected empty chunk');
+    if (!err && result) {
+      downloading[id].chunks.push(new Uint8Array(result.bytes));
 
-      if ((parts && part < parts - 1) || (!parts && chunk.length >= partSize)) {
+      if ((parts && part < parts - 1) || (!parts && result.bytes.byteLength >= partSize)) {
         downloadFileChunkLoop(client, id, part + 1, notify);
-        if (options.size) notify('download_progress', { id, downloaded: offset + chunk.length, total: options.size });
+        if (options.size) notify('download_progress', { id, downloaded: offset + result.bytes.byteLength, total: options.size });
       } else {
-        const type = options.mime_type || typeToMime(result.params.type.value);
+        const type = options.mime_type || typeToMime(result.type);
         const blob = new Blob(downloading[id].chunks, { type });
         const url = (URL || webkitURL).createObjectURL(blob);
 
@@ -119,9 +116,11 @@ function uploadFileChunkLoop(client: Client, id: string, part: number, notify: N
   const payload = {
     file_id: id,
     file_part: part,
-    bytes: data.slice(uploaded, uploaded + remaining).raw,
+    bytes: data.slice(uploaded, uploaded + remaining),
+    md5_checksum: '',
   };
 
+  // @ts-ignore
   client.call(big ? 'upload.saveFilePartBig' : 'upload.saveFilePart', payload, { thread: 2 }, (err, res) => {
     if (err || !res) throw new Error(`Error while uploadig file: ${JSON.stringify(err)}`);
 
@@ -160,7 +159,7 @@ export function uploadFile(client: Client, id: string, file: File, notify: Notif
   notify('upload_progress', { id, uploaded: 0, total: file.size });
 
   uploading[id] = {
-    data: new Bytes(reader.readAsArrayBuffer(file)),
+    data: new Uint8Array(reader.readAsArrayBuffer(file)),
     size: file.size,
     name: file.name,
     partSize,

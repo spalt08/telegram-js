@@ -1,4 +1,4 @@
-import { ReplyMarkup } from 'client/schema';
+import { ReplyMarkup } from 'mtproto-js';
 import { nothing, div, text } from 'core/html';
 import { mount } from 'core/dom';
 import './reply_markup.scss';

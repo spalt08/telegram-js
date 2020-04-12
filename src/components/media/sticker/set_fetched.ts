@@ -1,5 +1,5 @@
 import { text, div } from 'core/html';
-import { Document, StickerSet } from 'client/schema';
+import { Document, StickerSet } from 'mtproto-js';
 import { useInterface, getInterface } from 'core/hooks';
 import stickerRenderer from './sticker';
 import './set.scss';

@@ -1,9 +1,8 @@
 /* eslint-disable no-restricted-globals */
-import { Client, TypeLanguage } from 'mtproto-js';
+import { Client } from 'mtproto-js';
 import { API_ID, API_HASH, APP_VERSION } from 'const/api';
 import { WorkerMessageOutcoming, WorkerResponseType, WorkerResponsePayloadMap, WorkerNotificationType,
   WorkerNotificationPayloadMap } from 'client/types';
-import schema from './layer105.json';
 import { downloadFile, uploadFile } from './worker.media';
 import { loadTGS } from './worker.utils';
 
@@ -49,7 +48,7 @@ function processMessage(msg: WorkerMessageOutcoming) {
 
     case 'call': {
       const { id, payload: { method, params, headers } } = msg;
-      client.call(method, params, headers, (error, result) => respond(id, 'rpc_result', { error, result: result?.json() }));
+      client.call(method, params, headers, (error, result) => respond(id, 'rpc_result', { error, result }));
       break;
     }
 
@@ -105,8 +104,7 @@ ctx.onmessage = (event) => {
 
   // init client instance with config
   if (!client && message.type === 'init') {
-    const tl = new TypeLanguage(schema as any);
-    client = new Client(tl, {
+    client = new Client({
       ssl: true,
       protocol: 'intermediate',
       transport: 'websocket',

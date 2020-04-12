@@ -1,19 +1,25 @@
-import { InputCheckPasswordSRP, MethodDeclMap } from 'client/schema';
+import { InputCheckPasswordSRP, MethodDeclMap, UpdateDeclMap } from 'mtproto-js';
 import { EventResolver, APICallHeaders, APICallParams } from './types';
 import { task, request, listenMessage } from './context';
 
 // Environment & Setup
 const debug = document.location.search.indexOf('debug') !== -1;
 let dc = +localStorage.getItem('dc')! || 2;
-let saveMetaField = 'meta';
+let saveMetaField = 'metadata';
 let test = false;
 
 if (document.location.search.indexOf('test') !== -1) {
   test = true;
-  saveMetaField = 'metatest';
+  saveMetaField = 'metadatatest';
 }
 
-let meta = JSON.parse(localStorage.getItem(saveMetaField) || '{}');
+const metaParsed = localStorage.getItem(saveMetaField);
+let meta = metaParsed ? JSON.parse(metaParsed) : { pfs: true, dcs: {} };
+
+for (let i = 0; i < 5; i++) {
+  if (meta.dcs[i] && meta.dcs[i].permanentKey) meta.dcs[i].permanentKey.key = new Uint32Array(meta.dcs[i].permanentKey.key);
+  if (meta.dcs[i] && meta.dcs[i].temporaryKey) meta.dcs[i].temporaryKey.key = new Uint32Array(meta.dcs[i].temporaryKey.key);
+}
 
 /**
  * Update callbacks
@@ -52,7 +58,7 @@ function on(type: string, cb: EventResolver) {
 /**
  * Subscribe update event
  */
-function onUpdate(type: string, cb: EventResolver) {
+function onUpdate(type: keyof UpdateDeclMap, cb: EventResolver) {
   on(type, cb);
   task('listen_update', type);
 }
@@ -77,7 +83,7 @@ listenMessage('network_updated', (status) => emit('networkChanged', status));
 
 // Returns id of authorized user
 function getUserID(): number {
-  return meta && meta[dc] ? meta[dc].userID as number : 0;
+  return (meta && meta.userID) || 0;
 }
 
 // Returns base datacenter
@@ -94,7 +100,7 @@ function setBaseDC(dc_id: number) {
 }
 
 // Returns result of kdf hash algo
-function getPasswordKdfAsync(algo: any, password: string): Promise<InputCheckPasswordSRP> {
+function getPasswordKdfAsync(algo: any, password: string): Promise<InputCheckPasswordSRP.inputCheckPasswordSRP> {
   return new Promise((resolve) => request('password_kdf', { algo, password }, resolve));
 }
 
@@ -114,6 +120,12 @@ const client = {
   getPasswordKdfAsync,
   authorize,
   storage: window.localStorage,
+  clear: () => {
+    meta = {
+      pfs: true,
+      dcs: {},
+    };
+  },
 };
 
 // debug
@@ -123,6 +135,11 @@ const client = {
  * Cache client meta after page closing
  */
 window.addEventListener('beforeunload', () => {
+  for (let i = 0; i < 5; i++) {
+    if (meta.dcs[i] && meta.dcs[i].permanentKey) meta.dcs[i].permanentKey.key = Array.from(meta.dcs[i].permanentKey.key);
+    if (meta.dcs[i] && meta.dcs[i].temporaryKey) meta.dcs[i].temporaryKey.key = Array.from(meta.dcs[i].temporaryKey.key);
+  }
+
   client.storage.setItem(saveMetaField, JSON.stringify(meta));
 });
 
