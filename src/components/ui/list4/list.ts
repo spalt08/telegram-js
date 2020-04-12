@@ -235,7 +235,6 @@ export class VirtualizedList {
       const elem = this.ensureElement(item);
       if (!this.mountedElements.has(item)) {
         mount(this.scrollPane, elem);
-        console.error('m');
       }
       this.mountedElements.set(item, elem);
       // console.error(this.mountedElements.size);
@@ -247,7 +246,6 @@ export class VirtualizedList {
     this.mountedElements.forEach((e, i) => {
       if (!visibleItems.has(i)) {
         unmount(e);
-        console.error('unm');
         this.mountedElements.delete(i);
       }
     });
