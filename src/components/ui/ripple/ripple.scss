@@ -1,6 +1,9 @@
 .ripple {
   position: relative;
+
+  // Optimization: overflow hidden and z-index together lock the element to an independent render unit
   overflow: hidden;
+  z-index: 0;
 
   &__content {
     position: relative;

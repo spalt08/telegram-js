@@ -13,7 +13,10 @@
   background-color: #F4F4F5;
   color: #8D969C;
   border-radius: ($height / 2);
+
+  // Optimization: overflow hidden and z-index together lock the element to an independent render unit
   overflow: hidden;
+  z-index: 0;
 
   input,
   &__activeBG {
