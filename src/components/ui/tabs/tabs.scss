@@ -5,7 +5,6 @@
   justify-content: space-between;
   overflow: hidden;
   display: flex;
-  position: relative;
 
   &__header {
     flex: none;
@@ -78,8 +77,12 @@
 
   &__container {
     flex: 1; // If you set it to `auto`, the content won't have 100% height in Safari
-    overflow: hidden;
     min-height: 0;
+    position: relative;
+
+    // Optimization: overflow hidden and z-index together lock the element to an independent render unit
+    overflow: hidden;
+    z-index: 0;
 
     & > div {
       transition: transform .3s ease-out;
@@ -87,7 +90,6 @@
 
     & > .removing-left, & > .removing-right {
       position: absolute;
-      height: calc(100% - 42px);
     }
 
     & > .removing-left {

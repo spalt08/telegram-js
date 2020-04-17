@@ -355,3 +355,23 @@ export function watchVisibility(element: Element, onChange: (isVisible: boolean)
 
   return () => observer.disconnect();
 }
+
+/**
+ * Makes a promise that resolves right at the start of an animation frame start
+ * (in contract to requestAnimationFrame that fires at the and of the animation frame).
+ * Use it to run a heavy task during or right after an animation or transition.
+ *
+ * @param calledFromRafCallback Set to true when you are sure that this function is called from a requestAnimationFrame callback.
+ *  This is optional, it just saves 16ms (animation frame duration) of idling if you use it right.
+ *
+ * @see https://stackoverflow.com/a/61251154/1118709
+ */
+export function animationFrameStart(calledFromRafCallback = false): Promise<void> {
+  return new Promise((resolve) => {
+    if (calledFromRafCallback) {
+      setTimeout(resolve);
+    } else {
+      requestAnimationFrame(() => setTimeout(resolve));
+    }
+  });
+}
