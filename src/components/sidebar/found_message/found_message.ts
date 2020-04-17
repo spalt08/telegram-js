@@ -57,7 +57,7 @@ export default function foundMessage(messageUniqueId: string, searchQuery: Maybe
           div`.foundMessage__name`(
             profileTitle(senderPeer),
           ),
-          datetime({ timestamp: message.date, className: 'foundMessage__time' }),
+          div`.foundMessage__time`(datetime({ timestamp: message.date })),
         ),
         messageEl,
       ),
