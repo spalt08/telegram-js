@@ -10,7 +10,7 @@ import download from './download_button.svg?raw';
 import './play_button.scss';
 
 export default function playButton(doc: Document.document) {
-  const downloadButtonSvg = svgCodeToComponent(download, doc.id)({ class: 'download' });
+  const downloadButtonSvg = svgCodeToComponent(download.replace(/\$id\$/g, doc.id))({ class: 'download' });
   const playButtonSvg = play({ class: 'play hidden' });
   const pauseButtonSvg = pause({ class: 'pause hidden' });
   const cancelButtonSvg = close({ class: 'cancel hidden' });
