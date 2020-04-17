@@ -50,6 +50,43 @@ function triggerUnmountRecursive(element: Node) {
 }
 
 /**
+ * Mounts Node to parent Node
+ */
+export function mount(parent: Node, child: Node, before?: Node) {
+  // Fragment gets empty after being mounted so the trigger code below doesn't work. The lines below are a workaround.
+  if (child instanceof DocumentFragment) {
+    while (child.firstChild) {
+      mount(parent, child.firstChild, before);
+    }
+    return;
+  }
+
+  if (before) {
+    parent.insertBefore(child, before);
+  } else {
+    parent.appendChild(child);
+  }
+
+  if (isMounted(parent)) {
+    triggerMountRecursive(child);
+  } else if (isMountTriggered(child)) {
+    // For a case when the child is remounted to an unmounted parent
+    triggerUnmountRecursive(child);
+  }
+}
+
+/**
+ * Unmounts HTMLElement
+ */
+export function unmount(element: Node) {
+  if (element.parentNode) {
+    element.parentNode.removeChild(element);
+  }
+
+  triggerUnmountRecursive(element);
+}
+
+/**
  * Attach event listener to element
  */
 export function listen<K extends keyof HTMLElementEventMap>(element: HTMLElement, event: K, cb: (event: HTMLElementEventMap[K]) => void, options?: boolean | AddEventListenerOptions): void; // eslint-disable-line max-len
@@ -81,54 +118,6 @@ export function listenOnce(element: EventTarget, event: string, cb: (event: Even
     cb(e);
   };
   element.addEventListener(event, handle);
-}
-
-/**
- * Dispatch element event
- */
-export function dispatch(element: EventTarget, eventName: string, bubbles = false, cancelable = false) {
-  // @link https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Creating_and_triggering_events#The_old-fashioned_wayv
-  const event = document.createEvent('Event');
-  event.initEvent(eventName, bubbles, cancelable);
-
-  element.dispatchEvent(event);
-}
-
-/**
- * Mounts Node to parent Node
- */
-export function mount(parent: Node, child: Node, before?: Node) {
-  // Fragment gets empty after being mounted so the trigger code below doesn't work. The lines below are a workaround.
-  if (child instanceof DocumentFragment) {
-    while (child.firstChild) {
-      mount(parent, child.firstChild, before);
-    }
-    return;
-  }
-
-  if (before) {
-    parent.insertBefore(child, before);
-  } else {
-    parent.appendChild(child);
-  }
-
-  if (isMounted(parent)) {
-    triggerMountRecursive(child);
-  } else {
-    // For a case when the child is remounted to an unmounted parent
-    triggerUnmountRecursive(child);
-  }
-}
-
-/**
- * Unmounts HTMLElement
- */
-export function unmount(element: Node) {
-  if (element.parentNode) {
-    element.parentNode.removeChild(element);
-  }
-
-  triggerUnmountRecursive(element);
 }
 
 /**
@@ -191,7 +180,7 @@ export function setStyle(element: HTMLElement | SVGElement, style: Partial<Maybe
 export function setValue(element: HTMLInputElement, value: MaybeObservable<string>) {
   useMaybeObservable(element, value, (v) => {
     element.value = v;
-    dispatch(element, 'input');
+    element.dispatchEvent(new Event('input'));
   });
 }
 
@@ -327,7 +316,7 @@ export function watchVisibility(element: Element, onChange: (isVisible: boolean)
     // A fallback
     const unsubscribeMount = useOnMount(element, () => onChange(true));
     const unsubscribeUnmount = useOnUnmount(element, () => onChange(false));
-    onChange(!!isMountTriggered(element));
+    onChange(isMounted(element));
     return () => {
       unsubscribeMount();
       unsubscribeUnmount();
