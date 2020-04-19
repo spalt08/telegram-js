@@ -1,5 +1,5 @@
 import { div } from 'core/html';
-import { mount, el, unmount, listen } from 'core/dom';
+import { mount, el, unmount, listen, animationFrameStart } from 'core/dom';
 import { useInterface } from 'core/hooks';
 import './ripple.scss';
 
@@ -24,7 +24,10 @@ export default function ripple({ tag = 'div', className = '', contentClass = '',
         left: `${((event.clientX - rect.left) / (rect.right - rect.left)) * 100}%`,
         top: `${((event.clientY - rect.top) / (rect.bottom - rect.top)) * 100}%`,
       },
-      onAnimationEnd: () => unmount(effect),
+      onAnimationEnd: async () => {
+        await animationFrameStart();
+        unmount(effect);
+      },
     });
 
     mount(element, effect);

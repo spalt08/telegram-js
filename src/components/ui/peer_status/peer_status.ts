@@ -1,6 +1,6 @@
 import { timer, combineLatest, Subject } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
-import { Peer, UserStatus } from 'client/schema';
+import { Peer, UserStatus } from 'mtproto-js';
 import { userCache, chatCache, chatFullCache } from 'cache';
 import { el, mount, unmountChildren } from 'core/dom';
 import { text, fragment } from 'core/html';

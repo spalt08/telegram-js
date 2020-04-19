@@ -2,7 +2,7 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import binarySearch from 'binary-search';
 import { messageToDialogPeer, peerToId } from 'helpers/api';
 import { mergeOrderedArrays } from 'helpers/data';
-import { Message, Peer } from '../../../client/schema';
+import { Message, Peer } from 'mtproto-js';
 import Collection from '../collection';
 
 interface IdsChunkReference {

@@ -1,4 +1,4 @@
-import { Peer } from 'client/schema';
+import { Peer } from 'mtproto-js';
 import { MaybeObservable } from 'core/types';
 import { div, fragment, nothing, text } from 'core/html';
 import { makeTextMatchHighlightComponent, peerSimpleStatus, ripple } from 'components/ui';

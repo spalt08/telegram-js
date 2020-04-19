@@ -1,7 +1,7 @@
 import { BehaviorSubject, Subject } from 'rxjs';
 import { first } from 'rxjs/operators';
 import client from 'client/client';
-import { Message, Peer, MessagesGetMessages, MessagesSendMedia, InputMedia, Updates, Dialog } from 'client/schema';
+import { Message, Peer, MessagesGetMessages, MessagesSendMedia, InputMedia, Updates, Dialog } from 'mtproto-js';
 import { dialogCache, messageCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import {

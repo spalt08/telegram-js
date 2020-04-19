@@ -47,7 +47,7 @@ export default function foundMessage(messageUniqueId: string, searchQuery: Maybe
           div`.foundMessage__name`(
             profileTitle(senderPeer),
           ),
-          datetime({ timestamp: message.date, className: 'foundMessage__time' }),
+          div`.foundMessage__time`(datetime({ timestamp: message.date })),
         ),
         message._ === 'message'
           ? messageHighlight({ tag: 'div', props: { class: 'foundMessage__message' }, text: message.message, query: searchQuery })

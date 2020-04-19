@@ -1,4 +1,4 @@
-import { Document } from 'client/schema';
+import { Document } from 'mtproto-js';
 import { div, text, nothing, strong, span } from 'core/html';
 import { getAttributeAudio, getReadableDuration, getAttributeFilename } from 'helpers/files';
 import { playButton, audioSeekbar, waveform } from 'components/ui';

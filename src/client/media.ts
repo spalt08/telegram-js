@@ -1,4 +1,4 @@
-import { InputFileLocation } from 'client/schema';
+import { InputFileLocation } from 'mtproto-js';
 import { locationToString } from 'helpers/files';
 import { task, listenMessage } from './context';
 import { UploadResolver, UploadProgressResolver, DownloadResolver,

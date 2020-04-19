@@ -1,6 +1,6 @@
 import { div, text } from 'core/html';
 import { materialSpinner } from 'components/icons';
-import { Document, InputStickerSet } from 'client/schema';
+import { Document, InputStickerSet } from 'mtproto-js';
 import { listen, unmount, mount } from 'core/dom';
 import { getInterface } from 'core/hooks';
 import client from 'client/client';

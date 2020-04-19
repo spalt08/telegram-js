@@ -1,4 +1,4 @@
-import { Photo, Peer, Message } from 'client/schema';
+import { Photo, Peer, Message } from 'mtproto-js';
 import { listen } from 'core/dom';
 import { getInterface } from 'core/hooks';
 import { main } from 'services';

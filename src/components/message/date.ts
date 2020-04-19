@@ -1,5 +1,5 @@
 import { datetime } from 'components/ui';
-import { Message } from 'client/schema';
+import { Message } from 'mtproto-js';
 import { div } from 'core/html';
 
 export default function messageDate(message: Message.message) {

@@ -2,7 +2,7 @@
 import { storiesOf } from '@storybook/html';
 import { withKnobs, boolean, text } from '@storybook/addon-knobs';
 import { withMountTrigger, withChatLayout } from 'storybook/decorators';
-import { Document, DocumentAttribute, Message, MessageMedia, Peer } from 'client/schema';
+import { Document, DocumentAttribute, Message, MessageMedia, Peer } from 'mtproto-js';
 import { messageCache } from 'cache';
 
 import message from '../message';
@@ -17,7 +17,7 @@ stories.add('Common Usage', () => {
     _: 'document',
     id: '1',
     access_hash: '1',
-    file_reference: '1',
+    file_reference: new Uint8Array(1),
     date: 0,
     mime_type: '?',
     size: 100,

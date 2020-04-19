@@ -1,4 +1,4 @@
-import { Peer } from 'client/schema';
+import { Peer } from 'mtproto-js';
 import { peerToInputPeer } from 'cache/accessors';
 import client from 'client/client';
 import { MessagesChunk } from 'cache/fastStorages/indices/messageHistory';

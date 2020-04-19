@@ -2,7 +2,7 @@ import { BehaviorSubject } from 'rxjs';
 import debounceWithQueue from 'helpers/debounceWithQueue';
 import { messageToDialogPeer, peerMessageToId } from 'helpers/api';
 import client from 'client/client';
-import { ContactsFound, Message, MessagesMessages, Peer } from 'client/schema';
+import { ContactsFound, Message, MessagesMessages, Peer } from 'mtproto-js';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 

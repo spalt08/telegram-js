@@ -1,8 +1,7 @@
-import { MessageEntity, Message } from 'client/schema';
+import { MessageEntity, Message } from 'mtproto-js';
 import { strong, text, code, pre, em, a, fragment, span } from 'core/html';
 import { mount } from 'core/dom';
 import { newWindowLinkAttributes } from 'const';
-import { todoAssertHasValue } from 'helpers/other';
 
 interface TreeNode {
   children: TreeNode[];
@@ -113,7 +112,9 @@ export function formattedMessage(message: Message.message | string) {
   if (typeof message === 'string') return highlightLinks(message);
 
   const root = createTreeNode(message.message);
-  todoAssertHasValue(message.entities).forEach((e) => applyEntity(root, e.offset, e.length, e));
+  if (message.entities) {
+    message.entities.forEach((e) => applyEntity(root, e.offset, e.length, e));
+  }
   const frag = fragment();
   const nodeList: Node[] = [];
   nodeToHtml(root, nodeList);

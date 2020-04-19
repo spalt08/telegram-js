@@ -1,4 +1,4 @@
-import { Peer, Message } from 'client/schema';
+import { Peer, Message } from 'mtproto-js';
 import { peerToId } from 'helpers/api';
 import { Subject, ReplaySubject, Observable } from 'rxjs';
 import Collection, { GetId } from '../collection';

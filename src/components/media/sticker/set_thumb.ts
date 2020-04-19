@@ -1,4 +1,4 @@
-import { StickerSet } from 'client/schema';
+import { StickerSet } from 'mtproto-js';
 import { div, img } from 'core/html';
 import { getStickerSetThumbLocation } from 'helpers/photo';
 import { download } from 'client/media';

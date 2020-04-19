@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
 import { IdsChunk, MessagesChunk } from 'cache/fastStorages/indices/messageHistory';
-import { Peer } from 'client/schema';
+import { Peer } from 'mtproto-js';
 import { messageCache } from 'cache';
 import { Direction } from './types';
 import { LOAD_CHUNK_LENGTH, loadContinuousMessages } from './helpers';

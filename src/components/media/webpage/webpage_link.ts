@@ -1,4 +1,4 @@
-import { WebPage, Message } from 'client/schema';
+import { WebPage, Message } from 'mtproto-js';
 import { div, text, a, nothing } from 'core/html';
 import { newWindowLinkAttributes } from 'const';
 import { ripple, formattedMessage } from 'components/ui';

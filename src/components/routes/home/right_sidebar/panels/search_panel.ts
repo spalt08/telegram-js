@@ -2,7 +2,7 @@ import { map } from 'rxjs/operators';
 import { div, text } from 'core/html';
 import { main as mainService, messageSearch, RightSidebarPanel } from 'services';
 import { isSearchRequestEmpty } from 'services/message_search/message_search_session';
-import { Peer } from 'client/schema';
+import { Peer } from 'mtproto-js';
 import * as icons from 'components/icons';
 import { roundButton, searchInput, VirtualizedList } from 'components/ui';
 import { getInterface, useToBehaviorSubject } from 'core/hooks';

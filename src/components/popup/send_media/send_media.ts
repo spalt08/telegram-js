@@ -6,7 +6,7 @@ import { upload } from 'client/media';
 import { getReadableSize } from 'helpers/files';
 import { send } from 'components/icons';
 import messageTextarea from 'components/message/input/input_textarea';
-import { InputFile } from 'client/schema';
+import { InputFile } from 'mtproto-js';
 import { KeyboardKeys } from 'const';
 import popupCommon from '../popup_common';
 import './send_media.scss';

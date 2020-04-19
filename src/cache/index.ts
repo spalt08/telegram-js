@@ -5,7 +5,7 @@ import {
   peerMessageToId,
   peerToId,
 } from 'helpers/api';
-import { Chat, Dialog, Message, User, UserFull, ChatFull } from 'client/schema';
+import { Chat, Dialog, Message, User, UserFull, ChatFull } from 'mtproto-js';
 import { considerMinItemMerger } from './fastStorages/dictionary';
 import Collection, { GetId, makeGetIdFromProp } from './fastStorages/collection';
 import { orderBy } from './fastStorages/indices';

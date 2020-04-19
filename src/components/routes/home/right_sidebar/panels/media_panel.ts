@@ -1,4 +1,4 @@
-import { Peer, Message, MessagesFilter } from 'client/schema';
+import { Peer, Message, MessagesFilter } from 'mtproto-js';
 import { div } from 'core/html';
 import { VirtualizedList } from 'components/ui';
 import { BehaviorSubject } from 'rxjs';

@@ -3,7 +3,7 @@
 import { storiesOf } from '@storybook/html';
 import { withKnobs, text, boolean } from '@storybook/addon-knobs';
 import { withMountTrigger, withChatLayout } from 'storybook/decorators';
-import { Message, Peer, User, Chat } from 'client/schema';
+import { Message, Peer, User, Chat } from 'mtproto-js';
 import { messageCache, userCache, chatCache } from 'cache';
 import { peerMessageToId } from 'helpers/api';
 

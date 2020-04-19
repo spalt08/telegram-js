@@ -1,10 +1,34 @@
 import { el, setElementProps, svgFromCode } from './dom';
 
 /**
- * Transforms ES tagged litterals to className
+ * Transforms ES tagged literals to className
+ *
+ * The fastest implementation in average: https://jsben.ch/ejsLP
  */
-function literalsToClassname(strings: string[], ...values: unknown[]): string {
-  return `${strings[0].slice(1).split('.').join(' ')}${['', ...values].join(' ')}`;
+function literalsToClassname(strings: string[], ...values: unknown[]) {
+  let classname = '';
+  let i = 0;
+  let nextI: number;
+
+  // Replace dots with spaces in the main class string
+  for (;;) {
+    nextI = strings[0].indexOf('.', i);
+    if (nextI === -1) {
+      classname += `${strings[0].slice(i)} `;
+      break;
+    }
+    if (nextI !== i) {
+      classname += `${strings[0].slice(i, nextI)} `;
+    }
+    i = nextI + 1;
+  }
+
+  // Add the extra classes
+  for (i = 0; i < values.length; ++i) {
+    classname += `${values[i]} `;
+  }
+
+  return classname;
 }
 
 /**
@@ -82,7 +106,7 @@ export function ElementFactory<T extends keyof HTMLElementTagNameMap>(tag: T) {
       && (args[0] as TemplateStringsArray).raw
       && Array.isArray(args[0])
     ) {
-      const className = literalsToClassname(args[0] as string[], ...args.slice(1));
+      const className = literalsToClassname(...args as [string[], string]);
       return ElementFactoryGeneric(tag, { className });
     }
 
@@ -94,12 +118,12 @@ export function ElementFactory<T extends keyof HTMLElementTagNameMap>(tag: T) {
   return TemplatedResolver;
 }
 
-export function svgCodeToComponent(code: string, id?: string) {
+export function svgCodeToComponent(code: string) {
   let svg: SVGSVGElement | undefined; // Lazy initialization
 
   function getOrCreateTemplate(): SVGSVGElement {
     if (!svg) {
-      svg = svgFromCode(code, id);
+      svg = svgFromCode(code);
 
       // To not keep the code in memory
       code = ''; // eslint-disable-line no-param-reassign

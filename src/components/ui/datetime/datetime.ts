@@ -1,10 +1,9 @@
-import { span, text } from 'core/html';
+import { text } from 'core/html';
 import { useMaybeObservable } from 'core/hooks';
 import { MaybeObservable } from 'core/types';
 
 type Props = {
   timestamp: MaybeObservable<number>,
-  className?: string,
   date?: boolean,
   full?: boolean,
 };
@@ -29,14 +28,17 @@ function format(date: Date, showdate: boolean = true, showfull: boolean = false)
   return date.toLocaleDateString();
 }
 
-export default function datetime({ timestamp, className, date = true, full = false }: Props) {
-  const node = text('');
-  const element = span({ className }, node);
+export default function datetime({ timestamp, date = true, full = false }: Props) {
+  let lastText = '';
+  const node = text(lastText);
 
-  useMaybeObservable(element, timestamp, (ts) => {
-    const tdate = new Date(ts * 1000);
-    node.textContent = format(tdate, date, full);
+  useMaybeObservable(node, timestamp, (ts) => {
+    const newText = format(new Date(ts * 1000), date, full);
+    if (newText !== lastText) {
+      lastText = newText;
+      node.textContent = newText;
+    }
   });
 
-  return element;
+  return node;
 }

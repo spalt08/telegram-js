@@ -1,5 +1,5 @@
 import { dialogCache } from 'cache';
-import { Dialog, Peer } from 'client/schema';
+import { Dialog, Peer } from 'mtproto-js';
 import { peerToInputChannel, peerToInputPeer } from 'cache/accessors';
 import client from 'client/client';
 import { dialogPeerToDialogId } from 'helpers/api';
