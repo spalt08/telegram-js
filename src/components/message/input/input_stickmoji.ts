@@ -3,7 +3,7 @@ import stickerPanel from 'components/media/sticker/panel';
 import './input_stickmoji.scss';
 import { animationFrameStart, listenOnce } from 'core/dom';
 import { getInterface, hasInterface } from 'core/hooks';
-import { Document } from 'client/schema';
+import { Document } from 'mtproto-js';
 import { tabsPanel } from 'components/ui';
 
 type Props = {

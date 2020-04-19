@@ -1,4 +1,4 @@
-import { Document } from 'client/schema';
+import { Document } from 'mtproto-js';
 import { play, pause, close } from 'components/icons';
 import { svgCodeToComponent } from 'core/factory';
 import { MediaPlaybackStatus } from 'services/media';

@@ -11,7 +11,7 @@ import {
   AuthSentCode,
   AuthAuthorization,
   AccountPassword,
-} from 'client/schema';
+} from 'mtproto-js';
 
 export const enum AuthStage {
   Unauthorized,

@@ -1,4 +1,4 @@
-import { AuthSentCode, MethodDeclMap } from 'client/schema';
+import { AuthSentCode, MethodDeclMap } from 'mtproto-js';
 import fileMap from './files';
 
 export function mockResponse<T extends keyof MethodDeclMap>(

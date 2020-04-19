@@ -1,4 +1,4 @@
-import { Peer, UserStatus } from 'client/schema';
+import { Peer, UserStatus } from 'mtproto-js';
 import { userCache, chatCache, chatFullCache } from 'cache';
 import { text, span } from 'core/html';
 import { useObservable } from 'core/hooks';
