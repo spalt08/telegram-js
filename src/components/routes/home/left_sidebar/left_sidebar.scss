@@ -1,11 +1,15 @@
 .leftSidebar {
   display: flex;
   flex-direction: column;
+
+  // Optimization: overflow hidden and z-index together lock the element to an independent render unit
   overflow: hidden;
+  z-index: 0;
 
   &__head {
     flex: none;
     height: 60px;
+    min-height: 60px;
     display: flex;
     flex-direction: row;
     justify-content: space-between;

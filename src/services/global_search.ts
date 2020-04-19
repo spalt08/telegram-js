@@ -6,9 +6,9 @@ import { ContactsFound, Message, MessagesMessages, Peer } from 'mtproto-js';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 
-const LOAD_MESSAGES_CHUNK_LENGTH = 20;
-const CONTACTS_SEARCH_MAX_COUNT = 10;
-const SEARCH_REQUEST_DEBOUNCE = 500;
+const loadMessagesChunkLength = 20;
+const contactsSearchMaxCount = 10;
+const searchRequestDebounce = 500;
 
 export type SearchRequest = string;
 
@@ -49,7 +49,7 @@ async function searchPeers(request: SearchRequest) {
   let data: ContactsFound;
 
   try {
-    data = await client.call('contacts.search', { q: request, limit: CONTACTS_SEARCH_MAX_COUNT });
+    data = await client.call('contacts.search', { q: request, limit: contactsSearchMaxCount });
   } catch (error) {
     if (process.env.NODE_ENV !== 'production') {
       // eslint-disable-next-line no-console
@@ -79,7 +79,7 @@ async function searchMessages(request: SearchRequest, offsetMessage: Exclude<Mes
       offset_rate: offsetMessage ? offsetMessage.date : 0,
       offset_peer: offsetMessage ? peerToInputPeer(messageToDialogPeer(offsetMessage)) : { _: 'inputPeerEmpty' },
       offset_id: offsetMessage ? offsetMessage.id : 0,
-      limit: LOAD_MESSAGES_CHUNK_LENGTH,
+      limit: loadMessagesChunkLength,
     });
   } catch (error) {
     if (error.message === 'SEARCH_QUERY_EMPTY') {
@@ -108,7 +108,7 @@ async function searchMessages(request: SearchRequest, offsetMessage: Exclude<Mes
     }
   });
   const count = data._ === 'messages.messages' ? data.messages.length : data.count;
-  const isEnd = data._ === 'messages.messages' || data.messages.length < LOAD_MESSAGES_CHUNK_LENGTH * 0.9; // Decrease just in case
+  const isEnd = data._ === 'messages.messages' || data.messages.length < loadMessagesChunkLength * 0.9; // Decrease just in case
   return { ids, count, isEnd };
 }
 
@@ -204,7 +204,7 @@ export default class GlobalSearch {
 
   protected debouncedSearch = debounceWithQueue<SearchRequest, FilledQueryResponse | null>({
     initialInput: emptySearchRequest,
-    debounceTime: SEARCH_REQUEST_DEBOUNCE,
+    debounceTime: searchRequestDebounce,
     performOnInit: false,
     shouldPerform(prevRequest, nextRequest) {
       return !areSearchRequestsEqual(prevRequest, nextRequest);

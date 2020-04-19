@@ -348,7 +348,7 @@ export function watchVisibility(element: Element, onChange: (isVisible: boolean)
 /**
  * Makes a promise that resolves right at the start of an animation frame start
  * (in contract to requestAnimationFrame that fires at the and of the animation frame).
- * Use it to run a heavy task during or right after an animation or transition.
+ * Use it to run a heavy task during or right after an animation or a transition.
  *
  * @param calledFromRafCallback Set to true when you are sure that this function is called from a requestAnimationFrame callback.
  *  This is optional, it just saves 16ms (animation frame duration) of idling if you use it right.

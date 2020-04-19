@@ -8,6 +8,7 @@ import PeerService from './peer';
 import MessageSearchService from './message_search/message_search';
 import UserTyping from './user_typing';
 import UserService from './user';
+import TopUsersService from './top_users';
 
 export { AuthStage } from './auth';
 export { RightSidebarPanel } from './main';
@@ -22,3 +23,4 @@ export const dialog = new DialogService(message);
 export const media = new MediaService(main);
 export const messageSearch = new MessageSearchService();
 export const globalSearch = new GlobalSearchService();
+export const topUsers = new TopUsersService(message);

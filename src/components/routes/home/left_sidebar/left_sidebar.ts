@@ -2,7 +2,7 @@ import { BehaviorSubject, combineLatest } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { div } from 'core/html';
 import { getInterface } from 'core/hooks';
-import { mount, unmount } from 'core/dom';
+import { animationFrameStart, mount, unmount } from 'core/dom';
 import { roundButton, searchInput } from 'components/ui';
 import * as icons from 'components/icons';
 import { globalSearch } from 'services';
@@ -68,14 +68,16 @@ export default function leftSidebar({ className = '' }: Props = {}) {
     }
   };
 
-  const handleSearchResultTransitionEnd = () => {
+  const handleSearchResultTransitionEnd = async () => {
+    await animationFrameStart();
     if (searchResultLayer && !isSearchActive.value) {
       unmount(searchResultLayer);
       searchResultLayer = undefined;
     }
   };
 
-  isSearchActive.subscribe((isActive) => {
+  isSearchActive.subscribe(async (isActive) => {
+    await animationFrameStart();
     if (isActive) {
       dialogsLayer.classList.add('-down');
       if (searchResultLayer) {

@@ -17,6 +17,7 @@ const sectionHeaders: Record<string, string> = {
   contactPeersHeader: 'Contacts and Chats',
   globalPeersHeader: 'Global Search',
   messagesHeader: 'Messages',
+  nothingFound: 'Nothing is found',
 };
 
 function searchResultToListItems(result: SearchResult) {
