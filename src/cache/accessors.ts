@@ -93,7 +93,7 @@ export function userToTitle(user: User | undefined, myUserId?: number) {
   if (myUserId && user.id === myUserId) {
     return 'Saved Messages';
   }
-  return `${user.first_name} ${user.last_name}`;
+  return `${user.first_name || ''} ${user.last_name || ''}`;
 }
 
 export function chatToTitle(chat: Chat | undefined) {
