@@ -1,10 +1,11 @@
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import debounceWithQueue from 'helpers/debounceWithQueue';
 import { messageToDialogPeer, peerMessageToId } from 'helpers/api';
 import client from 'client/client';
 import { ContactsFound, Message, MessagesMessages, Peer } from 'mtproto-js';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
+import TopUsersService from './top_users';
 
 const loadMessagesChunkLength = 20;
 const contactsSearchMaxCount = 10;
@@ -12,7 +13,12 @@ const searchRequestDebounce = 500;
 
 export type SearchRequest = string;
 
+interface EmptyQueryResponse {
+  type: SearchResultType.ForEmptyQuery;
+}
+
 interface FilledQueryResponse {
+  type: SearchResultType.ForFilledQuery;
   contactPeers: Peer[];
   globalPeers: Peer[];
   messageIds: string[];
@@ -20,19 +26,21 @@ interface FilledQueryResponse {
   isMessageListFull: boolean;
 }
 
+type SearchResponse = EmptyQueryResponse | FilledQueryResponse;
+
 export const enum SearchResultType {
   ForEmptyQuery,
   ForFilledQuery,
 }
 
-export interface EmptyQueryResult {
+export interface EmptyQueryResult extends EmptyQueryResponse {
   request: SearchRequest;
-  type: SearchResultType.ForEmptyQuery;
+  topUsers: Peer[],
+  recentPeers: Peer[], // todo: Implement
 }
 
 export interface FilledQueryResult extends FilledQueryResponse {
   request: SearchRequest;
-  type: SearchResultType.ForFilledQuery;
 }
 
 export type SearchResult = EmptyQueryResult | FilledQueryResult;
@@ -112,24 +120,24 @@ async function searchMessages(request: SearchRequest, offsetMessage: Exclude<Mes
   return { ids, count, isEnd };
 }
 
-const emptySearchRequest: SearchRequest = '';
-
 export default class GlobalSearch {
   readonly result = new BehaviorSubject<SearchResult>({
     type: SearchResultType.ForEmptyQuery,
-    request: emptySearchRequest,
+    request: '',
+    topUsers: [],
+    recentPeers: [],
   });
 
   readonly isSearching = new BehaviorSubject(false);
 
   readonly isLoadingMore = new BehaviorSubject(false);
 
+  protected sourceSubscriptions: Subscription[] = [];
+
+  constructor(protected topUsers: TopUsersService) {}
+
   search(request: SearchRequest) {
-    const isRequestEmpty = isSearchRequestEmpty(request);
-    if (isRequestEmpty) {
-      // todo: Force load the initial top contacts state
-    }
-    this.debouncedSearch.run(request, isRequestEmpty);
+    this.debouncedSearch.run(request, isSearchRequestEmpty(request));
   }
 
   async loadMore() {
@@ -168,56 +176,91 @@ export default class GlobalSearch {
     }
   }
 
-  protected performSearch = async (request: SearchRequest): Promise<FilledQueryResponse | null> => {
+  protected async performSearch(request: SearchRequest): Promise<SearchResponse> {
     if (isSearchRequestEmpty(request)) {
-      return null;
+      await this.topUsers.updateIfRequired();
+      return { type: SearchResultType.ForEmptyQuery };
     }
+
     const [peers, messages] = await Promise.all([
       searchPeers(request),
       searchMessages(request, null),
     ]);
     return {
+      type: SearchResultType.ForFilledQuery,
       contactPeers: peers.contacts,
       globalPeers: peers.global,
       messageIds: messages.ids,
       messageTotalCount: messages.count,
       isMessageListFull: messages.isEnd,
     };
-  };
+  }
 
-  protected handleSearchResponse(request: SearchRequest, response: FilledQueryResponse | null) {
-    if (response) {
-      this.result.next({
-        type: SearchResultType.ForFilledQuery,
-        request,
-        ...response,
-      });
-    } else {
-      this.result.next({
-        type: SearchResultType.ForEmptyQuery,
-        request,
-      });
+  protected handleSearchResponse(request: SearchRequest, response: SearchResponse) {
+    this.unwatchSources();
+
+    switch (response.type) {
+      case SearchResultType.ForEmptyQuery:
+        this.watchEmptySearchSources(request);
+        break;
+      case SearchResultType.ForFilledQuery:
+        this.result.next({ request, ...response });
+        break;
+      default:
     }
+
     this.isSearching.next(false);
     this.isLoadingMore.next(false);
   }
 
-  protected debouncedSearch = debounceWithQueue<SearchRequest, FilledQueryResponse | null>({
-    initialInput: emptySearchRequest,
+  protected debouncedSearch = debounceWithQueue<SearchRequest | null, SearchResponse | null>({
+    initialInput: null,
     debounceTime: searchRequestDebounce,
     performOnInit: false,
     shouldPerform(prevRequest, nextRequest) {
+      if (prevRequest === null || nextRequest === null) {
+        return prevRequest !== nextRequest;
+      }
       return !areSearchRequestsEqual(prevRequest, nextRequest);
     },
-    perform: this.performSearch,
+    perform: async (request) => {
+      if (request === null) {
+        return null;
+      }
+      return this.performSearch(request);
+    },
     onStart: () => {
       this.isSearching.next(true);
     },
     onOutput: (request, response, isDebounceComplete) => {
       // Ignore the results that come before the final result that matches the latest request
       if (isDebounceComplete) {
-        this.handleSearchResponse(request, response);
+        if (request !== null && response !== null) {
+          this.handleSearchResponse(request, response);
+        }
       }
     },
   });
+
+  protected watchEmptySearchSources(request: SearchRequest) {
+    this.sourceSubscriptions.push(
+      this.topUsers.topUsers.subscribe((topUsersInfo) => {
+        const topUsers = typeof topUsersInfo === 'object'
+          ? topUsersInfo.items.map((item) => item.peer)
+          : [];
+
+        this.result.next({
+          type: SearchResultType.ForEmptyQuery,
+          request,
+          topUsers,
+          recentPeers: [],
+        });
+      }),
+    );
+  }
+
+  protected unwatchSources() {
+    this.sourceSubscriptions.forEach((subscription) => subscription.unsubscribe());
+    this.sourceSubscriptions.splice(0);
+  }
 }

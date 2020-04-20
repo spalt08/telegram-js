@@ -17,14 +17,27 @@ const sectionHeaders: Record<string, string> = {
   contactPeersHeader: 'Contacts and Chats',
   globalPeersHeader: 'Global Search',
   messagesHeader: 'Messages',
+  topUsersHeader: 'People',
+  recentPeersHeader: 'Recent',
   nothingFound: 'Nothing is found',
 };
 
 function searchResultToListItems(result: SearchResult) {
-  switch (result.type) {
-    case SearchResultType.ForFilledQuery: {
-      const items: string[] = [];
+  const items: string[] = [];
 
+  switch (result.type) {
+    case SearchResultType.ForEmptyQuery:
+      if (result.topUsers.length) {
+        items.push('topUsersHeader');
+      }
+
+      if (result.recentPeers.length) {
+        items.push('recentPeersHeader');
+        result.recentPeers.forEach((peer) => items.push(`recentPeer_${peerToId(peer)}`));
+      }
+      break;
+
+    case SearchResultType.ForFilledQuery:
       if (result.contactPeers.length) {
         items.push('contactPeersHeader');
         result.contactPeers.forEach((peer) => items.push(`contactPeer_${peerToId(peer)}`));
@@ -43,12 +56,12 @@ function searchResultToListItems(result: SearchResult) {
       if (!items.length) {
         items.push('nothingFound');
       }
+      break;
 
-      return items;
-    }
     default:
-      return [];
   }
+
+  return items;
 }
 
 function listItem(id: string, searchQuery: Observable<string>) {
@@ -68,6 +81,12 @@ function listItem(id: string, searchQuery: Observable<string>) {
       searchQuery,
       highlightOnline: false,
       showUsername: true,
+    });
+  }
+  if (id.startsWith('recentPeer_')) {
+    return contact({
+      peer: peerIdToPeer(id.slice(11)),
+      highlightOnline: true,
     });
   }
   return div`.globalSearchResult__sectionHeader`(

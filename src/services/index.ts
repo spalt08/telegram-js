@@ -22,5 +22,5 @@ export const peer = new PeerService(message);
 export const dialog = new DialogService(message);
 export const media = new MediaService(main);
 export const messageSearch = new MessageSearchService();
-export const globalSearch = new GlobalSearchService();
 export const topUsers = new TopUsersService(message);
+export const globalSearch = new GlobalSearchService(topUsers);
