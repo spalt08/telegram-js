@@ -1,13 +1,13 @@
 import { BehaviorSubject, Observable } from 'rxjs';
-import { distinctUntilChanged, map } from 'rxjs/operators';
+import { distinctUntilChanged, filter, map } from 'rxjs/operators';
 import { div, text } from 'core/html';
 import { useObservable } from 'core/hooks';
 import { globalSearch } from 'services';
-import { SearchResult, SearchResultType } from 'services/global_search';
+import { EmptyQueryResult, SearchResult, SearchResultType } from 'services/global_search';
 import { VirtualizedList } from 'components/ui';
 import { peerIdToPeer, peerToId } from 'helpers/api';
-import { contact, foundMessage } from 'components/sidebar';
-import './search_result.scss';
+import { contact, contactsRow, foundMessage } from 'components/sidebar';
+import './global_search_result.scss';
 
 interface Props extends Record<string, any> {
   className?: string;
@@ -28,7 +28,7 @@ function searchResultToListItems(result: SearchResult) {
   switch (result.type) {
     case SearchResultType.ForEmptyQuery:
       if (result.topUsers.length) {
-        items.push('topUsersHeader');
+        items.push('topUsersHeader', 'topUsers');
       }
 
       if (result.recentPeers.length) {
@@ -64,7 +64,16 @@ function searchResultToListItems(result: SearchResult) {
   return items;
 }
 
-function listItem(id: string, searchQuery: Observable<string>) {
+function listItem(id: string, searchQuery: Observable<string>, searchResult: Observable<SearchResult>) {
+  if (id === 'topUsers') {
+    return contactsRow({
+      peers: searchResult.pipe(
+        filter((result): result is EmptyQueryResult => result.type === SearchResultType.ForEmptyQuery && result.topUsers.length > 0),
+        map((result) => result.topUsers),
+        distinctUntilChanged(),
+      ),
+    });
+  }
   if (id.startsWith('message_')) {
     return foundMessage(id.slice(8), searchQuery);
   }
@@ -94,7 +103,7 @@ function listItem(id: string, searchQuery: Observable<string>) {
   );
 }
 
-export default function searchResult({ className = '', ...props }: Props = {}) {
+export default function globalSearchResult({ className = '', ...props }: Props = {}) {
   const listItemsSubject = new BehaviorSubject<string[]>([]);
   const resultQueryObservable = globalSearch.result.pipe(map((result) => result.request));
 
@@ -105,7 +114,7 @@ export default function searchResult({ className = '', ...props }: Props = {}) {
     pivotBottom: false,
     batch: 30,
     renderer(id) {
-      return listItem(id, resultQueryObservable);
+      return listItem(id, resultQueryObservable, globalSearch.result);
     },
     onReachBottom() {
       globalSearch.loadMore();

@@ -7,7 +7,7 @@ import { roundButton, searchInput } from 'components/ui';
 import * as icons from 'components/icons';
 import { globalSearch } from 'services';
 import dialogs from './dialogs';
-import searchResult from './search_result';
+import globalSearchResult from './global_search_result';
 import './left_sidebar.scss';
 
 interface Props {
@@ -84,7 +84,7 @@ export default function leftSidebar({ className = '' }: Props = {}) {
         searchResultLayer.classList.remove('-up');
       } else {
         // Create the element on open and destroy on close to reduce the initial render time and save memory
-        searchResultLayer = searchResult({
+        searchResultLayer = globalSearchResult({
           className: 'leftSidebar__layer -appearFromUp',
           onTransitionEnd: handleSearchResultTransitionEnd,
           onAnimationEnd: handleSearchResultTransitionEnd,

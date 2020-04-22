@@ -1,0 +1,18 @@
+@import '~styles/variables.scss';
+
+.contactsRow {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 98px;
+  box-sizing: content-box;
+
+  @include scrollbar-width(4px);
+
+  > div {
+    flex: none;
+    width: 20%;
+    min-width: 62px;
+    max-width: 100px;
+  }
+}
