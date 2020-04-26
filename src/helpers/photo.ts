@@ -2,6 +2,7 @@
 import { PhotoSize, InputFileLocation, Peer, Message, Document, StickerSet, InputStickerSet, Photo } from 'mtproto-js';
 import { peerToInputPeer, getPeerPhotoLocation } from 'cache/accessors';
 import { blobToUrl, arrayToBlob } from './files';
+import { PhotoFitMode } from './other';
 
 function strToArray(str: string) {
   const buf = new Uint8Array(str.length);
@@ -62,8 +63,6 @@ export function getOrientation(sizes: PhotoSize[]): PhotoOrinetation {
 
   return 'landscape';
 }
-
-export type PhotoFitMode = 'contain' | 'cover';
 
 export function getSize(sizes: PhotoSize[], width?: number, height?: number, fit?: PhotoFitMode): PhotoSize.photoSize | null {
   let diff: number | undefined;

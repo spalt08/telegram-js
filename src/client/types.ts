@@ -24,6 +24,18 @@ export interface WorkerTaskPayloadMap {
     location: InputFileLocation,
     options: DownloadOptions,
   };
+  'stream_request': {
+    id: string,
+    location: InputFileLocation,
+    options: DownloadOptions,
+  };
+  'stream_seek': {
+    id: string,
+    seek: number,
+  };
+  'stream_revoke': {
+    id: string,
+  };
   'upload': {
     id: string,
     file: File,
@@ -98,6 +110,19 @@ export interface WorkerNotificationPayloadMap {
     id: string,
     url: string,
   };
+  'stream_initialize': {
+    id: string,
+    info: any,
+    segments: any[],
+  };
+  'stream_segment': {
+    id: string,
+    segment: {
+      id: any,
+      user: any,
+      buffer: any
+    },
+  };
 }
 
 /**
@@ -157,7 +182,8 @@ export type EventResolver = (event: any) => void;
 export type UploadResolver = (input: InputFile) => void;
 export type UploadProgressResolver = (uploaded: number, total: number) => void;
 export type DownloadOptions = { size?: number, dc_id?: number, mime_type?: string, priority?: Priority };
-export type DownloadResolver = (url: string) => void;
+export type URLResolver = (url: string) => void;
+export type DownloadResolver = URLResolver;
 export type DownloadProgressResolver = (downloaded: number, total: number) => void;
 
 

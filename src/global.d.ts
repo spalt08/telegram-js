@@ -11,6 +11,7 @@ declare const FileReaderSync: {
 };
 
 declare module 'aes-js'
+declare module 'mp4box'
 
 declare module '.scss'
 declare module '.css'

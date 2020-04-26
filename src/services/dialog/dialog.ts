@@ -9,9 +9,8 @@ import {
   MessagesGetDialogs,
   MessagesDialogs,
   MessagesPeerDialogs,
-  MessagesMessages,
 } from 'mtproto-js';
-import { peerToInputDialogPeer, peerToInputPeer } from 'cache/accessors';
+import { peerToInputDialogPeer } from 'cache/accessors';
 
 import MessageService from '../message/message';
 import makeDialogReadReporter, { DialogReadReporter } from './dialog_read_reporter';

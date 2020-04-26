@@ -1,5 +1,17 @@
 import { a } from 'core/html';
 
+export type PhotoFitMode = 'contain' | 'cover';
+
+export type PhotoOptions = {
+  fit?: PhotoFitMode,
+  width?: number,
+  height?: number,
+  minWidth?: number,
+  minHeight?: number,
+  thumb?: boolean,
+  showLoader?: boolean,
+};
+
 export function downloadByUrl(filename: string, href: string) {
   const link = a({ download: filename, href, style: { display: 'none ' } });
   link.click();

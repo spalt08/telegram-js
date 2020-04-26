@@ -7,6 +7,7 @@ const DOWNLOAD_CHUNK_LIMIT = 512 * 1024;
 
 // states
 const reader = new FileReaderSync();
+
 const downloading: Record<string, {
   location: InputFileLocation,
   options: DownloadOptions,
@@ -14,6 +15,7 @@ const downloading: Record<string, {
   parts: number,
   chunks: Uint8Array[],
 }> = {};
+
 const uploading: Record<string, {
   data: Uint8Array,
   size: number,

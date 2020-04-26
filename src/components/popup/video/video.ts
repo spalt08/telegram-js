@@ -7,7 +7,7 @@ import { profileAvatar, profileTitle } from 'components/profile';
 import { datetime } from 'components/ui';
 import { main } from 'services';
 import { KeyboardKeys } from 'const';
-import videoRenderer from 'components/media/video/video';
+import videoStreamRenderer from 'components/media/video/stream';
 import { getAttributeVideo } from 'helpers/files';
 import { PopupInterface } from '../interface';
 
@@ -47,12 +47,11 @@ export default function videoPopup({ rect, video, peer, message }: Props) {
     div`.photofull_message`(text(message.message)),
   ) : undefined;
 
-  const videoEl = videoRenderer(video, {
+  const videoEl = videoStreamRenderer(video, {
     fit: 'contain',
     width: Math.min(1200, window.innerWidth * 0.85),
     height: Math.max(100, window.innerHeight - 160),
-    showLoader: false,
-  }, true);
+  });
 
   if (!(videoEl instanceof HTMLElement)) return nothing;
 

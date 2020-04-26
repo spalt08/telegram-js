@@ -4,7 +4,8 @@ import { listen } from 'core/dom';
 import { getInterface } from 'core/hooks';
 import { getAttributeVideo, getReadableDuration, getAttributeAnimated } from 'helpers/files';
 import { main } from 'services';
-import photoRenderer, { PhotoOptions } from '../photo/photo';
+import { PhotoOptions } from 'helpers/other';
+import photoRenderer from '../photo/photo';
 import './preview.scss';
 
 export default function videoPreview(video: Document.document, photoOptions: PhotoOptions = {}, peer?: Peer, message?: Message.message) {

@@ -1,10 +1,11 @@
 /* eslint-disable no-restricted-globals */
-import { Client } from 'mtproto-js';
+import { Client, InputFileLocation } from 'mtproto-js';
 import { API_ID, API_HASH, APP_VERSION } from 'const/api';
 import { WorkerMessageOutcoming, WorkerResponseType, WorkerResponsePayloadMap, WorkerNotificationType,
-  WorkerNotificationPayloadMap } from 'client/types';
+  WorkerNotificationPayloadMap, DownloadOptions } from 'client/types';
 import { downloadFile, uploadFile } from './worker.media';
 import { loadTGS } from './worker.utils';
+import { streamVideoFile, seekVideoStream, revokeVideoStreak } from './worker.stream';
 
 /**
  * Vars
@@ -29,6 +30,35 @@ function respond<K extends WorkerResponseType>(id: string, type: K, payload: Wor
  */
 function notify<K extends WorkerNotificationType>(type: K, payload: WorkerNotificationPayloadMap[K]) {
   ctx.postMessage({ type, payload });
+}
+
+
+function getFilePartRequest(location: InputFileLocation, offset: number, limit: number, options: DownloadOptions,
+  ready: (buf: ArrayBuffer) => void) {
+  if (!client) return;
+
+  const params = { location, offset, limit };
+
+  const headers = {
+    dc: options.dc_id || client.cfg.dc,
+    thread: 2,
+  };
+
+  client.call('upload.getFile', params, headers, (err, result) => {
+    // redirect to another dc
+    if (err && err.message && err.message.indexOf('FILE_MIGRATE_') > -1) {
+      getFilePartRequest(location, offset, limit, { ...options, dc_id: +err.message.slice(-1) }, ready);
+      return;
+    }
+
+    // todo handling errors
+    if (err || !result || result._ === 'upload.fileCdnRedirect') {
+      throw new Error(`Error while donwloading file: ${JSON.stringify(err)}`);
+      return;
+    }
+
+    if (!err && result) ready(result.bytes);
+  });
 }
 
 /**
@@ -83,6 +113,26 @@ function processMessage(msg: WorkerMessageOutcoming) {
     case 'download': {
       const { id, location, options } = msg.payload;
       downloadFile(client, id, location, options, notify);
+      break;
+    }
+
+
+    case 'stream_request': {
+      const { id, location, options } = msg.payload;
+      streamVideoFile(id, location, options, getFilePartRequest, notify);
+
+      break;
+    }
+
+    case 'stream_seek': {
+      const { id, seek } = msg.payload;
+      seekVideoStream(id, seek);
+
+      break;
+    }
+    case 'stream_revoke': {
+      const { id } = msg.payload;
+      revokeVideoStreak(id);
       break;
     }
 

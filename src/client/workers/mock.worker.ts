@@ -2,8 +2,10 @@
 import { WorkerMessageOutcoming, WorkerResponseType, WorkerResponsePayloadMap, WorkerNotificationType,
   WorkerNotificationPayloadMap } from 'client/types';
 import { locationToString } from 'helpers/files';
+import getFilePart from 'mocks/filePart';
 import { mockResponse, getMockedFile } from './mocks/response';
 import { loadTGS } from './worker.utils';
+import { streamVideoFile, seekVideoStream } from './worker.stream';
 
 // Worker context
 const ctx: Worker = self as any;
@@ -43,6 +45,22 @@ ctx.onmessage = (event) => {
       const { id, location } = message.payload;
       const [delay, url] = getMockedFile(locationToString(location));
       setTimeout(() => notify('download_ready', { id, url }), delay);
+      break;
+    }
+
+    case 'stream_request': {
+      const { id, location, options } = message.payload;
+
+      streamVideoFile(id, location, options, getFilePart, notify);
+
+      break;
+    }
+
+    case 'stream_seek': {
+      const { id, seek } = message.payload;
+
+      seekVideoStream(id, seek);
+
       break;
     }
 

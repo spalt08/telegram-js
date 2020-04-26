@@ -1,4 +1,6 @@
+/* eslint-disable no-param-reassign */
 import { StorageFileType, Document, InputFileLocation, DocumentAttribute } from 'mtproto-js';
+import { PhotoOptions } from './other';
 
 export function hexToStr(hex: string): string {
   let str = '';
@@ -139,4 +141,19 @@ export function getReadableDuration(duration: number) {
   }
 
   return `${minutes}:${seconds}`;
+}
+
+export function useVideoArrtibuteSize(container: HTMLElement, attr: DocumentAttribute.documentAttributeVideo, options: PhotoOptions) {
+  const isLandscape = attr.w > attr.h;
+  const dim = attr.w / attr.h;
+
+  if (isLandscape && options.width) {
+    container.style.width = `${options.width}px`;
+    container.style.height = `${options.width / dim}px`;
+  }
+
+  if (!isLandscape && options.height) {
+    container.style.width = `${options.height * dim}px`;
+    container.style.height = `${options.height}px`;
+  }
 }

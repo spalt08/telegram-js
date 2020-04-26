@@ -15,6 +15,14 @@ let fileCache: Record<FileID, string> = {};
  * Request resolvers to avoid parallel requests
  */
 const downloadResolvers: Record<FileID, DownloadResolver[]> = {};
+const streams: Record<FileID, {
+  source: MediaSource,
+  tracks: Record<number, {
+    codec: string,
+    pendingSegments: ArrayBuffer[],
+    sourceBuffer: SourceBuffer,
+  }>
+}> = {};
 const downloadProgressResolvers: Record<FileID, DownloadProgressResolver[]> = {};
 const uploadResovers: Record<FileID, UploadResolver> = {};
 const uploadProgressResovers: Record<FileID, UploadProgressResolver> = {};
@@ -116,7 +124,7 @@ listenMessage('download_ready', ({ id, url }) => {
   delete downloadProgressResolvers[id];
 
   downloadsProcessing--;
-  console.log('downloaded', downloadsProcessing, id);
+  // console.log('downloaded', downloadsProcessing, id);
   processScheduledDownloads();
 });
 
@@ -129,6 +137,73 @@ listenMessage('upload_ready', ({ id, inputFile }) => {
 
   delete uploadResovers[id];
   delete uploadProgressResovers[id];
+});
+
+function releasePendingSegments(id: string, trackID: number) {
+  if (!streams[id].tracks[trackID]) return;
+
+  const { sourceBuffer, pendingSegments } = streams[id].tracks[trackID];
+
+  if (!sourceBuffer.updating && pendingSegments.length > 0) {
+    const buffer = pendingSegments.shift();
+
+    sourceBuffer.appendBuffer(buffer!);
+  }
+}
+
+function addPendingSegment(id: string, segment: any) {
+  streams[id].tracks[segment.id].pendingSegments.push(segment.buffer);
+  releasePendingSegments(id, segment.id);
+}
+
+export function requestStream(location: InputFileLocation, options: DownloadOptions & { duration: number }): string {
+  const id = locationToString(location);
+
+  if (!streams[id]) {
+    const source = new MediaSource();
+    streams[id] = { source, tracks: {} };
+
+    source.addEventListener('sourceopen', () => task('stream_request', { id, location, options }));
+  }
+
+  return (URL || webkitURL).createObjectURL(streams[id].source);
+}
+
+export function seekStream(location: InputFileLocation, seek: number) {
+  const id = locationToString(location);
+  task('stream_seek', { id, seek });
+}
+
+export function revokeStream(location: InputFileLocation) {
+  const id = locationToString(location);
+  task('stream_revoke', { id });
+  delete streams[id];
+}
+
+listenMessage('stream_initialize', ({ id, info, segments }) => {
+  streams[id].source.duration = info.duration / info.timescale;
+
+  for (let i = 0; i < info.tracks.length; i++) {
+    const { codec } = info.tracks[i];
+    const mime = `video/mp4; codecs="${codec}"`;
+
+    if (!MediaSource.isTypeSupported(mime)) return;
+
+    const trackID = info.tracks[i].id;
+    const sourceBuffer = streams[id].source.addSourceBuffer(`video/mp4; codecs="${codec}"`);
+
+    sourceBuffer.onupdateend = () => releasePendingSegments(id, trackID);
+    streams[id].tracks[trackID] = { codec, pendingSegments: [], sourceBuffer };
+  }
+
+  for (let i = 0; i < segments.length; i++) {
+    const segment = segments[i];
+    streams[id].tracks[segment.id].sourceBuffer.appendBuffer(segment.buffer);
+  }
+});
+
+listenMessage('stream_segment', ({ id, segment }) => {
+  addPendingSegment(id, segment);
 });
 
 export function emptyCache() {

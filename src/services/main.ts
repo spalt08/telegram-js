@@ -1,7 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { Photo, Message, Peer, InputStickerSet, Document } from 'mtproto-js';
-import { PhotoOptions } from 'components/media/photo/photo';
+import { PhotoOptions } from 'helpers/other';
 
 export const enum RightSidebarPanel {
   None,

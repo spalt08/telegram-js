@@ -2,20 +2,11 @@ import { Photo, Document } from 'mtproto-js';
 import { div, img, nothing } from 'core/html';
 import { materialSpinner } from 'components/icons';
 import { mount, unmount, listenOnce } from 'core/dom';
-import { getThumbnail, getPhotoLocation, getSize, PhotoFitMode } from 'helpers/photo';
+import { getThumbnail, getPhotoLocation, getSize } from 'helpers/photo';
 import { download, cached } from 'client/media';
 import './photo.scss';
 import { useInterface, useOnMount } from 'core/hooks';
-
-export type PhotoOptions = {
-  fit?: PhotoFitMode,
-  width?: number,
-  height?: number,
-  minWidth?: number,
-  minHeight?: number,
-  thumb?: boolean,
-  showLoader?: boolean,
-};
+import { PhotoOptions } from 'helpers/other';
 
 export default function photoRenderer(photo: Photo.photo | Document.document,
   { width, height, fit = 'contain', thumb = true, minWidth, minHeight, showLoader = true }: PhotoOptions) {
