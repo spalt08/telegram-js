@@ -11,6 +11,7 @@ import './global_search_result.scss';
 
 interface Props extends Record<string, any> {
   className?: string;
+  onExit?(): void;
 }
 
 const sectionHeaders: Record<string, string> = {
@@ -64,7 +65,16 @@ function searchResultToListItems(result: SearchResult) {
   return items;
 }
 
-function listItem(id: string, searchQuery: Observable<string>, searchResult: Observable<SearchResult>) {
+function makeCallOnClick(callback?: () => void) {
+  return (next: () => void) => {
+    next();
+    if (callback) {
+      callback();
+    }
+  };
+}
+
+function listItem(id: string, searchQuery: Observable<string>, searchResult: Observable<SearchResult>, onExit?: () => void) {
   if (id === 'topUsers') {
     return contactsRow({
       peers: searchResult.pipe(
@@ -72,6 +82,7 @@ function listItem(id: string, searchQuery: Observable<string>, searchResult: Obs
         map((result) => result.topUsers),
         distinctUntilChanged(),
       ),
+      clickMiddleware: makeCallOnClick(onExit),
     });
   }
   if (id.startsWith('message_')) {
@@ -82,6 +93,7 @@ function listItem(id: string, searchQuery: Observable<string>, searchResult: Obs
       peer: peerIdToPeer(id.slice(12)),
       searchQuery,
       highlightOnline: false,
+      clickMiddleware: makeCallOnClick(onExit),
     });
   }
   if (id.startsWith('globalPeer_')) {
@@ -90,12 +102,14 @@ function listItem(id: string, searchQuery: Observable<string>, searchResult: Obs
       searchQuery,
       highlightOnline: false,
       showUsername: true,
+      clickMiddleware: makeCallOnClick(onExit),
     });
   }
   if (id.startsWith('recentPeer_')) {
     return contact({
       peer: peerIdToPeer(id.slice(11)),
       highlightOnline: true,
+      clickMiddleware: makeCallOnClick(onExit),
     });
   }
   return div`.globalSearchResult__sectionHeader`(
@@ -103,7 +117,7 @@ function listItem(id: string, searchQuery: Observable<string>, searchResult: Obs
   );
 }
 
-export default function globalSearchResult({ className = '', ...props }: Props = {}) {
+export default function globalSearchResult({ className = '', onExit, ...props }: Props = {}) {
   const listItemsSubject = new BehaviorSubject<string[]>([]);
   const resultQueryObservable = globalSearch.result.pipe(map((result) => result.request));
 
@@ -114,7 +128,7 @@ export default function globalSearchResult({ className = '', ...props }: Props =
     pivotBottom: false,
     batch: 30,
     renderer(id) {
-      return listItem(id, resultQueryObservable, globalSearch.result);
+      return listItem(id, resultQueryObservable, globalSearch.result, onExit);
     },
     onReachBottom() {
       globalSearch.loadMore();

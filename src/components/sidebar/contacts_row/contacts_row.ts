@@ -15,6 +15,7 @@ import './contacts_row.scss';
 interface Props {
   peers: MaybeObservable<readonly Readonly<Peer>[]>;
   className?: string;
+  clickMiddleware?(next: () => void): void;
 }
 
 function formatName(name: string) {
@@ -24,16 +25,17 @@ function formatName(name: string) {
   return name.slice(firstNonSpacePosition, firstSpacePosition === -1 ? undefined : firstSpacePosition);
 }
 
-function contact(peer: Readonly<Peer>) {
+function contact(peer: Readonly<Peer>, clickMiddleware?: (next: () => void) => void) {
   const [, nameObservable] = peerToTitle(peer);
+
+  const onClickBase = () => messageService.selectPeer(peer);
+  const onClick = clickMiddleware ? () => clickMiddleware(onClickBase) : onClickBase;
 
   return div(
     ripple({
       className: 'contactsRow__ripple',
       contentClass: 'contactsRow__ripple_content',
-      onClick() {
-        messageService.selectPeer(peer);
-      },
+      onClick,
     }, [
       profileAvatar(peer, undefined, true),
       div`.contactsRow__name`(
@@ -43,7 +45,7 @@ function contact(peer: Readonly<Peer>) {
   );
 }
 
-export default function contactsRow({ peers, className = '' }: Props) {
+export default function contactsRow({ peers, className = '', clickMiddleware }: Props) {
   const container = div`.contactsRow ${className}`();
   let peerElements = new Map<string, Node>(); // Map is used to keep also the peers order
 
@@ -51,7 +53,8 @@ export default function contactsRow({ peers, className = '' }: Props) {
     const newPeerElements = new Map<string, Node>();
     newPeers.forEach((peer) => {
       const peerId = peerToId(peer);
-      newPeerElements.set(peerId, peerElements.get(peerId) || contact(peer));
+      const peerElement = peerElements.get(peerId) || contact(peer, clickMiddleware);
+      newPeerElements.set(peerId, peerElement);
     });
 
     if (areIteratorsEqual(peerElements.keys(), newPeerElements.keys())) {

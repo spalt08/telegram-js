@@ -13,6 +13,7 @@ interface Props {
   showUsername?: boolean;
   highlightOnline?: boolean;
   searchQuery?: MaybeObservable<string>;
+  clickMiddleware?(next: () => void): void;
 }
 
 const nameHighlight = makeTextMatchHighlightComponent({
@@ -42,17 +43,18 @@ function getUsername(peer: Peer): string | undefined {
   return undefined;
 }
 
-export default function contact({ peer, showUsername, highlightOnline, searchQuery = '' }: Props) {
+export default function contact({ peer, showUsername, highlightOnline, searchQuery = '', clickMiddleware }: Props) {
   const [, nameObservable] = peerToTitle(peer);
   const username = showUsername ? getUsername(peer) : undefined; // Not updated because the case is very rare and requires a more complex code
+
+  const onClickBase = () => messageService.selectPeer(peer);
+  const onClick = clickMiddleware ? () => clickMiddleware(onClickBase) : onClickBase;
 
   return div`.contact`(
     ripple({
       className: 'contact__ripple',
       contentClass: 'contact__ripple_content',
-      onClick() {
-        messageService.selectPeer(peer);
-      },
+      onClick,
     }, [
       profileAvatar(peer),
       div`.contact__main`(

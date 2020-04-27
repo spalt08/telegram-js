@@ -17,18 +17,9 @@ interface Props {
 // If you want to add another screen to the left sidebar, please leave the search be the part of the first screen (dialogs list)
 
 export default function leftSidebar({ className = '' }: Props = {}) {
-  // Subscribing to these observables directly is ok because they're created in this scope
+  // Subscribing to this observable directly is ok because they're created in this scope
   // therefore subscribing doesn't create an external reference to this component
-  const isSearchFocused = new BehaviorSubject(false);
-  const isSearchFilled = new BehaviorSubject(false);
   const isSearchActive = new BehaviorSubject(false);
-
-  combineLatest([isSearchFocused, isSearchFilled])
-    .pipe(
-      map(([isFocused, isFilled]) => isFocused || isFilled),
-      distinctUntilChanged(),
-    )
-    .subscribe(isSearchActive);
 
   const searchInputEl = searchInput({
     placeholder: 'Search',
@@ -36,31 +27,19 @@ export default function leftSidebar({ className = '' }: Props = {}) {
     isLoading: combineLatest([globalSearch.isSearching, isSearchActive]).pipe(map(([isSearching, isActive]) => isSearching && isActive)),
     onFocus(value) {
       globalSearch.search(value);
-      isSearchFocused.next(true);
-    },
-    onBlur() {
-      isSearchFocused.next(false);
+      isSearchActive.next(true);
     },
     onChange(value) {
       globalSearch.search(value);
-      isSearchFilled.next(!!value);
     },
   });
 
   const dialogsLayer = dialogs({ className: 'leftSidebar__layer' });
   let searchResultLayer: HTMLElement | undefined;
 
-  const handleButtonMousedown = (event: MouseEvent) => {
-    // To not blur the search input during the back button is being clicked.
-    // Otherwise the menu will be opened when the input is empty and the button is clicked.
-    event.preventDefault();
-  };
-
   const handleButtonClick = () => {
     if (isSearchActive.value) {
-      getInterface(searchInputEl).blur();
-      getInterface(searchInputEl).value = '';
-      isSearchFilled.next(false); // Not called automatically by the input
+      isSearchActive.next(false);
     } else {
       // This is a mock of opening the menu
       // eslint-disable-next-line no-console
@@ -76,7 +55,7 @@ export default function leftSidebar({ className = '' }: Props = {}) {
     }
   };
 
-  isSearchActive.subscribe(async (isActive) => {
+  isSearchActive.pipe(distinctUntilChanged()).subscribe(async (isActive) => {
     await animationFrameStart();
     if (isActive) {
       dialogsLayer.classList.add('-down');
@@ -88,10 +67,15 @@ export default function leftSidebar({ className = '' }: Props = {}) {
           className: 'leftSidebar__layer -appearFromUp',
           onTransitionEnd: handleSearchResultTransitionEnd,
           onAnimationEnd: handleSearchResultTransitionEnd,
+          onExit() {
+            isSearchActive.next(false);
+          },
         });
         mount(dialogsLayer.parentNode!, searchResultLayer);
       }
     } else {
+      getInterface(searchInputEl).blur();
+      getInterface(searchInputEl).value = '';
       dialogsLayer.classList.remove('-down');
       if (searchResultLayer) {
         searchResultLayer.classList.add('-up');
@@ -105,7 +89,6 @@ export default function leftSidebar({ className = '' }: Props = {}) {
         roundButton(
           {
             className: 'leftSidebar__head_button',
-            onMouseDown: handleButtonMousedown,
             onClick: handleButtonClick,
           },
           icons.menuAndBack({ state: isSearchActive.pipe(map((isActive) => isActive ? 'back' : 'menu')) }),
