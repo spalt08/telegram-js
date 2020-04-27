@@ -23,7 +23,6 @@ export default function videoStreamRenderer(document: Document.document, options
   // no streaming needed
   if (cached) {
     videoEl.src = cached;
-    useOnMount(container, () => videoEl.play());
     return container;
   }
 
@@ -38,13 +37,18 @@ export default function videoStreamRenderer(document: Document.document, options
         duration: videoAttribute.duration,
       },
     );
-    videoEl.play();
   });
 
   useOnUnmount(container, () => revokeStream(location));
 
+  let seekValue = 0;
   useListenWhileMounted(container, videoEl, 'seeking', () => {
-    seekStream(location, videoEl.currentTime);
+    if (videoEl.currentTime !== seekValue) {
+      seekStream(location, Math.floor(videoEl.currentTime));
+
+      seekValue = Math.floor(videoEl.currentTime) + 1; // fix for mp4box fragments
+      videoEl.currentTime = seekValue;
+    }
   });
 
   return container;

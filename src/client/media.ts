@@ -140,11 +140,11 @@ listenMessage('upload_ready', ({ id, inputFile }) => {
 });
 
 function releasePendingSegments(id: string, trackID: number) {
-  if (!streams[id].tracks[trackID]) return;
+  if (!streams[id] || !streams[id].tracks[trackID]) return;
 
   const { sourceBuffer, pendingSegments } = streams[id].tracks[trackID];
 
-  if (!sourceBuffer.updating && pendingSegments.length > 0) {
+  if (sourceBuffer && !sourceBuffer.updating && pendingSegments.length > 0) {
     const buffer = pendingSegments.shift();
 
     sourceBuffer.appendBuffer(buffer!);
@@ -152,6 +152,7 @@ function releasePendingSegments(id: string, trackID: number) {
 }
 
 function addPendingSegment(id: string, segment: any) {
+  if (!streams[id] || !streams[id].tracks[segment.id]) return;
   streams[id].tracks[segment.id].pendingSegments.push(segment.buffer);
   releasePendingSegments(id, segment.id);
 }
@@ -185,9 +186,14 @@ listenMessage('stream_initialize', ({ id, info, segments }) => {
 
   for (let i = 0; i < info.tracks.length; i++) {
     const { codec } = info.tracks[i];
+    console.log(info.tracks[i]);
+
     const mime = `video/mp4; codecs="${codec}"`;
 
-    if (!MediaSource.isTypeSupported(mime)) return;
+    if (!MediaSource.isTypeSupported(mime)) {
+      task('stream_revoke', { id });
+      return;
+    }
 
     const trackID = info.tracks[i].id;
     const sourceBuffer = streams[id].source.addSourceBuffer(`video/mp4; codecs="${codec}"`);

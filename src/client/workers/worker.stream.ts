@@ -129,7 +129,7 @@ export function streamVideoFile(id: string, location: InputFileLocation, options
 
 export function seekVideoStream(id: string, time: number) {
   if (!streaming[id]) return;
-  streaming[id].mp4box.seek(Math.floor(time));
+  streaming[id].mp4box.seek(time);
 }
 
 export function revokeVideoStreak(id: string) {
