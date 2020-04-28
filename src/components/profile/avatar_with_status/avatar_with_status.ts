@@ -1,5 +1,6 @@
-import { Message, Peer } from 'mtproto-js';
-import { div } from 'core/html';
+import { Message, Peer, User } from 'mtproto-js';
+import { distinctUntilChanged, map } from 'rxjs/operators';
+import { div, nothing } from 'core/html';
 import { userCache } from 'cache';
 import { auth } from 'services';
 import avatar from '../avatar/avatar';
@@ -12,18 +13,23 @@ interface Props {
   className?: string;
 }
 
-function status(peer: Peer) {
-  const container = div`.avatarWithStatus__status`();
+function inOnline(user: User | undefined) {
+  return user?._ === 'user' && user.status?._ === 'userStatusOnline' && user.id !== auth.userID;
+}
 
-  if (peer._ === 'peerUser') {
-    const userSubject = userCache.useItemBehaviorSubject(container, peer.user_id);
-    userSubject.subscribe((user) => {
-      const isOnline = user && user._ === 'user' && user.status?._ === 'userStatusOnline' && user.id !== auth.userID;
-      container.classList.toggle('-online', isOnline);
-    });
+function status(peer: Peer) {
+  if (peer._ !== 'peerUser') {
+    return nothing;
   }
 
-  return container;
+  const element = div`.avatarWithStatus__status`();
+  const userSubject = userCache.useItemBehaviorSubject(element, peer.user_id);
+
+  userSubject
+    .pipe(map(inOnline), distinctUntilChanged())
+    .subscribe((online) => element.classList.toggle('-online', online));
+
+  return element;
 }
 
 export default function avatarWithStatus({ peer, message, forDialogList, className = '' }: Props) {
