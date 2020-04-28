@@ -33,8 +33,8 @@ export const chatCache = new Collection({
     // Sometimes server returns channel objects with participants_count value wrongly equal to 0 (for example, in _='messages. ' responses)
     // This is a workaround to not loose the participants information
     if (
-      !(chat1._ === 'channel' && chat1.participants_count === 0)
-      && chat2._ === 'channel' && chat2.participants_count === 0
+      !(chat1._ === 'channel' && chat1.participants_count === undefined)
+      && chat2._ === 'channel' && chat2.participants_count === undefined
     ) {
       return chat1;
     }
