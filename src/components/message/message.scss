@@ -194,10 +194,7 @@ $messageDistance: 4PX;
     width: 34PX;
     height: 34PX;
     margin-right: 4PX;
-
-    & .avatar__standard {
-      font-size: 13PX;
-    }
+    --initials-font-size: 13PX;
   }
 
   &__media-padded {

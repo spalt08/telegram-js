@@ -44,5 +44,5 @@ export function text(value: MaybeObservable<{ toString(): string; }>) {
   return node;
 }
 
-export const nothing = text('');
 export const fragment = (...nodes: Node[]) => createFragment(nodes);
+export const nothing = fragment();

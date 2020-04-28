@@ -7,9 +7,8 @@ import { datetime, ripple } from 'components/ui';
 import { message } from 'services';
 import { pinnedchat } from 'components/icons';
 import { peerMessageToId, peerToId } from 'helpers/api';
-import { profileTitle } from 'components/profile';
+import { avatarWithStatus, profileTitle } from 'components/profile';
 import dialogMessage from './dialog_message';
-import dialogPicture from './dialog_picture';
 import './dialog.scss';
 
 export default function dialogPreview(id: string) {
@@ -23,7 +22,7 @@ export default function dialogPreview(id: string) {
 
   const clickable = (
     ripple({ className: 'dialog__clickable', contentClass: 'dialog__clickable_content' }, [
-      dialogPicture(peer),
+      avatarWithStatus({ peer, className: 'dialog__picture', forDialogList: true }),
       div`.dialog__content`(
         div`.dialog__header`(
           div`.dialog__title`(profileTitle(peer, true)),
