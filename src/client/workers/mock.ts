@@ -4,8 +4,8 @@ import { WorkerMessageOutcoming, WorkerResponseType, WorkerResponsePayloadMap, W
 import { locationToString } from 'helpers/files';
 import getFilePart from 'mocks/filePart';
 import { mockResponse, getMockedFile } from './mocks/response';
-import { loadTGS } from './worker.utils';
-import { streamVideoFile, seekVideoStream } from './worker.stream';
+import { loadTGS } from './extensions/utils';
+import { streamVideoFile, seekVideoStream } from './extensions/streaming';
 
 // Worker context
 const ctx: Worker = self as any;

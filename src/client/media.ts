@@ -1,10 +1,11 @@
 import { InputFileLocation } from 'mtproto-js';
-import { locationToString } from 'helpers/files';
-import { task, listenMessage } from './context';
+import { locationToString, locationToCachedFile } from 'helpers/files';
+import { task, listenMessage, listenServiceMessage, serviceTask } from './context';
 import { UploadResolver, UploadProgressResolver, DownloadResolver,
   DownloadProgressResolver, DownloadOptions, Priority } from './types';
 
 type FileID = string;
+type FileURL = string;
 
 // const
 const MAX_CONCURENT_DOWNLOADS = 4;
@@ -28,6 +29,11 @@ const uploadResovers: Record<FileID, UploadResolver> = {};
 const uploadProgressResovers: Record<FileID, UploadProgressResolver> = {};
 const downloadQuene: Array<{ priority: Priority, location: InputFileLocation, options: DownloadOptions }> = [];
 let downloadsProcessing = 0;
+
+/**
+ * Service Worker Bridge
+ */
+const files = new Map<FileURL, { cached: boolean, location: InputFileLocation, options: DownloadOptions, onProgress: DownloadProgressResolver[] }>();
 
 function processScheduledDownloads() {
   while (downloadQuene.length > 0 && downloadsProcessing < MAX_CONCURENT_DOWNLOADS) {
@@ -82,12 +88,12 @@ export function download(location: InputFileLocation, options: DownloadOptions, 
 /**
  * Request for file uploading
  */
-export function upload(file: File, ready: UploadResolver, progress?: UploadProgressResolver) {
+export function upload(f: File, ready: UploadResolver, progress?: UploadProgressResolver) {
   const id = (Math.floor(Math.random() * 0xFFFFFFFF).toString(16) + Math.floor(Math.random() * 0xFFFFFFFF).toString(16)).slice(-8);
 
   uploadResovers[id] = ready;
   if (progress) uploadProgressResovers[id] = progress;
-  task('upload', { id, file });
+  task('upload', { id, file: f });
 }
 
 /**
@@ -111,7 +117,7 @@ listenMessage('upload_progress', ({ id, uploaded, total }) => {
 /**
  * Resolve downloading response
  */
-listenMessage('download_ready', ({ id, url }) => {
+listenMessage('download_ready', ({ id, url, location }) => {
   fileCache[id] = url;
 
   const readyListeners = downloadResolvers[id];
@@ -124,6 +130,9 @@ listenMessage('download_ready', ({ id, url }) => {
   delete downloadProgressResolvers[id];
 
   downloadsProcessing--;
+
+  serviceTask('completed', { url: locationToCachedFile(location) });
+
   // console.log('downloaded', downloadsProcessing, id);
   processScheduledDownloads();
 });
@@ -137,6 +146,36 @@ listenMessage('upload_ready', ({ id, inputFile }) => {
 
   delete uploadResovers[id];
   delete uploadProgressResovers[id];
+});
+
+/**
+ * Get File URL
+ */
+export function file(location: InputFileLocation, options: DownloadOptions, progress?: DownloadProgressResolver) {
+  const url = locationToCachedFile(location);
+  let f = files.get(url);
+
+  if (!f) {
+    f = {
+      cached: false,
+      location,
+      options,
+      onProgress: progress ? [progress] : [],
+    };
+    files.set(url, f);
+  }
+
+  if (progress && !f.cached) f.onProgress.push(progress);
+
+  return url;
+}
+
+/**
+ * Resolve Missing File
+ */
+listenServiceMessage('requested', ({ url }) => {
+  const f = files.get(url);
+  if (f) scheduleDownload(f.location, f.options, f.options.priority);
 });
 
 function releasePendingSegments(id: string, trackID: number) {

@@ -3,9 +3,9 @@ import { Client, InputFileLocation } from 'mtproto-js';
 import { API_ID, API_HASH, APP_VERSION } from 'const/api';
 import { WorkerMessageOutcoming, WorkerResponseType, WorkerResponsePayloadMap, WorkerNotificationType,
   WorkerNotificationPayloadMap, DownloadOptions } from 'client/types';
-import { downloadFile, uploadFile } from './worker.media';
-import { loadTGS } from './worker.utils';
-import { streamVideoFile, seekVideoStream, revokeVideoStreak } from './worker.stream';
+import { downloadFile, uploadFile } from './extensions/media';
+import { loadTGS } from './extensions/utils';
+import { streamVideoFile, seekVideoStream, revokeVideoStreak } from './extensions/streaming';
 
 /**
  * Vars
@@ -32,17 +32,15 @@ function notify<K extends WorkerNotificationType>(type: K, payload: WorkerNotifi
   ctx.postMessage({ type, payload });
 }
 
-
-function getFilePartRequest(location: InputFileLocation, offset: number, limit: number, options: DownloadOptions,
-  ready: (buf: ArrayBuffer) => void) {
+/**
+ * File Part Request
+ */
+function getFilePartRequest(location: InputFileLocation, offset: number, limit: number,
+  options: DownloadOptions, ready: (buf: ArrayBuffer) => void) {
   if (!client) return;
 
   const params = { location, offset, limit };
-
-  const headers = {
-    dc: options.dc_id || client.cfg.dc,
-    thread: 2,
-  };
+  const headers = { dc: options.dc_id || client.cfg.dc, thread: 2 };
 
   client.call('upload.getFile', params, headers, (err, result) => {
     // redirect to another dc

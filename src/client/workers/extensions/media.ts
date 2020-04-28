@@ -1,6 +1,6 @@
 import { InputFileLocation, InputFile, Client } from 'mtproto-js';
 import { DownloadOptions } from 'client/types';
-import { typeToMime } from 'helpers/files';
+import { typeToMime, locationToCachedFile } from 'helpers/files';
 
 // constants
 const DOWNLOAD_CHUNK_LIMIT = 512 * 1024;
@@ -26,11 +26,15 @@ const uploading: Record<string, {
 }> = {};
 
 interface Notification {
-  (name: 'download_ready', payload: { id: string, url: string }): void
+  (name: 'download_ready', payload: { id: string, url: string, location: InputFileLocation }): void
   (name: 'download_progress', payload: { id: string, downloaded: number, total: number }): void
   (name: 'upload_progress', payload: { id: string, uploaded: number, total: number }): void
   (name: 'upload_ready', payload: { id: string, inputFile: InputFile }): void
 }
+
+// caches
+let avatarCache: Cache | undefined;
+caches.open('files').then((cache) => avatarCache = cache);
 
 /**
  * Get file chunk
@@ -78,7 +82,12 @@ function downloadFileChunkLoop(client: Client, id: string, part: number, notify:
         const blob = new Blob(downloading[id].chunks, { type });
         const url = (URL || webkitURL).createObjectURL(blob);
 
-        notify('download_ready', { id, url });
+        if (location._ === 'inputPeerPhotoFileLocation' && avatarCache) {
+          const response = new Response(blob);
+          avatarCache.put(locationToCachedFile(location), response);
+        }
+
+        notify('download_ready', { id, url, location });
 
         delete downloading[id];
       }

@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { StorageFileType, Document, InputFileLocation, DocumentAttribute } from 'mtproto-js';
+import { SERVICE_WORKER_SCOPE } from 'const';
 import { PhotoOptions } from './other';
 
 export function hexToStr(hex: string): string {
@@ -156,4 +157,21 @@ export function useVideoArrtibuteSize(container: HTMLElement, attr: DocumentAttr
     container.style.width = `${options.height * dim}px`;
     container.style.height = `${options.height}px`;
   }
+}
+
+export function locationToCachedFile(location: InputFileLocation, _ext?: string): string {
+  let filename: string | undefined;
+
+  switch (location._) {
+    case 'inputPeerPhotoFileLocation':
+      filename = `${SERVICE_WORKER_SCOPE}profiles/${location.local_id}_${location.volume_id}`;
+      break;
+
+    default:
+      // if (ext) filename += `.${ext}`;
+  }
+
+  if (!filename) throw new Error(`No location cache value for ${location}`);
+
+  return filename;
 }

@@ -60,7 +60,6 @@ export interface WorkerRequestPayloadMap {
   },
   'authorize': number,
   'load_tgs': string,
-
 }
 
 export type WorkerTaskType = keyof WorkerTaskPayloadMap;
@@ -109,6 +108,7 @@ export interface WorkerNotificationPayloadMap {
   'download_ready': {
     id: string,
     url: string,
+    location: InputFileLocation,
   };
   'stream_initialize': {
     id: string,
@@ -161,6 +161,40 @@ export interface WorkerReqResMap {
   'authorize': 'authorization_complete',
   'load_tgs': 'tgs_loaded',
 }
+
+/**
+ * Servive Worker requests with single callback result
+ */
+export interface ServiceWorkerNotificationMap {
+  'requested': { url: string },
+  'cached': { url: string },
+}
+
+export type ServiceWorkerNotificationType = keyof ServiceWorkerNotificationMap;
+export type ServiceWorkerNotification = {
+  [K in ServiceWorkerNotificationType]: {
+    type: K,
+    payload: ServiceWorkerNotificationMap[K],
+  }
+}[ServiceWorkerNotificationType];
+
+
+/**
+ * Servive Worker requests with single callback result
+ */
+export interface ServiceWorkerTaskPayloadMap {
+  'completed': { url: string },
+}
+
+export type ServiceWorkerTaskType = keyof ServiceWorkerTaskPayloadMap;
+export type ServiceWorkerTask = {
+  [K in ServiceWorkerTaskType]: {
+    type: K,
+    payload: ServiceWorkerTaskPayloadMap[K],
+  }
+}[ServiceWorkerTaskType];
+
+
 /**
  * Any message received from worker
  */
@@ -169,6 +203,7 @@ export type WorkerMessageIncoming = WorkerResponse | WorkerNotification & { id?:
 export type WorkerRequestID = string;
 export type WorkerRequestCallback<K extends WorkerRequestType> = (payload: WorkerResponsePayloadMap[WorkerReqResMap[K]]) => void;
 export type WorkerNotificationCallback<K extends WorkerNotificationType> = (payload: WorkerNotificationPayloadMap[K]) => void;
+export type ServiceWorkerNotificationCallback<K extends ServiceWorkerNotificationType> = (payload: ServiceWorkerNotificationMap[K]) => void;
 
 /**
  * Worker callbacks

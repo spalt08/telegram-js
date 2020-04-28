@@ -113,3 +113,37 @@ export function getFirstLetters(title: string) {
 
   return '';
 }
+
+// const encoder = new TextEncoder();
+// const decoder = new TextDecoder();
+
+// export function serializeString(str: string): string {
+//   return `0${str.length.toString(16)}`.slice(-2) + encoder.encode(str);
+// }
+
+// export function serializeNumber(number: number): string {
+//   const hex = number.toString(16);
+//   return serializeString(hex);
+// }
+
+// export function serializeArrayBuffer(ab: ArrayBuffer): string {
+//   const uint = new Uint8Array(ab);
+//   let hex = '';
+//   for (let i = 0; i < uint.length; i++) hex += `0${uint}`
+//   return serializeString(hex);
+// }
+
+// export function serialize(data: any): string {
+//   const keys = Object.keys(data);
+//   let str = '';
+
+//   for (let i = 0; i < keys.length; i++) {
+//     const entry = data[keys[i]];
+
+//     str += keys[i];
+//     str += '_';
+
+//     if (typeof entry === 'string') str += serializeString(entry);
+//     else if (typeof entry === 'number') str += serializeNumber(entry);
+//   }
+// }
