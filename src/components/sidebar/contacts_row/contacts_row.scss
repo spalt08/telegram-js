@@ -4,8 +4,7 @@
   display: flex;
   overflow-x: auto;
   overflow-y: hidden;
-  height: 98px;
-  box-sizing: content-box;
+  height: 102px; // +4 pixels for the scrollbar
 
   @include scrollbar-width(4px);
 
@@ -14,5 +13,37 @@
     width: 20%;
     min-width: 62px;
     max-width: 100px;
+    max-height: 98px;
+    text-align: center;
+  }
+
+  &__ripple {
+    max-width: 78px;
+    height: 100%;
+    margin: 0 auto;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color .2s ease;
+
+    &:hover {
+      background-color: rgba(#707579, 0.08);
+    }
+
+    &_content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 8px 0;
+    }
+  }
+
+  &__name {
+    width: 100%;
+    min-width: 0; // to force overflow
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 12px;
+    margin-top: 7px;
   }
 }

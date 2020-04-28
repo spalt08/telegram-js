@@ -5,8 +5,8 @@ import { div, text } from 'core/html';
 import { useMaybeObservable } from 'core/hooks';
 import { peerToTitle } from 'cache/accessors';
 import { ripple } from 'components/ui';
-import { profileAvatar } from 'components/profile';
-import { message as messageService } from 'services';
+import { avatarWithStatus } from 'components/profile';
+import { auth as authService, message as messageService } from 'services';
 import { peerToId } from 'helpers/api';
 import { areIteratorsEqual } from 'helpers/data';
 import { mount, unmount } from 'core/dom';
@@ -26,7 +26,7 @@ function formatName(name: string) {
 }
 
 function contact(peer: Readonly<Peer>, clickMiddleware?: (next: () => void) => void) {
-  const [, nameObservable] = peerToTitle(peer);
+  const [, nameObservable] = peerToTitle(peer, authService.userID);
 
   const onClickBase = () => messageService.selectPeer(peer);
   const onClick = clickMiddleware ? () => clickMiddleware(onClickBase) : onClickBase;
@@ -37,7 +37,7 @@ function contact(peer: Readonly<Peer>, clickMiddleware?: (next: () => void) => v
       contentClass: 'contactsRow__ripple_content',
       onClick,
     }, [
-      profileAvatar(peer, undefined, true),
+      avatarWithStatus({ peer, forDialogList: true }),
       div`.contactsRow__name`(
         text(nameObservable.pipe(map(formatName))),
       ),

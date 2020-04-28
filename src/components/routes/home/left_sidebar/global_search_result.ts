@@ -83,6 +83,7 @@ function listItem(id: string, searchQuery: Observable<string>, searchResult: Obs
         distinctUntilChanged(),
       ),
       clickMiddleware: makeCallOnClick(onExit),
+      className: 'globalSearchResult__topUsers',
     });
   }
   if (id.startsWith('message_')) {
