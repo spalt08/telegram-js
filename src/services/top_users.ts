@@ -86,6 +86,7 @@ async function loadTopUsers(): Promise<TopPeersState> {
 export default class TopUsersService {
   readonly isUpdating = new BehaviorSubject(false);
 
+  // todo: Keep in a persistent storage because this API endpoint emits a FLOOD WAIT error quickly. Update every 24 hours.
   readonly topUsers = new BehaviorSubject<TopPeersState>('unknown');
 
   protected initialLoadTimeout = setTimeout(() => this.update(), initialLoadDelay);
