@@ -1,7 +1,6 @@
 import {
   Transports, ClientError, TransportState, AuthKey, UpdateDeclMap, MethodDeclMap, InputFile, AccountPassword,
-  InputCheckPasswordSRP, InputFileLocation, Update, User, Chat, Updates,
-} from 'mtproto-js';
+  InputCheckPasswordSRP, InputFileLocation, Update, User, Chat, Updates } from 'mtproto-js';
 
 export type APICallHeaders = {
   dc?: number,
@@ -60,6 +59,12 @@ export interface WorkerRequestPayloadMap {
   },
   'authorize': number,
   'load_tgs': string,
+  'get_file_part': {
+    location: InputFileLocation,
+    options: DownloadOptions,
+    offset: number,
+    limit: number,
+  },
 }
 
 export type WorkerTaskType = keyof WorkerTaskPayloadMap;
@@ -136,6 +141,11 @@ export interface WorkerResponsePayloadMap {
   'password_kdf': InputCheckPasswordSRP.inputCheckPasswordSRP,
   'authorization_complete': AuthKey,
   'tgs_loaded': any, // JSON
+  'file_part': {
+    offset: number,
+    limit: number,
+    buffer: ArrayBuffer,
+  }, // JSON
 }
 
 export type WorkerNotificationType = keyof WorkerNotificationPayloadMap;
@@ -160,6 +170,7 @@ export interface WorkerReqResMap {
   'password_kdf': 'password_kdf',
   'authorize': 'authorization_complete',
   'load_tgs': 'tgs_loaded',
+  'get_file_part': 'file_part',
 }
 
 /**
@@ -168,6 +179,7 @@ export interface WorkerReqResMap {
 export interface ServiceWorkerNotificationMap {
   'requested': { url: string },
   'cached': { url: string },
+  'stream_range': { url: string, offset: number, end: number },
 }
 
 export type ServiceWorkerNotificationType = keyof ServiceWorkerNotificationMap;
@@ -184,6 +196,13 @@ export type ServiceWorkerNotification = {
  */
 export interface ServiceWorkerTaskPayloadMap {
   'completed': { url: string },
+  'range': {
+    url: string,
+    offset: number,
+    end: number,
+    buffer: ArrayBuffer,
+    size: number,
+  }
 }
 
 export type ServiceWorkerTaskType = keyof ServiceWorkerTaskPayloadMap;

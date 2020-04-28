@@ -120,3 +120,11 @@ export function parseMoovAtom(buf: Uint8Array, offset: number, length: number) {
     console.log(mdia);
   }
 }
+
+export function parseRange(header: string): [number, number] {
+  const [, chunks] = header.split('=');
+  const ranges = chunks.split(', ');
+  const [offset, end] = ranges[0].split('-');
+
+  return [+offset, +end || 0];
+}

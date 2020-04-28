@@ -175,3 +175,7 @@ export function locationToCachedFile(location: InputFileLocation, _ext?: string)
 
   return filename;
 }
+
+export function getStreamServiceURL(document: Document.document) {
+  return `/stream/document_${document.id}.mp4`;
+}

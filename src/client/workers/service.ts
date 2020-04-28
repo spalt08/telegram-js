@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-globals */
 import { ServiceWorkerNotificationType, ServiceWorkerNotificationMap, ServiceWorkerTask } from 'client/types';
+import { parseRange, alignOffset } from 'helpers/stream';
 
 const ctx = self as any as ServiceWorkerGlobalScope;
 const requests: Record<string, Array<(file: Response | undefined) => void>> = {};
@@ -49,14 +50,28 @@ ctx.addEventListener('fetch', (event: FetchEvent) => {
     fileCache.match(url).then((response) => {
       if (response) return response;
 
-      notify('requested', { url }, true);
-
       switch (domain) {
         case 'profiles':
+          notify('requested', { url }, true);
+
           return new Promise((resolve) => {
             if (!requests[url]) requests[url] = [];
             requests[url].push(resolve);
           });
+
+        case 'stream': {
+          console.log('get range', url, event.request.headers.get('Range'));
+
+          const range = event.request.headers.get('Range');
+          const [offset, end] = parseRange(range || '');
+
+          notify('stream_range', { url, offset: alignOffset(offset, 1024 * 512), end });
+
+          return new Promise((resolve) => {
+            if (!requests[url]) requests[url] = [];
+            requests[url].push(resolve);
+          });
+        }
 
         default:
           return fetch(url);
@@ -88,18 +103,49 @@ function releaseRequests(url: string) {
     for (let i = 0; i < requests[url].length; i++) requests[url][i](response);
   });
 }
+
 /**
  * Listen Messages
  */
 ctx.onmessage = (event) => {
   if (!event || !event.data || !event.data.type) return;
 
-  const { type, payload } = event.data as ServiceWorkerTask;
+  const msg = event.data as ServiceWorkerTask;
 
-  switch (type) {
+  switch (msg.type) {
     case 'completed':
-      releaseRequests(payload.url);
+      releaseRequests(msg.payload.url);
       break;
+
+    case 'range': {
+      const { url, offset, buffer, size } = msg.payload;
+      let { end } = msg.payload;
+
+      if (!requests[url]) return;
+
+      if (end === size) end = size - 1;
+
+      console.log('part response', url, `bytes ${offset}-${end}/${size || '*'}`);
+
+      const response = new Response(
+        buffer,
+        {
+          status: 206,
+          statusText: 'Partial Content',
+          headers: {
+            'Accept-Ranges': 'bytes',
+            'Content-Range': `bytes ${offset}-${end - 1}/${size || '*'}`,
+            'Content-Length': `${end - offset - 1}`,
+            'Content-Type': 'video/mp4',
+          },
+        },
+      );
+
+      for (let i = 0; i < requests[url].length; i++) requests[url][i](response);
+      delete requests[url];
+
+      break;
+    }
 
     default:
   }

@@ -1,6 +1,6 @@
-import { InputFileLocation } from 'mtproto-js';
-import { locationToString, locationToCachedFile } from 'helpers/files';
-import { task, listenMessage, listenServiceMessage, serviceTask } from './context';
+import { InputFileLocation, Document } from 'mtproto-js';
+import { locationToString, locationToCachedFile, getStreamServiceURL, getDocumentLocation } from 'helpers/files';
+import { task, listenMessage, listenServiceMessage, serviceTask, request } from './context';
 import { UploadResolver, UploadProgressResolver, DownloadResolver,
   DownloadProgressResolver, DownloadOptions, Priority } from './types';
 
@@ -37,9 +37,9 @@ const files = new Map<FileURL, { cached: boolean, location: InputFileLocation, o
 
 function processScheduledDownloads() {
   while (downloadQuene.length > 0 && downloadsProcessing < MAX_CONCURENT_DOWNLOADS) {
-    const request = downloadQuene.shift();
-    if (request) {
-      task('download', { id: locationToString(request.location), ...request });
+    const req = downloadQuene.shift();
+    if (req) {
+      task('download', { id: locationToString(req.location), ...req });
       downloadsProcessing++;
     }
   }
@@ -131,7 +131,7 @@ listenMessage('download_ready', ({ id, url, location }) => {
 
   downloadsProcessing--;
 
-  serviceTask('completed', { url: locationToCachedFile(location) });
+  if (location._ === 'inputPeerPhotoFileLocation') serviceTask('completed', { url: locationToCachedFile(location) });
 
   // console.log('downloaded', downloadsProcessing, id);
   processScheduledDownloads();
@@ -169,14 +169,6 @@ export function file(location: InputFileLocation, options: DownloadOptions, prog
 
   return url;
 }
-
-/**
- * Resolve Missing File
- */
-listenServiceMessage('requested', ({ url }) => {
-  const f = files.get(url);
-  if (f) scheduleDownload(f.location, f.options, f.options.priority);
-});
 
 function releasePendingSegments(id: string, trackID: number) {
   if (!streams[id] || !streams[id].tracks[trackID]) return;
@@ -253,4 +245,38 @@ listenMessage('stream_segment', ({ id, segment }) => {
 
 export function emptyCache() {
   fileCache = {};
+}
+
+/**
+ * Resolve Missing File
+ */
+listenServiceMessage('requested', ({ url }) => {
+  const f = files.get(url);
+  if (f) scheduleDownload(f.location, f.options, f.options.priority);
+});
+
+
+const serviceStreams: Record<FileURL, { location: InputFileLocation, options: DownloadOptions }> = {};
+
+/**
+ * Stream Range
+ */
+listenServiceMessage('stream_range', ({ url, offset, end }) => {
+  if (!serviceStreams[url]) return;
+
+  console.log('stream_range', url, offset, end);
+
+  request('get_file_part', { ...serviceStreams[url], offset, limit: end - offset }, (r) => {
+    serviceTask('range', { url, offset: r.offset, end: r.offset + r.limit, buffer: r.buffer, size: serviceStreams[url].options.size! });
+  });
+});
+
+export function serviceStreamRequest(document: Document.document) {
+  const url = getStreamServiceURL(document);
+
+  if (!serviceStreams[url]) {
+    serviceStreams[url] = { location: getDocumentLocation(document), options: { dc_id: document.dc_id, size: document.size } };
+  }
+
+  return url;
 }

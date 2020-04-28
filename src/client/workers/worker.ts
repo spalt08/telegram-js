@@ -139,6 +139,21 @@ function processMessage(msg: WorkerMessageOutcoming) {
       break;
     }
 
+    case 'get_file_part': {
+      const { id, payload } = msg;
+      const { offset, location, options } = payload;
+      let { limit } = payload;
+
+      if (limit <= 0) limit = 1024 * 512;
+      if (limit > 1024 * 512) limit = 1024 * 512;
+
+      getFilePartRequest(location, offset, limit, options, (buffer) => {
+        if (buffer.byteLength < limit) limit = buffer.byteLength;
+        respond(id, 'file_part', { offset, limit, buffer });
+      });
+      break;
+    }
+
     default: {
       throw new Error(`Unknown task: ${msg.type}`);
     }
