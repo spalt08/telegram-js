@@ -67,7 +67,7 @@ export default function leftSidebar({ className = '' }: Props = {}) {
           className: 'leftSidebar__layer -appearFromUp',
           onTransitionEnd: handleSearchResultTransitionEnd,
           onAnimationEnd: handleSearchResultTransitionEnd,
-          onExit() {
+          exit() {
             isSearchActive.next(false);
           },
         });

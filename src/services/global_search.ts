@@ -1,15 +1,19 @@
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatest, Subscription } from 'rxjs';
+import { first, map } from 'rxjs/operators';
 import debounceWithQueue from 'helpers/debounceWithQueue';
-import { messageToDialogPeer, peerMessageToId } from 'helpers/api';
+import { arePeersSame, messageToDialogPeer, peerMessageToId, peerToId } from 'helpers/api';
 import client from 'client/client';
 import { ContactsFound, Message, MessagesMessages, Peer } from 'mtproto-js';
-import { chatCache, messageCache, userCache } from 'cache';
+import { chatCache, dialogCache, messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import TopUsersService from './top_users';
+import DialogsService from './dialog/dialog';
 
 const loadMessagesChunkLength = 20;
 const contactsSearchMaxCount = 10;
 const searchRequestDebounce = 500;
+const maxRecentPeersCount = 20;
+const maxRecentPeersFromDialogsCount = 6;
 
 export type SearchRequest = string;
 
@@ -19,9 +23,9 @@ interface EmptyQueryResponse {
 
 interface FilledQueryResponse {
   type: SearchResultType.ForFilledQuery;
-  contactPeers: Peer[];
-  globalPeers: Peer[];
-  messageIds: string[];
+  contactPeers: readonly Peer[];
+  globalPeers: readonly Peer[];
+  messageIds: readonly string[];
   messageTotalCount: number;
   isMessageListFull: boolean;
 }
@@ -35,8 +39,8 @@ export const enum SearchResultType {
 
 export interface EmptyQueryResult extends EmptyQueryResponse {
   request: SearchRequest;
-  topUsers: Peer[],
-  recentPeers: Peer[], // todo: Implement
+  topUsers: readonly Peer[],
+  recentPeers: readonly Peer[],
 }
 
 export interface FilledQueryResult extends FilledQueryResponse {
@@ -128,13 +132,20 @@ export default class GlobalSearch {
     recentPeers: [],
   });
 
+  readonly recentPeers = new BehaviorSubject<readonly Peer[]>([]);
+
   readonly isSearching = new BehaviorSubject(false);
 
   readonly isLoadingMore = new BehaviorSubject(false);
 
   protected sourceSubscriptions: Subscription[] = [];
 
-  constructor(protected topUsers: TopUsersService) {}
+  constructor(protected topUsers: TopUsersService, dialogs?: DialogsService) {
+    if (dialogs) {
+      // todo: Keep the recent peers in a persistent storage instead of getting from the dialogs
+      this.addRecentPeersFromDialogs(dialogs);
+    }
+  }
 
   search(request: SearchRequest) {
     this.debouncedSearch.run(request, isSearchRequestEmpty(request));
@@ -174,6 +185,24 @@ export default class GlobalSearch {
       });
       this.isLoadingMore.next(false);
     }
+  }
+
+  addRecentPeer(peer: Peer) {
+    const recentPeers = this.recentPeers.value;
+    const currentIndex = recentPeers.findIndex((_peer) => arePeersSame(_peer, peer));
+
+    if (currentIndex === 0) {
+      return;
+    }
+
+    this.recentPeers.next(currentIndex === -1 ? [
+      peer,
+      ...recentPeers.slice(0, maxRecentPeersCount - 1),
+    ] : [
+      peer,
+      ...recentPeers.slice(0, currentIndex),
+      ...recentPeers.slice(currentIndex + 1),
+    ]);
   }
 
   protected async performSearch(request: SearchRequest): Promise<SearchResponse> {
@@ -244,7 +273,10 @@ export default class GlobalSearch {
 
   protected watchEmptySearchSources(request: SearchRequest) {
     this.sourceSubscriptions.push(
-      this.topUsers.topUsers.subscribe((topUsersInfo) => {
+      combineLatest([
+        this.topUsers.topUsers,
+        this.recentPeers,
+      ]).subscribe(([topUsersInfo, recentPeers]) => {
         const topUsers = typeof topUsersInfo === 'object'
           ? topUsersInfo.items.map((item) => item.peer)
           : [];
@@ -253,7 +285,7 @@ export default class GlobalSearch {
           type: SearchResultType.ForEmptyQuery,
           request,
           topUsers,
-          recentPeers: [],
+          recentPeers,
         });
       }),
     );
@@ -262,5 +294,42 @@ export default class GlobalSearch {
   protected unwatchSources() {
     this.sourceSubscriptions.forEach((subscription) => subscription.unsubscribe());
     this.sourceSubscriptions.splice(0);
+  }
+
+  protected addRecentPeersFromDialogs(dialogs: DialogsService) {
+    dialogs.dialogs
+      .pipe(
+        map((dialogIds) => dialogIds.reduce<Peer[]>((peers, dialogId) => {
+          if (peers.length >= maxRecentPeersFromDialogsCount) {
+            return peers;
+          }
+          const dialog = dialogCache.get(dialogId);
+          if (dialog?._ === 'dialog') {
+            peers.push(dialog.peer);
+          }
+          return peers;
+        }, [])),
+        first((peers) => peers.length > 0),
+      )
+      .subscribe((peers) => this.addOldRecentPeers(peers));
+  }
+
+  protected addOldRecentPeers(peers: Peer[]) {
+    const existingPeers = new Set<string>();
+    const newRecentPeers = [...this.recentPeers.value];
+
+    this.recentPeers.value.forEach((peer) => {
+      existingPeers.add(peerToId(peer));
+    });
+
+    peers.forEach((peer) => {
+      const peerId = peerToId(peer);
+      if (!existingPeers.has(peerId)) {
+        newRecentPeers.push(peer);
+        existingPeers.add(peerId);
+      }
+    });
+
+    this.recentPeers.next(newRecentPeers);
   }
 }

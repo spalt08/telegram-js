@@ -3,7 +3,7 @@ import { MaybeObservable } from 'core/types';
 import { div, fragment, nothing, text } from 'core/html';
 import { makeTextMatchHighlightComponent, peerSimpleStatus, ripple } from 'components/ui';
 import { profileAvatar } from 'components/profile';
-import { message as messageService } from 'services';
+import { auth as authService, message as messageService } from 'services';
 import { chatCache, userCache } from 'cache';
 import { peerToTitle } from 'cache/accessors';
 import './contact.scss';
@@ -44,7 +44,7 @@ function getUsername(peer: Peer): string | undefined {
 }
 
 export default function contact({ peer, showUsername, highlightOnline, searchQuery = '', clickMiddleware }: Props) {
-  const [, nameObservable] = peerToTitle(peer);
+  const [, nameObservable] = peerToTitle(peer, authService.userID);
   const username = showUsername ? getUsername(peer) : undefined; // Not updated because the case is very rare and requires a more complex code
 
   const onClickBase = () => messageService.selectPeer(peer);
@@ -56,7 +56,7 @@ export default function contact({ peer, showUsername, highlightOnline, searchQue
       contentClass: 'contact__ripple_content',
       onClick,
     }, [
-      profileAvatar(peer),
+      profileAvatar(peer, undefined, true),
       div`.contact__main`(
         nameHighlight({ tag: 'div', props: { class: 'contact__name' }, text: nameObservable, query: searchQuery }),
         div`.contact__description`(

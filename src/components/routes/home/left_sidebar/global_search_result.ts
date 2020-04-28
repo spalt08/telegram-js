@@ -1,3 +1,4 @@
+import { Peer } from 'mtproto-js';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { distinctUntilChanged, filter, map } from 'rxjs/operators';
 import { div, text } from 'core/html';
@@ -11,7 +12,7 @@ import './global_search_result.scss';
 
 interface Props extends Record<string, any> {
   className?: string;
-  onExit?(): void;
+  exit(): void;
 }
 
 const sectionHeaders: Record<string, string> = {
@@ -22,6 +23,8 @@ const sectionHeaders: Record<string, string> = {
   recentPeersHeader: 'Recent',
   nothingFound: 'Nothing is found',
 };
+
+const addRecentPeerDelay = 300; // To prevent an unnecessary DOM modification during a peer selection animation
 
 function searchResultToListItems(result: SearchResult) {
   const items: string[] = [];
@@ -65,16 +68,11 @@ function searchResultToListItems(result: SearchResult) {
   return items;
 }
 
-function makeCallOnClick(callback?: () => void) {
-  return (next: () => void) => {
-    next();
-    if (callback) {
-      callback();
-    }
-  };
+function addRecentPeer(peer: Peer) {
+  setTimeout(() => globalSearch.addRecentPeer(peer), addRecentPeerDelay);
 }
 
-function listItem(id: string, searchQuery: Observable<string>, searchResult: Observable<SearchResult>, onExit?: () => void) {
+function listItem(id: string, searchResult: Observable<SearchResult>, exit: () => void) {
   if (id === 'topUsers') {
     return contactsRow({
       peers: searchResult.pipe(
@@ -82,35 +80,53 @@ function listItem(id: string, searchQuery: Observable<string>, searchResult: Obs
         map((result) => result.topUsers),
         distinctUntilChanged(),
       ),
-      clickMiddleware: makeCallOnClick(onExit),
+      clickMiddleware(peer, next) {
+        next();
+        exit();
+      },
       className: 'globalSearchResult__topUsers',
     });
   }
   if (id.startsWith('message_')) {
-    return foundMessage(id.slice(8), searchQuery);
+    return foundMessage(id.slice(8), globalSearch.result.pipe(map((result) => result.request)));
   }
   if (id.startsWith('contactPeer_')) {
+    const peer = peerIdToPeer(id.slice(12));
     return contact({
-      peer: peerIdToPeer(id.slice(12)),
-      searchQuery,
+      peer,
+      searchQuery: globalSearch.result.pipe(map((result) => result.request)),
       highlightOnline: false,
-      clickMiddleware: makeCallOnClick(onExit),
+      clickMiddleware(next) {
+        next();
+        exit();
+        addRecentPeer(peer);
+      },
     });
   }
   if (id.startsWith('globalPeer_')) {
+    const peer = peerIdToPeer(id.slice(11));
     return contact({
-      peer: peerIdToPeer(id.slice(11)),
-      searchQuery,
+      peer,
+      searchQuery: globalSearch.result.pipe(map((result) => result.request)),
       highlightOnline: false,
       showUsername: true,
-      clickMiddleware: makeCallOnClick(onExit),
+      clickMiddleware(next) {
+        next();
+        exit();
+        addRecentPeer(peer);
+      },
     });
   }
   if (id.startsWith('recentPeer_')) {
+    const peer = peerIdToPeer(id.slice(11));
     return contact({
-      peer: peerIdToPeer(id.slice(11)),
+      peer,
       highlightOnline: true,
-      clickMiddleware: makeCallOnClick(onExit),
+      clickMiddleware(next) {
+        next();
+        exit();
+        addRecentPeer(peer);
+      },
     });
   }
   return div`.globalSearchResult__sectionHeader`(
@@ -118,9 +134,8 @@ function listItem(id: string, searchQuery: Observable<string>, searchResult: Obs
   );
 }
 
-export default function globalSearchResult({ className = '', onExit, ...props }: Props = {}) {
+export default function globalSearchResult({ className = '', exit, ...props }: Props) {
   const listItemsSubject = new BehaviorSubject<string[]>([]);
-  const resultQueryObservable = globalSearch.result.pipe(map((result) => result.request));
 
   const resultList = new VirtualizedList({
     className: 'globalSearchResult__list',
@@ -129,7 +144,7 @@ export default function globalSearchResult({ className = '', onExit, ...props }:
     pivotBottom: false,
     batch: 30,
     renderer(id) {
-      return listItem(id, resultQueryObservable, globalSearch.result, onExit);
+      return listItem(id, globalSearch.result, exit);
     },
     onReachBottom() {
       globalSearch.loadMore();

@@ -15,7 +15,7 @@ import './contacts_row.scss';
 interface Props {
   peers: MaybeObservable<readonly Readonly<Peer>[]>;
   className?: string;
-  clickMiddleware?(next: () => void): void;
+  clickMiddleware?(peer: Peer, next: () => void): void;
 }
 
 function formatName(name: string) {
@@ -25,11 +25,8 @@ function formatName(name: string) {
   return name.slice(firstNonSpacePosition, firstSpacePosition === -1 ? undefined : firstSpacePosition);
 }
 
-function contact(peer: Readonly<Peer>, clickMiddleware?: (next: () => void) => void) {
+function contact(peer: Readonly<Peer>, onClick?: () => void) {
   const [, nameObservable] = peerToTitle(peer, authService.userID);
-
-  const onClickBase = () => messageService.selectPeer(peer);
-  const onClick = clickMiddleware ? () => clickMiddleware(onClickBase) : onClickBase;
 
   return div(
     ripple({
@@ -49,11 +46,16 @@ export default function contactsRow({ peers, className = '', clickMiddleware }: 
   const container = div`.contactsRow ${className}`();
   let peerElements = new Map<string, Node>(); // Map is used to keep also the peers order
 
+  function makePeerClickHandler(peer: Peer) {
+    const onClick = () => messageService.selectPeer(peer);
+    return clickMiddleware ? () => clickMiddleware(peer, onClick) : onClick;
+  }
+
   useMaybeObservable(container, peers, (newPeers) => {
     const newPeerElements = new Map<string, Node>();
     newPeers.forEach((peer) => {
       const peerId = peerToId(peer);
-      const peerElement = peerElements.get(peerId) || contact(peer, clickMiddleware);
+      const peerElement = peerElements.get(peerId) || contact(peer, makePeerClickHandler(peer));
       newPeerElements.set(peerId, peerElement);
     });
 

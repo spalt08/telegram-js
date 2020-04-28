@@ -14,11 +14,7 @@ const messageHighlight = makeTextMatchHighlightComponent({
   outputMaxStartOffset: 10,
 });
 
-export default function foundMessage(
-  messageUniqueId: string,
-  searchQuery: MaybeObservable<string> = '',
-  clickMiddleware?: (next: () => void) => void,
-) {
+export default function foundMessage(messageUniqueId: string, searchQuery: MaybeObservable<string> = '') {
   const message = messageCache.get(messageUniqueId);
   // Message is not updated intentionally
 
@@ -37,14 +33,13 @@ export default function foundMessage(
   const dialogPeer = messageToDialogPeer(message);
   const senderPeer = messageToSenderPeer(message);
 
-  const onClickBase = () => messageService.selectPeer(dialogPeer, message.id);
-  const onClick = clickMiddleware ? () => clickMiddleware(onClickBase) : onClickBase;
-
   return div`.foundMessage`(
     ripple({
       className: 'foundMessage__ripple',
       contentClass: 'foundMessage__ripple_content',
-      onClick,
+      onClick() {
+        messageService.selectPeer(dialogPeer, message.id);
+      },
     }, [
       profileAvatar(senderPeer, message),
       div`.foundMessage__main`(

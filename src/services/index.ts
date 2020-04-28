@@ -23,4 +23,4 @@ export const dialog = new DialogService(message);
 export const media = new MediaService(main);
 export const messageSearch = new MessageSearchService();
 export const topUsers = new TopUsersService(message);
-export const globalSearch = new GlobalSearchService(topUsers);
+export const globalSearch = new GlobalSearchService(topUsers, dialog);
