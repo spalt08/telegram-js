@@ -7,7 +7,7 @@ import { mergeOrderedArrays } from 'helpers/data';
 import debounceWithQueue from '../../helpers/debounceWithQueue';
 
 const LOAD_CHUNK_LENGTH = 20;
-const SEARCH_REQUEST_DEBOUNCE = 500;
+const SEARCH_REQUEST_DEBOUNCE = 250;
 
 export type SearchRequest = string; // It may get other filter in future (e.g. date)
 

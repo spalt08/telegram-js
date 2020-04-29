@@ -11,7 +11,7 @@ import DialogsService from './dialog/dialog';
 
 const loadMessagesChunkLength = 20;
 const contactsSearchMaxCount = 10;
-const searchRequestDebounce = 500;
+const searchRequestDebounce = 250;
 const maxRecentPeersCount = 20;
 const maxRecentPeersFromDialogsCount = 6;
 
