@@ -69,5 +69,9 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     width: 200px;
+
+    &__content {
+      color: #707579;
+    }
   }
 }

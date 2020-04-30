@@ -6,6 +6,23 @@ export type ItemWatcher<TItem> = (item: Readonly<TItem> | undefined) => void;
 
 export type ChangeEvent<TItem, TKey> = ['add' | 'update' | 'remove', TKey, Readonly<TItem>];
 
+export type ItemMerger<TItem> = (oldItem: Readonly<TItem>, newItem: Readonly<TItem>) => Readonly<TItem>;
+
+export function simpleItemMerger<TItem>(oldItem: Readonly<TItem>, newItem: Readonly<TItem>): Readonly<TItem> {
+  return newItem;
+}
+
+export function considerMinItemMerger<TItem>(oldItem: Readonly<TItem>, newItem: Readonly<TItem>): Readonly<TItem> {
+  if (oldItem === newItem) {
+    return oldItem;
+  }
+  if (!(newItem as any).min) {
+    return newItem;
+  }
+  const { min, ...newItemWithoutMin } = newItem as any;
+  return { ...oldItem, ...newItemWithoutMin };
+}
+
 /**
  * A simple storage for key-value pairs. Allows to subscribe to changes.
  */
@@ -26,7 +43,7 @@ export default class Dictionary<TKey extends keyof any, TItem> {
   protected itemsWatchers = {} as Record<TKey, ItemWatcher<TItem>[]>;
 
   constructor(
-    protected considerMin = true, // If true, items with .min=true won't replace items with .min=false
+    protected itemMerger: ItemMerger<TItem> = simpleItemMerger,
     data = {} as Record<TKey, Readonly<TItem>>,
   ) {
     this.data = { ...data };
@@ -158,18 +175,10 @@ export default class Dictionary<TKey extends keyof any, TItem> {
   protected putOne(key: TKey, item: Readonly<TItem>) {
     const currentItem = this.data[key];
     if (currentItem) {
-      if (item !== currentItem) {
-        let itemToPut: Readonly<TItem>;
-
-        if (this.considerMin && (currentItem as any).min) {
-          const { min, ...itemWithoutMin } = item as any;
-          itemToPut = { ...currentItem, ...itemWithoutMin };
-        } else {
-          itemToPut = item;
-        }
-
-        this.data[key] = itemToPut;
-        this.notify('update', key, itemToPut);
+      const newItem = this.itemMerger(currentItem, item);
+      if (newItem !== currentItem) {
+        this.data[key] = newItem;
+        this.notify('update', key, newItem);
       }
     } else {
       this.data[key] = item;

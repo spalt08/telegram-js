@@ -1,7 +1,7 @@
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { mapObject } from 'helpers/data';
-import Dictionary, { ItemWatcher } from './dictionary';
+import Dictionary, { ItemMerger, ItemWatcher } from './dictionary';
 
 export type GetId<TItem, TId extends keyof any> = (item: Readonly<TItem>) => TId;
 
@@ -15,7 +15,7 @@ export type IndicesFromFactories<T extends IndicesFactories<any, any>> = {
 
 export interface Options<TItem, TIndices, TId extends keyof any> {
   getId: GetId<TItem, TId>;
-  considerMin?: boolean;
+  itemMerger?: ItemMerger<TItem>;
   indices?: TIndices;
   data?: Readonly<TItem>[];
 }
@@ -40,11 +40,11 @@ export default class Collection<TItem, TIndices extends IndicesFactories<any, an
 
   constructor({
     getId,
-    considerMin,
+    itemMerger,
     indices = {} as TIndices,
     data = [],
   }: Options<TItem, TIndices, TId>) {
-    this.storage = new Dictionary(considerMin);
+    this.storage = new Dictionary(itemMerger);
     this.getId = getId;
     this.changes = this.storage.changes.pipe(map(
       (events) => events.map(

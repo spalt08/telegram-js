@@ -28,12 +28,12 @@
     width: 70px;
     height: 70px;
     cursor: pointer;
+    border-radius: 10px;
     transition: background-color .15s ease-out;
     padding: 1px;
 
     &:hover {
       background-color: rgba(#707579, 0.08);
-      border-radius: 10px;
     }
   }
 }
