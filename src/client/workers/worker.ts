@@ -6,6 +6,7 @@ import { WorkerMessageOutcoming, WorkerResponseType, WorkerResponsePayloadMap, W
 import { downloadFile, uploadFile } from './extensions/media';
 import { loadTGS } from './extensions/utils';
 import { streamVideoFile, seekVideoStream, revokeVideoStreak } from './extensions/streaming';
+import { alignLimit } from 'helpers/stream';
 
 /**
  * Vars
@@ -144,8 +145,11 @@ function processMessage(msg: WorkerMessageOutcoming) {
       const { offset, location, options } = payload;
       let { limit } = payload;
 
-      if (limit <= 0) limit = 1024 * 512;
+      if (limit > 0) limit = alignLimit(limit);
+      if (limit <= 1024 * 4) limit = 1024 * 512;
       if (limit > 1024 * 512) limit = 1024 * 512;
+
+      console.log('aligned_limit', limit);
 
       getFilePartRequest(location, offset, limit, options, (buffer) => {
         if (buffer.byteLength < limit) limit = buffer.byteLength;

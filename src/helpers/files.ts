@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
 import { StorageFileType, Document, InputFileLocation, DocumentAttribute } from 'mtproto-js';
 import { SERVICE_WORKER_SCOPE } from 'const';
+import { DownloadOptions } from 'client/types';
 import { PhotoOptions } from './other';
 
 export function hexToStr(hex: string): string {
@@ -159,13 +160,19 @@ export function useVideoArrtibuteSize(container: HTMLElement, attr: DocumentAttr
   }
 }
 
-export function locationToCachedFile(location: InputFileLocation, _ext?: string): string {
+export function locationToURL(location: InputFileLocation, _options?: DownloadOptions): string {
   let filename: string | undefined;
 
   switch (location._) {
     case 'inputPeerPhotoFileLocation':
-      filename = `${SERVICE_WORKER_SCOPE}profiles/${location.local_id}_${location.volume_id}`;
+      filename = `${SERVICE_WORKER_SCOPE}profiles/${location.local_id}_${location.volume_id}.jpg`;
       break;
+
+    case 'inputPhotoFileLocation':
+      return `${SERVICE_WORKER_SCOPE}photos/${location.id}_${location.thumb_size}`;
+
+    case 'inputDocumentFileLocation':
+      return `${SERVICE_WORKER_SCOPE}documents/${location.id}_${location.thumb_size}`;
 
     default:
       // if (ext) filename += `.${ext}`;

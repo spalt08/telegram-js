@@ -1,4 +1,4 @@
-import { a } from 'core/html';
+import { a, form, input } from 'core/html';
 
 export type PhotoFitMode = 'contain' | 'cover';
 
@@ -13,6 +13,13 @@ export type PhotoOptions = {
 };
 
 export function downloadByUrl(filename: string, href: string) {
+  // const f = form({ action: href, method: 'POST' },
+  //   input({ type: 'text', value: filename, name: 'filename' }),
+  // );
+
+  // document.body.appendChild(f);
+  // f.submit();
+  // f.remove();
   const link = a({ download: filename, href, style: { display: 'none ' } });
   link.click();
 }
