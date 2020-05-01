@@ -3,9 +3,10 @@ import { Client as NetworkHandler, InputFileLocation } from 'mtproto-js';
 import { CLIENT_CONFIG } from 'const/api';
 import { WindowMessage, DownloadOptions } from 'client/types';
 import { typeToMime } from 'helpers/files';
+import { parseRange } from 'helpers/stream';
 import { createNotification, respond } from './extensions/context';
 import { load, save } from './extensions/db';
-import { resolveDownload, FileInfo } from './extensions/files';
+import { resolveDownload, FileInfo, resolveRangeRequest } from './extensions/files';
 
 type ExtendedWorkerScope = {
   cache: Cache,
@@ -80,6 +81,12 @@ ctx.onmessage = (event) => {
       break;
     }
 
+    case 'switch_dc': {
+      ctx.network.cfg.dc = msg.payload;
+      notify('authorization_updated', { dc: msg.payload, user: ctx.network.dc.getUserID() || 0 });
+      break;
+    }
+
     default:
   }
 };
@@ -91,7 +98,7 @@ function getFilePartRequest(location: InputFileLocation, offset: number, limit: 
   options: DownloadOptions, ready: (buf: ArrayBuffer, mime?: string) => void) {
   if (!ctx.network) return;
 
-  const params = { location, offset, limit };
+  const params = { location, offset, limit, precise: !!options.precise };
   const headers = { dc: options.dc_id || ctx.network.cfg.dc, thread: 2 };
 
   ctx.network.call('upload.getFile', params, headers, (err, result) => {
@@ -135,6 +142,20 @@ ctx.addEventListener('fetch', (event: FetchEvent): void => {
         }),
       );
       break;
+
+    case 'stream': {
+      const range = event.request.headers.get('Range');
+      const [offset, end] = parseRange(range || '');
+      const info = files.get(url);
+
+      if (!info) event.respondWith(NegativeResponse);
+      else {
+        event.respondWith(new Promise((resolve) => {
+          resolveRangeRequest(info, offset, end, resolve, getFilePartRequest);
+        }));
+      }
+      break;
+    }
 
     default:
       event.respondWith(fetch(event.request.url));

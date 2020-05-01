@@ -140,12 +140,12 @@ module.exports = (env, argv) => {
     },
 
     plugins: [
-      new WorkerPlugin(),
       new ServiceWorkerWebpackPlugin({
         entry: path.join(__dirname, 'src/client/workers/service.ts'),
         filename: 'sw.js',
         excludes: ['**/*'],
       }),
+      new WorkerPlugin(),
       new CleanWebpackPlugin(),
       new HtmlWebpackPlugin({ template: 'src/index.ejs' }),
       new FaviconsWebpackPlugin({

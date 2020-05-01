@@ -1,9 +1,11 @@
 /* eslint-disable no-param-reassign */
 import { InputFileLocation } from 'mtproto-js';
 import { DownloadOptions } from 'client/types';
+import { alignOffset, alignLimit } from 'helpers/stream';
 
 // constants
-const DOWNLOAD_CHUNK_LIMIT = 512 * 1024;
+const DOWNLOAD_CHUNK_LIMIT = 1024 * 1024;
+const SMALLEST_CHUNK_LIMIT = 4 * 1024;
 
 interface FilePartResolver {
   (location: InputFileLocation, offset: number, limit: number, options: DownloadOptions, ready: (data: ArrayBuffer, mime?: string) => void): void,
@@ -26,8 +28,6 @@ export function resolveDownload(info: FileInfo, cache: Cache, get: FilePartResol
   const offset = info.chunks.length * DOWNLOAD_CHUNK_LIMIT;
   const limit = DOWNLOAD_CHUNK_LIMIT;
 
-  console.log('request', info.url, offset, limit);
-
   get(info.location, offset, limit, info.options, (ab, type) => {
     info.chunks.push(ab);
 
@@ -46,6 +46,28 @@ export function resolveDownload(info: FileInfo, cache: Cache, get: FilePartResol
     } else {
       resolveDownload(info, cache, get, true);
     }
+  });
+}
+
+export function resolveRangeRequest(info: FileInfo, offset: number, end: number, resolve: (r: Response) => void, get: FilePartResolver) {
+  let limit = end ? alignLimit(end - offset + 1) : DOWNLOAD_CHUNK_LIMIT;
+  offset = alignOffset(offset, limit);
+
+  info.options.precise = true;
+
+  get(info.location, offset, limit, info.options, (ab, type) => {
+    console.log(info.url, offset, limit, ab.byteLength, info.options.size!);
+
+    resolve(new Response(ab, {
+      status: 206,
+      statusText: 'Partial Content',
+      headers: {
+        'Accept-Ranges': 'bytes',
+        'Content-Range': `bytes ${offset}-${offset + ab.byteLength - 1}/${info.options.size! || '*'}`,
+        'Content-Length': `${ab.byteLength}`,
+        'Content-Type': type || '',
+      },
+    }));
   });
 }
 

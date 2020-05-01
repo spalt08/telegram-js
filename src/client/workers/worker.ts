@@ -3,7 +3,7 @@ import { Client, InputFileLocation } from 'mtproto-js';
 import { API_ID, API_HASH, APP_VERSION } from 'const/api';
 import { WorkerMessageOutcoming, WorkerResponseType, WorkerResponsePayloadMap, WorkerNotificationType,
   WorkerNotificationPayloadMap, DownloadOptions } from 'client/types';
-import { downloadFile, uploadFile } from './extensions/media';
+import { downloadFile, uploadFile } from './extensions/files';
 import { loadTGS } from './extensions/utils';
 import { streamVideoFile, seekVideoStream, revokeVideoStreak } from './extensions/streaming';
 import { alignLimit } from 'helpers/stream';

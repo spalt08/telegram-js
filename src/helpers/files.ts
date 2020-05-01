@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { StorageFileType, Document, InputFileLocation, DocumentAttribute } from 'mtproto-js';
+import { StorageFileType, Document, InputFileLocation, DocumentAttribute, PhotoSize } from 'mtproto-js';
 import { SERVICE_WORKER_SCOPE } from 'const';
 import { DownloadOptions } from 'client/types';
 import { PhotoOptions } from './other';
@@ -160,6 +160,35 @@ export function useVideoArrtibuteSize(container: HTMLElement, attr: DocumentAttr
   }
 }
 
+export function usePhotoSize(container: HTMLElement, size: PhotoSize.photoSize, options: PhotoOptions) {
+  const dim = size.w / size.h;
+  const orientation = size.w >= size.h ? 'landscape' : 'portrait';
+
+  if (options.fit === 'contain') {
+    if (orientation === 'landscape' && options.width) {
+      if (options.height && options.width / dim > options.height) {
+        container.style.height = `${Math.min(size.h, options.height)}px`;
+        container.style.width = `${Math.min(size.w, options.height * dim)}px`;
+      } else {
+        container.style.width = `${Math.min(options.width, size.w)}px`;
+        container.style.height = `${Math.min(size.h, options.width / dim)}px`;
+      }
+    }
+    if (orientation === 'portrait' && options.height) {
+      if (options.width && options.height * dim > options.width) {
+        container.style.width = `${Math.min(options.width, size.w)}px`;
+        container.style.height = `${Math.min(size.h, options.width / dim)}px`;
+      } else {
+        container.style.height = `${Math.min(size.h, options.height)}px`;
+        container.style.width = `${Math.min(size.w, options.height * dim)}px`;
+      }
+    }
+  } else {
+    container.style.width = `${options.width}px`;
+    container.style.height = `${options.height}px`;
+  }
+}
+
 export function locationToURL(location: InputFileLocation, _options?: DownloadOptions): string {
   let filename: string | undefined;
 
@@ -184,5 +213,8 @@ export function locationToURL(location: InputFileLocation, _options?: DownloadOp
 }
 
 export function getStreamServiceURL(document: Document.document) {
-  return `/stream/document_${document.id}.mp4`;
+  const fname = getAttributeFilename(document);
+  const ext = fname ? `.${fname.file_name.split('.').pop()}` : '';
+
+  return `/stream/document_${document.id}${ext}`;
 }
