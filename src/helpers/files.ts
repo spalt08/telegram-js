@@ -42,11 +42,17 @@ export function blobToUrl(blob: Blob) {
   return (URL || webkitURL).createObjectURL(blob);
 }
 
-export function typeToMime(type: StorageFileType) {
+export function typeToMime(type: StorageFileType): string | undefined {
   switch (type._) {
     case 'storage.fileJpeg': return 'image/jpeg';
     case 'storage.filePng': return 'image/png';
-    default: return 'image/jpeg';
+    case 'storage.fileGif': return 'image/gif';
+    case 'storage.filePdf': return 'application/pdf';
+    case 'storage.fileMp3': return 'audio/mpeg';
+    case 'storage.fileMov': return 'video/quicktime';
+    case 'storage.fileMp4': return 'video/mp4';
+    case 'storage.fileWebp': return 'image/webp';
+    default: return undefined;
   }
 }
 

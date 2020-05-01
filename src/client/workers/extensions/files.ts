@@ -6,67 +6,164 @@ import { alignOffset, alignLimit } from 'helpers/stream';
 // constants
 const DOWNLOAD_CHUNK_LIMIT = 1024 * 1024;
 const SMALLEST_CHUNK_LIMIT = 4 * 1024;
+const MAX_CONCURRENT_DOWNLOADS = 4;
 
 interface FilePartResolver {
   (location: InputFileLocation, offset: number, limit: number, options: DownloadOptions, ready: (data: ArrayBuffer, mime?: string) => void): void,
 }
 
-export type FileInfo = {
+type FileURL = string;
+type FileInfo = {
   url: string,
   location: InputFileLocation,
   options: DownloadOptions,
-  events: Array<(res: Response) => void>,
   chunks: ArrayBuffer[],
   processing?: boolean,
 };
 
-export function resolveDownload(info: FileInfo, cache: Cache, get: FilePartResolver, force = false) {
-  if (!force && info.processing) return;
+/**
+ * File Infos, Resolvers and Quene
+ */
+const files = new Map<FileURL, FileInfo>();
+const fileEvents: Record<FileURL, Array<(res: Response) => void>> = {};
+const fileQuene: FileURL[] = [];
+let currentlyProcessing = 0;
 
-  info.processing = true;
+/**
+ * Memrise File Location linked to URL for future use
+ */
+export function fetchLocation(url: FileURL | string, location: InputFileLocation, options: DownloadOptions): FileInfo {
+  let info = files.get(url);
 
+  if (!info) {
+    info = { url, location, options, chunks: [] };
+    files.set(url, info);
+  }
+
+  return info;
+}
+
+/**
+ * Loop for getting file parts from network
+ */
+export function loopDownload(info: FileInfo, get: FilePartResolver, cache: Cache) {
   const offset = info.chunks.length * DOWNLOAD_CHUNK_LIMIT;
   const limit = DOWNLOAD_CHUNK_LIMIT;
 
   get(info.location, offset, limit, info.options, (ab, type) => {
     info.chunks.push(ab);
 
-    if (ab.byteLength < limit || (info.options.size && info.options.size < offset + limit)) {
+    if (ab.byteLength < limit || (info.options!.size && info.options!.size < offset + limit)) {
       const blob = new Blob(info.chunks, { type });
       const response = new Response(ab);
 
-      for (let i = 0; i < info.events.length; i++) {
-        info.events[i](response);
-      }
+      if (fileEvents[info.url]) for (let i = 0; i < fileEvents[info.url].length; i++) fileEvents[info.url][i](response);
+      if (info.chunks.length <= 4) cache.put(info.url, new Response(blob));
 
-      if (info.chunks.length <= 3) cache.put(info.url, new Response(blob));
-
-      info.events = [];
       info.chunks = [];
+      info.processing = false;
+      delete fileEvents[info.url];
+      currentlyProcessing--;
+
+      // Pass Control to quened files
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      processQuenedDownloads(get, cache);
     } else {
-      resolveDownload(info, cache, get, true);
+      loopDownload(info, get, cache);
     }
   });
 }
 
-export function resolveRangeRequest(info: FileInfo, offset: number, end: number, resolve: (r: Response) => void, get: FilePartResolver) {
-  let limit = end ? alignLimit(end - offset + 1) : DOWNLOAD_CHUNK_LIMIT;
-  offset = alignOffset(offset, limit);
+/**
+ * Download Initializator
+ */
+export function initDownload(url: FileURL | string, get: FilePartResolver, cache: Cache) {
+  const info = files.get(url);
 
-  info.options.precise = true;
+  if (info && !info.processing) {
+    info.processing = true;
+    loopDownload(info, get, cache);
+  }
+}
 
-  get(info.location, offset, limit, info.options, (ab, type) => {
-    console.log(info.url, offset, limit, ab.byteLength, info.options.size!);
+/**
+ * Download Initializator
+ */
+export function processQuenedDownloads(get: FilePartResolver, cache: Cache) {
+  while (fileQuene.length > 0 && currentlyProcessing < MAX_CONCURRENT_DOWNLOADS) {
+    const url = fileQuene.shift();
+    if (url) {
+      currentlyProcessing++;
+      initDownload(url, get, cache);
+    }
+  }
+}
 
-    resolve(new Response(ab, {
+/**
+ * Download Quene
+ */
+export function putDownloadQuene(url: string, get: FilePartResolver, cache: Cache) {
+  fileQuene.push(url);
+  fileQuene.sort((left, right) => (files.get(right)!.options.priority || 0) - (files.get(left)!.options.priority || 0));
+  processQuenedDownloads(get, cache);
+}
+
+/**
+ * Capture fetch request for quened downloads
+ */
+export function fetchRequest(url: string, resolve: (res: Response) => void) {
+  if (!fileEvents[url]) fileEvents[url] = [];
+  fileEvents[url].push(resolve);
+}
+
+/**
+ * Download file part with provided range (streaming)
+ */
+export function streamPart(url: FileURL, offset: number, end: number, resolve: (r: Response) => void, get: FilePartResolver) {
+  const info = files.get(url);
+
+  if (!info) {
+    resolve(new Response(null, { status: 302, headers: { Location: url } }));
+    return;
+  }
+
+  // safari workaround
+  if (offset === 0 && end === 1) {
+    resolve(new Response(new Uint8Array(2).buffer, {
       status: 206,
       statusText: 'Partial Content',
       headers: {
         'Accept-Ranges': 'bytes',
-        'Content-Range': `bytes ${offset}-${offset + ab.byteLength - 1}/${info.options.size! || '*'}`,
-        'Content-Length': `${ab.byteLength}`,
-        'Content-Type': type || '',
+        'Content-Range': `bytes 0-1/${info.options.size! || '*'}`,
+        'Content-Length': '2',
+        'Content-Type': 'video/mp4',
       },
+    }));
+    return;
+  }
+
+  const limit = end ? alignLimit(end - offset + 1) : DOWNLOAD_CHUNK_LIMIT;
+  offset = alignOffset(offset, limit);
+
+  info.options.precise = true;
+
+  console.log('request', offset, limit, info.options);
+
+  get(info.location, offset, limit, info.options, (ab, type) => {
+    console.log(info.url, offset, limit, ab.byteLength, info.options.size!);
+
+    const headers: Record<string, string> = {
+      'Accept-Ranges': 'bytes',
+      'Content-Range': `bytes ${offset}-${offset + ab.byteLength - 1}/${info.options.size! || '*'}`,
+      'Content-Length': `${ab.byteLength}`,
+    };
+
+    if (type) headers['Content-Type'] = type;
+
+    resolve(new Response(ab, {
+      status: 206,
+      statusText: 'Partial Content',
+      headers,
     }));
   });
 }

@@ -9,7 +9,6 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CssoWebpackPlugin = require('csso-webpack-plugin').default;
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
-const WorkerPlugin = require('worker-plugin');
 const ServiceWorkerWebpackPlugin = require('serviceworker-webpack-plugin');
 
 const sourceDirectory = 'src';
@@ -145,7 +144,6 @@ module.exports = (env, argv) => {
         filename: 'sw.js',
         excludes: ['**/*'],
       }),
-      new WorkerPlugin(),
       new CleanWebpackPlugin(),
       new HtmlWebpackPlugin({ template: 'src/index.ejs' }),
       new FaviconsWebpackPlugin({

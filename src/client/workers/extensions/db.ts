@@ -28,7 +28,7 @@ export function load(key: string) {
         .objectStore('meta')
         .get(key);
 
-      const initial = { pfs: true, baseDC: 2, dcs: {} };
+      const initial = { pfs: false, baseDC: 2, dcs: {} };
 
       request.onsuccess = (event: any) => resolve(event.target.result || initial);
       request.onerror = () => resolve(initial);
