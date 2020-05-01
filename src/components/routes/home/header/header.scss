@@ -21,10 +21,7 @@
     & .avatar {
       width: 46px;
       height: 46px;
-
-      &__standard {
-        font-size: 16px;
-      }
+      --initials-font-size: 16px;
     }
   }
 
@@ -72,5 +69,9 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     width: 200px;
+
+    &__content {
+      color: #707579;
+    }
   }
 }

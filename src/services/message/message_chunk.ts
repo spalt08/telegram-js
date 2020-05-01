@@ -50,29 +50,29 @@ export default function makeMessageChunk(peer: Peer, messageId: Exclude<number, 
     ) {
       return;
     }
-    historySubject.next({
-      ...historySubject.value,
-      loadingOlder: direction === Direction.Around || direction === Direction.Older ? true : historySubject.value.loadingOlder,
-      loadingNewer: direction === Direction.Around || direction === Direction.Newer ? true : historySubject.value.loadingNewer,
-    });
-
-    let result: MessagesChunk;
 
     try {
-      result = await loadContinuousMessages(peer, direction, fromId, toId);
-    } catch (err) {
-      if (!isDestroyed && process.env.NODE_ENV !== 'production') {
-        // eslint-disable-next-line no-console
-        console.error('Failed to load messages history part', { peer, direction, fromId, toId, err });
+      historySubject.next({
+        ...historySubject.value,
+        loadingOlder: direction === Direction.Around || direction === Direction.Older ? true : historySubject.value.loadingOlder,
+        loadingNewer: direction === Direction.Around || direction === Direction.Newer ? true : historySubject.value.loadingNewer,
+      });
+
+      let result: MessagesChunk;
+      try {
+        result = await loadContinuousMessages(peer, direction, fromId, toId);
+      } catch (err) {
+        if (!isDestroyed && process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.error('Failed to load messages history part', { peer, direction, fromId, toId, err });
+        }
+        return;
       }
-      return;
-    }
 
-    if (isDestroyed) {
-      return;
-    }
+      if (isDestroyed) {
+        return;
+      }
 
-    try {
       try {
         isUpdatingCacheChunk = true;
         cacheChunkRef.putChunk(result);

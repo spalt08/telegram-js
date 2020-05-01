@@ -1,16 +1,12 @@
-.foundMessage {
-  $total-padding-horizontal: 17px;
-  $total-padding-vertical: 11px;
-  $click-padding-horizontal: 8px;
-  $click-padding-vertical: 6px;
+.contact {
+  $total-padding-horizontal: 20px;
+  $total-padding-vertical: 12px;
+  $click-padding-horizontal: 9px;
+  $click-padding-vertical: 7px;
 
   padding: ($total-padding-vertical - $click-padding-vertical) ($total-padding-horizontal - $click-padding-horizontal);
-  font-size: 16px;
+  font-size: 14px;
   color: #707579;
-
-  &__empty {
-    padding: $total-padding-vertical $total-padding-horizontal;
-  }
 
   &__ripple {
     padding: $click-padding-vertical $click-padding-horizontal;
@@ -29,10 +25,10 @@
   }
 
   .avatar {
-    width: 54px;
-    height: 54px;
+    width: 48px;
+    height: 48px;
     flex: none;
-    margin-right: 9px;
+    margin-right: 12px;
   }
 
   &__main {
@@ -40,41 +36,25 @@
     min-width: 0; // Forces this element to not overflow the parent
   }
 
-  &__header {
-    display: flex;
-    align-items: flex-end;
-  }
-
   &__name {
-    flex: auto;
-    margin-right: 10px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     color: #000;
+    font-size: 16px;
     font-weight: 500;
   }
 
-  &__time {
-    flex: none;
-    max-width: 30%;
-    font-size: 12px;
-  }
-
-  &__message {
-    margin-top: 3px;
+  &__description {
+    margin-top: 1px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
 
-    &::after {
-      content: "\00a0";
-    }
-
-    mark {
-      color: #4EA4F5;
-      background: none;
-      font: inherit;
-    }
+  mark {
+    color: #4EA4F5;
+    background: none;
+    font: inherit;
   }
 }

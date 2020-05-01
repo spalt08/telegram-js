@@ -1,4 +1,4 @@
-import { Dialog, Peer, Message, Updates } from 'mtproto-js';
+import { Dialog, Peer, Message, Updates, UserStatus } from 'mtproto-js';
 import { ARCHIVE_FOLDER_ID, ROOT_FOLDER_ID } from 'const/api';
 import { todoAssertHasValue } from './other';
 
@@ -9,6 +9,19 @@ export function peerToId(peer: Peer): string {
     case 'peerUser': return `user_${peer.user_id}`;
     default: throw TypeError('Unknown peer type');
   }
+}
+
+export function peerIdToPeer(id: string): Peer {
+  if (id.startsWith('channel_')) {
+    return { _: 'peerChannel', channel_id: Number(id.slice(8)) };
+  }
+  if (id.startsWith('chat_')) {
+    return { _: 'peerChat', chat_id: Number(id.slice(5)) };
+  }
+  if (id.startsWith('user_')) {
+    return { _: 'peerUser', user_id: Number(id.slice(5)) };
+  }
+  throw TypeError('Unknown peer type');
 }
 
 export function dialogPeerToDialogId(peer: Peer) {
@@ -117,4 +130,21 @@ export function getDialogLastReadMessageId(dialog: Dialog.dialog) {
 
 export function arePeersSame(peer1: Peer | null | undefined, peer2: Peer | null | undefined) {
   return (!!peer1 && peerToId(peer1)) === (!!peer2 && peerToId(peer2));
+}
+
+export function areUserStatusesEqual(status1: UserStatus | undefined, status2: UserStatus | undefined): boolean {
+  if (status1 === status2) {
+    return true;
+  }
+  if (status1 === undefined || status2 === undefined) {
+    return false;
+  }
+  if (status1._ !== status2._) {
+    return false;
+  }
+  switch (status1._) {
+    case 'userStatusOnline': return status1.expires === (status2 as typeof status1).expires;
+    case 'userStatusOffline': return status1.was_online === (status2 as typeof status1).was_online;
+    default: return true;
+  }
 }

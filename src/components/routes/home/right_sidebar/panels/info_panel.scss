@@ -21,10 +21,7 @@
   &__avatar {
     width: 120px;
     height: 120px;
-
-    & .avatar__standard {
-      font-size: 40px;
-    }
+    --initials-font-size: 40px;
 
     svg {
       transform: scale(2.5);
@@ -39,6 +36,8 @@
 
   &__status {
     margin-bottom: 10px;
+    color: #707579;
+    font-size: 14px;
   }
 
   &__avatar, &__name, &__status {

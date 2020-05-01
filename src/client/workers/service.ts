@@ -21,6 +21,49 @@ const files = new Map<string, FileInfo>();
 const { log } = console;
 
 // CLIENT_CONFIG.test = true
+const dbkey = CLIENT_CONFIG.test ? 'metatest' : 'meta';
+const initNetwork = () => load(dbkey).then((meta: any) => {
+  if (ctx.network) return;
+
+  ctx.network = new NetworkHandler({ ...CLIENT_CONFIG, meta, dc: meta.baseDC });
+
+  ctx.network.on('metaChanged', (newMeta) => save(dbkey, newMeta));
+  ctx.network.on('metaChanged', (state) => notify('authorization_updated', { dc: state.baseDC, user: state.userID || 0 }));
+  ctx.network.on('networkChanged', (state) => notify('network_updated', state));
+  ctx.network.updates.fetch();
+});
+
+function processWindowMessage(msg: WindowMessage, source: Client | MessagePort | ServiceWorker | null = null) {
+  if (!msg || !msg.type) return;
+
+  switch (msg.type) {
+    case 'call': {
+      const { id, payload: { method, params, headers } } = msg;
+      ctx.network.call(method, params, headers, (error, result) => source && respond(source, id, 'rpc_result', { error, result }));
+      break;
+    }
+
+    case 'location': {
+      const { url, location, options } = msg.payload;
+      if (!files.get(url)) files.set(url, { url, location, options, events: [], chunks: [] });
+      break;
+    }
+
+    case 'password_kdf': {
+      const { id, payload: { algo, password } } = msg;
+      ctx.network.getPasswordKdfAsync(algo, password, (srp: any) => source && respond(source, id, 'password_kdf', srp));
+      break;
+    }
+
+    case 'switch_dc': {
+      ctx.network.cfg.dc = msg.payload;
+      notify('authorization_updated', { dc: msg.payload, user: ctx.network.dc.getUserID() || 0 });
+      break;
+    }
+
+    default:
+  }
+}
 
 /**
  * Service Worker Installation
@@ -28,18 +71,10 @@ const { log } = console;
 ctx.addEventListener('install', (event: ExtendableEvent) => {
   log('service worker is installing');
 
-  const dbkey = CLIENT_CONFIG.test ? 'metatest' : 'meta';
 
   event.waitUntil(
     Promise.all([
-      load(dbkey).then((meta: any) => {
-        ctx.network = new NetworkHandler({ ...CLIENT_CONFIG, meta, dc: meta.baseDC });
-
-        ctx.network.on('metaChanged', (newMeta) => save(dbkey, newMeta));
-        ctx.network.on('metaChanged', (state) => notify('authorization_updated', { dc: state.baseDC, user: state.userID || 0 }));
-        ctx.network.on('networkChanged', (state) => notify('network_updated', state));
-        ctx.network.updates.fetch();
-      }),
+      initNetwork(),
       caches.open('files').then((cache) => ctx.cache = cache),
     ]),
   );
@@ -58,37 +93,8 @@ ctx.addEventListener('activate', (event) => {
  * Listen Messages
  */
 ctx.onmessage = (event) => {
-  if (!event || !event.data || !event.data.type) return;
-
-  const msg = event.data as WindowMessage;
-
-  switch (msg.type) {
-    case 'call': {
-      const { id, payload: { method, params, headers } } = msg;
-      ctx.network.call(method, params, headers, (error, result) => event.source && respond(event.source, id, 'rpc_result', { error, result }));
-      break;
-    }
-
-    case 'location': {
-      const { url, location, options } = msg.payload;
-      if (!files.get(url)) files.set(url, { url, location, options, events: [], chunks: [] });
-      break;
-    }
-
-    case 'password_kdf': {
-      const { id, payload: { algo, password } } = msg;
-      ctx.network.getPasswordKdfAsync(algo, password, (srp: any) => event.source && respond(event.source, id, 'password_kdf', srp));
-      break;
-    }
-
-    case 'switch_dc': {
-      ctx.network.cfg.dc = msg.payload;
-      notify('authorization_updated', { dc: msg.payload, user: ctx.network.dc.getUserID() || 0 });
-      break;
-    }
-
-    default:
-  }
+  if (!ctx.network) initNetwork().then(() => processWindowMessage(event.data as WindowMessage, event.source));
+  else processWindowMessage(event.data as WindowMessage, event.source);
 };
 
 /**

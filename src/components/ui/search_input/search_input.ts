@@ -66,5 +66,8 @@ export default function searchInput({ placeholder, className = '', isLoading, on
     focus() {
       inputEl.focus();
     },
+    blur() {
+      inputEl.blur();
+    },
   });
 }

@@ -6,13 +6,11 @@ import { div } from 'core/html';
 import { mount, unmount } from 'core/dom';
 import { useObservable } from 'core/hooks';
 import { status } from 'components/sidebar';
-import dialog from './dialog/dialog';
+import dialog from '../dialog/dialog';
 
-interface Props {
-  className?: string;
-}
+interface Props extends Record<string, any> {}
 
-export default function dialogs({ className = '' }: Props = {}) {
+export default function dialogs(props: Props = {}) {
   // fetch dialogs
   service.updateDialogs();
 
@@ -31,7 +29,7 @@ export default function dialogs({ className = '' }: Props = {}) {
   });
 
   let spinner: Node | undefined;
-  const element = div({ className },
+  const element = div(props,
     status(),
     listEl.container,
   );
