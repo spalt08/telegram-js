@@ -14,7 +14,7 @@ export const enum RightSidebarPanel {
  */
 export default class MainService {
   /** Network Status */
-  network = new BehaviorSubject('disconnected');
+  network = new BehaviorSubject('connected');
 
   /** Last Opened Popup */
   popup = new BehaviorSubject('');

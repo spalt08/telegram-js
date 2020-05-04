@@ -54,14 +54,22 @@ navigator.serviceWorker.addEventListener('message', (event) => {
   }
 });
 
-/**
- * Service worker
- */
-runtime.register({ scope: SERVICE_WORKER_SCOPE });
-navigator.serviceWorker.ready.then((registration) => {
-  console.log('Service Worker Loaded With Scope:', registration.scope, navigator.serviceWorker.controller);
+function resendPending(e: any) {
+  console.log('release pending', e);
   if (navigator.serviceWorker.controller) {
     for (let i = 0; i < pending.length; i++) navigator.serviceWorker.controller.postMessage(pending[i]);
     pending = [];
   }
+}
+
+/**
+ * Service worker
+ */
+runtime.register({ scope: SERVICE_WORKER_SCOPE });
+
+navigator.serviceWorker.ready.then((registration) => {
+  console.log('Service Worker Loaded With Scope:', registration.scope, navigator.serviceWorker.controller);
+  resendPending();
 });
+
+navigator.serviceWorker.oncontrollerchange = resendPending;

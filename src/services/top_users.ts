@@ -103,15 +103,16 @@ export default class TopUsersService {
 
     clearTimeout(this.initialLoadTimeout);
 
-    try {
-      this.isUpdating.next(true);
-      const topUsers = await loadTopUsers();
-      if (topUsers !== 'unknown') {
-        this.topUsers.next(topUsers);
-      }
-    } finally {
-      this.isUpdating.next(false);
-    }
+    // causes flood wait
+    // try {
+    //   this.isUpdating.next(true);
+    //   const topUsers = await loadTopUsers();
+    //   if (topUsers !== 'unknown') {
+    //     this.topUsers.next(topUsers);
+    //   }
+    // } finally {
+    //   this.isUpdating.next(false);
+    // }
   }
 
   async updateIfRequired() {
