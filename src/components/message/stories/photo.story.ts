@@ -7,7 +7,7 @@ import { messageCache } from 'cache';
 import { peerMessageToId } from 'helpers/api';
 
 import photoMessage from 'mocks/messages/with_photo.json';
-import photoLandscape from 'mocks/photos/photo_landscape.json';
+import photoLandscape from 'mocks/photos/photo_landscape';
 
 import message from '../message';
 

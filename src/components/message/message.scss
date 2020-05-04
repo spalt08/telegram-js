@@ -65,10 +65,19 @@ $messageDistance: 4PX;
 
     .message__reply {
       max-width: 400px;
+      margin-bottom: 10px;
     }
   }
-  & .only-sticker { position: relative; flex-direction: row-reverse; }
-  &.out .only-sticker { flex-direction: row; }
+  & .only-sticker { 
+    position: relative;
+    flex-direction: row-reverse;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  &.out .only-sticker { 
+    flex-direction: row;
+  }
 
   & .as-emoji { padding-top: 10px; }
 
