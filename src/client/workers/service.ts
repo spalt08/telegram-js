@@ -6,7 +6,9 @@ import { typeToMime } from 'helpers/files';
 import { parseRange } from 'helpers/stream';
 import { createNotification, respond } from './extensions/context';
 import { load, save } from './extensions/db';
-import { fetchLocation, putDownloadQuene, fetchRequest, streamPart } from './extensions/files';
+import { fetchRequest } from './extensions/files';
+import { fetchLocation } from './extensions/utils';
+import { fetchStreamRequest } from './extensions/stream';
 
 type ExtendedWorkerScope = {
   cache: Cache,
@@ -28,6 +30,7 @@ const initNetwork = () => load(dbkey).then((meta: any) => {
   ctx.network.on('metaChanged', (newMeta) => save(dbkey, newMeta));
   ctx.network.on('metaChanged', (state) => notify('authorization_updated', { dc: state.baseDC, user: state.userID || 0 }));
   ctx.network.on('networkChanged', (state) => notify('network_updated', state));
+  ctx.network.updates.on((update) => notify('update', update));
   ctx.network.updates.fetch();
 });
 
@@ -77,17 +80,7 @@ function processWindowMessage(msg: WindowMessage, source: Client | MessagePort |
 
     case 'location': {
       const { url, location, options } = msg.payload;
-      const [, scope] = /http[:s]+\/\/.*?\/(.*?)\//.exec(url) || [];
-
-      fetchLocation(url, location, options);
-
-      // prefetch data
-      if (scope !== 'stream') {
-        ctx.cache.match(url).then((cached) => {
-          if (!cached) putDownloadQuene(url, getFilePartRequest, ctx.cache);
-        });
-      }
-
+      fetchLocation(url, location, options, getFilePartRequest, ctx.cache);
       break;
     }
 
@@ -158,7 +151,7 @@ ctx.addEventListener('fetch', (event: FetchEvent): void => {
           if (cached) return cached;
 
           return new Promise((resolve) => {
-            fetchRequest(url, resolve);
+            fetchRequest(url, resolve, getFilePartRequest, ctx.cache);
           });
         }),
       );
@@ -167,10 +160,10 @@ ctx.addEventListener('fetch', (event: FetchEvent): void => {
     case 'stream': {
       const [offset, end] = parseRange(event.request.headers.get('Range') || '');
 
-      console.log('stream', url, offset, end);
+      log('stream', url, offset, end);
 
       event.respondWith(new Promise((resolve) => {
-        streamPart(url, offset, end, resolve, getFilePartRequest);
+        fetchStreamRequest(url, offset, end, resolve, getFilePartRequest);
       }));
       break;
     }

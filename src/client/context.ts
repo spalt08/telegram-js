@@ -6,7 +6,7 @@ import { ServiceRequestID, ServiceRequestCallback, WindowMessage, NotificationTy
 
 // Request resolvers
 const requests: Record<ServiceRequestID, ServiceRequestCallback<any>> = {};
-const pending: WindowMessage[] = [];
+let pending: WindowMessage[] = [];
 
 // notification listeners
 const listeners: Record<NotificationType, ServiceNotificationCallback<NotificationType>[]> = {} as any;
@@ -58,4 +58,10 @@ navigator.serviceWorker.addEventListener('message', (event) => {
  * Service worker
  */
 runtime.register({ scope: SERVICE_WORKER_SCOPE });
-navigator.serviceWorker.ready.then((registration) => console.log('Service Worker Loaded With Scope:', registration.scope, registration));
+navigator.serviceWorker.ready.then((registration) => {
+  console.log('Service Worker Loaded With Scope:', registration.scope, navigator.serviceWorker.controller);
+  if (navigator.serviceWorker.controller) {
+    for (let i = 0; i < pending.length; i++) navigator.serviceWorker.controller.postMessage(pending[i]);
+    pending = [];
+  }
+});
