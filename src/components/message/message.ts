@@ -228,7 +228,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
   let wrapper: Node | undefined;
   let renderedMessage: Node | undefined;
   let renderedInfo: Node | undefined;
-  // let dayLabel: Node | undefined;
+  let dayLabel: Node | undefined;
   let profilePicture: Node | undefined;
   let replyMarkup: Node | undefined;
 
@@ -331,24 +331,24 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
 
   // update meta elemens (day label, message avatar for chats) depends on classList
   const updateLayout = () => {
-    // // remove daylabel
-    // if (dayLabel && !element.classList.contains('day')) {
-    //   unmount(dayLabel);
-    //   dayLabel = undefined;
+    // remove daylabel
+    if (dayLabel && !element.classList.contains('day')) {
+      unmount(dayLabel);
+      dayLabel = undefined;
 
-    //   if (onUpdateHeight) onUpdateHeight(id);
-    // }
+      if (onUpdateHeight) onUpdateHeight(id);
+    }
 
-    // // display daylabel
-    // if (element.classList.contains('day') && !dayLabel) {
-    //   const mdate = new Date(cached && cached._ !== 'messageEmpty' ? cached.date * 1000 : 0);
-    //   const label = mdate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+    // display daylabel
+    if (element.classList.contains('day') && !dayLabel) {
+      const mdate = new Date(cached && cached._ !== 'messageEmpty' ? cached.date * 1000 : 0);
+      const label = mdate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
 
-    //   dayLabel = div`.message-day`(div`.message-day__label`(text(label)));
-    //   mount(element, dayLabel, container);
+      dayLabel = div`.message-day`(div`.message-day__label`(text(label)));
+      mount(element, dayLabel, container);
 
-    //   if (onUpdateHeight) onUpdateHeight(id);
-    // }
+      if (onUpdateHeight) onUpdateHeight(id);
+    }
 
     // remove picture
     if (profilePicture && !isLast) {

@@ -7,7 +7,7 @@ export { default as tgs, preloadTgsAssets } from './tgs/tgs';
 export { default as passwordInput } from './password_input/password_input';
 export { default as datetime } from './datetime/datetime';
 export { default as ripple } from './ripple/ripple';
-export { VirtualizedList, default as list } from './list3/list';
+export { VirtualizedList, default as list } from './list4/list';
 export { default as sectionSpinner } from './section_spinner/section_spinner';
 export { default as emoji } from './emoji/emoji';
 export { formattedMessage, highlightLinks } from './formatted_message';
@@ -18,6 +18,7 @@ export { makeTextMatchHighlighter, makeTextMatchHighlightComponent, telegramSear
 export { default as quote } from './quote/quote';
 export { default as typingIndicator } from './typing_indicator/typing_indicator';
 export { default as tabsPanel } from './tabs/tabs';
+export { default as virtualScrollBar } from './virtual_scroll_bar/virtual_scroll_bar';
 export { default as waveform } from './waveform/waveform';
 export { default as audioSeekbar } from './audio_seekbar/audio_seekbar';
 export { default as playButton } from './play_button/play_button';

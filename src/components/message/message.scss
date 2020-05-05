@@ -134,7 +134,7 @@ $messageDistance: 4PX;
 
     & pre {
       display: inline;
-      white-space: pre-line;
+      white-space: pre-wrap;
       margin: 0;
     }
 
@@ -247,7 +247,7 @@ $messageDistance: 4PX;
   }
 
   &.first .message {
-    // &__align { padding-top: 6px; }
+    &__align { padding-top: 6px; }
     &__bubble { border-top-left-radius: 12.5px; }
     &__title { display: block; }
   }
