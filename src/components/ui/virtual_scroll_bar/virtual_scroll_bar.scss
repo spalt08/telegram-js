@@ -1,0 +1,35 @@
+.virtualScrollBar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  transition: opacity 1s;
+  opacity: 0;
+
+  &.visible {
+    opacity: 1;
+  }
+
+  &__thumb {
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, .3);
+    cursor: grab;
+
+  }
+
+  body.-grabbing, &:hover {
+    opacity: 1;
+  }
+}
+
+body.-grabbing {
+  cursor: grabbing !important;
+}
+
+body.-grabbing * {
+  cursor: inherit !important;
+}
