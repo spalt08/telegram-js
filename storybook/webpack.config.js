@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign, import/no-extraneous-dependencies */
-const webpack = require('webpack');
+const path = require('path');
+const ServiceWorkerWebpackPlugin = require('serviceworker-webpack-plugin');
 const webpackConfig = require('../webpack.config.js')(undefined, {});
 
 module.exports = async ({ config }) => {
@@ -12,8 +13,10 @@ module.exports = async ({ config }) => {
   config.resolve = webpackConfig.resolve;
 
   config.plugins.push(
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': 'test',
+    new ServiceWorkerWebpackPlugin({
+      entry: path.join(__dirname, '../src/client/workers/service.mock.ts'),
+      filename: 'sw.js',
+      excludes: ['**/*'],
     }),
   );
 

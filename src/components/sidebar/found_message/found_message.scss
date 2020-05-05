@@ -1,5 +1,5 @@
 .foundMessage {
-  $total-padding-horizontal: 15px;
+  $total-padding-horizontal: 17px;
   $total-padding-vertical: 11px;
   $click-padding-horizontal: 8px;
   $click-padding-vertical: 6px;
@@ -32,7 +32,7 @@
     width: 54px;
     height: 54px;
     flex: none;
-    margin-right: 10px;
+    margin-right: 9px;
   }
 
   &__main {
@@ -62,7 +62,7 @@
   }
 
   &__message {
-    margin-top: 4px;
+    margin-top: 3px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

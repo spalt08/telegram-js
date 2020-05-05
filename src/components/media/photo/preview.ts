@@ -1,8 +1,9 @@
-import { Photo, Peer, Message } from 'client/schema';
+import { Photo, Peer, Message } from 'mtproto-js';
 import { listen } from 'core/dom';
 import { getInterface } from 'core/hooks';
+import { PhotoOptions } from 'helpers/other';
 import { main } from 'services';
-import photoRenderer, { PhotoOptions } from './photo';
+import photoRenderer from './photo';
 
 
 export default function photoPreview(photo: Photo.photo, peer: Peer, message: Message.message, options: PhotoOptions = {}) {

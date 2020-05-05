@@ -1,9 +1,9 @@
 import emojiPanel from 'components/media/emoji/panel';
 import stickerPanel from 'components/media/sticker/panel';
 import './input_stickmoji.scss';
-import { listenOnce } from 'core/dom';
+import { animationFrameStart, listenOnce } from 'core/dom';
 import { getInterface, hasInterface } from 'core/hooks';
-import { Document } from 'client/schema';
+import { Document } from 'mtproto-js';
 import { tabsPanel } from 'components/ui';
 
 type Props = {
@@ -20,7 +20,8 @@ export default function stickMojiPanel({ onSelectEmoji, onSelectSticker }: Props
   const container = tabsPanel({ className: 'stickmoji-panel', headerAlign: 'center' }, panels);
 
 
-  listenOnce(container, 'transitionend', () => {
+  listenOnce(container, 'transitionend', async () => {
+    await animationFrameStart();
     const keys = Object.keys(panels);
     for (let i = 0; i < keys.length; i++) {
       const panel = panels[keys[i]];

@@ -36,8 +36,7 @@ stories.add('Menu\'n\'Back', () => {
   element.style.color = color; // Important to set the color on a parent to check that the color is inherited
   icons.forEach((icon) => {
     Object.assign(icon.style, {
-      width: `${size}px`,
-      height: `${size}px`,
+      fontSize: `${size}px`,
       transitionDuration: duration >= 0 ? `${duration}ms` : '',
     });
   });

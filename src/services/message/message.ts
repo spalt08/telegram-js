@@ -1,15 +1,29 @@
 import { BehaviorSubject, Subject } from 'rxjs';
 import { first } from 'rxjs/operators';
 import client from 'client/client';
-import { Message, Peer, MessagesGetMessages, MessagesSendMedia, InputMedia, Updates } from 'client/schema';
-import { messageCache } from 'cache';
+import { Message, Peer, MessagesGetMessages, MessagesSendMedia, InputMedia, Updates, Dialog } from 'mtproto-js';
+import { dialogCache, messageCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
-import { getUserMessageId, peerMessageToId, peerToId, shortMessageToMessage, shortChatMessageToMessage } from 'helpers/api';
+import {
+  getUserMessageId,
+  peerMessageToId,
+  shortMessageToMessage,
+  shortChatMessageToMessage,
+  dialogPeerToDialogId,
+  getDialogLastReadMessageId,
+  arePeersSame,
+} from 'helpers/api';
 import { todoAssertHasValue } from 'helpers/other';
 import { Direction } from './types';
 import makeMessageChunk, { MessageChunkService, MessageHistoryChunk } from './message_chunk';
 
 const emptyHistory: MessageHistoryChunk = { ids: [] };
+
+export type PeerScrollTarget
+  = 'auto' // Decide where to scroll automatically
+  | 'firstUnread' // Scroll to the first unread message; if there is no last read message id, then to the bottom
+  | 'none' // Don't scroll (stay as is);
+  | number; // Message sequential id to stroll to; Infinity to go to the newest; -Infinity to go to the oldest.
 
 /**
  * Singleton service class for handling messages stuff
@@ -61,17 +75,9 @@ export default class MessagesService {
     });
   }
 
-  /**
-   * messageId values:
-   * - number - message sequential id to scroll to;
-   * - Infinity - scroll to the bottom of the history;
-   * - -Infinity - scroll to the top of the history;
-   * - undefined - don't scroll (stay as is);
-   */
-  selectPeer(peer: Peer | null, _messageId?: number) {
-    const messageId = _messageId === 0 ? Infinity : _messageId;
-
-    const isPeerChanged = (this.activePeer.value && peerToId(this.activePeer.value)) !== (peer && peerToId(peer));
+  selectPeer(peer: Peer | null, target: PeerScrollTarget = 'auto') {
+    const messageId = this.peerScrollTargetToMessageId(peer, target);
+    const isPeerChanged = !arePeersSame(this.activePeer.value, peer);
 
     let isChunkChanged = false;
     let focusedMessageDirection = Direction.Around;
@@ -184,6 +190,34 @@ export default class MessagesService {
         }
       });
     });
+  }
+
+  protected peerScrollTargetToMessageId(peer: Peer | null, _target: PeerScrollTarget): Exclude<number, 0> | undefined {
+    let target: Exclude<PeerScrollTarget, 'auto'>;
+
+    if (_target === 'auto') {
+      if (arePeersSame(this.activePeer.value, peer)) {
+        // Scroll to the bottom when the selected peer is selected again
+        target = Infinity;
+      } else {
+        target = 'firstUnread';
+      }
+    } else {
+      target = _target;
+    }
+
+    switch (target) {
+      case 'none': return undefined;
+      case 'firstUnread': {
+        const dialog = peer && dialogCache.get(dialogPeerToDialogId(peer)) as Dialog.dialog | undefined;
+        if (!dialog) {
+          return Infinity;
+        }
+        const lastReadId = getDialogLastReadMessageId(dialog);
+        return lastReadId === dialog.top_message ? Infinity : lastReadId;
+      }
+      default: return target || Infinity;
+    }
   }
 
   protected setCurrentChunk(chunk: MessageChunkService, focusMessageId?: number, focusDirection = Direction.Around) {

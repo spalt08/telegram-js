@@ -1,4 +1,4 @@
-import { Message, MessageMedia } from 'client/schema';
+import { Message, MessageMedia } from 'mtproto-js';
 import { div, text } from 'core/html';
 import { formatNumber } from 'helpers/other';
 import { WithInterfaceHook, useInterface } from 'core/hooks';
@@ -37,7 +37,7 @@ function isMedia(media: MessageMedia): boolean {
 export default function messageInfo({ className, status }: Props, message: Message.message) {
   const children: Node[] = [];
   if (message.views && !message.out) {
-    children.push(div`.messageInfo_views`(text(`${formatNumber(message.views)}`), div`.messageInfo__eye`()));
+    children.push(div`.messageInfo_views`(text(formatNumber(message.views)), div`.messageInfo__eye`()));
   }
   if (message.post_author && !message.out) {
     children.push(div`.messageInfo_author`(text(message.post_author)));
@@ -60,7 +60,7 @@ export default function messageInfo({ className, status }: Props, message: Messa
 
   const media = message.media && isMedia(message.media);
   const onlyMedia = (!message.message && media)
-    || (message.message.length <= 6 && isEmoji(message.message) && !message.media)
+    || (!message.media && message.message.length <= 6 && isEmoji(message.message))
     || (!message.message && message.media && media);
   element.classList.toggle('-only-media', onlyMedia);
   element.classList.toggle('-out', message.out);

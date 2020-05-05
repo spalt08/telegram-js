@@ -13,6 +13,7 @@ import { MaybeObservable } from './types';
 interface Lifecycle {
   mount?: Array<() => void>;
   unmount?: Array<() => void>;
+  // Used only to keep the last lifecycle action (mount/unmount). Don't use to check whether an element is mounted to the DOM!
   isMountTriggered?: boolean;
 }
 
@@ -147,7 +148,7 @@ export function useOnUnmount(base: Node, onUnmount: () => void): () => void {
  */
 export function triggerMount(base: Node) {
   const lifecycle = ensureWithLifecycle(base);
-  if (!lifecycle.isMountTriggered) {
+  if (lifecycle.isMountTriggered !== true) {
     lifecycle.isMountTriggered = true;
     if (lifecycle.mount) {
       [...lifecycle.mount].forEach((onMount) => onMount());
@@ -159,8 +160,8 @@ export function triggerMount(base: Node) {
  * Triggers the unmount event listeners on the element (does nothing if there are no listeners or it's already unmounted)
  */
 export function triggerUnmount(base: Node) {
-  const lifecycle = nodesHooks.get(base)?.lifecycle; // eslint-disable-line @typescript-eslint/no-use-before-define
-  if (lifecycle?.isMountTriggered) { // eslint-disable-line @typescript-eslint/no-use-before-define
+  const lifecycle = ensureWithLifecycle(base);
+  if (lifecycle.isMountTriggered !== false) {
     lifecycle.isMountTriggered = false;
     if (lifecycle.unmount) {
       [...lifecycle.unmount].forEach((onUnmount) => onUnmount());
@@ -169,8 +170,9 @@ export function triggerUnmount(base: Node) {
 }
 
 /**
- * Checks if the element is in the mounted hook state (the last triggered event from mount/unmount was mount).
- * Undefined means not subscribed or never mounted before.
+ * Returns the last called element lifecycle callback (mount/unmount).
+ * Undefined means that no callback was called before.
+ * Do not use it to check if the element is mounted to the DOM.
  */
 export function isMountTriggered(base: Node): boolean | undefined {
   return nodesHooks.get(base)?.lifecycle?.isMountTriggered;

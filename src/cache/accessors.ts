@@ -4,7 +4,7 @@ import { chatCache, userCache } from 'cache';
 import { getFirstLetters } from 'helpers/data';
 import { messageToDialogPeer, userIdToPeer } from 'helpers/api';
 import { todoAssertHasValue } from 'helpers/other';
-import { InputPeer, Message, Peer, FileLocation, User, Chat, InputUser, InputDialogPeer, InputChannel } from 'client/schema';
+import { InputPeer, Message, Peer, FileLocation, User, Chat, InputUser, InputDialogPeer, InputChannel } from 'mtproto-js';
 
 interface PeerReference {
   peer: InputPeer;
@@ -93,7 +93,7 @@ export function userToTitle(user: User | undefined, myUserId?: number) {
   if (myUserId && user.id === myUserId) {
     return 'Saved Messages';
   }
-  return `${user.first_name} ${user.last_name}`;
+  return `${user.first_name || ''} ${user.last_name || ''}`;
 }
 
 export function chatToTitle(chat: Chat | undefined) {

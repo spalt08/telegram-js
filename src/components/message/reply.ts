@@ -7,7 +7,7 @@ import { div } from 'core/html';
 import { getInterface } from 'core/hooks';
 import { messageCache } from 'cache';
 import { messageToSenderPeer } from 'cache/accessors';
-import { Peer, Message } from 'client/schema';
+import { Peer, Message } from 'mtproto-js';
 import { message as service } from 'services';
 import messageShort from './short';
 

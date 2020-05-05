@@ -5,6 +5,7 @@ import { unmount, mount } from 'core/dom';
 import photoPopup from './photo/photo';
 import SendMediaPopup from './send_media/send_media';
 import stickerSetPopup from './sticker_set/sticker_set';
+import videoPopup from './video/video';
 import './popup.scss';
 
 /**
@@ -26,6 +27,11 @@ export default function popup() {
       case 'photo':
         wrapper.classList.add('opened');
         mount(wrapper, element = photoPopup(main.popupCtx));
+        break;
+
+      case 'video':
+        wrapper.classList.add('opened');
+        mount(wrapper, element = videoPopup(main.popupCtx));
         break;
 
       case 'sendMedia': {

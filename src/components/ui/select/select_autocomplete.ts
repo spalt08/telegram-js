@@ -1,12 +1,12 @@
 /* eslint-disable no-param-reassign */
 import { div, text as textNode } from 'core/html';
-import { mount, unmount, listen, dispatch, setValue, isMounted } from 'core/dom';
+import { mount, unmount, listen, setValue, isMounted } from 'core/dom';
 import { useInterface, useToBehaviorSubject, useOutsideEvent } from 'core/hooks';
 import { MaybeObservable } from 'core/types';
 import { KeyboardKeys } from 'const'; // eslint-disable-line import/named
+import { modulo } from 'helpers/data';
 import textInput from '../text_input/text_input';
 import './select_autocomplete.scss';
-import { modulo } from '../../../helpers/data';
 
 type Props<T> = {
   label?: string,
@@ -183,7 +183,7 @@ export default function selectAutoComplete<T>({
 
       case KeyboardKeys.ESC:
         event.preventDefault();
-        dispatch(arrow, 'click');
+        arrow.dispatchEvent(new Event('click'));
         break;
 
       default:

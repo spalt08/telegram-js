@@ -10,8 +10,9 @@ $animation-duration: 0.4s;
 
   &__loader {
     position: absolute;
-    left: calc(50% - 24px);
-    top: calc(50% - 24px);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     right: auto;
     bottom: auto;
     background: rgba(0, 0, 0, 0.2);
@@ -38,31 +39,35 @@ $animation-duration: 0.4s;
     position: absolute;
     left: 0;
     top: 0;
-    width: 100%;
-    height: 100%;
-    background-position: center;
-    background-size: cover;
-    filter: blur(6px);
+    width: 108% !important;
+    height: 108% !important;
+    margin: -4%;
+    object-fit: cover;
+    filter: blur(10PX);
     z-index: 0;
     opacity: 0.4;
   }
 
   &__thumbnail {
-    filter: blur(6px);
+    position: absolute;
+    filter: blur(10PX);
+    object-fit: contain;
     z-index: 1;
+    transform: scale(1.1);
+    clip-path: polygon(4.5% 4.5%, 95.5% 4.5%, 95.5% 95.5%, 4.5% 95.5%);
 
     &.no-blur {
       transform: none;
       filter: none;
+      clip-path: none;
     }
 
     &.removed {
-      position: absolute;
       animation: thumbRemoved $animation-duration ease;
     }
   }
 
-  & img { z-index: 1; position: relative; }
+  &__content { z-index: 1; position: relative; }
   &.contain.landscape img { width: 100%; }
   &.contain.portrait img { height: 100%; }
   &.cover.landscape img { height: 100%; }

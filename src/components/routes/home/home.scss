@@ -4,7 +4,6 @@
   width: 100%;
   height: 100%;
   display: flex;
-  flex-direction: row;
 
   @include respond-to(widescreen) {
     width: 1680px;
@@ -13,45 +12,17 @@
     margin: 0 auto;
   }
 
-  &__sidebar {
-    overflow: hidden;
+  &__left_sidebar {
     width: 26%;
     max-width: 420px;
     min-width: 360px;
-    height: 100%;
-    border-right: 1PX solid #EDEEF0;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
+    min-height: 0;
+    max-height: 100%;
+    border-right: 1px solid #EDEEF0;
 
     @include respond-to(small) {
       width: 100%;
       max-width: 100%;
-    }
-  }
-
-  &__menu {
-    flex: none;
-  }
-
-  &__dialogs {
-    overflow: hidden;
-    flex: 1 50%;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    max-height: calc(100% - 62px);
-
-    .dialogs {
-      height: 100%;
-      flex: 1 50%;
-
-      &__spinner {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-      }
     }
   }
 
@@ -79,7 +50,7 @@
     }
 
     &__history {
-      flex: auto;
+      flex: 1;
       min-height: 0;
       display: flex;
       flex-direction: column;
@@ -87,7 +58,7 @@
     }
 
     &__list {
-      flex: auto;
+      flex: 1;
       z-index: 0;
       mask-image: linear-gradient(to top, transparent, #000 12px);
     }
@@ -150,8 +121,7 @@
   }
 
   &__right_sidebar {
-    flex-grow: 0;
-    flex-shrink: 0;
+    flex: none;
     overflow: hidden;
     max-width: 420px;
     height: 100%;

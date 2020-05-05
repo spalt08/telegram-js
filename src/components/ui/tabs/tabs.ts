@@ -1,5 +1,5 @@
 import { div, text } from 'core/html';
-import { listenOnce, unmount, mount, listen } from 'core/dom';
+import { listenOnce, unmount, mount, listen, animationFrameStart } from 'core/dom';
 import { useInterface, hasInterface, getInterface } from 'core/hooks';
 import './tabs.scss';
 
@@ -59,7 +59,8 @@ export default function tabsPanel({ className = '', headerAlign = 'center' }: Pr
 
     selected = nextSelected;
 
-    listenOnce(removingEl, 'transitionend', () => {
+    listenOnce(removingEl, 'transitionend', async () => {
+      await animationFrameStart();
       unmount(removingEl);
       removingEl.classList.remove(`removing-${direction}`);
       appearingEl.classList.remove(`appearing-${direction}`);

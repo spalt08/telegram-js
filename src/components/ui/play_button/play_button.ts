@@ -1,4 +1,4 @@
-import { Document } from 'client/schema';
+import { Document } from 'mtproto-js';
 import { play, pause, close } from 'components/icons';
 import { svgCodeToComponent } from 'core/factory';
 import { MediaPlaybackStatus } from 'services/media';
@@ -9,8 +9,21 @@ import { unmount } from 'core/dom';
 import download from './download_button.svg?raw';
 import './play_button.scss';
 
+const buttonSvg = svgCodeToComponent(download);
+
+function replaceId(source: string, id: string) {
+  return source.replace('$id$', id);
+}
+
+function buttonSvgWithId(id: string, props?: Record<string, any>) {
+  const svg = buttonSvg(props);
+  svg.querySelectorAll('[id^="$id$"]').forEach((element) => element.id = replaceId(element.id, id)); // eslint-disable-line no-param-reassign
+  svg.querySelectorAll('[begin^="$id$"]').forEach((element) => element.setAttribute('begin', replaceId(element.getAttribute('begin')!, id)));
+  return svg;
+}
+
 export default function playButton(doc: Document.document) {
-  const downloadButtonSvg = svgCodeToComponent(download, doc.id)({ class: 'download' });
+  const downloadButtonSvg = buttonSvgWithId(doc.id, { class: 'download' });
   const playButtonSvg = play({ class: 'play hidden' });
   const pauseButtonSvg = pause({ class: 'pause hidden' });
   const cancelButtonSvg = close({ class: 'cancel hidden' });
@@ -32,7 +45,7 @@ export default function playButton(doc: Document.document) {
     if (currStatus !== status) {
       currStatus = status;
       if (status === MediaPlaybackStatus.Downloading) {
-        const button = downloadButtonSvg.getElementById(`button_${doc.id}`) as SVGGElement;
+        const button = downloadButtonSvg.getElementById(`${doc.id}_button`) as SVGGElement;
         button.dispatchEvent(new Event('click'));
       }
 
@@ -48,7 +61,7 @@ export default function playButton(doc: Document.document) {
 
   const setProgress = (progress: number) => {
     if (currProgress !== progress) {
-      const animation = downloadButtonSvg.getElementById(`animation_${doc.id}`) as SVGAnimationElement;
+      const animation = downloadButtonSvg.getElementById(`${doc.id}_animation`) as SVGAnimationElement;
       animation.setAttribute('from', `${Math.max(2, currProgress * 2 * Math.PI * 19)} 1000`);
       animation.setAttribute('to', `${Math.max(2, progress * 2 * Math.PI * 19)} 1000`);
       if ((animation as any).beginElement) (animation as any).beginElement();

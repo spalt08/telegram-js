@@ -113,3 +113,18 @@ export function getFirstLetters(title: string) {
 
   return '';
 }
+
+export function areIteratorsEqual(it1: Iterator<any, any, undefined>, it2: Iterator<any, any, undefined>): boolean {
+  while (true) {
+    const result1 = it1.next();
+    const result2 = it2.next();
+
+    if (result1.done !== result2.done || result1.value !== result2.value) {
+      return false;
+    }
+
+    if (result1.done) {
+      return true;
+    }
+  }
+}

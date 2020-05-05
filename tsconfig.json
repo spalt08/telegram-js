@@ -13,6 +13,7 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "baseUrl": "./src",
+    "lib": ["webworker", "dom"],
     "paths": {
       "mtproto-js": ["../packages/mtproto-js/src"],
       "storybook/*": ["../storybook/*"],
@@ -21,5 +22,5 @@
   },
   "include": [
     "src/**/*",
-  ]
+  ],
 }

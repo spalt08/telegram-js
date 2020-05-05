@@ -3,9 +3,8 @@ import { useObservable } from 'core/hooks';
 import { div } from 'core/html';
 import { unmountChildren, mount } from 'core/dom';
 import { profileAvatar, profileTitle } from 'components/profile';
-import roundButton from 'components/ui/round_button/round_button';
 import { more, search } from 'components/icons';
-import { onlineStatus, typingIndicator, quote, ripple } from 'components/ui';
+import { peerFullStatus, roundButton, typingIndicator, quote, ripple } from 'components/ui';
 import { pinnedMessageCache } from 'cache';
 import { peerToId } from 'helpers/api';
 import './header.scss';
@@ -25,7 +24,7 @@ export default function header() {
       profileAvatar(peer, undefined, true),
       div`.header__info`(
         div`.header__title`(profileTitle(peer, true)),
-        typingIndicator(peer, 'header__typing-indicator', onlineStatus(peer)),
+        typingIndicator(peer, 'header__typing-indicator', peerFullStatus(peer, { className: 'header__typing-indicator__content' })),
       ),
     );
 

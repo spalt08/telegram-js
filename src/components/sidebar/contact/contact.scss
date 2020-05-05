@@ -1,0 +1,60 @@
+.contact {
+  $total-padding-horizontal: 20px;
+  $total-padding-vertical: 12px;
+  $click-padding-horizontal: 9px;
+  $click-padding-vertical: 7px;
+
+  padding: ($total-padding-vertical - $click-padding-vertical) ($total-padding-horizontal - $click-padding-horizontal);
+  font-size: 14px;
+  color: #707579;
+
+  &__ripple {
+    padding: $click-padding-vertical $click-padding-horizontal;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color .2s ease;
+
+    &:hover {
+      background-color: rgba(#707579, 0.08);
+    }
+
+    &_content {
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  .avatar {
+    width: 48px;
+    height: 48px;
+    flex: none;
+    margin-right: 12px;
+  }
+
+  &__main {
+    flex: auto;
+    min-width: 0; // Forces this element to not overflow the parent
+  }
+
+  &__name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #000;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  &__description {
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  mark {
+    color: #4EA4F5;
+    background: none;
+    font: inherit;
+  }
+}

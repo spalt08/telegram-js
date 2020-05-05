@@ -1,5 +1,5 @@
 import { span, text } from 'core/html';
-import { Peer, SendMessageAction, User } from 'client/schema';
+import { Peer, SendMessageAction, User } from 'mtproto-js';
 import { userTyping } from 'services';
 import { unmountChildren, mount } from 'core/dom';
 import { useObservable } from 'core/hooks';

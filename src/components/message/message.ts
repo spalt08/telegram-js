@@ -2,7 +2,7 @@ import { div, text, nothing, span } from 'core/html';
 import { useInterface, hasInterface, getInterface, useOnMount } from 'core/hooks';
 import { mount, unmount } from 'core/dom';
 import { messageCache, dialogCache } from 'cache';
-import { Peer, Message, Dialog } from 'client/schema';
+import { Peer, Message, Dialog } from 'mtproto-js';
 import { formattedMessage, bubble, BubbleInterface, messageInfo, MessageInfoInterface } from 'components/ui';
 import { profileAvatar, profileTitle } from 'components/profile';
 import webpagePreview from 'components/media/webpage/preview';
@@ -158,8 +158,7 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
   if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document' && getAttributeVideo(msg.media.document)) {
     const extraClass = hasMessage ? 'with-photo' : 'only-photo';
     const previewEl = videoPreview(msg.media.document, {
-      fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined,
-    });
+      fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined }, peer, msg);
     if (!hasMessage && previewEl instanceof Element) previewEl.classList.add('raw');
 
     return {

@@ -89,9 +89,9 @@ $messageDistance: 4PX;
   &__info {
     user-select: none;
     float: right;
-    transform: translate(3px, 9px);
+    transform: translateX(3px);
     margin-left: 5px;
-    margin-bottom: 3px;
+    margin-top: 9px;
   }
 
   & .only-sticker &__info, & .only-photo &__info, & .only-audio &__info, & .only-document &__info, & .with-webpage &__info, & .with-webpage-media &__info {
@@ -194,10 +194,7 @@ $messageDistance: 4PX;
     width: 34PX;
     height: 34PX;
     margin-right: 4PX;
-
-    & .avatar__standard {
-      font-size: 13PX;
-    }
+    --initials-font-size: 13PX;
   }
 
   &__media-padded {

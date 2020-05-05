@@ -1,9 +1,10 @@
-import { div, text, img } from 'core/html';
-import { Peer, Message } from 'client/schema';
+import { div, img } from 'core/html';
+import { Peer, Message } from 'mtproto-js';
 import { peerToInitials, peerToColorCode } from 'cache/accessors';
 import { getPeerPhotoInputLocation } from 'helpers/photo';
 import { mount } from 'core/dom';
-import { download } from 'client/media';
+import { useObservable } from 'core/hooks';
+import { file } from 'client/media';
 import { auth } from 'services';
 import { savedmessages, avatarDeletedaccount } from 'components/icons';
 import { userCache } from 'cache';
@@ -25,23 +26,22 @@ export default function profileAvatar(peer: Peer, message?: Message, isForDialog
   const container = div`.avatar`();
 
   if (isForDialogList && isMyself(peer)) {
-    mount(container, div`.avatar__predefined`(
-      savedmessages(),
-    ));
+    container.classList.add('-predefined');
+    mount(container, savedmessages());
   } else if (isDeletedAccount(peer)) {
-    mount(container, div`.avatar__predefined`(
-      avatarDeletedaccount(),
-    ));
+    container.classList.add('-predefined');
+    mount(container, avatarDeletedaccount());
   } else {
     const location = getPeerPhotoInputLocation(peer, message);
     if (location) {
-      const holder = div`.avatar__picture`();
-      mount(container, holder);
-      download(location, {}, (src) => mount(holder, img({ src })));
-    } else {
-      mount(container, div`.avatar__standard${`color-${peerToColorCode(peer)}`}`(
-        text(peerToInitials(peer)[0]),
+      container.classList.add('-picture');
+      mount(container, div`.avatar__picture`(
+        img({ src: file(location, {}) }),
       ));
+    } else {
+      container.classList.add('-standard');
+      container.classList.add(`-color-${peerToColorCode(peer)}`);
+      useObservable(container, peerToInitials(peer)[1], (initials) => container.textContent = initials);
     }
   }
 

@@ -50,6 +50,43 @@ function triggerUnmountRecursive(element: Node) {
 }
 
 /**
+ * Mounts Node to parent Node
+ */
+export function mount(parent: Node, child: Node, before?: Node) {
+  // Fragment gets empty after being mounted so the trigger code below doesn't work. The lines below are a workaround.
+  if (child instanceof DocumentFragment) {
+    while (child.firstChild) {
+      mount(parent, child.firstChild, before);
+    }
+    return;
+  }
+
+  if (before) {
+    parent.insertBefore(child, before);
+  } else {
+    parent.appendChild(child);
+  }
+
+  if (isMounted(parent)) {
+    triggerMountRecursive(child);
+  } else if (isMountTriggered(child)) {
+    // For a case when the child is remounted to an unmounted parent
+    triggerUnmountRecursive(child);
+  }
+}
+
+/**
+ * Unmounts HTMLElement
+ */
+export function unmount(element: Node) {
+  if (element.parentNode) {
+    element.parentNode.removeChild(element);
+  }
+
+  triggerUnmountRecursive(element);
+}
+
+/**
  * Attach event listener to element
  */
 export function listen<K extends keyof HTMLElementEventMap>(element: HTMLElement, event: K, cb: (event: HTMLElementEventMap[K]) => void, options?: boolean | AddEventListenerOptions): void; // eslint-disable-line max-len
@@ -81,46 +118,6 @@ export function listenOnce(element: EventTarget, event: string, cb: (event: Even
     cb(e);
   };
   element.addEventListener(event, handle);
-}
-
-/**
- * Dispatch element event
- */
-export function dispatch(element: EventTarget, eventName: string, bubbles = false, cancelable = false) {
-  // @link https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Creating_and_triggering_events#The_old-fashioned_wayv
-  const event = document.createEvent('Event');
-  event.initEvent(eventName, bubbles, cancelable);
-
-  element.dispatchEvent(event);
-}
-
-/**
- * Mounts Node to parent Node
- */
-export function mount(parent: Node, child: Node, before?: Node) {
-  if (before) {
-    parent.insertBefore(child, before);
-  } else {
-    parent.appendChild(child);
-  }
-
-  if (isMounted(parent)) {
-    triggerMountRecursive(child);
-  } else {
-    // For a case when the child is remounted to an unmounted parent
-    triggerUnmountRecursive(child);
-  }
-}
-
-/**
- * Unmounts HTMLElement
- */
-export function unmount(element: Node) {
-  if (element.parentNode) {
-    element.parentNode.removeChild(element);
-  }
-
-  triggerUnmountRecursive(element);
 }
 
 /**
@@ -183,7 +180,7 @@ export function setStyle(element: HTMLElement | SVGElement, style: Partial<Maybe
 export function setValue(element: HTMLInputElement, value: MaybeObservable<string>) {
   useMaybeObservable(element, value, (v) => {
     element.value = v;
-    dispatch(element, 'input');
+    element.dispatchEvent(new Event('input'));
   });
 }
 
@@ -298,17 +295,13 @@ const svgFromCodeTempRoot = document.createElement('div');
 /**
  * Makes an <svg /> element from the SVG code
  */
-export function svgFromCode(code: string, id?: string, props?: Record<string, any>): SVGSVGElement {
-  svgFromCodeTempRoot.innerHTML = id === undefined ? code : code.replace(/\$id\$/g, id);
+export function svgFromCode(code: string): SVGSVGElement {
+  svgFromCodeTempRoot.innerHTML = code;
   const element = svgFromCodeTempRoot.lastElementChild;
   svgFromCodeTempRoot.innerHTML = '';
 
   if (!(element instanceof SVGSVGElement)) {
     throw new TypeError('The code is not an SVG code');
-  }
-
-  if (props) {
-    setElementProps(element, props);
   }
 
   return element;
@@ -323,7 +316,7 @@ export function watchVisibility(element: Element, onChange: (isVisible: boolean)
     // A fallback
     const unsubscribeMount = useOnMount(element, () => onChange(true));
     const unsubscribeUnmount = useOnUnmount(element, () => onChange(false));
-    onChange(!!isMountTriggered(element));
+    onChange(isMounted(element));
     return () => {
       unsubscribeMount();
       unsubscribeUnmount();
@@ -350,4 +343,24 @@ export function watchVisibility(element: Element, onChange: (isVisible: boolean)
   handleChange(observer.takeRecords());
 
   return () => observer.disconnect();
+}
+
+/**
+ * Makes a promise that resolves right at the start of an animation frame start
+ * (in contract to requestAnimationFrame that fires at the and of the animation frame).
+ * Use it to run a heavy task during or right after an animation or a transition.
+ *
+ * @param calledFromRafCallback Set to true when you are sure that this function is called from a requestAnimationFrame callback.
+ *  This is optional, it just saves 16ms (animation frame duration) of idling if you use it right.
+ *
+ * @see https://stackoverflow.com/a/61251154/1118709
+ */
+export function animationFrameStart(calledFromRafCallback = false): Promise<void> {
+  return new Promise((resolve) => {
+    if (calledFromRafCallback) {
+      setTimeout(resolve);
+    } else {
+      requestAnimationFrame(() => setTimeout(resolve));
+    }
+  });
 }

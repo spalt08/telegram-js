@@ -5,7 +5,8 @@ import {
   peerMessageToId,
   peerToId,
 } from 'helpers/api';
-import { Chat, Dialog, Message, User, UserFull, ChatFull } from 'client/schema';
+import { Chat, Dialog, Message, User, UserFull, ChatFull } from 'mtproto-js';
+import { considerMinItemMerger } from './fastStorages/dictionary';
 import Collection, { GetId, makeGetIdFromProp } from './fastStorages/collection';
 import { orderBy } from './fastStorages/indices';
 import messageHistory from './fastStorages/indices/messageHistory';
@@ -17,32 +18,42 @@ import sharedMediaIndex from './fastStorages/indices/sharedMediaIndex';
  * User repo
  * Ref: https://core.telegram.org/constructor/user
  */
-export const userCache = new Collection<User, {}, number>({
-  getId: makeGetIdFromProp('id'),
+export const userCache = new Collection({
+  getId: makeGetIdFromProp('id') as GetId<User, number>,
+  itemMerger: considerMinItemMerger,
 });
 
 /**
  * Chat repo
  * Ref: https://core.telegram.org/constructor/chat
  */
-export const chatCache = new Collection<Chat, {}, number>({
-  getId: makeGetIdFromProp('id'),
+export const chatCache = new Collection({
+  getId: makeGetIdFromProp('id') as GetId<Chat, number>,
+  itemMerger(chat1, chat2) {
+    // Sometimes server returns channel objects with participants_count value wrongly equal to 0 (for example, in _='messages. ' responses)
+    // This is a workaround to not loose the participants information
+    if (
+      !(chat1._ === 'channel' && chat1.participants_count === undefined)
+      && chat2._ === 'channel' && chat2.participants_count === undefined
+    ) {
+      return chat1;
+    }
+    return considerMinItemMerger<Chat>(chat1, chat2);
+  },
 });
-
-const messageCacheIndices = {
-  history: messageHistory,
-  photoVideos: sharedMediaIndex,
-  documents: sharedMediaIndex,
-  links: sharedMediaIndex,
-};
 
 /**
  * Message repo
  * Ref: https://core.telegram.org/constructor/message
  */
-export const messageCache = new Collection<Message, typeof messageCacheIndices, string>({
-  getId: messageToId,
-  indices: messageCacheIndices,
+export const messageCache = new Collection({
+  getId: messageToId as GetId<Message, string>,
+  indices: {
+    history: messageHistory,
+    photoVideos: sharedMediaIndex,
+    documents: sharedMediaIndex,
+    links: sharedMediaIndex,
+  },
 });
 
 /**
@@ -51,7 +62,6 @@ export const messageCache = new Collection<Message, typeof messageCacheIndices, 
  * @todo Leave the manual sort (fetched from the server) for the pinned dialogs
  */
 export const dialogCache = new Collection({
-  considerMin: false,
   getId: dialogToId as GetId<Dialog, string>,
   indices: {
     order: orderBy<Dialog>(

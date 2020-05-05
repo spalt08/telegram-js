@@ -1,5 +1,5 @@
 import { text, div } from 'core/html';
-import { Document, StickerSet, MessagesStickerSet } from 'client/schema';
+import { Document, StickerSet, MessagesStickerSet } from 'mtproto-js';
 import { useInterface, getInterface, useOnMount } from 'core/hooks';
 import client from 'client/client';
 import { mount } from 'core/dom';

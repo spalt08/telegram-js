@@ -1,14 +1,15 @@
-import { Peer, Message } from 'client/schema';
+import { Peer, Message } from 'mtproto-js';
 import { peerToId } from 'helpers/api';
 import { Subject, ReplaySubject, Observable } from 'rxjs';
-import Collection from '../collection';
-import { orderBy } from '.';
+import Collection, { GetId } from '../collection';
+import orderBy from './orderBy';
 
 export default function sharedMediaIndex(collection: Collection<Message, any>) {
-  const createInvertedIndex = () => ({ invertedOrder: orderBy<Message>((m1, m2) => m2.id - m1.id) });
-  const createEmptySnapshot = () => new Collection<Message, ReturnType<typeof createInvertedIndex>, number>({
-    getId: (item) => item.id,
-    indices: createInvertedIndex(),
+  const createEmptySnapshot = () => new Collection({
+    getId: ((item) => item.id) as GetId<Message, number>,
+    indices: {
+      invertedOrder: orderBy<Message>((m1, m2) => m2.id - m1.id),
+    },
   });
 
   const cache: Record<string, { snapshot: ReturnType<typeof createEmptySnapshot>, subject: Subject<Message[]> }> = {};

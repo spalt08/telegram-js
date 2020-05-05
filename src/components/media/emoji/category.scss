@@ -22,7 +22,6 @@
   }
 
   &__item {
-    display: inline-block;
     font-size: 30px;
     width: 40px;
     height: 40px;
@@ -33,11 +32,11 @@
     overflow: hidden;
     line-height: 1;
     padding-top: 5px;
+    border-radius: 10px;
     transition: background-color .15s ease-out;
 
     &:hover {
       background-color: rgba(#707579, 0.08);
-      border-radius: 10px;
     }
   }
 }

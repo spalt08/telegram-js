@@ -4,3 +4,18 @@ export const APP_VERSION = '0.1.0';
 
 export const ROOT_FOLDER_ID = 0;
 export const ARCHIVE_FOLDER_ID = 1;
+
+export const CLIENT_CONFIG = {
+  ssl: true,
+  test: false,
+  debug: false,
+  protocol: 'intermediate',
+  transport: 'websocket',
+  APILayer: 105,
+  APIID: API_ID,
+  APIHash: API_HASH,
+  deviceModel: 'test',
+  systemVersion: 'test',
+  appVersion: APP_VERSION,
+  langCode: 'en',
+};

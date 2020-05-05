@@ -1,11 +1,11 @@
-import { Document, Message } from 'client/schema';
+import { Document, Message } from 'mtproto-js';
 import { div, text } from 'core/html';
 import { getAttributeFilename, getReadableSize, getDocumentLocation } from 'helpers/files';
 import { downloadByUrl } from 'helpers/other';
 import { datetime } from 'components/ui';
 import { listen, mount, unmountChildren, unmount } from 'core/dom';
-import { materialSpinner } from 'components/icons';
-import { download, cached as getCached } from 'client/media';
+import { materialSpinner, down } from 'components/icons';
+import { download, cached as getCached, file } from 'client/media';
 import photoRenderer from '../photo/photo';
 import './file.scss';
 
@@ -63,24 +63,26 @@ export default function documentFile(document: Document.document, message?: Mess
     unmountChildren(sizeEl);
     sizeEl.textContent = '0%';
 
-    download(
-      getDocumentLocation(document, ''),
-      { dc_id: document.dc_id, size: document.size, mime_type: document.mime_type },
+    downloadByUrl(filename, file(getDocumentLocation(document, ''), { dc_id: document.dc_id, size: document.size, mime_type: document.mime_type }));
+  
+    // download(
+    //   getDocumentLocation(document, ''),
+    //   { dc_id: document.dc_id, size: document.size, mime_type: document.mime_type },
 
-      // ready
-      (src: string) => {
-        downloadByUrl(filename, src);
+    //   // ready
+    //   (src: string) => {
+    //     downloadByUrl(filename, src);
 
-        sizeEl.textContent = getReadableSize(document.size);
-        if (progress) unmount(progress);
-        container.classList.remove('downloading');
-      },
+    //     sizeEl.textContent = getReadableSize(document.size);
+    //     if (progress) unmount(progress);
+    //     container.classList.remove('downloading');
+    //   },
 
-      // progress
-      (downloaded: number, total: number) => {
-        sizeEl.textContent = `${((downloaded / total) * 100).toFixed(1)}%`;
-      },
-    );
+    //   // progress
+    //   (downloaded: number, total: number) => {
+    //     sizeEl.textContent = `${((downloaded / total) * 100).toFixed(1)}%`;
+    //   },
+    // );
   });
 
   return container;

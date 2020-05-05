@@ -1,4 +1,4 @@
-import { Message, Peer } from 'client/schema';
+import { Message, Peer } from 'mtproto-js';
 import { div, strong, text } from 'core/html';
 import { profileTitle } from 'components/profile';
 import './service.scss';
@@ -46,21 +46,35 @@ export default function messageSerivce(originalPeer: Peer, msg: Message.messageS
       break;
 
     case 'messageActionChatAddUser': {
-      const addedUsers = msg.action.users.map((userId) => userToTitle(userCache.get(userId)));
+      if (msg.action.users.length === 1 && originalPeer._ === 'peerUser' && originalPeer.user_id === msg.action.users[0]) {
+        innerContent = [
+          strong(profileTitle(peer)),
+          text(' joined the group'),
+        ];
+      } else {
+        const addedUsers = msg.action.users.map((userId) => userToTitle(userCache.get(userId)));
 
-      innerContent = [
-        strong(profileTitle(peer)),
-        text(' added '),
-        strong(text(addedUsers.join(', '))),
-      ];
+        innerContent = [
+          strong(profileTitle(peer)),
+          text(' added '),
+          strong(text(addedUsers.join(', '))),
+        ];
+      }
       break;
     }
     case 'messageActionChatDeleteUser':
-      innerContent = [
-        strong(profileTitle(peer)),
-        text(' removed '),
-        strong(profileTitle({ _: 'peerUser', user_id: msg.action.user_id })),
-      ];
+      if (originalPeer._ !== 'peerUser') {
+        innerContent = [
+          strong(profileTitle(peer)),
+          text(' left the group'),
+        ];
+      } else {
+        innerContent = [
+          strong(profileTitle(peer)),
+          text(' removed '),
+          strong(profileTitle({ _: 'peerUser', user_id: msg.action.user_id })),
+        ];
+      }
       break;
 
     case 'messageActionChannelCreate':
