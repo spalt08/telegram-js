@@ -159,14 +159,7 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
     const extraClass = hasMessage ? 'with-photo' : 'only-photo';
     const previewEl = videoPreview(msg.media.document, {
       fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined }, peer, msg);
-      // <<<<<<< HEAD
-      //       fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined,
-      //     });
-      //     if (!hasMessage && previewEl instanceof Element) previewEl.classList.add('raw');
-      // =======
-      //       fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined }, peer, msg);
-      //     const messageEl = msg.message ? div`.message__text`(formattedMessage(msg)) : nothing;
-      // >>>>>>> 9d3e003455351e7f499dfb5db87eebede2ce475d
+    if (!hasMessage && previewEl instanceof Element) previewEl.classList.add('raw');
 
     return {
       message: bubble(
