@@ -259,9 +259,9 @@ export default class AuthService {
         this.userID = response.user.id;
 
         // Create keys for other dcs
-        for (let i = 1; i <= (client.svc.test ? 3 : 5); i += 1) {
-          if (i !== client.getBaseDC()) client.authorize(i);
-        }
+        // for (let i = 1; i <= (client.svc.test ? 3 : 5); i += 1) {
+        //   if (i !== client.getBaseDC()) client.authorize(i);
+        // }
 
         this.state.next(AuthStage.Authorized);
         break;

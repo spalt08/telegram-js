@@ -1,4 +1,8 @@
-import { StorageFileType, Document, InputFileLocation, DocumentAttribute } from 'mtproto-js';
+/* eslint-disable no-param-reassign */
+import { StorageFileType, Document, InputFileLocation, DocumentAttribute, PhotoSize } from 'mtproto-js';
+import { SERVICE_WORKER_SCOPE } from 'const';
+import { DownloadOptions } from 'client/types';
+import { PhotoOptions } from './other';
 
 export function hexToStr(hex: string): string {
   let str = '';
@@ -38,11 +42,17 @@ export function blobToUrl(blob: Blob) {
   return (URL || webkitURL).createObjectURL(blob);
 }
 
-export function typeToMime(type: StorageFileType) {
+export function typeToMime(type: StorageFileType): string | undefined {
   switch (type._) {
     case 'storage.fileJpeg': return 'image/jpeg';
     case 'storage.filePng': return 'image/png';
-    default: return 'image/jpeg';
+    case 'storage.fileGif': return 'image/gif';
+    case 'storage.filePdf': return 'application/pdf';
+    case 'storage.fileMp3': return 'audio/mpeg';
+    case 'storage.fileMov': return 'video/quicktime';
+    case 'storage.fileMp4': return 'video/mp4';
+    case 'storage.fileWebp': return 'image/webp';
+    default: return undefined;
   }
 }
 
@@ -139,4 +149,78 @@ export function getReadableDuration(duration: number) {
   }
 
   return `${minutes}:${seconds}`;
+}
+
+export function useVideoArrtibuteSize(container: HTMLElement, attr: DocumentAttribute.documentAttributeVideo, options: PhotoOptions) {
+  const isLandscape = attr.w > attr.h;
+  const dim = attr.w / attr.h;
+
+  if (isLandscape && options.width) {
+    container.style.width = `${options.width}px`;
+    container.style.height = `${options.width / dim}px`;
+  }
+
+  if (!isLandscape && options.height) {
+    container.style.width = `${options.height * dim}px`;
+    container.style.height = `${options.height}px`;
+  }
+}
+
+export function usePhotoSize(container: HTMLElement, size: PhotoSize.photoSize, options: PhotoOptions) {
+  const dim = size.w / size.h;
+  const orientation = size.w >= size.h ? 'landscape' : 'portrait';
+
+  if (options.fit === 'contain') {
+    if (orientation === 'landscape' && options.width) {
+      if (options.height && options.width / dim > options.height) {
+        container.style.height = `${Math.min(size.h, options.height)}px`;
+        container.style.width = `${Math.min(size.w, options.height * dim)}px`;
+      } else {
+        container.style.width = `${Math.min(options.width, size.w)}px`;
+        container.style.height = `${Math.min(size.h, options.width / dim)}px`;
+      }
+    }
+    if (orientation === 'portrait' && options.height) {
+      if (options.width && options.height * dim > options.width) {
+        container.style.width = `${Math.min(options.width, size.w)}px`;
+        container.style.height = `${Math.min(size.h, options.width / dim)}px`;
+      } else {
+        container.style.height = `${Math.min(size.h, options.height)}px`;
+        container.style.width = `${Math.min(size.w, options.height * dim)}px`;
+      }
+    }
+  } else {
+    container.style.width = `${options.width}px`;
+    container.style.height = `${options.height}px`;
+  }
+}
+
+export function locationToURL(location: InputFileLocation, _options?: DownloadOptions): string {
+  let filename: string | undefined;
+
+  switch (location._) {
+    case 'inputPeerPhotoFileLocation':
+      filename = `${SERVICE_WORKER_SCOPE}profiles/${location.local_id}_${location.volume_id}.jpg`;
+      break;
+
+    case 'inputPhotoFileLocation':
+      return `${SERVICE_WORKER_SCOPE}photos/${location.id}_${location.thumb_size}`;
+
+    case 'inputDocumentFileLocation':
+      return `${SERVICE_WORKER_SCOPE}documents/${location.id}_${location.thumb_size}`;
+
+    default:
+      // if (ext) filename += `.${ext}`;
+  }
+
+  if (!filename) throw new Error(`No location cache value for ${location}`);
+
+  return filename;
+}
+
+export function getStreamServiceURL(document: Document.document) {
+  const fname = getAttributeFilename(document);
+  const ext = fname ? `.${fname.file_name.split('.').pop()}` : '';
+
+  return `/stream/document_${document.id}${ext}`;
 }

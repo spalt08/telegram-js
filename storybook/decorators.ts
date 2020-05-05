@@ -7,6 +7,7 @@ import chamomile from 'assets/chamomile-blurred.jpg';
 import { emptyCache } from 'client/media';
 import popup from 'components/popup/popup';
 import 'components/routes/home/home.scss';
+import { task } from 'client/context';
 
 export function withMountTrigger(getStory: StoryFn<Node>, context: StoryContext) {
   const element = getStory(context);
@@ -30,7 +31,6 @@ export function centered(getStory: StoryFn<Node>, context?: StoryContext) {
 }
 
 export function withEmptyFileCache(creator: () => Node) {
-  emptyCache();
   return creator();
 }
 

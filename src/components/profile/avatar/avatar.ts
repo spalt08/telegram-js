@@ -4,7 +4,7 @@ import { peerToInitials, peerToColorCode } from 'cache/accessors';
 import { getPeerPhotoInputLocation } from 'helpers/photo';
 import { mount } from 'core/dom';
 import { useObservable } from 'core/hooks';
-import { download } from 'client/media';
+import { file } from 'client/media';
 import { auth } from 'services';
 import { savedmessages, avatarDeletedaccount } from 'components/icons';
 import { userCache } from 'cache';
@@ -35,7 +35,9 @@ export default function profileAvatar(peer: Peer, message?: Message, isForDialog
     const location = getPeerPhotoInputLocation(peer, message);
     if (location) {
       container.classList.add('-picture');
-      download(location, {}, (src) => mount(container, img({ src })));
+      mount(container, div`.avatar__picture`(
+        img({ src: file(location, {}) }),
+      ));
     } else {
       container.classList.add('-standard');
       container.classList.add(`-color-${peerToColorCode(peer)}`);

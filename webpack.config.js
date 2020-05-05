@@ -9,6 +9,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CssoWebpackPlugin = require('csso-webpack-plugin').default;
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+const ServiceWorkerWebpackPlugin = require('serviceworker-webpack-plugin');
 
 const sourceDirectory = 'src';
 const destinationDirectory = 'dist';
@@ -36,16 +37,6 @@ module.exports = (env, argv) => {
 
     module: {
       rules: [
-        {
-          test: /worker\.[^.]+$/,
-          use: {
-            loader: 'worker-loader',
-            options: {
-              inline: false,
-              name: 'worker.[hash].js',
-            },
-          },
-        },
         {
           test: /\.ts$/,
           exclude: /node_modules/,
@@ -148,6 +139,11 @@ module.exports = (env, argv) => {
     },
 
     plugins: [
+      new ServiceWorkerWebpackPlugin({
+        entry: path.join(__dirname, 'src/client/workers/service.ts'),
+        filename: 'sw.js',
+        excludes: ['**/*'],
+      }),
       new CleanWebpackPlugin(),
       new HtmlWebpackPlugin({ template: 'src/index.ejs' }),
       new FaviconsWebpackPlugin({
@@ -157,9 +153,9 @@ module.exports = (env, argv) => {
         favicons: {
           background: '#ffffff',
           icons: {
-            android: true,
-            appleIcon: { offset: 5 },
-            appleStartup: { offset: 15 },
+            android: false,
+            appleIcon: false, // { offset: 5 },
+            appleStartup: false, // { offset: 15 },
             coast: false,
             favicons: true,
             firefox: false,

@@ -5,12 +5,14 @@ interface FileReaderSync {
   readAsText(blob: Blob, encoding?: string): string;
 }
 
-declare const FileReaderSync: {
-  prototype: FileReaderSync;
-  new(): FileReaderSync;
-};
+// declare const FileReaderSync: {
+//   prototype: FileReaderSync;
+//   new(): FileReaderSync;
+// };
 
 declare module 'aes-js'
+declare module 'mp4box'
+declare module 'serviceworker-webpack-plugin/lib/runtime'
 
 declare module '.scss'
 declare module '.css'

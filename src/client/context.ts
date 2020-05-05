@@ -1,36 +1,34 @@
-import { WorkerRequestID, WorkerRequestCallback, WorkerNotificationCallback, WorkerMessageIncoming, WorkerRequestType,
-  WorkerNotificationType, WorkerRequestPayloadMap, WorkerTaskPayloadMap } from './types';
-
-// Worker is environment dependent
-let worker: Worker;
-if (process.env.NODE_ENV === 'test') {
-  const MockWorker = require('./workers/mock.worker'); // eslint-disable-line
-  worker = new MockWorker();
-} else {
-  const ClientWorker = require('./workers/worker'); // eslint-disable-line
-  worker = new ClientWorker();
-}
+/* eslint-disable compat/compat */
+import runtime from 'serviceworker-webpack-plugin/lib/runtime';
+import { SERVICE_WORKER_SCOPE } from 'const';
+import { ServiceRequestID, ServiceRequestCallback, WindowMessage, NotificationType, ServiceNotificationCallback, TaskPayloadMap,
+  RequestType, RequestPayloadMap, ServiceRequest, ServiceMessage } from './types';
 
 // Request resolvers
-const requests: Record<WorkerRequestID, WorkerRequestCallback<WorkerRequestType>> = {};
+const requests: Record<ServiceRequestID, ServiceRequestCallback<any>> = {};
+let pending: WindowMessage[] = [];
 
 // notification listeners
-const listeners: Record<WorkerNotificationType, WorkerNotificationCallback<WorkerNotificationType>[]> = {} as Record<string, any>;
+const listeners: Record<NotificationType, ServiceNotificationCallback<NotificationType>[]> = {} as any;
 
 // Wrapper for posting tasks to worker
-export function task<K extends keyof WorkerTaskPayloadMap>(type: K, payload: WorkerTaskPayloadMap[K]) {
-  worker.postMessage({ type, payload });
+export function task<K extends keyof TaskPayloadMap>(type: K, payload: TaskPayloadMap[K]) {
+  if (!navigator.serviceWorker.controller) pending.push({ type, payload } as WindowMessage);
+  else navigator.serviceWorker.controller.postMessage({ type, payload });
 }
 
 // Wrapper for posting requests to worker
-export function request<K extends WorkerRequestType>(type: K, payload: WorkerRequestPayloadMap[K], cb: WorkerRequestCallback<K>) {
+export function request<K extends RequestType>(type: K, payload: RequestPayloadMap[K], cb: ServiceRequestCallback<K>) {
   const id = type + Date.now().toString() + Math.random() * 1000;
-  worker.postMessage({ id, type, payload });
+
+  if (!navigator.serviceWorker.controller) pending.push({ id, type, payload } as ServiceRequest);
+  else navigator.serviceWorker.controller.postMessage({ id, type, payload });
+
   requests[id] = cb;
 }
 
 // Wrapper for listening messages
-export function listenMessage<K extends WorkerNotificationType>(type: K, cb: WorkerNotificationCallback<K>) {
+export function listenMessage<K extends NotificationType>(type: K, cb: ServiceNotificationCallback<K>) {
   if (!listeners[type]) listeners[type] = [];
   listeners[type].push(cb);
 }
@@ -38,10 +36,10 @@ export function listenMessage<K extends WorkerNotificationType>(type: K, cb: Wor
 /**
  * Message resolver
  */
-worker.onmessage = (event: MessageEvent) => {
+navigator.serviceWorker.addEventListener('message', (event) => {
   if (!event.data || !event.data.type) return;
 
-  const data = event.data as WorkerMessageIncoming;
+  const data = event.data as ServiceMessage;
 
   // notification
   if (data.id === undefined) {
@@ -54,4 +52,24 @@ worker.onmessage = (event: MessageEvent) => {
     requests[id](payload);
     delete requests[id];
   }
-};
+});
+
+function resendPending(e: any) {
+  console.log('release pending', e);
+  if (navigator.serviceWorker.controller) {
+    for (let i = 0; i < pending.length; i++) navigator.serviceWorker.controller.postMessage(pending[i]);
+    pending = [];
+  }
+}
+
+/**
+ * Service worker
+ */
+runtime.register({ scope: SERVICE_WORKER_SCOPE });
+
+navigator.serviceWorker.ready.then((registration) => {
+  console.log('Service Worker Loaded With Scope:', registration.scope, navigator.serviceWorker.controller);
+  resendPending();
+});
+
+navigator.serviceWorker.oncontrollerchange = resendPending;
