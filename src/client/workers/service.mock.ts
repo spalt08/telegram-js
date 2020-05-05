@@ -1,16 +1,16 @@
 /* eslint-disable no-restricted-globals */
 import { WindowMessage } from 'client/types';
+import { parseRange } from 'helpers/stream';
 import { respond } from './extensions/context';
-import { resolveDownload, FileInfo } from './extensions/files';
+import { fetchRequest } from './extensions/files';
 import { callMock } from './mocks/call';
 import getFilePart from './mocks/files';
+import { fetchStreamRequest } from './extensions/stream';
+import { fetchLocation } from './extensions/utils';
 
 
 const ctx = self as any as ServiceWorkerGlobalScope;
-const NegativeResponse = new Response(null, { status: 503 });
 const cacheMock: Cache = { put: () => {} } as any;
-
-const files = new Map<string, FileInfo>();
 const { log } = console;
 
 // CLIENT_CONFIG.test = true
@@ -49,8 +49,7 @@ ctx.onmessage = (event) => {
 
     case 'location': {
       const { url, location, options } = msg.payload;
-      console.log('location', url, location, options);
-      if (!files.get(url)) files.set(url, { url, location, options, events: [], chunks: [] });
+      fetchLocation(url, location, options, getFilePart, cacheMock);
       break;
     }
 
@@ -64,22 +63,25 @@ ctx.onmessage = (event) => {
 ctx.addEventListener('fetch', (event: FetchEvent): void => {
   const [, url, scope] = /http[:s]+\/\/.*?(\/(.*?)\/.*$)/.exec(event.request.url) || [];
 
-  console.log('fetch', scope, url);
-
   switch (scope) {
     case 'documents':
     case 'photos':
-    case 'profiles': {
-      console.log(scope, url, files.get(url));
-      const info = files.get(url);
-      if (!info) return event.respondWith(NegativeResponse);
-
+    case 'profiles':
       event.respondWith(
         new Promise((resolve) => {
-          info.events.push(resolve);
-          resolveDownload(info, cacheMock, getFilePart);
+          fetchRequest(url, resolve, getFilePart, cacheMock);
         }),
       );
+      break;
+
+    case 'stream': {
+      const [offset, end] = parseRange(event.request.headers.get('Range') || '');
+
+      log('stream', url, offset, end);
+
+      event.respondWith(new Promise((resolve) => {
+        fetchStreamRequest(url, offset, end, resolve, getFilePart);
+      }));
       break;
     }
 
