@@ -211,8 +211,9 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
       message: bubble(
         { out, className: extraClass },
         reply,
-        div`.message__media-padded`(poll(msg.media.poll, msg.media.results)),
-        messageText(msg, info),
+        div`.message__text`(
+          poll(msg.media.poll, msg.media.results, info),
+        ),
       ),
       info,
     };
