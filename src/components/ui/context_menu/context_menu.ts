@@ -23,7 +23,10 @@ export default function contextMenu({ className, options, onClose, opened = fals
   const close = (event?: MouseEvent | any) => {
     container.classList.remove('-opened');
     if (onClose) onClose();
-    if (event && event.preventDefault) event.preventDefault();
+    if (event && event.preventDefault) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
   };
   const toggle = () => {
     if (container.classList.contains('-opened')) close();
