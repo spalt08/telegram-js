@@ -9,7 +9,11 @@ interface IdsChunkReference {
   readonly history: BehaviorSubject<IdsChunk>;
 
   // Returns <0 if the message is older than chunk, =0 if inside chunk, >0 if newer than chunk, null when unknown.
-  getMessagePosition(messageId: number): number | null;
+  getMessageRelation(messageId: number): number | null;
+
+  // Returns the message index in the `history` property.
+  // A fractional number means that the message isn't in the chunk, but if it was, it would stand in the given intermediate position.
+  getMessageIndex(messageId: number): number;
 
   // The chunk must intersect or directly touch the referenced chunk
   putChunk(chunk: IdsChunk): void;
@@ -94,7 +98,7 @@ function compareChunksAndIdForOrder(chunk: IdsChunk, id: number): number {
 
   if (process.env.NODE_ENV !== 'production') {
     // eslint-disable-next-line no-console
-    console.error('Unexpected empty chunk (no ids and not oldest or newest)');
+    console.error('Unexpected empty chunk (no ids and neither oldest nor newest)');
   }
   return -1;
 }
@@ -228,7 +232,8 @@ class PeerIndex {
     const chunkReference = {
       isRevoked: false,
       history: new BehaviorSubject({ ids: [] }),
-      getMessagePosition: (messageId: number) => compareChunksAndId(chunkReference.history.value, messageId),
+      getMessageRelation: (messageId: number) => compareChunksAndId(chunkReference.history.value, messageId),
+      getMessageIndex: (messageId: number) => findInIdsList(chunkReference.history.value.ids, messageId),
       putChunk: (chunk: IdsChunk) => {
         if (chunkReference.isRevoked) {
           if (process.env.NODE_ENV !== 'production') {
@@ -392,7 +397,8 @@ export default function messageHistory(collection: Collection<Message, any>) {
       const messagesChunkReference = {
         isRevoked: false,
         history: idsChunkReference.history,
-        getMessagePosition: idsChunkReference.getMessagePosition,
+        getMessageRelation: idsChunkReference.getMessageRelation,
+        getMessageIndex: idsChunkReference.getMessageIndex,
         putChunk(chunk: MessagesChunk) {
           try {
             isUpdatingByThisIndex = true;

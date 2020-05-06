@@ -14,7 +14,7 @@ export interface MessageChunkService {
   readonly history: BehaviorSubject<MessageHistoryChunk>;
 
   // Returns <0 if the message is older than chunk, =0 if inside chunk, >0 if newer than chunk, null when unknown.
-  getMessagePosition(messageId: number): number | null;
+  getMessageRelation(messageId: number): number | null;
 
   loadMore(direction: Direction.Newer | Direction.Older): void;
 
@@ -80,11 +80,13 @@ export default function makeMessageChunk(peer: Peer, messageId: Exclude<number, 
         isUpdatingCacheChunk = false;
       }
     } finally {
-      historySubject.next({
-        ...cacheChunkRef.history.value,
-        loadingOlder: direction === Direction.Around || direction === Direction.Older ? false : historySubject.value.loadingOlder,
-        loadingNewer: direction === Direction.Around || direction === Direction.Newer ? false : historySubject.value.loadingNewer,
-      });
+      if (!isDestroyed) {
+        historySubject.next({
+          ...cacheChunkRef.history.value,
+          loadingOlder: direction === Direction.Around || direction === Direction.Older ? false : historySubject.value.loadingOlder,
+          loadingNewer: direction === Direction.Around || direction === Direction.Newer ? false : historySubject.value.loadingNewer,
+        });
+      }
     }
   }
 
@@ -129,22 +131,39 @@ export default function makeMessageChunk(peer: Peer, messageId: Exclude<number, 
     cacheChunkRef.revoke();
   }
 
-  if (messageId === Infinity) {
-    const { ids } = historySubject.value;
-    if (ids.length < LOAD_CHUNK_LENGTH) {
-      loadMessages(Direction.Older, ids[0] /* undefined is welcome here */);
+  function makeSureChunkHasMessages() {
+    const { ids, newestReached, oldestReached } = cacheChunkRef.history.value;
+
+    if (messageId === Infinity) {
+      if (ids.length < LOAD_CHUNK_LENGTH && !oldestReached) {
+        loadMessages(Direction.Older, ids.length ? ids[ids.length - 1] : undefined);
+      }
+      return;
     }
-    if (ids.length > 0) {
-      loadMessages(Direction.Newer, ids[0], 0);
+
+    if (messageId === -Infinity) {
+      if (ids.length < LOAD_CHUNK_LENGTH && !newestReached) {
+        loadMessages(Direction.Older, ids.length ? ids[0] : undefined);
+      }
+      return;
     }
-  } else {
-    loadMessages(Direction.Around, messageId);
+
+    const messageIndex = cacheChunkRef.getMessageIndex(messageId);
+    const minSideCount = Math.floor(LOAD_CHUNK_LENGTH / 2) - 1;
+    if (
+      (messageIndex < minSideCount && !newestReached)
+      || (ids.length - messageIndex - 1 < minSideCount && !oldestReached)
+    ) {
+      loadMessages(Direction.Around, messageId);
+    }
   }
+
+  makeSureChunkHasMessages();
 
   return {
     history: historySubject,
     loadMore,
-    getMessagePosition: cacheChunkRef.getMessagePosition,
+    getMessageRelation: cacheChunkRef.getMessageRelation,
     destroy,
   };
 }

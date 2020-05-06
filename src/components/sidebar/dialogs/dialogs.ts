@@ -78,6 +78,7 @@ export default function dialogs({ onNavigate }: SidebarComponentProps) {
     onReachBottom: () => service.loadMoreDialogs(),
   });
 
+
   const dialogsLayer = div`dialogs__layer`(
     status(),
     listEl.container,
@@ -92,6 +93,8 @@ export default function dialogs({ onNavigate }: SidebarComponentProps) {
       searchResultLayer = undefined;
     }
   };
+
+  listen(searchInputEl, 'mouseenter', () => globalSearch.prepare());
 
   isSearchActive.pipe(distinctUntilChanged()).subscribe(async (isActive) => {
     await animationFrameStart();

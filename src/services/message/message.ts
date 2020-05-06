@@ -84,7 +84,7 @@ export default class MessagesService {
     if (isPeerChanged) {
       isChunkChanged = true;
     } else if (this.currentChunk && messageId) {
-      const messagePosition = this.currentChunk.getMessagePosition(messageId);
+      const messagePosition = this.currentChunk.getMessageRelation(messageId);
       if (messagePosition !== 0) {
         isChunkChanged = true;
         if (messagePosition !== null) {
@@ -102,7 +102,7 @@ export default class MessagesService {
         if (!isPeerChanged && this.currentChunk) {
           // Keep the current chunk until the next is loaded
           // Don't recreate the next chunk if it contains the target message
-          if (!this.nextChunk || this.nextChunk.getMessagePosition(messageId!) !== 0) {
+          if (!this.nextChunk || this.nextChunk.getMessageRelation(messageId!) !== 0) {
             if (this.nextChunk) {
               this.nextChunk.destroy();
             }

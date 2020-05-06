@@ -822,11 +822,11 @@ export class VirtualizedList {
     if (centered && this.viewport.height > itemInfo.length) scrollValue -= (this.viewport.height - itemInfo.length) / 2;
 
     scrollValue = Math.max(0, scrollValue);
-    scrollValue = Math.min(this.scrollHeight - this.viewport.height, scrollValue);
+    scrollValue = Math.min(this.scrollPane.scrollHeight - this.viewport.height, scrollValue);
 
-    if (this.currentIndices[item] === this.last) scrollValue = this.scrollHeight - this.viewport.height;
+    if (this.currentIndices[item] === this.last) scrollValue = this.scrollPane.scrollHeight - this.viewport.height + 1;
 
-    return Math.floor(scrollValue);
+    return scrollValue;
   }
 
   scrollTo(item: string) {
