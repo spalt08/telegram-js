@@ -9,7 +9,6 @@ import MessagesService from './message/message';
 
 const RATING_E_DECAY = 2419200; // todo: Load it from the server config: https://core.telegram.org/method/help.getConfig
 
-const initialLoadDelay = 5000; // A delay to not interfere with other more important requests
 const maxLoadCount = 15;
 const activePeerChangeReactionDelay = 700; // Delayed to not overload the hard peer change process
 
@@ -87,9 +86,8 @@ export default class TopUsersService {
   readonly isUpdating = new BehaviorSubject(false);
 
   // todo: Keep in a persistent storage because this API endpoint emits a FLOOD WAIT error quickly. Update every 24 hours.
+  // todo: Load after a few seconds after application start if the cache is empty
   readonly topUsers = new BehaviorSubject<TopPeersState>('unknown');
-
-  protected initialLoadTimeout = setTimeout(() => this.update(), initialLoadDelay);
 
   constructor(messagesService: MessagesService) {
     messagesService.activePeer.subscribe(this.handleActivePeer);
@@ -101,18 +99,15 @@ export default class TopUsersService {
       return;
     }
 
-    clearTimeout(this.initialLoadTimeout);
-
-    // causes flood wait
-    // try {
-    //   this.isUpdating.next(true);
-    //   const topUsers = await loadTopUsers();
-    //   if (topUsers !== 'unknown') {
-    //     this.topUsers.next(topUsers);
-    //   }
-    // } finally {
-    //   this.isUpdating.next(false);
-    // }
+    try {
+      this.isUpdating.next(true);
+      const topUsers = await loadTopUsers();
+      if (topUsers !== 'unknown') {
+        this.topUsers.next(topUsers);
+      }
+    } finally {
+      this.isUpdating.next(false);
+    }
   }
 
   async updateIfRequired() {

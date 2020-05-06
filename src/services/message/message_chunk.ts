@@ -69,6 +69,10 @@ export default function makeMessageChunk(peer: Peer, messageId: Exclude<number, 
         return;
       }
 
+      if (isDestroyed) {
+        return;
+      }
+
       try {
         isUpdatingCacheChunk = true;
         cacheChunkRef.putChunk(result);

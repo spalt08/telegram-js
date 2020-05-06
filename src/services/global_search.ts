@@ -140,10 +140,24 @@ export default class GlobalSearch {
 
   protected sourceSubscriptions: Subscription[] = [];
 
+  protected isPrepared = false;
+
   constructor(protected topUsers: TopUsersService, dialogs?: DialogsService) {
     if (dialogs) {
       // todo: Keep the recent peers in a persistent storage instead of getting from the dialogs
       this.addRecentPeersFromDialogs(dialogs);
+    }
+  }
+
+  /**
+   * A temporary hack. Call it when you thing the user will start searching (even with empty search) soon. It's optional.
+   *
+   * @todo Remove in favour of the top users long term caching
+   */
+  prepare() {
+    if (!this.isPrepared) {
+      this.isPrepared = true;
+      this.topUsers.updateIfRequired();
     }
   }
 
