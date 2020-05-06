@@ -1,3 +1,5 @@
+@import '~styles/variables.scss';
+
 .list {
   position: relative;
   height: 100%;
@@ -12,14 +14,15 @@
     width: 100%;
     max-height: 100%;
     overflow-x: hidden;
-    overflow-y: scroll; // To prevent a horizontal shift when more items are added
-    overflow-y: overlay; // safari and chrome
+    overflow-y: scroll;
     position: relative;
     display: flex;
     flex-direction: column;
     padding-bottom: 10PX;
     transform: translateZ(0); // https://stackoverflow.com/a/30533339/1118709
     min-height: 0; // To force the content to scroll
+
+    @include hide-scrollbar();
 
     >* {
       flex: none;

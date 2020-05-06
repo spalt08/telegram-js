@@ -38,3 +38,12 @@ $break-widescreen: 1680px;
     height: 4px;
   }
 }
+
+@mixin hide-scrollbar() {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+}
