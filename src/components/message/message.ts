@@ -13,6 +13,7 @@ import documentFile from 'components/media/document/file';
 import videoPreview from 'components/media/video/preview';
 import videoRenderer from 'components/media/video/video';
 import audio from 'components/media/audio/audio';
+import poll from 'components/media/poll/poll';
 import { messageToSenderPeer, peerToColorCode } from 'cache/accessors';
 import { userIdToPeer, peerToId } from 'helpers/api';
 import { isEmoji } from 'helpers/message';
@@ -158,7 +159,8 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
   if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document' && getAttributeVideo(msg.media.document)) {
     const extraClass = hasMessage ? 'with-photo' : 'only-photo';
     const previewEl = videoPreview(msg.media.document, {
-      fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined }, peer, msg);
+      fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined
+    }, peer, msg);
     if (!hasMessage && previewEl instanceof Element) previewEl.classList.add('raw');
 
     return {
@@ -202,7 +204,21 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
     };
   }
 
-  // console.log(msg.media);
+  // with poll
+  if (msg.media._ === 'messageMediaPoll') {
+    const extraClass = hasMessage ? 'with-poll' : 'only-poll';
+    return {
+      message: bubble(
+        { out, className: extraClass },
+        reply,
+        div`.message__media-padded`(poll(msg.media.poll, msg.media.results)),
+        messageText(msg, info),
+      ),
+      info,
+    };
+  }
+
+  console.log(msg);
 
   // fallback
   return {

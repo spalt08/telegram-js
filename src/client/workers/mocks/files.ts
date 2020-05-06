@@ -7,7 +7,7 @@ import walterProfilePhoto from './users/walter.jpg';
 import audio from './documents/audio.mp3';
 import videoStreamingPreview from './documents/video_streaming_preview.jpg';
 import videoStreaming from './documents/video_streaming.mp4';
-import { InputFileLocation } from '../../../../packages/mtproto-js/src/tl/layer105/types';
+import { InputFileLocation } from '../../../../packages/mtproto-js/src/tl/layer113/types';
 
 export const fileMap: Record<string, string> = {
   '/photos/4b3881d91b31ad38_x': photoSquare,
