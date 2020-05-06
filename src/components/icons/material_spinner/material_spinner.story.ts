@@ -6,14 +6,14 @@ import * as knobs from '@storybook/addon-knobs';
 import { div } from 'core/html';
 import materialSpinner from './material_spinner';
 
-const stories = storiesOf('UI Elements | Icons', module)
+const stories = storiesOf('Layout | UI Elements / Icons', module)
   .addDecorator(knobs.withKnobs)
   .addDecorator(centered);
 
 const icon = materialSpinner();
 const element = div(icon);
 
-stories.add('Material spinner', () => {
+stories.add('Material Spinner', () => {
   const color = knobs.color('Color', '#4EA4F5');
   const size = knobs.number('Size (px)', 44, { min: 1, max: 500 });
 

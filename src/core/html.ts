@@ -19,6 +19,7 @@ export const span = ElementFactory('span');
 export const form = ElementFactory('form');
 export const img = ElementFactory('img');
 export const h1 = ElementFactory('h1');
+export const h3 = ElementFactory('h3');
 export const p = ElementFactory('p');
 export const input = ElementFactory('input');
 export const textarea = ElementFactory('textarea');

@@ -1,30 +1,37 @@
 /* eslint-disable import/no-extraneous-dependencies */
+import { Photo } from 'mtproto-js';
 import { storiesOf } from '@storybook/html';
-import centered from '@storybook/addon-centered/html';
 import { number, select, withKnobs } from '@storybook/addon-knobs';
-import { withMountTrigger, withEmptyFileCache } from 'storybook/decorators';
-import photoSquare from 'mocks/photos/photo_square';
-import photoLandscape from 'mocks/photos/photo_landscape';
+import { MockedPhotos } from 'mocks/storybook';
+import { withMountTrigger, behaviourRenderer, centered } from 'storybook/decorators';
 import photoRenderer from './photo';
 
-const stories = storiesOf('Media | Photo', module)
+
+const stories = storiesOf('Layout | Media / Photo', module)
   .addDecorator(withMountTrigger)
-  .addDecorator(withEmptyFileCache)
   .addDecorator(centered)
   .addDecorator(withKnobs);
 
-stories.add('Square', () => (
-  photoRenderer(photoSquare, {
-    fit: select('Fit Mode', ['cover', 'contain'], 'cover'),
-    width: number('Width', 320),
-    height: number('Height', 320),
-  })
-));
+stories.add('Square', () => {
+  const fit = select('Fit Mode', ['cover', 'contain'], 'cover');
+  const width = number('Width', 320);
+  const height = number('Height', 320);
 
-stories.add('Landscape', () => (
-  photoRenderer(photoLandscape, {
-    fit: select('Fit Mode', ['cover', 'contain'], 'contain'),
-    width: number('Width', 320),
-    minHeight: number('Min height', 320),
-  })
-));
+  return behaviourRenderer<Photo.photo>(MockedPhotos.Square.subject, (photo) => photoRenderer(photo, { fit, width, height }));
+});
+
+stories.add('Landscape', () => {
+  const fit = select('Fit Mode', ['cover', 'contain'], 'contain');
+  const width = number('Width', 320);
+  const height = number('Height', 320);
+
+  return behaviourRenderer<Photo.photo>(MockedPhotos.Landscape.subject, (photo) => photoRenderer(photo, { fit, width, minHeight: height }));
+});
+
+stories.add('Portrait', () => {
+  const fit = select('Fit Mode', ['cover', 'contain'], 'contain');
+  const width = number('Width', 320);
+  const height = number('Height', 320);
+
+  return behaviourRenderer<Photo.photo>(MockedPhotos.Portrait.subject, (photo) => photoRenderer(photo, { fit, minWidth: width, height }));
+});
