@@ -1,7 +1,7 @@
 import { div, text } from 'core/html';
 import { MaybeObservable } from 'core/types';
 import { useMaybeObservable, useOutsideEvent, useInterface } from 'core/hooks';
-import { mount, unmount } from 'core/dom';
+import { mount, unmountChildren } from 'core/dom';
 import './context_menu.scss';
 
 type Props = {
@@ -34,8 +34,7 @@ export default function contextMenu({ className, options, onClose, opened = fals
   };
 
   useMaybeObservable(container, options, (items) => {
-    for (let i = 0; i < mounted.length; i++) unmount(mounted[i]);
-
+    unmountChildren(container);
     mounted = [];
 
     for (let i = 0; i < items.length; i++) {

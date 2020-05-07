@@ -6,7 +6,7 @@ import { VirtualizedList, sectionSpinner, roundButton, searchInput, contextMenu 
 import { div } from 'core/html';
 import { getInterface, useObservable } from 'core/hooks';
 import { animationFrameStart, mount, unmount, listen } from 'core/dom';
-import { menuAndBack, settings, archive, group, user, savedmessages, help, newchatFilled, channel } from 'components/icons';
+import * as icons from 'components/icons';
 import { globalSearch, dialog as service } from 'services';
 import dialog from '../dialog/dialog';
 import globalSearchResult from '../global_search_result/global_search_result';
@@ -42,21 +42,21 @@ export default function dialogs({ onNavigate }: SidebarComponentProps) {
   const buttonMenu = contextMenu({
     className: 'dialogs__button-menu',
     options: [
-      { icon: group, label: 'New Group', onClick: () => onNavigate && onNavigate('newGroup') },
-      { icon: user, label: 'Contacts', onClick: () => onNavigate && onNavigate('contacts') },
-      { icon: archive, label: 'Archived', onClick: () => onNavigate && onNavigate('contacts') },
-      { icon: savedmessages, label: 'Saved', onClick: () => onNavigate && onNavigate('contacts') },
-      { icon: settings, label: 'Settings', onClick: () => onNavigate && onNavigate('settings') },
-      { icon: help, label: 'Help', onClick: () => onNavigate && onNavigate('contacts') },
+      { icon: icons.group, label: 'New Group', onClick: () => onNavigate && onNavigate('newGroup') },
+      { icon: icons.user, label: 'Contacts', onClick: () => onNavigate && onNavigate('contacts') },
+      { icon: icons.archive, label: 'Archived', onClick: () => onNavigate && onNavigate('contacts') },
+      { icon: icons.savedmessages, label: 'Saved', onClick: () => onNavigate && onNavigate('contacts') },
+      { icon: icons.settings, label: 'Settings', onClick: () => onNavigate && onNavigate('settings') },
+      { icon: icons.help, label: 'Help', onClick: () => onNavigate && onNavigate('contacts') },
     ],
   });
 
   const newMessageMenu = contextMenu({
     className: 'dialogs__new-message-menu',
     options: [
-      { icon: channel, label: 'New Channel', onClick: () => onNavigate && onNavigate('newGroup') },
-      { icon: group, label: 'New Group', onClick: () => onNavigate && onNavigate('newGroup') },
-      { icon: user, label: 'New Private Chat', onClick: () => onNavigate && onNavigate('newGroup') },
+      { icon: icons.channel, label: 'New Channel', onClick: () => onNavigate && onNavigate('newGroup') },
+      { icon: icons.group, label: 'New Group', onClick: () => onNavigate && onNavigate('newGroup') },
+      { icon: icons.user, label: 'New Private Chat', onClick: () => onNavigate && onNavigate('newGroup') },
     ],
   });
 
@@ -64,7 +64,7 @@ export default function dialogs({ onNavigate }: SidebarComponentProps) {
     getInterface(newMessageMenu).toggle();
     getInterface(buttonMenu).close();
     event.stopPropagation();
-  } }, newchatFilled());
+  } }, icons.newchatFilled());
 
   listen(writeButton, 'transitionstart', () => getInterface(newMessageMenu).close());
 
@@ -152,7 +152,7 @@ export default function dialogs({ onNavigate }: SidebarComponentProps) {
             className: 'dialogs__head_button',
             onClick: handleButtonClick,
           },
-          menuAndBack({ state: isSearchActive.pipe(map((isActive) => isActive ? 'back' : 'menu')) }),
+          icons.menuAndBack({ state: isSearchActive.pipe(map((isActive) => isActive ? 'back' : 'menu')) }),
         ),
         searchInputEl,
       ),

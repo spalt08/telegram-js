@@ -1,19 +1,19 @@
 import { div } from 'core/html';
 import { listen } from 'core/dom';
-import { smile, animals, recent, sport, lamp, flag, eats, car } from 'components/icons';
+import * as icons from 'components/icons';
 import { VirtualizedList } from 'components/ui';
 import { useInterface } from 'core/hooks';
 import emojiCategory, { categories } from './category';
 import './panel.scss';
 
 const categoryIcons: Record<string, SVGSVGElement> = {
-  people: smile(),
-  nature: animals(),
-  foods: eats(),
-  activity: car(),
-  places: sport(),
-  objects: lamp(),
-  flags: flag(),
+  people: icons.smile(),
+  nature: icons.animals(),
+  foods: icons.eats(),
+  activity: icons.car(),
+  places: icons.sport(),
+  objects: icons.lamp(),
+  flags: icons.flag(),
 };
 
 export default function emojiPanel(onSelect?: (emoji: string) => void) {
@@ -37,9 +37,9 @@ export default function emojiPanel(onSelect?: (emoji: string) => void) {
     onFocus,
   });
 
-  const recentIcon = div`.emoji-panel__tab`(recent());
+  const recentIcon = div`.emoji-panel__tab`(icons.recent());
 
-  const icons = categories.map<Node>((key: string) => {
+  const ic = categories.map<Node>((key: string) => {
     const icon = div`.emoji-panel__tab`(categoryIcons[key]);
 
     listen(icon, 'click', () => {
@@ -53,7 +53,7 @@ export default function emojiPanel(onSelect?: (emoji: string) => void) {
     categoryList.container,
     div`.emoji-panel__tabs`(
       recentIcon,
-      ...icons,
+      ...ic,
     ),
   );
 

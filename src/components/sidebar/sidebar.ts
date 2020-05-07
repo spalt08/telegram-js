@@ -1,6 +1,6 @@
 /* eslint-disable import/no-cycle */
 import { div } from 'core/html';
-import { mount } from 'core/dom';
+import { mount, unmount } from 'core/dom';
 import wrapper from './wrapper/wrapper';
 import dialogs from './dialogs/dialogs';
 import settings from './settings/settings';
@@ -49,9 +49,10 @@ export default function sidebar<T extends SidebarType>({ kind, initial, classNam
 
       element.ontransitionend = () => {
         container.classList.remove('-poping-state');
-        element!.ontransitionend = null;
-        element!.remove();
-        element = undefined;
+        if (element) {
+          unmount(element);
+          element = undefined;
+        }
       };
     }
   };
