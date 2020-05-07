@@ -64,12 +64,22 @@ function pollOption(option: PollAnswer, initialVoters?: PollAnswerVoters, initia
 
 type PollOptionInterface = ReturnType<typeof pollOption>;
 
+function pollType(pollData: Poll) {
+  if (pollData.quiz) {
+    return 'Quiz';
+  }
+  if (pollData.public_voters) {
+    return 'Poll';
+  }
+  return 'Anonymous Poll';
+}
+
 export default function poll(pollData: Poll, results: PollResults, info: HTMLElement) {
   const pollOptions = div`.poll__options`();
   const totalVotersText = text('');
   const container = span`.poll`(
     div`.poll__question`(text(pollData.question)),
-    div`poll__type`(pollData.public_voters ? text('Poll') : text('Anonymous Poll')),
+    div`poll__type`(text(pollType(pollData))),
     pollOptions,
     span`.poll__voters`(totalVotersText),
     info,
@@ -109,7 +119,6 @@ export default function poll(pollData: Poll, results: PollResults, info: HTMLEle
 
   const updateListener = (update: PollResults) => {
     updatePollResults(update);
-    console.log(update);
   };
 
   useWhileMounted(container, () => {
