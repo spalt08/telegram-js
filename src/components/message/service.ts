@@ -46,7 +46,7 @@ export default function messageSerivce(originalPeer: Peer, msg: Message.messageS
       break;
 
     case 'messageActionChatAddUser': {
-      if (msg.action.users.length === 1 && originalPeer._ === 'peerUser' && originalPeer.user_id === msg.action.users[0]) {
+      if (msg.action.users.length === 1 && peer._ === 'peerUser' && peer.user_id === msg.action.users[0]) {
         innerContent = [
           strong(profileTitle(peer)),
           text(' joined the group'),
