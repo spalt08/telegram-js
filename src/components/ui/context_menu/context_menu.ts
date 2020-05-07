@@ -17,7 +17,6 @@ type Props = {
 
 export default function contextMenu({ className, options, onClose, opened = false }: Props) {
   const container = div`.contextMenu${className}`();
-  let mounted: Node[] = [];
 
   const open = () => container.classList.add('-opened');
   const close = (event?: MouseEvent | any) => {
@@ -35,7 +34,6 @@ export default function contextMenu({ className, options, onClose, opened = fals
 
   useMaybeObservable(container, options, (items) => {
     unmountChildren(container);
-    mounted = [];
 
     for (let i = 0; i < items.length; i++) {
       const { icon, label, onClick } = items[i];
@@ -45,7 +43,6 @@ export default function contextMenu({ className, options, onClose, opened = fals
       );
 
       mount(container, element);
-      mounted.push(element);
     }
   });
 
