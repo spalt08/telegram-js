@@ -1,4 +1,4 @@
-import { div, text } from 'core/html';
+import { div, text, input, nothing } from 'core/html';
 import { MaybeObservable } from 'core/types';
 import { useMaybeObservable, useOutsideEvent, useInterface } from 'core/hooks';
 import { mount, unmountChildren } from 'core/dom';
@@ -7,7 +7,8 @@ import './context_menu.scss';
 export type ContextMenuOption = {
   icon: (props?: any) => Node,
   label: string,
-  onClick: () => void,
+  onClick?: () => void,
+  onFile?: (event: Event) => void,
 };
 
 type Props = {
@@ -40,10 +41,13 @@ export default function contextMenu({ className, options, onClose, opened = fals
     mounted = [];
 
     for (let i = 0; i < items.length; i++) {
-      const { icon, label, onClick } = items[i];
-      const element = div`.contextMenu__item`({ onClick: () => { close(); onClick(); } },
+      const { icon, label, onClick, onFile } = items[i];
+      const element = div`.contextMenu__item`({ onClick: onClick ? () => { close(); onClick(); } : undefined },
         div`.contextMenu__icon`(icon()),
         div`.contextMenu__label`(text(label)),
+        onFile ? (
+          input({ className: 'contextMenu__file', type: 'file', multiple: true, onChange: (event: Event) => { close(); onFile(event); } })
+        ) : nothing,
       );
 
       mount(container, element);
