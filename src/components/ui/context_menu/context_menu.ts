@@ -4,15 +4,17 @@ import { useMaybeObservable, useOutsideEvent, useInterface } from 'core/hooks';
 import { mount, unmountChildren } from 'core/dom';
 import './context_menu.scss';
 
+export type ContextMenuOption = {
+  icon: (props?: any) => Node,
+  label: string,
+  onClick: () => void,
+};
+
 type Props = {
   className?: string,
   opened?: boolean,
   onClose?: () => void,
-  options: MaybeObservable<Array<{
-    icon: (props?: any) => Node,
-    label: string,
-    onClick: () => void,
-  }>>,
+  options: MaybeObservable<ContextMenuOption[]>,
 };
 
 export default function contextMenu({ className, options, onClose, opened = false }: Props) {
