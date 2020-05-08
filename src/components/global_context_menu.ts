@@ -1,6 +1,6 @@
 import { main } from 'services';
 import { getInterface } from 'core/hooks';
-import { unmount, listen, mount } from 'core/dom';
+import { unmount, listen, mount, animationFrameStart } from 'core/dom';
 import { contextMenu, ContextMenuOption } from './ui';
 
 let menuContainer: Node | undefined;
@@ -66,7 +66,7 @@ export function useContextMenu(container: Node, deledate: ContextMenuOption[]) {
     const selection = getSelection();
     if (selection) selection.empty();
 
-    requestAnimationFrame(IMenu.open);
+    animationFrameStart().then(IMenu.open);
 
     event.preventDefault();
   });
