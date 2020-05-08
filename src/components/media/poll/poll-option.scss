@@ -10,6 +10,7 @@
   display: grid;
   grid-template-columns: 40px auto;
   width: 300px;
+  margin-top: 10px;
 
   path {
     stroke: var(--color);
@@ -17,13 +18,13 @@
 
   &__text {
     grid-column: 2;
-    margin: auto 0 auto 8px;
+    margin: auto 0 12px 8px;
   }
 
   &__percentage {
     grid-row: 1;
     grid-column: 1;
-    margin: auto 0;
+    margin: auto 0 12px 0;
     font-weight: bold;
     text-align: center;
     transition: opacity 0.3s;
@@ -36,6 +37,7 @@
     grid-row: 1;
     grid-column: 1;
     margin: auto;
+    margin-bottom: 10px;
     transition: opacity 0.3s;
   }
 
@@ -65,7 +67,7 @@
   &__line {
     grid-row: 1;
     grid-column: 1 / 2;
-    margin-top: 15px;
+    align-self: end;
     path {
       stroke: var(--color, var(--accent-color));
       stroke-width: 4px;

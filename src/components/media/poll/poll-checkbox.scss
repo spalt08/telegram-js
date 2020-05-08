@@ -7,6 +7,8 @@
   align-items: center;
   justify-items: center;
   grid-template-columns: auto;
+  width: 24px;
+  height: 24px;
   >*{
     grid-row: 1;
     grid-column: 1;
