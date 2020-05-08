@@ -6,7 +6,7 @@ import { fetchRequest } from './extensions/files';
 import { callMock } from './mocks/call';
 import getFilePart, { fileMap } from './mocks/files';
 import { fetchStreamRequest } from './extensions/stream';
-import { fetchLocation } from './extensions/utils';
+import { fetchLocation, fetchTGS } from './extensions/utils';
 
 
 const ctx = self as any as ServiceWorkerGlobalScope;
@@ -92,6 +92,7 @@ ctx.addEventListener('fetch', (event: FetchEvent): void => {
     }
 
     default:
-      event.respondWith(fetch(event.request.url));
+      if (url && url.indexOf('.tgs') > -1) event.respondWith(fetchTGS(url));
+      else event.respondWith(fetch(event.request.url));
   }
 });
