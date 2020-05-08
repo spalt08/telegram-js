@@ -1,7 +1,19 @@
+.pollOption.-correct {
+  --color: #00da00;
+}
+
+.pollOption.-incorrect {
+  --color: red;
+}
+
 .pollOption {
   display: grid;
   grid-template-columns: 40px auto;
   width: 300px;
+
+  path {
+    stroke: var(--color);
+  }
 
   &__text {
     grid-column: 2;
@@ -25,12 +37,35 @@
     transition: opacity 0.3s;
   }
 
+  & &__answer {
+    background-color: var(--color, var(--accent-color));
+    border-radius: 100%;
+    grid-row: 1;
+    grid-column: 1;
+    width: 12px;
+    height: 12px;
+    align-self: end;
+    justify-self: end;
+    display: grid;
+    align-items: center;
+    justify-items: center;
+    svg {
+      width: 10px;
+      height: 10px;
+      path {
+        fill: white;
+        stroke: white;
+        stroke-width: 1;
+      }
+    }
+  }
+
   &__line {
     grid-row: 1;
     grid-column: 1 / 2;
     margin-top: 15px;
     path {
-      stroke: var(--accent-color);
+      stroke: var(--color, var(--accent-color));
       stroke-width: 4px;
       stroke-linecap: round;
       fill: none;
@@ -46,11 +81,5 @@
   
   &__percentage.-answered {
     opacity: 1;
-  }
-}
-
-.pollOption.-incorrect {
-  path {
-    stroke: red;
   }
 }

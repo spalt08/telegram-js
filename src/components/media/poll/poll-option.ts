@@ -1,7 +1,8 @@
-import { useInterface } from 'core/hooks';
+import { useInterface, getInterface } from 'core/hooks';
 import { PollAnswer, PollAnswerVoters } from 'mtproto-js';
 import { text, span, div } from 'core/html';
-import { svgEl } from 'core/dom';
+import { svgEl, unmountChildren, mount } from 'core/dom';
+import { close as closeIcon, check as checkIcon } from 'components/icons';
 import pollCheckbox from './poll-checkbox';
 
 import './poll-option.scss';
@@ -19,16 +20,31 @@ type Props = {
   clickCallback: (reset: () => void) => void,
 };
 
+function answerIcon() {
+  const container = div`.pollOption__answer`({ style: { display: 'none' } });
+  return useInterface(container, {
+    update: (isCorrect?: boolean) => {
+      unmountChildren(container);
+      if (isCorrect !== undefined) {
+        container.style.removeProperty('display');
+        mount(container, isCorrect ? checkIcon() : closeIcon());
+      }
+    },
+  });
+}
+
 export default function pollOption({ quiz, multiple, option, answered, initialVoters, initialTotalVoters, clickCallback }: Props) {
   let path: SVGPathElement;
   const checkbox = span`.pollOption__checkbox`(pollCheckbox(multiple, clickCallback));
   const percentage = span`.pollOption__percentage`();
+  const answer = answerIcon();
   const container = div`.pollOption`(
     svgEl('svg', { width: 300, height: 30, class: 'pollOption__line' }, [
-      path = svgEl('path', { d: 'M20 8 v 7 a 13 13 0 0 0 13 13 H 300' }),
+      path = svgEl('path', { d: 'M20 8 v 3.5 a 13 13 0 0 0 13 13 H 300' }),
     ]),
     checkbox,
     percentage,
+    answer,
     span`.pollOption__text`(text(option.text)),
   );
 
@@ -42,18 +58,21 @@ export default function pollOption({ quiz, multiple, option, answered, initialVo
       if (voters.chosen) {
         if (voters.correct) {
           container.classList.add('-correct');
+          getInterface(answer).update(true);
         } else {
           container.classList.add('-incorrect');
+          getInterface(answer).update(false);
         }
       } else if (voters.correct) {
-        container.classList.add('-correct');
+        // container.classList.add('-correct');
+        getInterface(answer).update(true);
       }
     }
 
     if (totalVoters > 0) {
       const p = (voters?.voters ?? 0) / totalVoters;
       percentage.textContent = `${Math.floor(t * p * 100)}%`;
-      path.style.strokeDasharray = `0 ${Math.round(t * 45)} ${Math.round(t * p * 248)} 1000`;
+      path.style.strokeDasharray = `0 ${Math.round(t * 41)} ${Math.round(t * p * 248)} 1000`;
     } else {
       percentage.textContent = '';
       path.style.strokeDasharray = '0 0 0 1000';
