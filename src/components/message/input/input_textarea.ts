@@ -6,10 +6,11 @@ import './input_textarea.scss';
 
 type Props = {
   onSend: (message: string) => void,
+  onChange?: (message: string) => void,
   maxHeight: number
 };
 
-export default function messageTextarea({ onSend, maxHeight = 400 }: Props) {
+export default function messageTextarea({ onSend, onChange, maxHeight = 400 }: Props) {
   const lineHeight = 20;
   const element = textarea({ className: 'message-text', placeholder: 'Message' });
 
@@ -61,6 +62,8 @@ export default function messageTextarea({ onSend, maxHeight = 400 }: Props) {
         }
       });
     }
+
+    if (onChange) onChange(element.value);
   });
 
   return useInterface(element, {

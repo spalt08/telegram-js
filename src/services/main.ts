@@ -2,6 +2,7 @@ import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { Photo, Message, Peer, InputStickerSet, Document } from 'mtproto-js';
 import { PhotoOptions } from 'helpers/other';
+import type { ContextMenuOption } from 'components/ui';
 
 export const enum RightSidebarPanel {
   None,
@@ -21,6 +22,8 @@ export default class MainService {
 
   /** State of sidebar visibility */
   rightSidebarPanel = new BehaviorSubject(RightSidebarPanel.None);
+
+  contextMenuDelegate = new BehaviorSubject<ContextMenuOption[]>([]);
 
   /** Popup Context */
   popupCtx: any = {};

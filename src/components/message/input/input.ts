@@ -1,57 +1,124 @@
-import { div, input, button } from 'core/html';
-import { mount, listen } from 'core/dom';
-import { smile, attach, send } from 'components/icons';
-import { message, media } from 'services';
+import { div, input } from 'core/html';
+import { listen, unmountChildren, mount, animationFrameStart } from 'core/dom';
+import * as icons from 'components/icons';
+import { media, message } from 'services';
 import { getInterface, useListenWhileMounted, useObservable } from 'core/hooks';
-import { chatCache } from 'cache';
 import { Document } from 'mtproto-js';
-import { bubble } from 'components/ui';
+import { bubble, contextMenu, quote } from 'components/ui';
+import { documentToInputMedia } from 'helpers/message';
+import { messageCache } from 'cache';
+import { messageToSenderPeer } from 'cache/accessors';
+import { profileTitle } from 'components/profile';
+import photoRenderer from 'components/media/photo/photo';
 import stickMojiPanel from './input_stickmoji';
 import messageTextarea from './input_textarea';
 import './input.scss';
+import recordSendButton from './button';
+import messageShort from '../short';
 
 export default function messageInput() {
-  const element = div`.msginput.hidden`();
-  const textarea = messageTextarea({ onSend: message.sendMessage, maxHeight: 400 });
-  const emojiIcon = div`.msginput__emoji`(smile());
-  const file = input({ className: 'msginput__attach-input', type: 'file', multiple: true });
-  const attachIcon = div`.msginput__attach`(attach(), file);
+  const btn = recordSendButton({
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    onMessage: () => message.sendMessage(textarea.value),
+    onAudio: () => console.log('audio no implemented'),
+  });
+
+  const btnI = getInterface(btn);
+
+  const textarea = messageTextarea({
+    onSend: message.sendMessage,
+    onChange: (value) => value ? btnI.message() : btnI.audio(),
+    maxHeight: 400,
+  });
+
+  const emojiIcon = div`.msginput__emoji`(icons.smile());
+
   const stickmojiPanelEl = stickMojiPanel({
-    onSelectEmoji: (emoji: string) => {
-      getInterface(textarea).insertText(emoji);
-    },
-    onSelectSticker: (sticker: Document.document) => {
-      message.sendMediaMessage({
-        _: 'inputMediaDocument',
-        id: {
-          _: 'inputDocument',
-          id: sticker.id,
-          access_hash: sticker.access_hash,
-          file_reference: sticker.file_reference,
-        },
-      });
+    onSelectEmoji: (emoji: string) => getInterface(textarea).insertText(emoji),
+    onSelectSticker: (sticker: Document.document) => message.sendMediaMessage(documentToInputMedia(sticker)),
+  });
+
+  const fileInput = input({
+    className: '.msginput__file',
+    type: 'file',
+    multiple: true,
+    onChange: (event: Event) => {
+      if (event && event.target && event.target instanceof HTMLInputElement && event.target.files && event.target.files.length > 0) {
+        media.attachFiles(event.target.files);
+      }
     },
   });
 
-  const container = div`.msginput__container`(
-    stickmojiPanelEl,
-    bubble({ className: 'msginput__bubble -first -last' },
-      div`.msginput__bubble-content`(
-        emojiIcon,
-        textarea,
-        attachIcon,
-      ),
-    ),
-    button`.msginput__btn`(
-      {
-        onClick: () => {
-          getInterface(textarea).send();
-        },
+  const attachmentMenu = contextMenu({
+    className: 'msginput__attachments-menu',
+    options: [
+      { icon: icons.photo, label: 'Photo or Video', onClick: () => fileInput.click() },
+      { icon: icons.document, label: 'Document', onClick: () => fileInput.click() },
+      { icon: icons.document, label: 'Poll', onClick: () => {} },
+    ],
+  });
+
+  const attachIcon = div`.msginput__attach`(
+    {
+      onClick: (event: MouseEvent) => {
+        event.stopPropagation();
+        event.preventDefault();
+        getInterface(attachmentMenu).toggle();
       },
-      send(),
+    },
+    icons.attach(),
+  );
+
+  const quoteCancel = div`.msginput__quote-cancel`(icons.close());
+  const quoteContainer = div`.msginput__quote.hidden`();
+
+  const container = div`.msginput`(
+    div`.msginput__container`(
+      stickmojiPanelEl,
+      bubble({ className: 'msginput__bubble -first -last' },
+        quoteContainer,
+        div`.msginput__bubble-content`(
+          emojiIcon,
+          textarea,
+          attachIcon,
+        ),
+      ),
+      btn,
+      attachmentMenu,
     ),
   );
 
+  // Reply
+  useObservable(container, message.replyToMessageID, (msgID) => {
+    unmountChildren(quoteContainer);
+
+    if (msgID) {
+      const msg = messageCache.get(msgID);
+
+      if (msg && msg._ !== 'messageEmpty') {
+        let preview: Node | undefined;
+
+        if (msg._ === 'message' && msg.media?._ === 'messageMediaPhoto' && msg.media.photo?._ === 'photo') {
+          preview = div`.quote__img`(photoRenderer(msg.media.photo, { fit: 'cover', width: 32, height: 32 }));
+        }
+
+        mount(quoteContainer, quoteCancel);
+        mount(quoteContainer, quote(
+          profileTitle(messageToSenderPeer(msg)),
+          messageShort(msg),
+          preview,
+        ));
+
+        animationFrameStart().then(() => quoteContainer.classList.remove('hidden'));
+      }
+    } else quoteContainer.classList.add('hidden');
+  });
+
+  listen(quoteCancel, 'click', () => {
+    message.unsetReply();
+  });
+
+  // Sticker & Emoji Panel Handling
   let closeTimer: number | undefined;
   const closeDelay = 300;
 
@@ -59,6 +126,7 @@ export default function messageInput() {
     if (closeTimer) clearTimeout(closeTimer);
     stickmojiPanelEl.classList.add('opened');
     emojiIcon.classList.add('active');
+    getInterface(attachmentMenu).close();
   };
 
   const closePanel = () => {
@@ -76,25 +144,11 @@ export default function messageInput() {
   listen(stickmojiPanelEl, 'mouseenter', openPanel);
   listen(stickmojiPanelEl, 'mouseleave', closePanelDelayed);
 
-  mount(element, container);
-
-  useObservable(element, message.activePeer, (peer) => {
-    let hidden = !peer;
-    if (peer && peer._ === 'peerChannel') {
-      const chat = chatCache.get(peer.channel_id);
-      if (chat && chat._ === 'channel' && !chat.megagroup) {
-        hidden = true;
-      }
-    }
-
-    element.classList.toggle('hidden', hidden);
-  });
-
-  // upload with dragndrop
-  useListenWhileMounted(element, document, 'dragenter', (event: Event) => event.preventDefault());
-  useListenWhileMounted(element, document, 'dragleave', (event: Event) => event.preventDefault());
-  useListenWhileMounted(element, document, 'dragover', (event: Event) => event.preventDefault());
-  useListenWhileMounted(element, document, 'drop', (event: DragEvent) => {
+  // Upload with Drag'n'Drop
+  useListenWhileMounted(container, document, 'dragenter', (event: Event) => event.preventDefault());
+  useListenWhileMounted(container, document, 'dragleave', (event: Event) => event.preventDefault());
+  useListenWhileMounted(container, document, 'dragover', (event: Event) => event.preventDefault());
+  useListenWhileMounted(container, document, 'drop', (event: DragEvent) => {
     if (event.dataTransfer && event.dataTransfer.files.length > 0) {
       media.attachFiles(event.dataTransfer.files);
     }
@@ -102,11 +156,5 @@ export default function messageInput() {
     event.preventDefault();
   });
 
-  listen(file, 'change', (event: Event) => {
-    if (event && event.target && event.target instanceof HTMLInputElement && event.target.files && event.target.files.length > 0) {
-      media.attachFiles(event.target.files);
-    }
-  });
-
-  return element;
+  return container;
 }

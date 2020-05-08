@@ -13,7 +13,8 @@ const lorem = new LoremIpsum({
   },
 });
 
-let msgIdCounter = 10000;
+const msgInitialCounter = 0xFFFFFFF;
+let msgIdCounter = msgInitialCounter;
 
 export function mockMessage({
   from_id,
@@ -47,7 +48,7 @@ export function mockMessage({
     from_scheduled,
     legacy,
     edit_hide,
-    id: msgIdCounter++,
+    id: msgIdCounter--,
     from_id,
     to_id,
     via_bot_id,

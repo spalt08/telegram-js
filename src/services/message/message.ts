@@ -44,6 +44,8 @@ export default class MessagesService {
 
   protected nextChunk?: MessageChunkService;
 
+  readonly replyToMessageID = new BehaviorSubject('');
+
   constructor() {
     client.updates.on('updateNewMessage', (update) => {
       this.pushMessages([update.message]);
@@ -332,4 +334,12 @@ export default class MessagesService {
       // todo handling errors
     }
   };
+
+  setMessageForReply(msgId: string) {
+    this.replyToMessageID.next(msgId);
+  }
+
+  unsetReply() {
+    this.replyToMessageID.next('');
+  }
 }
