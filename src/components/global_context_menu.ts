@@ -63,6 +63,9 @@ export function useContextMenu(container: Node, deledate: ContextMenuOption[]) {
     menu.style.transformOrigin = origin;
     shouldClose = false;
 
+    const selection = getSelection();
+    if (selection) selection.empty();
+
     requestAnimationFrame(IMenu.open);
 
     event.preventDefault();
