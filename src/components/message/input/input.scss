@@ -87,4 +87,30 @@
     transform-origin: right bottom;
     z-index: 1;
   }
+
+  &__quote {
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    height: 42px;
+    opacity: 1;
+    transition: .1s ease-out;
+
+    &-cancel {
+      padding: 0 15px;
+      cursor: pointer;
+
+      & path { fill: #8e979d; }
+      &:hover path { fill: #4EA4F5; }
+    }
+
+    & .quote { 
+      max-width: 60%;
+    }
+
+    &.hidden {
+      opacity: 0;
+      height: 0;
+    }
+  }
 }

@@ -45,7 +45,7 @@ export function useContextMenu(container: Node, deledate: ContextMenuOption[]) {
     let origin = 'left';
 
     if (event.pageX + mw > vw) {
-      menu.style.left = `${vw - mw - 10}px`;
+      menu.style.left = `${event.pageX - mw}px`;
       origin = 'right';
     } else {
       menu.style.left = `${event.pageX}px`;
@@ -53,7 +53,7 @@ export function useContextMenu(container: Node, deledate: ContextMenuOption[]) {
     }
 
     if (event.pageY + mh > vh) {
-      menu.style.top = `${vh - mh - 10}px`;
+      menu.style.top = `${event.pageY - mh}px`;
       origin += ' bottom';
     } else {
       menu.style.top = `${event.pageY}px`;

@@ -16,12 +16,13 @@ import audio from 'components/media/audio/audio';
 import { messageToSenderPeer, peerToColorCode } from 'cache/accessors';
 import { userIdToPeer, peerToId } from 'helpers/api';
 import { isEmoji } from 'helpers/message';
-import { main } from 'services';
+import { main, message as service } from 'services';
 import { todoAssertHasValue } from 'helpers/other';
+import { useContextMenu } from 'components/global_context_menu';
+import * as icons from 'components/icons';
 import messageSerivce from './service';
 import messageReply from './reply';
 import replyMarkupRenderer from './reply_markup';
-
 import './message.scss';
 
 type MessageInterface = {
@@ -409,6 +410,10 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
   };
 
   useOnMount(element, () => update(true));
+
+  useContextMenu(element, [
+    { icon: icons.reply, label: 'Reply', onClick: () => service.setMessageForReply(id) },
+  ]);
 
   return useInterface(element, {
     from: () => cached && cached._ !== 'messageEmpty' ? cached.from_id : 0,

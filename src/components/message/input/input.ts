@@ -1,15 +1,20 @@
 import { div } from 'core/html';
-import { listen } from 'core/dom';
+import { listen, unmountChildren, mount } from 'core/dom';
 import * as icons from 'components/icons';
 import { media, message } from 'services';
-import { getInterface, useListenWhileMounted } from 'core/hooks';
+import { getInterface, useListenWhileMounted, useObservable } from 'core/hooks';
 import { Document } from 'mtproto-js';
-import { bubble, contextMenu } from 'components/ui';
+import { bubble, contextMenu, quote } from 'components/ui';
 import { documentToInputMedia } from 'helpers/message';
+import { messageCache } from 'cache';
+import { messageToSenderPeer } from 'cache/accessors';
+import { profileTitle } from 'components/profile';
+import photoRenderer from 'components/media/photo/photo';
 import stickMojiPanel from './input_stickmoji';
 import messageTextarea from './input_textarea';
 import './input.scss';
 import recordSendButton from './button';
+import messageShort from '../short';
 
 export default function messageInput() {
   const btn = recordSendButton({
@@ -60,10 +65,14 @@ export default function messageInput() {
     icons.attach(),
   );
 
+  const quoteCancel = div`.msginput__quote-cancel`(icons.close());
+  const quoteContainer = div`.msginput__quote.hidden`();
+
   const container = div`.msginput`(
     div`.msginput__container`(
       stickmojiPanelEl,
       bubble({ className: 'msginput__bubble -first -last' },
+        quoteContainer,
         div`.msginput__bubble-content`(
           emojiIcon,
           textarea,
@@ -74,6 +83,37 @@ export default function messageInput() {
       attachmentMenu,
     ),
   );
+
+  // Reply
+  useObservable(container, message.replyToMessageID, (msgID) => {
+    unmountChildren(quoteContainer);
+
+    if (msgID) {
+      const msg = messageCache.get(msgID);
+
+      if (msg && msg._ !== 'messageEmpty') {
+        let preview: Node | undefined;
+
+        if (msg._ === 'message' && msg.media?._ === 'messageMediaPhoto' && msg.media.photo?._ === 'photo') {
+          preview = div`.quote__img`(photoRenderer(msg.media.photo, { fit: 'cover', width: 32, height: 32 }));
+        }
+
+        mount(quoteContainer, quoteCancel);
+        mount(quoteContainer, quote(
+          profileTitle(messageToSenderPeer(msg)),
+          messageShort(msg),
+          preview,
+        ));
+
+        // chrome fix
+        requestAnimationFrame(() => requestAnimationFrame(() => quoteContainer.classList.remove('hidden')));
+      }
+    } else quoteContainer.classList.add('hidden');
+  });
+
+  listen(quoteCancel, 'click', () => {
+    message.unsetReply();
+  });
 
   // Sticker & Emoji Panel Handling
   let closeTimer: number | undefined;

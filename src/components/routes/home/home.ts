@@ -2,6 +2,7 @@ import { div } from 'core/html';
 import { useObservable, getInterface } from 'core/hooks';
 import { main, RightSidebarPanel } from 'services';
 import sidebar from 'components/sidebar/sidebar';
+import { withContextMenu } from 'components/global_context_menu';
 import messages from './messages';
 import rightSidebar from './right_sidebar/right_sidebar';
 import './home.scss';
@@ -27,5 +28,5 @@ export default function home() {
     rightSidebarWrapper.classList.toggle('visible', panel !== RightSidebarPanel.None);
   });
 
-  return container;
+  return withContextMenu(container);
 }
