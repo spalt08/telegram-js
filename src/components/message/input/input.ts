@@ -1,5 +1,5 @@
 import { div, input } from 'core/html';
-import { listen, unmountChildren, mount } from 'core/dom';
+import { listen, unmountChildren, mount, animationFrameStart } from 'core/dom';
 import * as icons from 'components/icons';
 import { media, message } from 'services';
 import { getInterface, useListenWhileMounted, useObservable } from 'core/hooks';
@@ -109,8 +109,7 @@ export default function messageInput() {
           preview,
         ));
 
-        // chrome fix
-        requestAnimationFrame(() => requestAnimationFrame(() => quoteContainer.classList.remove('hidden')));
+        animationFrameStart().then(() => quoteContainer.classList.remove('hidden'));
       }
     } else quoteContainer.classList.add('hidden');
   });
