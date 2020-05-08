@@ -212,7 +212,7 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
         { out, className: extraClass },
         reply,
         div`.message__text`(
-          poll(msg.media.poll, msg.media.results, info),
+          poll(peer, msg.id, msg.media.poll, msg.media.results, info),
         ),
       ),
       info,

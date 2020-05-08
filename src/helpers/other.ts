@@ -1,4 +1,4 @@
-import { a, form, input } from 'core/html';
+import { a } from 'core/html';
 
 export type PhotoFitMode = 'contain' | 'cover';
 

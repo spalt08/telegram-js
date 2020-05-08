@@ -1,70 +1,17 @@
-import { Poll, PollResults, PollAnswerVoters, PollAnswer } from 'mtproto-js';
+import { Poll, PollResults, PollAnswerVoters, Peer } from 'mtproto-js';
 import { div, text, span } from 'core/html';
-import { mount, svgEl } from 'core/dom';
-import { useWhileMounted, useInterface, getInterface } from 'core/hooks';
+import { mount } from 'core/dom';
+import { useWhileMounted, getInterface } from 'core/hooks';
 import { polls } from 'services';
 
 import './poll.scss';
+import pollOption, { PollOptionInterface } from './poll-option';
 
 const decoder = new TextDecoder();
-const ease = (t: number) => t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
-
-function pollOption(option: PollAnswer, initialVoters?: PollAnswerVoters, initialTotalVoters?: number) {
-  let path: SVGPathElement;
-  const percentage = text('');
-  const container = div`.poll__option`(
-    span`.poll__option-text`(text(option.text)),
-    svgEl('svg', { width: 300, height: 30, class: 'poll__option-line' }, [
-      path = svgEl('path', { d: 'M20 8 a 15 15 0 0 0 15 15 H 298' }),
-    ]),
-    span`.poll__option-percentage`(percentage),
-  );
-
-  let voters = initialVoters;
-  let totalVoters = initialTotalVoters ?? 1;
-  // let currentPercentage = 0;
-  // let targetPercentage = 0;
-  let startTime: number;
-  const update = (t: number) => {
-    if (totalVoters > 0) {
-      const p = (voters?.voters ?? 0) / totalVoters;
-      percentage.textContent = `${Math.floor(t * p * 100)}%`;
-      path.style.strokeDasharray = `0 ${Math.round(t * 40)} ${Math.round(t * p * 248)} 1000`;
-    } else {
-      percentage.textContent = '';
-      path.style.strokeDasharray = '0 0 0 1000';
-    }
-  };
-  const raf = (time: number) => {
-    if (!startTime) {
-      startTime = time;
-    }
-    const t = ease((time - startTime) / (1000 * 0.4));
-    update(t);
-    if (t < 1) {
-      requestAnimationFrame(raf);
-    } else {
-      startTime = 0;
-    }
-  };
-
-  update(1);
-
-  const updateOption = (updateVoters: PollAnswerVoters, updateTotalVoters: number) => {
-    voters = updateVoters;
-    totalVoters = updateTotalVoters;
-    // targetPercentage = totalVoters > 0 ? (voters?.voters ?? 0) / totalVoters : 0;
-    requestAnimationFrame(raf);
-  };
-
-  return useInterface(container, {
-    updateOption,
-  });
-}
-
-type PollOptionInterface = ReturnType<typeof pollOption>;
-
 function pollType(pollData: Poll) {
+  if (pollData.closed) {
+    return 'Final Results';
+  }
   if (pollData.quiz) {
     return 'Quiz';
   }
@@ -74,7 +21,7 @@ function pollType(pollData: Poll) {
   return 'Anonymous Poll';
 }
 
-export default function poll(pollData: Poll, results: PollResults, info: HTMLElement) {
+export default function poll(peer: Peer, messageId: number, pollData: Poll, results: PollResults, info: HTMLElement) {
   const pollOptions = div`.poll__options`();
   const totalVotersText = text('');
   const container = span`.poll`(
@@ -85,13 +32,25 @@ export default function poll(pollData: Poll, results: PollResults, info: HTMLEle
     info,
   );
   const options = new Map<string, PollOptionInterface>();
-  pollData.answers.forEach((a) => {
-    const optionKey = decoder.decode(a.option);
+  const answered = !!results.results && results.results.findIndex((r) => r.chosen) >= 0;
+  pollData.answers.forEach((answer) => {
+    const optionKey = decoder.decode(answer.option);
     let voters: PollAnswerVoters | undefined;
     if (results.results) {
       voters = results.results.find((r) => decoder.decode(r.option) === optionKey);
     }
-    const option = pollOption(a, voters, results.total_voters);
+    const option = pollOption({
+      quiz: pollData.quiz ?? false,
+      multiple: pollData.multiple_choice ?? false,
+      option: answer,
+      answered,
+      initialVoters: voters,
+      initialTotalVoters: results.total_voters ?? 0,
+      clickCallback: async (reset: () => void) => {
+        await polls.sendVote(peer, messageId, [answer.option]);
+        reset();
+      },
+    });
     options.set(optionKey, option);
     mount(pollOptions, option);
   });
@@ -102,28 +61,30 @@ export default function poll(pollData: Poll, results: PollResults, info: HTMLEle
       : 'No voters yet';
   };
 
-  const updatePollResults = (pollResults: PollResults) => {
+  const updatePollResults = (pollResults: PollResults, initial: boolean) => {
     const totalVoters = pollResults.total_voters ?? 0;
     updateTotalVotersText(totalVoters);
     if (pollResults.results) {
-      pollResults.results!.forEach((r) => {
+      const maxVoters = Math.max(...pollResults.results.map((r) => r.voters));
+      const updateAnswered = pollResults.results.findIndex((r) => r.chosen) >= 0;
+      pollResults.results.forEach((r) => {
         const op = options.get(decoder.decode(r.option));
         if (op) {
-          getInterface(op).updateOption(r, totalVoters);
+          getInterface(op).updateOption(r, !initial, updateAnswered, maxVoters, totalVoters);
         }
       });
     }
   };
 
-  updateTotalVotersText(results.total_voters ?? 0);
+  updatePollResults(results, true);
 
-  const updateListener = (update: PollResults) => {
-    updatePollResults(update);
+  const updateListener = (update: PollResults, initial: boolean) => {
+    updatePollResults(update, initial);
   };
 
   useWhileMounted(container, () => {
-    polls.addListener(pollData.id, updateListener);
-    return () => polls.removeListener(pollData.id, updateListener);
+    polls.subscribe(pollData.id, updateListener);
+    return () => polls.unsubscribe(pollData.id, updateListener);
   });
 
   return container;

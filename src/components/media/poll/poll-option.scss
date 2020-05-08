@@ -1,0 +1,56 @@
+.pollOption {
+  display: grid;
+  grid-template-columns: 40px auto;
+  width: 300px;
+
+  &__text {
+    grid-column: 2;
+    margin: auto 0 auto 8px;
+  }
+
+  &__percentage {
+    grid-row: 1;
+    grid-column: 1;
+    margin: auto 0;
+    font-weight: bold;
+    text-align: center;
+    transition: opacity 0.3s;
+    opacity: 0;
+  }
+
+  &__checkbox {
+    grid-row: 1;
+    grid-column: 1;
+    margin: auto;
+    transition: opacity 0.3s;
+  }
+
+  &__line {
+    grid-row: 1;
+    grid-column: 1 / 2;
+    margin-top: 15px;
+    path {
+      stroke: var(--accent-color);
+      stroke-width: 4px;
+      stroke-linecap: round;
+      fill: none;
+      stroke-dasharray: 0 25 263 1000;
+      stroke-dashoffset: 1;
+    }
+  }
+  
+  &__checkbox.-answered {
+    opacity: 0;
+    pointer-events: none;
+  }
+  
+  &__percentage.-answered {
+    opacity: 1;
+  }
+}
+
+.pollOption.-incorrect {
+  path {
+    stroke: red;
+  }
+}

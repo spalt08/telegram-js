@@ -4,10 +4,8 @@ import { StoryContext, StoryFn } from '@storybook/addons';
 import { triggerMountRecursive } from 'core/dom';
 import { div } from 'core/html';
 import chamomile from 'assets/chamomile-blurred.jpg';
-import { emptyCache } from 'client/media';
 import popup from 'components/popup/popup';
 import 'components/routes/home/home.scss';
-import { task } from 'client/context';
 
 export function withMountTrigger(getStory: StoryFn<Node>, context: StoryContext) {
   const element = getStory(context);

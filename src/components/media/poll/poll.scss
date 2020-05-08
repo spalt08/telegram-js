@@ -12,37 +12,4 @@
     color: var(--accent-color-inactive);
     font-size: 0.9rem;
   }
-
-  &__option {
-    display: grid;
-    grid-template-columns: 50px auto;
-    width: 300px;
-  }
-
-  &__option-text {
-    grid-column: 2;
-    margin: 10px 0 10px 0;
-  }
-
-  &__option-percentage {
-    grid-row: 1;
-    grid-column: 1;
-    margin: 10px 10px 10px 0;
-    font-weight: 500;
-    text-align: right;
-  }
-
-  &__option-line {
-    grid-row: 1;
-    grid-column: 1 / 2;
-    margin-top: 15px;
-    path {
-      stroke: var(--accent-color);
-      stroke-width: 4px;
-      stroke-linecap: round;
-      fill: none;
-      stroke-dasharray: 0 25 263 1000;
-      stroke-dashoffset: 1;
-    }
-  }
 }
