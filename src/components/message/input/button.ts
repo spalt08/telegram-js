@@ -35,7 +35,7 @@ export default function recordSendButton({ onMessage, onAudio }: Props) {
     const secs = `0${Math.floor((delta / 1000) % 60)}`.slice(-2);
     const mins = `0${Math.floor(delta / 60000)}`.slice(-2);
 
-    recordProgressText.textContent = `${mins}:${secs}:${milisecs}`;
+    recordProgressText.textContent = `${mins}:${secs},${milisecs}`;
 
     requestAnimationFrame(updateTimer);
   };

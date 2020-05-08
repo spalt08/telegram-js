@@ -1,4 +1,4 @@
-import { div } from 'core/html';
+import { div, input } from 'core/html';
 import { listen, unmountChildren, mount } from 'core/dom';
 import * as icons from 'components/icons';
 import { media, message } from 'services';
@@ -38,18 +38,22 @@ export default function messageInput() {
     onSelectSticker: (sticker: Document.document) => message.sendMediaMessage(documentToInputMedia(sticker)),
   });
 
-  // Upload with Click
-  const onFile = (event: Event) => {
-    if (event && event.target && event.target instanceof HTMLInputElement && event.target.files && event.target.files.length > 0) {
-      media.attachFiles(event.target.files);
-    }
-  };
+  const fileInput = input({
+    className: '.msginput__file',
+    type: 'file',
+    multiple: true,
+    onChange: (event: Event) => {
+      if (event && event.target && event.target instanceof HTMLInputElement && event.target.files && event.target.files.length > 0) {
+        media.attachFiles(event.target.files);
+      }
+    },
+  });
 
   const attachmentMenu = contextMenu({
     className: 'msginput__attachments-menu',
     options: [
-      { icon: icons.photo, label: 'Photo or Video', onFile },
-      { icon: icons.document, label: 'Document', onFile },
+      { icon: icons.photo, label: 'Photo or Video', onClick: () => fileInput.click() },
+      { icon: icons.document, label: 'Document', onClick: () => fileInput.click() },
       { icon: icons.document, label: 'Poll', onClick: () => {} },
     ],
   });
