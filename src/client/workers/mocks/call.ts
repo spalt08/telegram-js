@@ -3,6 +3,7 @@ import { MethodDeclMap } from 'mtproto-js';
 import { users } from './user';
 import { chats } from './chat';
 import { mockDialogForPeers } from './dialog';
+import { mockHistorySlice } from './history';
 
 type Callback<T extends keyof MethodDeclMap> = (err: any, result: MethodDeclMap[T]['res']) => void;
 
@@ -18,17 +19,16 @@ function shuffle(a: any[]) {
   return a;
 }
 
-export function callMock<T extends keyof MethodDeclMap>(method: keyof MethodDeclMap, _params: MethodDeclMap[T]['req'],
-  _headers: Record<string, any>, cb: Callback<T>) {
+export function callMock<T extends keyof MethodDeclMap>(method: T, params: MethodDeclMap[T]['req'],
+  headers: Record<string, any>, cb: Callback<T>) {
   switch (method) {
-    case 'auth.sendCode': {
+    case 'auth.sendCode':
       timeout(100, cb, {
         _: 'auth.sentCode',
         type: { _: 'auth.sentCodeTypeApp' },
         phone_code_hash: 'hash',
       });
       break;
-    }
 
     case 'messages.getDialogs': {
       const { dialogs, messages } = mockDialogForPeers(shuffle([...users, ...chats]));
@@ -43,8 +43,30 @@ export function callMock<T extends keyof MethodDeclMap>(method: keyof MethodDecl
       break;
     }
 
-    default: {
-      cb({ type: 'network', code: 100 }, undefined);
+    case 'messages.getHistory': {
+      const { peer, limit, offset_id } = params as MethodDeclMap['messages.getHistory']['req'];
+      const { count, messages } = mockHistorySlice(limit, offset_id, peer);
+
+      timeout<T>(100, cb, {
+        _: 'messages.messagesSlice',
+        messages,
+        chats,
+        users,
+        count,
+      });
+
+      break;
     }
+
+    case 'messages.readHistory':
+      timeout<T>(100, cb, {
+        _: 'messages.AffectedMessages',
+        pts: 0,
+        pts_count: 0,
+      });
+      break;
+
+    default:
+      cb({ type: 'network', code: 100 }, undefined);
   }
 }

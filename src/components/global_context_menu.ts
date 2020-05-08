@@ -1,6 +1,6 @@
 import { main } from 'services';
 import { getInterface } from 'core/hooks';
-import { unmount, listen, mount } from 'core/dom';
+import { unmount, listen, mount, animationFrameStart } from 'core/dom';
 import { contextMenu, ContextMenuOption } from './ui';
 
 let menuContainer: Node | undefined;
@@ -45,7 +45,7 @@ export function useContextMenu(container: Node, deledate: ContextMenuOption[]) {
     let origin = 'left';
 
     if (event.pageX + mw > vw) {
-      menu.style.left = `${vw - mw - 10}px`;
+      menu.style.left = `${event.pageX - mw}px`;
       origin = 'right';
     } else {
       menu.style.left = `${event.pageX}px`;
@@ -53,7 +53,7 @@ export function useContextMenu(container: Node, deledate: ContextMenuOption[]) {
     }
 
     if (event.pageY + mh > vh) {
-      menu.style.top = `${vh - mh - 10}px`;
+      menu.style.top = `${event.pageY - mh}px`;
       origin += ' bottom';
     } else {
       menu.style.top = `${event.pageY}px`;
@@ -63,7 +63,10 @@ export function useContextMenu(container: Node, deledate: ContextMenuOption[]) {
     menu.style.transformOrigin = origin;
     shouldClose = false;
 
-    requestAnimationFrame(IMenu.open);
+    const selection = getSelection();
+    if (selection) selection.empty();
+
+    animationFrameStart().then(IMenu.open);
 
     event.preventDefault();
   });

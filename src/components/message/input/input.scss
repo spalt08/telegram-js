@@ -31,18 +31,6 @@
     }
   }
 
-  &__attach input {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    display: block;
-    appearance: none;
-    cursor: pointer;
-    opacity: 0;
-  }
-
   &__container {
     position: relative;
     margin: 0 auto;
@@ -89,6 +77,40 @@
     
     svg path {
       fill: #4EA4F5;
+    }
+  }
+
+  &__attachments-menu {
+    position: absolute;
+    right: 62px;
+    bottom: 80px;
+    transform-origin: right bottom;
+    z-index: 1;
+  }
+
+  &__quote {
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    height: 42px;
+    opacity: 1;
+    transition: .1s ease-out;
+
+    &-cancel {
+      padding: 0 15px;
+      cursor: pointer;
+
+      & path { fill: #8e979d; }
+      &:hover path { fill: #4EA4F5; }
+    }
+
+    & .quote { 
+      max-width: 60%;
+    }
+
+    &.hidden {
+      opacity: 0;
+      height: 0;
     }
   }
 }
