@@ -1,6 +1,5 @@
-import { User, Chat, Dialog, Message } from 'mtproto-js';
-import { mockMessage } from './message';
-import { me, users } from './user';
+import { User, Chat, Dialog, Message, InputPeer } from 'mtproto-js';
+import { mockHistorySlice } from './history';
 
 const dialogTemplate: Dialog.dialog = {
   _: 'dialog',
@@ -15,22 +14,19 @@ const dialogTemplate: Dialog.dialog = {
   notify_settings: { _: 'peerNotifySettings' },
 };
 
-export function mockDialogForPeers(peers: Array<User.user | Chat.chat>): { dialogs: Dialog[], messages: Message.message[] } {
-  const messages = peers.map<Message.message>((peer) => {
-    switch (peer._) {
-      case 'user':
-        return mockMessage({
-          from_id: peer.id,
-          to_id: { _: 'peerUser', user_id: me.id },
-          out: peer.id === me.id,
-        });
+export function mockDialogForPeers(peers: Array<User.user | Chat.chat>): { dialogs: Dialog[], messages: Message[] } {
+  const messages = peers.map<Message>((p) => {
+    let peer: InputPeer;
 
+    switch (p._) {
+      case 'user':
+        peer = { _: 'inputPeerUser', user_id: p.id, access_hash: `userhash${p.id}` };
+        break;
       default:
-        return mockMessage({
-          from_id: users[1].id,
-          to_id: { _: 'peerChat', chat_id: peer.id },
-        });
+        peer = { _: 'inputPeerChat', chat_id: p.id };
     }
+
+    return mockHistorySlice(1, 0, peer).messages[0];
   });
 
   const dialogs = peers.map<Dialog.dialog>((peer, i) => ({
