@@ -94,7 +94,8 @@ export default class AuthService {
     this.phoneNumber.next(phoneNumber);
 
     if (!remember) {
-      client.storage = window.sessionStorage;
+      // todo flush storage
+      // client.storage = window.sessionStorage;
     }
 
     const payload: AuthSendCode = {
@@ -109,10 +110,6 @@ export default class AuthService {
       result = await client.call('auth.sendCode', payload);
     } catch (err) {
       if (err.type === 'network') {
-        if (err.message && (err.message.indexOf('400') || err.code === 1006)) {
-          client.svc.meta = {};
-        }
-
         this.errPhone.next('NETWORK_ERROR');
 
         // Should use another DC

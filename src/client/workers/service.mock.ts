@@ -4,7 +4,7 @@ import { parseRange } from 'helpers/stream';
 import { respond } from './extensions/context';
 import { fetchRequest } from './extensions/files';
 import { callMock } from './mocks/call';
-import getFilePart from './mocks/files';
+import getFilePart, { fileMap } from './mocks/files';
 import { fetchStreamRequest } from './extensions/stream';
 import { fetchLocation } from './extensions/utils';
 
@@ -50,6 +50,12 @@ ctx.onmessage = (event) => {
     case 'location': {
       const { url, location, options } = msg.payload;
       fetchLocation(url, location, options, getFilePart, cacheMock);
+      break;
+    }
+
+    case 'url_map': {
+      const { url, map } = msg.payload;
+      fileMap[url] = map;
       break;
     }
 

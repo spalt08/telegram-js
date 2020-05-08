@@ -65,7 +65,7 @@ export function hasCached(url: string, cb: (result: boolean) => void) {
  * Get Stream URL
  */
 export function stream(document: Document.document) {
-  const url = getStreamServiceURL(document, '');
+  const url = getStreamServiceURL(document);
   task('location', { url, location: getDocumentLocation(document), options: { dc_id: document.dc_id, size: document.size } });
 
   return url;

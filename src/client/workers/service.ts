@@ -106,9 +106,6 @@ function processWindowMessage(msg: WindowMessage, source: Client | MessagePort |
 ctx.addEventListener('install', (event: ExtendableEvent) => {
   log('service worker is installing');
 
-  self.addEventListener('offline', (e) => console.log('install offline', e));
-  self.addEventListener('online', (e) => console.log('install offline', e));
-
   event.waitUntil(
     Promise.all([
       initNetwork(),
@@ -122,9 +119,6 @@ ctx.addEventListener('install', (event: ExtendableEvent) => {
  */
 ctx.addEventListener('activate', (event) => {
   log('service worker activating', ctx);
-
-  self.addEventListener('offline', (e) => console.log('offline', e));
-  self.addEventListener('online', (e) => console.log('offline', e));
 
   if (!ctx.network) initNetwork();
   if (!ctx.cache) initCache();

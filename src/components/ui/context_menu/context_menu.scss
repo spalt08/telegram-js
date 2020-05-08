@@ -1,0 +1,50 @@
+.contextMenu {
+  min-width: 220px;
+  max-width: 320px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.25);
+  z-index: 10000;
+  transform-origin: top left;
+  transition: .25s ease-in-out;
+  overflow: hidden;
+  opacity: 0;
+  transform: scale(0);
+
+  &.-opened {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  &__item {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    cursor: pointer;
+    background-color: #ffffff;
+    transition: .2s ease-out;
+
+    &:hover {
+      background-color: #f2f3f4;
+    }
+  }
+
+  &__icon {
+    padding: 0 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+
+    & path {
+      fill: #818689;
+    }
+  }
+
+  &__label {
+    color: #141515;
+    font-weight: 400;
+    -webkit-font-smoothing: subpixel-antialiased;
+  }
+}

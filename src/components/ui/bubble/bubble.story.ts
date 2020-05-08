@@ -7,13 +7,13 @@ import { div, text, img } from 'core/html';
 import { getInterface } from 'core/hooks';
 import bubble from './bubble';
 
-const stories = storiesOf('UI Elements | Bubble', module)
+const stories = storiesOf('Layout | UI Elements / Bubble', module)
   .addDecorator(centered)
   .addDecorator(withMountTrigger)
   .addDecorator(withChatLayout)
   .addDecorator(withKnobs);
 
-stories.add('Common Usage', () => {
+stories.add('Common', () => {
   const out = boolean('Out', false);
   const bubbleControl = bubble({ out }, div(text('Line 1')), div(text('Line 2')), div(text('Line 3')));
   const isFirst = boolean('First', true);
@@ -52,12 +52,7 @@ stories.add('Image Bottom', () => {
   return bubbleControl;
 });
 
-const storiesPerf = storiesOf('UI Elements | Bubble', module)
-  .addDecorator(withMountTrigger)
-  .addDecorator(withChatLayout)
-  .addDecorator(withKnobs);
-
-storiesPerf.add('Performance Test', () => {
+stories.add('Performance Test', () => {
   const bubblesCount = number('Bubbles count', 100, { range: true, min: 1, max: 10000 });
   const imgSize = number('Image size (px)', 100, { range: true, min: 40, max: 500 });
   const out = boolean('Out', false);

@@ -1,0 +1,43 @@
+$sidebarTransitionDuration: .3s ease-in-out;
+
+.sidebarWrapper {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  transition: background-color $sidebarTransitionDuration;
+  animation: sidebarWrapperAppear $sidebarTransitionDuration;
+
+  &__content {
+    height: 100%;
+    background-color: #FFFFFF;
+    transition: transform $sidebarTransitionDuration;
+    animation: sidebarWrapperContentAppear $sidebarTransitionDuration;
+  }
+
+  &:first-child {
+    animation: none;
+  }
+
+  &:first-child &__content {
+    animation: none;
+  }
+
+  &:nth-last-child(2) &__content {
+    transform: translate(-25%, 0);
+  }
+}
+
+@keyframes sidebarWrapperAppear {
+  from {
+    background-color: rgba(0, 0, 0, 0.0);
+  }
+}
+
+@keyframes sidebarWrapperContentAppear {
+  from {
+    transform: translate(100%, 0);
+  }
+}
