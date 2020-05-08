@@ -42,8 +42,8 @@ export default function pollOption({ quiz, multiple, option, answered, initialVo
     svgEl('svg', { width: 300, height: 30, class: 'pollOption__line' }, [
       path = svgEl('path', { d: 'M20 8 v 3.5 a 13 13 0 0 0 13 13 H 300' }),
     ]),
-    checkbox,
     percentage,
+    checkbox,
     answer,
     span`.pollOption__text`(text(option.text)),
   );

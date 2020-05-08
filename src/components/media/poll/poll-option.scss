@@ -28,6 +28,8 @@
     text-align: center;
     transition: opacity 0.3s;
     opacity: 0;
+    justify-self: end;
+    cursor: default;
   }
 
   &__checkbox {
@@ -82,4 +84,9 @@
   &__percentage.-answered {
     opacity: 1;
   }
+}
+
+.checkbox__input:checked + .checkbox__box {
+  border-color: var(--accent-color);
+  background: var(--accent-color);
 }
