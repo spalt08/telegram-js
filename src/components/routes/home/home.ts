@@ -1,8 +1,9 @@
 import { div } from 'core/html';
 import { useObservable, getInterface } from 'core/hooks';
 import { main, RightSidebarPanel } from 'services';
+import sidebar from 'components/sidebar/sidebar';
+import { withContextMenu } from 'components/global_context_menu';
 import messages from './messages';
-import leftSidebar from './left_sidebar/left_sidebar';
 import rightSidebar from './right_sidebar/right_sidebar';
 import './home.scss';
 
@@ -16,7 +17,7 @@ export default function home() {
   const rightSidebarWrapper = div`.home__right_sidebar`(rightSidebarElement);
 
   const container = div`.home`(
-    leftSidebar({ className: 'home__left_sidebar' }),
+    sidebar({ kind: 'left', initial: 'dialogs' }),
     messages({ className: 'home__content' }),
     rightSidebarWrapper,
   );
@@ -27,5 +28,5 @@ export default function home() {
     rightSidebarWrapper.classList.toggle('visible', panel !== RightSidebarPanel.None);
   });
 
-  return container;
+  return withContextMenu(container);
 }

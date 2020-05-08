@@ -1,11 +1,13 @@
 /* eslint-disable import/no-extraneous-dependencies */
 
 import { StoryContext, StoryFn } from '@storybook/addons';
-import { triggerMountRecursive } from 'core/dom';
+import { triggerMountRecursive, unmount, mount } from 'core/dom';
 import { div } from 'core/html';
 import chamomile from 'assets/chamomile-blurred.jpg';
 import popup from 'components/popup/popup';
 import 'components/routes/home/home.scss';
+import { BehaviorSubject } from 'rxjs';
+import { materialSpinner } from 'components/icons';
 
 export function withMountTrigger(getStory: StoryFn<Node>, context: StoryContext) {
   const element = getStory(context);
@@ -55,4 +57,18 @@ export function withChatLayout(creator: () => Node) {
       popupEl,
     )
   );
+}
+
+export function behaviourRenderer<T>(subject: BehaviorSubject<T | null>, renderer: (next: T) => Node) {
+  const loader = materialSpinner({});
+  const container = div(loader);
+
+  subject.subscribe((next) => {
+    if (next !== null) {
+      unmount(loader);
+      mount(container, renderer(next));
+    }
+  });
+
+  return container;
 }

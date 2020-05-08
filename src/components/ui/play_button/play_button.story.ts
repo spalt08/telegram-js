@@ -8,7 +8,7 @@ import { getInterface } from 'core/hooks';
 
 import playButton from './play_button';
 
-const stories = storiesOf('UI Elements | Play Audio Button', module)
+const stories = storiesOf('Layout | UI Elements / Audio', module)
   .addDecorator(withKnobs)
   .addDecorator(withMountTrigger)
   .addDecorator(centered);
@@ -30,7 +30,7 @@ const doc: Document.document = {
   ],
 };
 
-stories.add('Common Usage', () => {
+stories.add('Play Button', () => {
   const button = playButton(doc);
   buttonKnob('Download', () => {
     setTimeout(() => getInterface(button).download());

@@ -7,7 +7,7 @@ import { map } from 'rxjs/operators';
 import { div } from 'core/html';
 import menuAndBack from './menu_and_back';
 
-const stories = storiesOf('UI Elements | Icons', module)
+const stories = storiesOf('Layout | UI Elements / Icons', module)
   .addDecorator(knobs.withKnobs)
   .addDecorator(withMountTrigger)
   .addDecorator(centered);

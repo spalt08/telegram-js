@@ -25,3 +25,5 @@ export { default as playButton } from './play_button/play_button';
 export { BubbleInterface, default as bubble } from './bubble/bubble';
 export { MessageInfoInterface, default as messageInfo } from './message_info/message_info';
 export { default as roundButton } from './round_button/round_button';
+export { default as heading } from './heading/heading';
+export { default as contextMenu, ContextMenuOption } from './context_menu/context_menu';

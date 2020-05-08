@@ -7,7 +7,7 @@ import { parseRange } from 'helpers/stream';
 import { createNotification, respond } from './extensions/context';
 import { load, save } from './extensions/db';
 import { fetchRequest } from './extensions/files';
-import { fetchLocation } from './extensions/utils';
+import { fetchLocation, fetchTGS } from './extensions/utils';
 import { fetchStreamRequest } from './extensions/stream';
 
 type ExtendedWorkerScope = {
@@ -106,9 +106,6 @@ function processWindowMessage(msg: WindowMessage, source: Client | MessagePort |
 ctx.addEventListener('install', (event: ExtendableEvent) => {
   log('service worker is installing');
 
-  self.addEventListener('offline', (e) => console.log('install offline', e));
-  self.addEventListener('online', (e) => console.log('install offline', e));
-
   event.waitUntil(
     Promise.all([
       initNetwork(),
@@ -122,9 +119,6 @@ ctx.addEventListener('install', (event: ExtendableEvent) => {
  */
 ctx.addEventListener('activate', (event) => {
   log('service worker activating', ctx);
-
-  self.addEventListener('offline', (e) => console.log('offline', e));
-  self.addEventListener('online', (e) => console.log('offline', e));
 
   if (!ctx.network) initNetwork();
   if (!ctx.cache) initCache();
@@ -175,6 +169,7 @@ ctx.addEventListener('fetch', (event: FetchEvent): void => {
     }
 
     default:
-      event.respondWith(fetch(event.request.url));
+      if (url && url.indexOf('.tgs') > -1) event.respondWith(fetchTGS(url));
+      else event.respondWith(fetch(event.request.url));
   }
 });

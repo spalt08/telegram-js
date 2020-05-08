@@ -1,8 +1,7 @@
 import lottie, { AnimationItem } from 'lottie-web';
 import loadLottie from 'lazy-modules/lottie';
-import * as utils from 'client/utils';
 import { div } from 'core/html';
-import { useInterface } from 'core/hooks';
+import { useInterface, useOnMount } from 'core/hooks';
 import { watchVisibility } from 'core/dom';
 
 interface Props {
@@ -12,17 +11,19 @@ interface Props {
   loop?: boolean,
 }
 
+type AnimationHandler = AnimationItem & { currentFrame: number };
+
 export default function tgs({ src, className, autoplay = true, loop = false }: Props) {
-  let animation: AnimationItem & { currentFrame: number} | undefined;
+  let animation: AnimationHandler | undefined;
   let isVisible = false;
   let shouldPlay = autoplay;
 
   const container = div({ className });
 
-  if (typeof src === 'string') {
+  useOnMount(container, () => {
     Promise.all([
       loadLottie(),
-      new Promise((resolve) => utils.loadTgs(src, resolve)),
+      fetch(src).then((res) => res.json()),
     ]).then(([lottiePlayer, animationData]: [typeof lottie, any]) => {
       animation = lottiePlayer.loadAnimation({
         container,
@@ -30,9 +31,9 @@ export default function tgs({ src, className, autoplay = true, loop = false }: P
         animationData,
         autoplay: isVisible && shouldPlay,
         renderer: 'canvas',
-      }) as AnimationItem & { currentFrame: number};
+      }) as AnimationHandler;
     });
-  }
+  });
 
   watchVisibility(container, (_isVisible) => {
     isVisible = _isVisible;

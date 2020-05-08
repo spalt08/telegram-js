@@ -22,6 +22,11 @@ export interface TaskPayloadMap {
     location: InputFileLocation,
     options: DownloadOptions,
   },
+  // storybook
+  'url_map': {
+    url: string,
+    map: string,
+  }
 }
 
 /**

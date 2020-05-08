@@ -34,7 +34,6 @@ export default function photoRenderer(photo: Photo.photo | Document.document, op
   // diplay thumbnail
   if (thumb) {
     hasCached(src, (exists) => {
-      console.log('cache', src, exists);
       if (exists) return;
       if (!thumbSrc) thumbSrc = getThumbnail((photo._ === 'photo' ? photo.sizes : photo.thumbs) ?? []);
 

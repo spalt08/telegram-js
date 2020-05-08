@@ -8,7 +8,7 @@ import { div } from 'core/html';
 import { getInterface } from 'core/hooks';
 import searchInput from './search_input';
 
-const stories = storiesOf('UI Elements | Search Input', module)
+const stories = storiesOf('Layout | UI Elements / Inputs', module)
   .addDecorator(knobs.withKnobs)
   .addDecorator(withMountTrigger)
   .addDecorator(centered);
@@ -24,7 +24,7 @@ const input = searchInput({
 });
 const element = div(input);
 
-stories.add('Common', () => {
+stories.add('Search', () => {
   getInterface(input).value = knobs.text('Initial value', 'A very long long long long text');
   placeholder.next(knobs.text('Placeholder', 'Search'));
   isLoading.next(knobs.boolean('Loading', false));

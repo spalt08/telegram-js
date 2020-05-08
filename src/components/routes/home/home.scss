@@ -12,20 +12,6 @@
     margin: 0 auto;
   }
 
-  &__left_sidebar {
-    width: 26%;
-    max-width: 420px;
-    min-width: 360px;
-    min-height: 0;
-    max-height: 100%;
-    border-right: 1px solid #EDEEF0;
-
-    @include respond-to(small) {
-      width: 100%;
-      max-width: 100%;
-    }
-  }
-
   &__content {
     flex: 1 50%;
     overflow: hidden;

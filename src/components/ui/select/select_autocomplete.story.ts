@@ -3,17 +3,18 @@ import { storiesOf } from '@storybook/html';
 import centered from '@storybook/addon-centered/html';
 import { array, text, withKnobs } from '@storybook/addon-knobs';
 import { action } from '@storybook/addon-actions';
-
+import { withMountTrigger } from 'storybook/decorators';
 import country, { Country } from 'const/country';
 import { div, text as textNode } from 'core/html';
 import emoji from '../emoji/emoji';
 import selectAutoComplete from './select_autocomplete';
 
-const stories = storiesOf('UI Elements | Select', module)
+const stories = storiesOf('Layout | UI Elements / Inputs / Select', module)
   .addDecorator(withKnobs)
+  .addDecorator(withMountTrigger)
   .addDecorator(centered);
 
-stories.add('Common Usage', () => (
+stories.add('Common', () => (
   selectAutoComplete({
     label: text('Label', 'Select fruit'),
     selected: 0,

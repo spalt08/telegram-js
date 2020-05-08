@@ -54,8 +54,7 @@ navigator.serviceWorker.addEventListener('message', (event) => {
   }
 });
 
-function resendPending(e: any) {
-  console.log('release pending', e);
+function resendPending() {
   if (navigator.serviceWorker.controller) {
     for (let i = 0; i < pending.length; i++) navigator.serviceWorker.controller.postMessage(pending[i]);
     pending = [];
