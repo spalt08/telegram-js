@@ -7,7 +7,7 @@ import { parseRange } from 'helpers/stream';
 import { createNotification, respond } from './extensions/context';
 import { load, save } from './extensions/db';
 import { fetchRequest } from './extensions/files';
-import { fetchLocation } from './extensions/utils';
+import { fetchLocation, fetchTGS } from './extensions/utils';
 import { fetchStreamRequest } from './extensions/stream';
 
 type ExtendedWorkerScope = {
@@ -169,6 +169,7 @@ ctx.addEventListener('fetch', (event: FetchEvent): void => {
     }
 
     default:
-      event.respondWith(fetch(event.request.url));
+      if (url && url.indexOf('.tgs') > -1) event.respondWith(fetchTGS(url));
+      else event.respondWith(fetch(event.request.url));
   }
 });
