@@ -23,8 +23,6 @@ export default class MainService {
   /** State of sidebar visibility */
   rightSidebarPanel = new BehaviorSubject(RightSidebarPanel.None);
 
-  contextMenuDelegate = new BehaviorSubject<ContextMenuOption[]>([]);
-
   /** Popup Context */
   popupCtx: any = {};
 

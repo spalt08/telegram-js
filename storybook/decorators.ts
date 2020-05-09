@@ -61,10 +61,8 @@ triggerMountRecursive(popupEl);
 export function withChatLayout(creator: () => Node) {
   return (
     div`.home`(
-      div`.messages`(
-        div`.messages__history`(
-          creator(),
-        ),
+      div`.history`(
+        creator(),
       ),
       popupEl,
     )

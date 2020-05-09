@@ -14,6 +14,8 @@ import type { SidebarComponentProps } from '../sidebar';
 import './dialogs.scss';
 
 export default function dialogs({ onNavigate }: SidebarComponentProps) {
+  let container: HTMLElement;
+
   // fetch dialogs
   service.updateDialogs();
 
@@ -61,12 +63,14 @@ export default function dialogs({ onNavigate }: SidebarComponentProps) {
   });
 
   const writeButton = div`.dialogs__write`({ onClick: (event: MouseEvent) => {
-    getInterface(newMessageMenu).toggle();
-    getInterface(buttonMenu).close();
+    if (buttonMenu.parentElement) getInterface(buttonMenu).close();
+    if (newMessageMenu.parentElement) getInterface(newMessageMenu).close();
+    else mount(container, newMessageMenu);
+
     event.stopPropagation();
   } }, icons.newchatFilled());
 
-  listen(writeButton, 'transitionstart', () => getInterface(newMessageMenu).close());
+  // listen(writeButton, 'transitionstart', () => getInterface(newMessageMenu).close());
 
   const listEl = new VirtualizedList({
     className: 'dialogs',
@@ -136,17 +140,17 @@ export default function dialogs({ onNavigate }: SidebarComponentProps) {
   const handleButtonClick = (event: MouseEvent) => {
     if (isSearchActive.value) isSearchActive.next(false);
     else {
-      getInterface(buttonMenu).toggle();
-      getInterface(newMessageMenu).close();
-    }
+      if (newMessageMenu.parentElement) getInterface(newMessageMenu).close();
+      if (buttonMenu.parentElement) getInterface(buttonMenu).close();
+      else mount(container, buttonMenu);
 
-    event.stopPropagation();
+      event.stopPropagation();
+    }
   };
 
   return (
-    div`.dialogs`(
+    container = div`.dialogs`(
       div`.dialogs__head`(
-        buttonMenu,
         roundButton(
           {
             className: 'dialogs__head_button',
@@ -158,7 +162,6 @@ export default function dialogs({ onNavigate }: SidebarComponentProps) {
       ),
       div`.dialogs__body`(dialogsLayer),
       writeButton,
-      newMessageMenu,
     )
   );
 }

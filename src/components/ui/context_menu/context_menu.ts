@@ -1,7 +1,6 @@
 import { div, text } from 'core/html';
-import { MaybeObservable } from 'core/types';
-import { useMaybeObservable, useOutsideEvent, useInterface } from 'core/hooks';
-import { mount, unmountChildren } from 'core/dom';
+import { useOutsideEvent, useInterface } from 'core/hooks';
+import { mount, listen, unmount } from 'core/dom';
 import './context_menu.scss';
 
 export type ContextMenuOption = {
@@ -14,43 +13,35 @@ type Props = {
   className?: string,
   opened?: boolean,
   onClose?: () => void,
-  options: MaybeObservable<ContextMenuOption[]>,
+  options: ContextMenuOption[],
 };
 
-export default function contextMenu({ className, options, onClose, opened = false }: Props) {
+export default function contextMenu({ className, options, onClose }: Props) {
   const container = div`.contextMenu${className}`();
 
-  const open = () => container.classList.add('-opened');
-  const close = (event?: MouseEvent | any) => {
-    container.classList.remove('-opened');
+  const close = () => {
     if (onClose) onClose();
-    if (event && event.preventDefault) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-  };
-  const toggle = () => {
-    if (container.classList.contains('-opened')) close();
-    else open();
+    container.classList.add('-closing');
   };
 
-  useMaybeObservable(container, options, (items) => {
-    unmountChildren(container);
+  for (let i = 0; i < options.length; i++) {
+    const { icon, label, onClick } = options[i];
+    const element = div`.contextMenu__item`({ onClick: () => { close(); onClick(); } },
+      div`.contextMenu__icon`(icon()),
+      div`.contextMenu__label`(text(label)),
+    );
 
-    for (let i = 0; i < items.length; i++) {
-      const { icon, label, onClick } = items[i];
-      const element = div`.contextMenu__item`({ onClick: () => { close(); onClick(); } },
-        div`.contextMenu__icon`(icon()),
-        div`.contextMenu__label`(text(label)),
-      );
-
-      mount(container, element);
-    }
-  });
+    mount(container, element);
+  }
 
   useOutsideEvent(container, 'click', close);
 
-  if (opened) open();
+  listen(container, 'transitionend', () => {
+    if (container.classList.contains('-closing')) {
+      unmount(container);
+      container.classList.remove('-closing');
+    }
+  });
 
-  return useInterface(container, { close, open, toggle });
+  return useInterface(container, { close });
 }

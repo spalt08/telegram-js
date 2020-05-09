@@ -3,17 +3,18 @@
 .sidebar {
   max-width: 420px;
   min-width: 360px;
-  min-height: 0;
-  max-height: 100%;
   background-color: #FFFFFF;
   height: 100%;
   position: relative;
   overflow: hidden;
-  border-right: 1px solid #EDEEF0;
 
-  @include respond-to(small) {
-    width: 100%;
-    max-width: 100%;
+  &.-left {
+    border-right: 1px solid #EDEEF0;
+
+    @include respond-to(small) {
+      width: 100%;
+      max-width: 100%;
+    }
   }
 
   &.-poping-state .sidebarWrapper {
