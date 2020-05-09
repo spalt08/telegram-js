@@ -1,23 +1,23 @@
 import { map } from 'rxjs/operators';
 import { div, text } from 'core/html';
-import { main as mainService, messageSearch, RightSidebarPanel } from 'services';
+import { message, messageSearch } from 'services';
 import { isSearchRequestEmpty } from 'services/message_search/message_search_session';
-import { Peer } from 'mtproto-js';
 import * as icons from 'components/icons';
 import { roundButton, searchInput, VirtualizedList } from 'components/ui';
 import { getInterface, useToBehaviorSubject } from 'core/hooks';
 import { mount, watchVisibility } from 'core/dom';
 import { peerMessageToId } from 'helpers/api';
 import { foundMessage } from 'components/sidebar';
-import './search_panel.scss';
+import type { SidebarComponentProps } from '../sidebar';
+import './search.scss';
 
-export default function searchPanel(peer: Peer) {
-  messageSearch.setPeer(peer);
+export default function search({ onBack }: SidebarComponentProps) {
+  if (message.activePeer.value) messageSearch.setPeer(message.activePeer.value);
 
   const rootEl = div`.messagesSearch`();
   const [resultIdsSubject] = useToBehaviorSubject(
     rootEl,
-    messageSearch.result.pipe(map((result) => result.ids.map((id) => peerMessageToId(peer, id)))),
+    messageSearch.result.pipe(map((result) => result.ids.map((id) => peerMessageToId(message.activePeer.value!, id)))),
     [],
   );
   const resultQueryObservable = messageSearch.result.pipe(map((result) => result.request));
@@ -32,12 +32,14 @@ export default function searchPanel(peer: Peer) {
   });
 
   // If the element isn't in layout, the focus call will be ignored
-  const stopWatchingVisibility = watchVisibility(searchInputEl, (isVisible) => {
-    if (isVisible) {
-      stopWatchingVisibility();
-      getInterface(searchInputEl).focus();
-    }
-  });
+  // temp: blocks sidebar transition
+  // to do: fix later
+  // const stopWatchingVisibility = watchVisibility(searchInputEl, (isVisible) => {
+  //   if (isVisible) {
+  //     stopWatchingVisibility();
+  //     getInterface(searchInputEl).focus();
+  //   }
+  // });
 
   const resultList = new VirtualizedList({
     className: 'messagesSearch__messages',
@@ -56,7 +58,7 @@ export default function searchPanel(peer: Peer) {
   mount(rootEl, div`.messagesSearch__header`(
     roundButton({
       className: 'messagesSearch__close',
-      onClick: () => mainService.setRightSidebarPanel(RightSidebarPanel.None),
+      onClick: onBack,
     }, icons.close()),
     searchInputEl,
   ));

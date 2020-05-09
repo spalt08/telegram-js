@@ -1,13 +1,16 @@
 /* eslint-disable import/no-extraneous-dependencies */
 
 import { StoryContext, StoryFn } from '@storybook/addons';
-import { number } from '@storybook/addon-knobs';
+import { number, select } from '@storybook/addon-knobs';
 import { triggerMountRecursive, unmount, mount } from 'core/dom';
 import { div } from 'core/html';
 import chamomile from 'assets/chamomile-blurred.jpg';
 import popup from 'components/popup/popup';
 import { BehaviorSubject } from 'rxjs';
 import { materialSpinner } from 'components/icons';
+import { peers } from 'mocks/peer';
+import { peerToId, peerIdToPeer } from 'helpers/api';
+import { message } from 'services';
 import 'components/home.scss';
 import 'styles/global.scss';
 
@@ -83,7 +86,15 @@ export function behaviourRenderer<T>(subject: BehaviorSubject<T | null>, rendere
   return container;
 }
 
-
 export function withKnobWidth(creator: () => Node) {
   return div({ style: { width: `${number('Width', 400)}px` } }, creator());
+}
+
+export function withKnobPeer(creator: () => Node) {
+  const peerIds = peers.map(peerToId);
+  const peer = select('Peer', peerIds, peerIds[0]);
+
+  message.activePeer.next(peerIdToPeer(peer));
+
+  return creator();
 }

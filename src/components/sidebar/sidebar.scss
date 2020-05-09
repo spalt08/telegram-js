@@ -1,12 +1,20 @@
 @import '~styles/variables.scss';
 
 .sidebar {
+  width: 26vw;
   max-width: 420px;
-  min-width: 360px;
+  min-width: 260px;
   background-color: #FFFFFF;
   height: 100%;
   position: relative;
   overflow: hidden;
+  transition: .2s ease-out;
+
+  & > * {
+    width: 26vw;
+    max-width: 420px;
+    min-width: 260px;
+  }
 
   &.-left {
     border-right: 1px solid #EDEEF0;
@@ -15,6 +23,15 @@
       width: 100%;
       max-width: 100%;
     }
+  }
+
+  &.-right {
+    border-left: 1px solid #EDEEF0;
+
+    // performance tweak
+    will-change: width;
+    z-index: 0;
+    transition: translate3d(0, 0, 0);
   }
 
   &.-poping-state .sidebarWrapper {
@@ -27,6 +44,11 @@
     & .sidebarWrapper__content {
       transform: translate(100%, 0);
     }
+  }
+
+  &.-hided {
+    width: 0;
+    min-width: 0;
   }
 
   & .sidebarHeading {

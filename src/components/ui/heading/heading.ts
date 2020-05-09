@@ -1,16 +1,25 @@
 import { div, h3, text } from 'core/html';
-import { back } from 'components/icons';
 import roundButton from '../round_button/round_button';
 import './heading.scss';
 
-type Props = {
-  title: string,
-  onClick: () => void,
+type HeadingIcon = {
+  icon: () => SVGSVGElement,
+  position: 'left' | 'right',
+  onClick: (event?: MouseEvent) => void,
 };
 
-export default function heading({ title, onClick }: Props) {
+type Props = {
+  title: string,
+  buttons: HeadingIcon[],
+};
+
+export default function heading({ title, buttons }: Props) {
+  const leftBtns = buttons.filter(({ position }) => position === 'left');
+  const rightBtns = buttons.filter(({ position }) => position === 'right');
+
   return div`.sidebarHeading`(
-    roundButton({ className: 'sidebarHeading__icon-left', onClick }, back()),
+    ...leftBtns.map(({ icon, onClick }) => roundButton({ className: 'sidebarHeading__icon-left', onClick }, icon())),
     h3(text(title)),
+    ...rightBtns.map(({ icon, onClick }) => roundButton({ className: 'sidebarHeading__icon-left', onClick }, icon())),
   );
 }

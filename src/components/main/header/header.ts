@@ -1,10 +1,10 @@
-import { message, main, RightSidebarPanel } from 'services';
-import { useObservable } from 'core/hooks';
+import { message, main } from 'services';
+import { useObservable, getInterface } from 'core/hooks';
 import { div } from 'core/html';
-import { unmountChildren, mount } from 'core/dom';
+import { unmountChildren, mount, listen } from 'core/dom';
 import { profileAvatar, profileTitle } from 'components/profile';
-import { more, search } from 'components/icons';
-import { peerFullStatus, roundButton, typingIndicator, quote, ripple } from 'components/ui';
+import * as icons from 'components/icons';
+import { peerFullStatus, roundButton, typingIndicator, quote, ripple, contextMenu } from 'components/ui';
 import { pinnedMessageCache } from 'cache';
 import { peerToId } from 'helpers/api';
 import './header.scss';
@@ -28,6 +28,7 @@ export default function header() {
       ),
     );
 
+    listen(profile, 'click', () => main.openSidebar('info'));
     mount(container, profile);
 
     const pinnedMessage = div`.header__pinned`();
@@ -47,17 +48,30 @@ export default function header() {
       }
     });
 
+    const headerContextMenu = contextMenu({
+      className: 'header__context-menu',
+      options: [
+        { icon: icons.info, label: 'Info', onClick: () => main.openSidebar('info') },
+        { icon: icons.document, label: 'Shared Media', onClick: () => main.openSidebar('info') },
+        { icon: icons.mute, label: 'Mute', onClick: () => {} },
+        { icon: icons.archive, label: 'Archive', onClick: () => {} },
+        { icon: icons.del, label: 'Delete and Leave', onClick: () => {} },
+      ],
+    });
+
     const actions = div`.header__actions`(
       roundButton({
         onClick: () => {
-          main.setRightSidebarPanel(RightSidebarPanel.Search);
+          main.openSidebar('search');
         },
-      }, search()),
+      }, icons.search()),
       roundButton({
-        onClick: () => {
-          main.setRightSidebarPanel(RightSidebarPanel.Info);
+        onClick: (event: MouseEvent) => {
+          if (headerContextMenu.parentElement) getInterface(headerContextMenu).close();
+          else mount(container, headerContextMenu);
+          event.stopPropagation();
         },
-      }, more()),
+      }, icons.more()),
     );
 
     mount(container, actions);

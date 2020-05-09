@@ -8,4 +8,5 @@ const stories = storiesOf('Layout | Sidebar / Overall', module)
   .addDecorator(withMountTrigger)
   .addDecorator(withChatLayout);
 
-stories.add('Left', () => sidebar({ kind: 'left', initial: 'dialogs', className: '-left' }));
+stories.add('Left', () => sidebar({ initial: 'dialogs', className: '-left' }));
+stories.add('Right', () => sidebar({ initial: 'info', className: '-right' }));
