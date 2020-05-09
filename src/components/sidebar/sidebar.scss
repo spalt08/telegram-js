@@ -1,9 +1,10 @@
 @import '~styles/variables.scss';
 
 .sidebar {
-  width: 26vw;
-  max-width: 420px;
+  width: 25vw;
+  max-width: 380px;
   min-width: 260px;
+  flex-basis: 25vw;
   background-color: #FFFFFF;
   height: 100%;
   position: relative;
@@ -11,8 +12,9 @@
   transition: .2s ease-out;
 
   & > * {
-    width: 26vw;
-    max-width: 420px;
+    width: 25vw;
+    flex-basis: 25vw;
+    max-width: 380px;
     min-width: 260px;
   }
 
@@ -49,6 +51,7 @@
   &.-hided {
     width: 0;
     min-width: 0;
+    flex-basis: 0;
   }
 
   & .sidebarHeading {

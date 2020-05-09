@@ -43,7 +43,7 @@
   }
 
   &__bubble {
-    width: 100%;
+    flex: 1 50%;
     .bubble__shadow, .bubble__background {
       transform: scale(-1, 1);
     }
