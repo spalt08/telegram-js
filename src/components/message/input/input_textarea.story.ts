@@ -7,7 +7,7 @@ import { div } from 'core/html';
 import messageTextarea from './input_textarea';
 
 // Stories with text
-const stories = storiesOf('Layout | Message Write', module)
+const stories = storiesOf('Layout | History / Message Write', module)
   .addDecorator(centered)
   .addDecorator(withKnobs);
 

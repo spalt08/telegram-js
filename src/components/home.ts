@@ -17,7 +17,7 @@ export default function home() {
   const rightSidebarWrapper = div`.home__right_sidebar`(rightSidebarElement);
 
   const container = div`.home`(
-    sidebar({ kind: 'left', initial: 'dialogs' }),
+    sidebar({ kind: 'left', initial: 'dialogs', className: '-left' }),
     history(),
     rightSidebarWrapper,
   );

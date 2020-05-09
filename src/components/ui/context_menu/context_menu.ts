@@ -20,6 +20,8 @@ export default function contextMenu({ className, options, onClose }: Props) {
   const container = div`.contextMenu${className}`();
 
   const close = () => {
+    if (!container.parentElement) return;
+
     if (onClose) onClose();
     container.classList.add('-closing');
   };

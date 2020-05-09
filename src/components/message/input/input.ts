@@ -17,6 +17,8 @@ import recordSendButton from './button';
 import messageShort from '../short';
 
 export default function messageInput() {
+  let inner: HTMLElement;
+
   const btn = recordSendButton({
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     onMessage: () => message.sendMessage(textarea.value),
@@ -38,8 +40,7 @@ export default function messageInput() {
     onSelectSticker: (sticker: Document.document) => message.sendMediaMessage(documentToInputMedia(sticker)),
   });
 
-  const fileInput = input({
-    className: '.msginput__file',
+  const fileInput = input`.msginput__file`({
     type: 'file',
     multiple: true,
     onChange: (event: Event) => {
@@ -58,22 +59,21 @@ export default function messageInput() {
     ],
   });
 
-  const attachIcon = div`.msginput__attach`(
-    {
-      onClick: (event: MouseEvent) => {
-        event.stopPropagation();
-        event.preventDefault();
-        getInterface(attachmentMenu).toggle();
-      },
-    },
-    icons.attach(),
-  );
+  const attachIcon = div`.msginput__attach`(icons.attach());
+
+  listen(attachIcon, 'click', (event: MouseEvent) => {
+    event.stopPropagation();
+    event.preventDefault();
+
+    if (attachmentMenu.parentElement) getInterface(attachmentMenu).close();
+    else mount(inner, attachmentMenu);
+  });
 
   const quoteCancel = div`.msginput__quote-cancel`(icons.close());
   const quoteContainer = div`.msginput__quote.hidden`();
 
   const container = div`.msginput`(
-    div`.msginput__container`(
+    inner = div`.msginput__container`(
       stickmojiPanelEl,
       bubble({ className: 'msginput__bubble -first -last' },
         quoteContainer,
@@ -84,7 +84,6 @@ export default function messageInput() {
         ),
       ),
       btn,
-      attachmentMenu,
     ),
   );
 
