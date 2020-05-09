@@ -5,9 +5,10 @@ import { triggerMountRecursive, unmount, mount } from 'core/dom';
 import { div } from 'core/html';
 import chamomile from 'assets/chamomile-blurred.jpg';
 import popup from 'components/popup/popup';
-import 'components/routes/home/home.scss';
 import { BehaviorSubject } from 'rxjs';
 import { materialSpinner } from 'components/icons';
+import 'components/home.scss';
+import 'styles/global.scss';
 
 export function withMountTrigger(getStory: StoryFn<Node>, context: StoryContext) {
   const element = getStory(context);

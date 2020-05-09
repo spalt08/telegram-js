@@ -28,7 +28,7 @@ function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
   return reversed;
 }
 
-export default function messages({ className = '' }: Props = {}) {
+export default function history({ className = '' }: Props = {}) {
   const showDownButton = new BehaviorSubject(false);
 
   const downButton = button({
@@ -148,8 +148,8 @@ export default function messages({ className = '' }: Props = {}) {
     scroll.cfg.pivotBottom = newestReached ? true : undefined;
   });
 
-  useObservable(element, service.history, (history) => itemsSubject.next(
-    service.activePeer.value ? prepareIdsList(service.activePeer.value, history.ids) : [],
+  useObservable(element, service.history, (data) => itemsSubject.next(
+    service.activePeer.value ? prepareIdsList(service.activePeer.value, data.ids) : [],
   ));
 
   useObservable(element, showSpinnerObservable, (show) => {
