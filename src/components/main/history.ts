@@ -1,8 +1,8 @@
 import binarySearch from 'binary-search';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
-import { button, div } from 'core/html';
-import { listen, mount, unmount } from 'core/dom';
+import { button, div, text } from 'core/html';
+import { mount, unmount } from 'core/dom';
 import { useObservable } from 'core/hooks';
 import { message as service, dialog as dialogService } from 'services';
 import { Direction as MessageDirection } from 'services/message/types';
@@ -12,12 +12,9 @@ import * as icons from 'components/icons';
 import messageInput from 'components/message/input/input';
 import { Peer } from 'mtproto-js';
 import { compareSamePeerMessageIds, peerMessageToId, peerToId } from 'helpers/api';
-import { messageCache, dialogCache } from 'cache';
+import { messageCache, dialogCache, chatCache } from 'cache';
 import header from './header/header';
-
-interface Props {
-  className?: string;
-}
+import './history.scss';
 
 function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
   const { length } = messageIds;
@@ -28,24 +25,11 @@ function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
   return reversed;
 }
 
-export default function history({ className = '' }: Props = {}) {
+export default function history() {
+  const welcome = div`.history__welcome`(div`.history__welcome-text`(text('Select a chat to start messaging')));
+  const container = div`.history`(welcome);
   const showDownButton = new BehaviorSubject(false);
 
-  const downButton = button({
-    className: showDownButton.pipe(
-      distinctUntilChanged(),
-      map((show) => `messages__down ${show ? '' : '-hidden'}`),
-    ),
-    style: {
-      display: service.activePeer.pipe(map((peer) => peer ? '' : 'none')),
-    },
-  }, icons.down());
-  const historySection = div`.messages__history`(downButton);
-  const element = div`.messages ${className}`(
-    header(),
-    historySection,
-    messageInput(),
-  );
   let spinner: Node | undefined;
   let scroll: VirtualizedList;
 
@@ -102,7 +86,7 @@ export default function history({ className = '' }: Props = {}) {
   }
 
   scroll = new VirtualizedList({
-    className: 'messages__list',
+    className: 'history__list',
     items: itemsSubject,
     pivotBottom: true,
     threshold: 2,
@@ -122,14 +106,41 @@ export default function history({ className = '' }: Props = {}) {
     },
   });
 
-  mount(historySection, scroll.container);
+  const downButton = button({
+    className: showDownButton.pipe(
+      distinctUntilChanged(),
+      map((show) => `history__down ${show ? '' : '-hidden'}`),
+    ),
+    onClick: () => service.activePeer.value && service.selectPeer(service.activePeer.value, Infinity),
+  }, icons.down());
 
-  useObservable(element, service.activePeer, () => {
-    scroll.clear();
+  const messageInputEl = messageInput();
+  const headerEl = header();
+  const historySection = div`.history__content`(scroll.container, downButton);
+
+  useObservable(container, service.activePeer, (next) => {
+    if (next) {
+      if (welcome.parentElement) unmount(welcome);
+      if (!headerEl.parentElement) mount(container, headerEl);
+      if (!historySection.parentElement) mount(container, historySection);
+      else scroll.clear();
+
+      if (!messageInputEl.parentElement) mount(container, messageInputEl);
+
+      if (next && next._ === 'peerChannel') {
+        const chat = chatCache.get(next.channel_id);
+        if (chat && chat._ === 'channel' && !chat.megagroup) {
+          unmount(messageInputEl);
+          return;
+        }
+      }
+
+      if (!messageInputEl.parentElement) mount(container, messageInputEl);
+    }
   });
 
   // Handle message focus
-  useObservable(element, service.focusMessage, (focus) => {
+  useObservable(container, service.focusMessage, (focus) => {
     if (service.activePeer.value) {
       scroll.cfg.highlightFocused = focus.highlight || false;
       scroll.focus(
@@ -144,24 +155,22 @@ export default function history({ className = '' }: Props = {}) {
   });
 
   // Makes the list stick to bottom when it shows the newest messages
-  useObservable(element, service.history, ({ newestReached }) => {
+  useObservable(container, service.history, ({ newestReached }) => {
     scroll.cfg.pivotBottom = newestReached ? true : undefined;
   });
 
-  useObservable(element, service.history, (data) => itemsSubject.next(
+  useObservable(container, service.history, (data) => itemsSubject.next(
     service.activePeer.value ? prepareIdsList(service.activePeer.value, data.ids) : [],
   ));
 
-  useObservable(element, showSpinnerObservable, (show) => {
+  useObservable(container, showSpinnerObservable, (show) => {
     if (show && !spinner) {
-      mount(historySection, spinner = sectionSpinner({ className: 'messages__spinner', useBackdrop: true }));
+      mount(historySection, spinner = sectionSpinner({ className: 'history__spinner', useBackdrop: true }));
     } else if (!show && spinner) {
       unmount(spinner);
       spinner = undefined;
     }
   });
 
-  listen(downButton, 'click', () => service.activePeer.value && service.selectPeer(service.activePeer.value, Infinity));
-
-  return element;
+  return container;
 }
