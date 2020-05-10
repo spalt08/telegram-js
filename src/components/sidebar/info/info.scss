@@ -1,0 +1,10 @@
+.infoSidebar {
+  position: relative;
+
+  &__context-menu {
+    position: absolute;
+    right: 14px;
+    top: 60px;
+    transform-origin: right top;
+  }
+}

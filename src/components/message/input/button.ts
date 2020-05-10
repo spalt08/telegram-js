@@ -51,12 +51,10 @@ export default function recordSendButton({ onMessage, onAudio }: Props) {
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then(() => {
           isRecording = true;
-          mount(container, cancelButton, button);
-          mount(container, recordProgress, cancelButton);
           unmount(toolTip);
           button.classList.remove('-record');
+          container.classList.add('-recording');
           requestAnimationFrame(updateTimer);
-
           // todo handle stream
         })
         .catch(() => mount(container, toolTip));
@@ -67,12 +65,20 @@ export default function recordSendButton({ onMessage, onAudio }: Props) {
     onAudio();
   });
 
+  listen(container, 'transitionend', () => {
+    if (!container.classList.contains('-recording') || cancelButton.parentElement) return;
+
+    mount(container, cancelButton, button);
+    mount(container, recordProgress, cancelButton);
+  });
+
   listen(cancelButton, 'click', () => {
     isRecording = false;
     startTime = 0;
-    unmount(cancelButton);
     unmount(recordProgress);
+    unmount(cancelButton);
     button.classList.add('-record');
+    container.classList.remove('-recording');
   });
 
   return useInterface(container, {

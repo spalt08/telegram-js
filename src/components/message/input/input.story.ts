@@ -11,7 +11,7 @@ import { messageToId } from 'helpers/api';
 import messageInput from './input';
 
 // Stories with text
-const stories = storiesOf('Layout | Message Write', module)
+const stories = storiesOf('Layout | History / Message Write', module)
   .addDecorator(centered)
   .addDecorator(withKnobs)
   .addDecorator(withMountTrigger)

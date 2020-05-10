@@ -1,19 +1,39 @@
 @import '~styles/variables.scss';
 
 .sidebar {
-  max-width: 420px;
-  min-width: 360px;
-  min-height: 0;
-  max-height: 100%;
+  width: 25vw;
+  max-width: 380px;
+  min-width: 260px;
+  flex-basis: 25vw;
   background-color: #FFFFFF;
   height: 100%;
   position: relative;
   overflow: hidden;
-  border-right: 1px solid #EDEEF0;
+  transition: .2s ease-out;
 
-  @include respond-to(small) {
-    width: 100%;
-    max-width: 100%;
+  & > * {
+    width: 25vw;
+    flex-basis: 25vw;
+    max-width: 380px;
+    min-width: 260px;
+  }
+
+  &.-left {
+    border-right: 1px solid #EDEEF0;
+
+    @include respond-to(small) {
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+
+  &.-right {
+    border-left: 1px solid #EDEEF0;
+
+    // performance tweak
+    will-change: width;
+    z-index: 0;
+    transition: translate3d(0, 0, 0);
   }
 
   &.-poping-state .sidebarWrapper {
@@ -26,6 +46,12 @@
     & .sidebarWrapper__content {
       transform: translate(100%, 0);
     }
+  }
+
+  &.-hided {
+    width: 0;
+    min-width: 0;
+    flex-basis: 0;
   }
 
   & .sidebarHeading {

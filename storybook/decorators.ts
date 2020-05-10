@@ -1,13 +1,18 @@
 /* eslint-disable import/no-extraneous-dependencies */
 
 import { StoryContext, StoryFn } from '@storybook/addons';
+import { number, select } from '@storybook/addon-knobs';
 import { triggerMountRecursive, unmount, mount } from 'core/dom';
 import { div } from 'core/html';
 import chamomile from 'assets/chamomile-blurred.jpg';
 import popup from 'components/popup/popup';
-import 'components/routes/home/home.scss';
 import { BehaviorSubject } from 'rxjs';
 import { materialSpinner } from 'components/icons';
+import { peers } from 'mocks/peer';
+import { peerToId, peerIdToPeer } from 'helpers/api';
+import { message } from 'services';
+import 'components/home.scss';
+import 'styles/global.scss';
 
 export function withMountTrigger(getStory: StoryFn<Node>, context: StoryContext) {
   const element = getStory(context);
@@ -25,6 +30,16 @@ export function centered(getStory: StoryFn<Node>, context?: StoryContext) {
 
   if (!centeredWrappers.has(next)) {
     centeredWrappers.set(next, div`.storybook__static-centered`(next));
+  }
+
+  return centeredWrappers.get(next)!;
+}
+
+export function fullscreen(getStory: StoryFn<Node>, context?: StoryContext) {
+  const next = getStory(context);
+
+  if (!centeredWrappers.has(next)) {
+    centeredWrappers.set(next, div`.storybook__static-full`(next));
   }
 
   return centeredWrappers.get(next)!;
@@ -49,10 +64,8 @@ triggerMountRecursive(popupEl);
 export function withChatLayout(creator: () => Node) {
   return (
     div`.home`(
-      div`.messages`(
-        div`.messages__history`(
-          creator(),
-        ),
+      div`.history`(
+        creator(),
       ),
       popupEl,
     )
@@ -71,4 +84,17 @@ export function behaviourRenderer<T>(subject: BehaviorSubject<T | null>, rendere
   });
 
   return container;
+}
+
+export function withKnobWidth(creator: () => Node) {
+  return div({ style: { width: `${number('Width', 400)}px` } }, creator());
+}
+
+export function withKnobPeer(creator: () => Node) {
+  const peerIds = peers.map(peerToId);
+  const peer = select('Peer', peerIds, peerIds[0]);
+
+  message.activePeer.next(peerIdToPeer(peer));
+
+  return creator();
 }

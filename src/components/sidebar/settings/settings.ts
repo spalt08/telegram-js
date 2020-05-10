@@ -1,12 +1,15 @@
 import { div } from 'core/html';
 import { heading } from 'components/ui';
+import * as icons from 'components/icons';
 import type { SidebarComponentProps } from '../sidebar';
-import './settings.scss';
 
 export default function settings({ onBack }: SidebarComponentProps) {
   const container = (
     div`.settingsSidebar`(
-      heading({ title: 'Settings', onClick: () => onBack && onBack() }),
+      heading({
+        title: 'Settings',
+        buttons: [{ icon: icons.back, position: 'left', onClick: () => onBack && onBack() }],
+      }),
     )
   );
 

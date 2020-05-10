@@ -7,7 +7,7 @@ import { getInterface } from 'core/hooks';
 import recordSendButton from './button';
 
 // Stories with text
-const stories = storiesOf('Layout | Message Write', module)
+const stories = storiesOf('Layout | History / Message Write', module)
   .addDecorator(centered)
   .addDecorator(withMountTrigger)
   .addDecorator(withKnobs);

@@ -5,6 +5,8 @@ import { button, withKnobs } from '@storybook/addon-knobs';
 import { centered, withMountTrigger } from 'storybook/decorators';
 import { settings, archive, group, user, savedmessages, help } from 'components/icons';
 import { getInterface } from 'core/hooks';
+import { div } from 'core/html';
+import { mount } from 'core/dom';
 import contextMenu from './context_menu';
 
 const stories = storiesOf('Layout | UI Elements', module)
@@ -24,10 +26,11 @@ const element = contextMenu({
     { icon: help, label: 'Help', onClick: action('help-click') },
   ],
 });
+const container = div(element);
 
 stories.add('Context Menu', () => {
-  button('Open', getInterface(element).open);
+  button('Open', () => mount(container, element));
   button('Close', getInterface(element).close);
 
-  return element;
+  return container;
 });

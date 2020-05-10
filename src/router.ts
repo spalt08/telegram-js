@@ -2,8 +2,9 @@ import { distinctUntilChanged, map } from 'rxjs/operators';
 import { mount, unmount } from 'core/dom';
 import { useListenWhileMounted, useObservable, useOnMount } from 'core/hooks';
 import { div } from 'core/html';
-import * as route from 'components/routes';
 import { auth, AuthStage } from 'services';
+import home from 'components/home';
+import login from 'components/login/login';
 
 /**
  * Main router handler
@@ -62,7 +63,7 @@ export class Router {
 }
 
 export const router = new Router({
-  '/': route.home,
-  '/login': route.login,
-  default: route.login,
+  '/': home,
+  '/login': login,
+  default: login,
 });

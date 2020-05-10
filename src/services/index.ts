@@ -12,7 +12,6 @@ import TopUsersService from './top_users';
 import PollsService from './polls';
 
 export { AuthStage } from './auth';
-export { RightSidebarPanel } from './main';
 
 export const main = new MainService();
 export const auth = new AuthService();
