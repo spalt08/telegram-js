@@ -88,7 +88,7 @@ export default function poll(peer: Peer, message: Message, info: HTMLElement) {
     }
     if (updatedResults.results) {
       unmountChildren(recentVoters);
-      buildRecentVotersList(results.recent_voters).forEach((avatar) => {
+      buildRecentVotersList(updatedResults.recent_voters).forEach((avatar) => {
         mount(recentVoters, avatar);
       });
       const updateMaxVoters = Math.max(...updatedResults.results.map((r) => r.voters));
