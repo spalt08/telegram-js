@@ -151,5 +151,5 @@ export function areUserStatusesEqual(status1: UserStatus | undefined, status2: U
 }
 
 export function isSelf(peer: Peer) {
-  return peer._ !== 'peerUser' || peer.user_id !== client.getUserID();
+  return peer._ === 'peerUser' && peer.user_id === client.getUserID();
 }
