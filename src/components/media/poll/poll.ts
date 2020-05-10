@@ -28,8 +28,7 @@ function pollType(pollData: Poll) {
 
 function buildRecentVotersList(userIds?: number[]) {
   if (userIds) {
-    const reversedIds = [...userIds].reverse();
-    return reversedIds.map((userId) => div`.poll__avatar-wrapper`(profileAvatar(userIdToPeer(userId))));
+    return userIds.map((userId) => div`.poll__avatar-wrapper`(profileAvatar(userIdToPeer(userId)))).reverse();
   }
   return [];
 }

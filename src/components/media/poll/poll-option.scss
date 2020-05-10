@@ -98,9 +98,9 @@
   &__line.-answered {
     opacity: 1;
   }
-}
 
-.checkbox__input:checked + .checkbox__box {
-  border-color: var(--accent-color);
-  background: var(--accent-color);
+  .checkbox__input:checked + .checkbox__box {
+    border-color: var(--accent-color);
+    background: var(--accent-color);
+  }
 }
