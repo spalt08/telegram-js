@@ -16,7 +16,7 @@ type Props = {
   voters?: PollAnswerVoters,
   maxVoters: number,
   totalVoters: number,
-  clickCallback: (reset: () => void) => void,
+  clickCallback: (selected: boolean) => void,
 };
 
 function answerIcon() {
@@ -38,7 +38,11 @@ export default function pollOption(initialProps: Props) {
   let firstAnimationCompleted = initialProps.answered;
 
   let path: SVGPathElement;
-  const checkbox = span`.pollOption__checkbox`(pollCheckbox(currProps.multipleChoice, currProps.clickCallback));
+  const checkboxEl = pollCheckbox({
+    multiple: currProps.multipleChoice,
+    clickCallback: currProps.clickCallback,
+  });
+  const checkbox = span`.pollOption__checkbox`(checkboxEl);
   const percentage = span`.pollOption__percentage`();
   const answer = answerIcon();
   const line = svgEl('svg', { width: 300, height: 30, class: 'pollOption__line' }, [
@@ -119,6 +123,7 @@ export default function pollOption(initialProps: Props) {
 
   return useInterface(container, {
     updateOption,
+    reset: () => getInterface(checkboxEl).reset(),
   });
 }
 

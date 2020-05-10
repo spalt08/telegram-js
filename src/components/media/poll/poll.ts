@@ -11,6 +11,8 @@ import pollOption, { PollOptionInterface } from './poll-option';
 import './poll.scss';
 
 const decoder = new TextDecoder();
+const encoder = new TextEncoder();
+
 function pollType(pollData: Poll) {
   if (pollData.closed) {
     return 'Final Results';
@@ -36,17 +38,23 @@ export default function poll(peer: Peer, message: Message, info: HTMLElement) {
     throw new Error('message media must be of type "messageMediaPoll"');
   }
   const { poll: pollData, results } = message.media;
-  const pollOptions = div`.poll__options`();
+  const selectedOptions = new Set<string>();
+  const pollOptions: ReturnType<typeof pollOption>[] = [];
   const totalVotersText = text('');
   const pollTypeText = text(pollType(pollData));
   const recentVoters = div`poll__recent-voters`(...buildRecentVotersList(results.recent_voters));
-  const container = div`.poll`(
-    div`.poll__question`(text(pollData.question)),
-    div`poll__info`(div`poll__type`(pollTypeText), recentVoters),
-    pollOptions,
-    span`.poll__voters`(totalVotersText),
-    info,
-  );
+  const submitOptions = async () => {
+    const optionsArray: ArrayBuffer[] = [];
+    selectedOptions.forEach((o) => optionsArray.push(encoder.encode(o).buffer));
+    await polls.sendVote(peer, message.id, optionsArray);
+    selectedOptions.clear();
+    pollOptions.forEach((po) => getInterface(po).reset());
+  };
+  const voteButton = div`.poll__vote-button.-inactive`({
+    onClick: async () => {
+      await submitOptions();
+    },
+  }, text('Vote'));
   const options = new Map<string, PollOptionInterface>();
   const answered = !!results.results && results.results.findIndex((r) => r.chosen) >= 0;
   const maxVoters = results.results ? Math.max(...results.results.map((r) => r.voters)) : 0;
@@ -65,24 +73,37 @@ export default function poll(peer: Peer, message: Message, info: HTMLElement) {
       voters,
       maxVoters,
       totalVoters: results.total_voters ?? 0,
-      clickCallback: async (reset: () => void) => {
-        await polls.sendVote(peer, message.id, [answer.option]);
-        reset();
+      clickCallback: async (selected) => {
+        if (pollData.multiple_choice) {
+          const optKey = decoder.decode(answer.option);
+          if (selected) {
+            selectedOptions.add(optKey);
+          } else {
+            selectedOptions.delete(optKey);
+          }
+          voteButton.classList.toggle('-inactive', selectedOptions.size === 0);
+        } else {
+          selectedOptions.add(decoder.decode(answer.option));
+          await submitOptions();
+        }
       },
     });
     options.set(optionKey, option);
-    mount(pollOptions, option);
+    pollOptions.push(option);
   });
 
-  const updateTotalVotersText = (totalVoters: number) => {
+  const updateTotalVotersText = (closed: boolean, totalVoters: number) => {
     totalVotersText.textContent = totalVoters > 0
       ? `${totalVoters} voter${totalVoters > 1 ? 's' : ''}`
-      : 'No voters yet';
+      : `No voters${closed ? '' : ' yet'}`;
+  };
+  const updateVoteButtonText = (isAnswered: boolean) => {
+    voteButton.textContent = isAnswered ? 'View Results' : 'Vote';
   };
 
   const updatePollResults = (updatedPoll: Poll | undefined, updatedResults: PollResults) => {
     const updateTotalVoters = updatedResults.total_voters ?? 0;
-    updateTotalVotersText(updateTotalVoters);
+    updateTotalVotersText(updatedPoll?.closed ?? false, updateTotalVoters);
     if (updatedPoll) {
       pollTypeText.textContent = pollType(updatedPoll);
     }
@@ -93,6 +114,7 @@ export default function poll(peer: Peer, message: Message, info: HTMLElement) {
       });
       const updateMaxVoters = Math.max(...updatedResults.results.map((r) => r.voters));
       const updateAnswered = updatedResults.results.findIndex((r) => r.chosen) >= 0;
+      updateVoteButtonText(updateAnswered);
       updatedResults.results.forEach((r) => {
         const op = options.get(decoder.decode(r.option));
         if (op) {
@@ -108,7 +130,16 @@ export default function poll(peer: Peer, message: Message, info: HTMLElement) {
     }
   };
 
-  updateTotalVotersText(results.total_voters ?? 0);
+  updateTotalVotersText(pollData.closed ?? false, results.total_voters ?? 0);
+  updateVoteButtonText(answered);
+
+  const container = div`.poll`(
+    div`.poll__question`(text(pollData.question)),
+    div`poll__info`(div`poll__type`(pollTypeText), recentVoters),
+    div`.poll__options`(...pollOptions),
+    pollData.multiple_choice ? voteButton : span`.poll__voters`(totalVotersText),
+    info,
+  );
 
   useWhileMounted(container, () => messageCache.watchItem(peerMessageToId(peer, message.id), (item) => {
     if (item?._ === 'message' && item.media?._ === 'messageMediaPoll') {

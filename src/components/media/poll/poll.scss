@@ -1,4 +1,5 @@
 .poll {
+  user-select: none;
   max-width: 300px;
   &__question {
     font-weight: 500;
@@ -39,5 +40,18 @@
   & &__voters {
     color: var(--accent-color-inactive);
     font-size: 0.9rem;
+  }
+
+  & &__vote-button {
+    text-align: center;    
+    color: var(--accent-color);
+    transition: color 0.3s;
+    transform: translateY(10px);
+    cursor: pointer;
+  }
+
+  & &__vote-button.-inactive {
+    color: var(--accent-color-inactive);
+    cursor: default;
   }
 }

@@ -2,34 +2,47 @@ import { checkbox } from 'components/ui';
 import { div } from 'core/html';
 import { mount, unmount } from 'core/dom';
 import { svgCodeToComponent } from 'core/factory';
-import { getInterface } from 'core/hooks';
+import { getInterface, useInterface } from 'core/hooks';
 import spinnerCode from './spinner.svg?raw';
 
 import './poll-checkbox.scss';
 
 const spinnerSvg = svgCodeToComponent(spinnerCode);
 
-export default function pollCheckbox(multiple: boolean, clickCallback: (reset: () => void) => void) {
+type Props = {
+  multiple: boolean,
+  clickCallback: (selected: boolean) => void,
+};
+
+export default function pollCheckbox({ multiple, clickCallback }: Props) {
   if (multiple) {
-    return div`.pollCheckbox`(checkbox());
+    const cb = checkbox({
+      onChange: (checked) => clickCallback(checked),
+    });
+    return useInterface(div`.pollCheckbox`(cb), {
+      reset: () => getInterface(cb).setChecked(false),
+    });
   }
+
   const container = div`.pollCheckbox`();
+  const spinner = spinnerSvg();
   const cb = checkbox({
-    onChange: () => {
+    onChange: (checked) => {
       unmount(cb);
       const effect = div`.pollCheckbox__ripple`({
         onAnimationEnd: () => setTimeout(() => unmount(effect), 1000),
       });
       mount(container, effect);
-      const spinner = spinnerSvg();
       mount(container, spinner);
-      clickCallback(() => {
-        unmount(spinner);
-        getInterface(cb).setChecked(false);
-        mount(container, cb);
-      });
+      clickCallback(checked);
     },
   });
   mount(container, cb);
-  return container;
+  return useInterface(container, {
+    reset: () => {
+      unmount(spinner);
+      getInterface(cb).setChecked(false);
+      mount(container, cb);
+    },
+  });
 }
