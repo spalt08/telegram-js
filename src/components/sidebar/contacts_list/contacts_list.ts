@@ -1,7 +1,8 @@
 import { div } from 'core/html';
 import { heading } from 'components/ui';
 import * as icons from 'components/icons';
-import type { SidebarComponentProps } from '../sidebar';
+
+type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
 export default function contacts({ onBack }: SidebarComponentProps) {
   const container = (

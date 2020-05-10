@@ -1,10 +1,13 @@
 @import '~styles/variables.scss';
 
+$sidebar-width: 25vw;
+$sidebar-min: 260px;
+$sidebar-max: 380px;
+
 .sidebar {
-  width: 25vw;
-  max-width: 380px;
-  min-width: 260px;
-  flex-basis: 25vw;
+  width: $sidebar-width;
+  max-width: $sidebar-max;
+  min-width: $sidebar-min;
   background-color: #FFFFFF;
   height: 100%;
   position: relative;
@@ -12,10 +15,10 @@
   transition: .2s ease-out;
 
   & > * {
-    width: 25vw;
-    flex-basis: 25vw;
-    max-width: 380px;
-    min-width: 260px;
+    flex: none;
+    width: $sidebar-width;
+    max-width: $sidebar-max;
+    min-width: $sidebar-min;
   }
 
   &.-left {
@@ -34,6 +37,24 @@
     will-change: width;
     z-index: 0;
     transition: translate3d(0, 0, 0);
+
+
+    @include respond-to(medium) {
+      position: absolute;
+      width: 75vw;
+      min-width: calc(100vw - #{$sidebar-max});
+      max-width: calc(100vw - #{$sidebar-min});
+      right: 0;
+      top: 0;
+      height: 100%;
+      border-left: none;
+
+      & > * {
+        width: 75vw;
+        min-width: calc(100vw - #{$sidebar-max});
+        max-width: calc(100vw - #{$sidebar-min});
+      }
+    }
   }
 
   &.-poping-state .sidebarWrapper {
@@ -51,7 +72,6 @@
   &.-hided {
     width: 0;
     min-width: 0;
-    flex-basis: 0;
   }
 
   & .sidebarHeading {

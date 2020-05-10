@@ -10,8 +10,9 @@ import * as icons from 'components/icons';
 import { globalSearch, dialog as service } from 'services';
 import dialog from '../dialog/dialog';
 import globalSearchResult from '../global_search_result/global_search_result';
-import type { SidebarComponentProps } from '../sidebar';
 import './dialogs.scss';
+
+type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
 export default function dialogs({ onNavigate }: SidebarComponentProps) {
   let container: HTMLElement;

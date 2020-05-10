@@ -1,8 +1,9 @@
 import { UserProfilePhoto, FileLocation, InputPeer, ChatPhoto, Photo, PhotoSize } from 'mtproto-js';
+import { SERVICE_WORKER_SCOPE } from 'const';
 import { locationToURL } from 'helpers/files';
 import { fileMap } from './files';
 
-let photoIdCounter = 100;
+let photoIdCounter = 160;
 let localIdCounter = 1;
 
 export function mockPeerPhoto(peer: InputPeer.inputPeerChat): ChatPhoto;
@@ -113,6 +114,9 @@ export function mockPhoto(w: number, h: number, ready: (photo: Photo.photo, url:
         sizes,
         dc_id: 2,
       };
+
+      const url = `${SERVICE_WORKER_SCOPE}photos/${photo.id}_x`;
+      fileMap[url] = `https://picsum.photos/id/${id}/${w}/${h}`;
 
       ready(photo, `https://picsum.photos/id/${id}/${w}/${h}`);
     }

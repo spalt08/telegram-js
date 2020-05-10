@@ -8,10 +8,11 @@ import { getInterface, useToBehaviorSubject } from 'core/hooks';
 import { mount, watchVisibility } from 'core/dom';
 import { peerMessageToId } from 'helpers/api';
 import { foundMessage } from 'components/sidebar';
-import type { SidebarComponentProps } from '../sidebar';
 import './search.scss';
 
-export default function search({ onBack }: SidebarComponentProps) {
+type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
+
+export default function messageSearchSidebar({ onBack }: SidebarComponentProps) {
   if (message.activePeer.value) messageSearch.setPeer(message.activePeer.value);
 
   const rootEl = div`.messagesSearch`();

@@ -1,0 +1,12 @@
+@import '~styles/variables.scss';
+
+.sharedMediaSidebar {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  &__panels {
+    flex: 1 50%;
+  }
+}

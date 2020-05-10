@@ -52,7 +52,7 @@ export default function header() {
       className: 'header__context-menu',
       options: [
         { icon: icons.info, label: 'Info', onClick: () => main.openSidebar('info') },
-        { icon: icons.document, label: 'Shared Media', onClick: () => main.openSidebar('info') },
+        { icon: icons.document, label: 'Shared Media', onClick: () => main.openSidebar('sharedMedia') },
         { icon: icons.mute, label: 'Mute', onClick: () => {} },
         { icon: icons.archive, label: 'Archive', onClick: () => {} },
         { icon: icons.del, label: 'Delete and Leave', onClick: () => {} },

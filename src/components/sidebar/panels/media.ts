@@ -2,7 +2,6 @@ import { Peer, Message, MessagesFilter } from 'mtproto-js';
 import { div } from 'core/html';
 import { VirtualizedList } from 'components/ui';
 import { BehaviorSubject } from 'rxjs';
-import { materialSpinner } from 'components/icons';
 import { media } from 'services';
 import { messageCache } from 'cache';
 import { useObservable } from 'core/hooks';
@@ -11,16 +10,18 @@ import { unmount, mount } from 'core/dom';
 import photoPreview from 'components/media/photo/preview';
 import { getAttributeVideo } from 'helpers/files';
 import videoPreview from 'components/media/video/preview';
+import { panelLoader } from './loader';
+import './media.scss';
 
 const SEARCH_FILTER: MessagesFilter['_'] = 'inputMessagesFilterPhotoVideo';
 
 const mediaRowRenderer = (ids: string, peer: Peer): HTMLDivElement => {
   const messages = ids.split('+');
-  const container = div`.shared-media__mediarow`();
+  const container = div`.mediaPanel__row`();
 
   for (let i = 0; i < messages.length; i++) {
     const message = messageCache.get(messages[i]);
-    const element = div`.shared-media__mediaitem`();
+    const element = div`.mediaPanel__item`();
 
     // photo
     if (message?._ === 'message' && message.media?._ === 'messageMediaPhoto' && message.media.photo?._ === 'photo') {
@@ -44,8 +45,8 @@ const mediaRowRenderer = (ids: string, peer: Peer): HTMLDivElement => {
 };
 
 export default function mediaPanel(peer: Peer) {
-  let loader: HTMLElement | undefined = div`.shared-media__loader`(materialSpinner());
-  const container = div`.shared-media__item`(loader);
+  let loader: HTMLElement | undefined = panelLoader();
+  const container = div`.mediaPanel`(loader);
 
   const loadMore = () => {
     media.loadMedia(peer, SEARCH_FILTER, messageCache.indices.photoVideos.getEarliestPeerMedia(peer)?.id);

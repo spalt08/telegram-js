@@ -3,7 +3,7 @@ import { MethodDeclMap, PollResults, PollAnswerVoters, MessageEntity } from 'mtp
 import { users } from './user';
 import { chats } from './chat';
 import { mockDialogForPeers } from './dialog';
-import { mockHistorySlice } from './history';
+import { mockHistorySlice, mockHistorySearch } from './history';
 
 type Callback<T extends keyof MethodDeclMap> = (err: any, result: MethodDeclMap[T]['res']) => void;
 
@@ -115,7 +115,22 @@ export function callMock<T extends keyof MethodDeclMap>(method: T, params: Metho
       break;
     }
 
+    case 'messages.search': {
+      const { peer, filter, limit, offset_id } = params as MethodDeclMap['messages.search']['req'];
+      const { count, messages } = mockHistorySearch(limit, offset_id, filter, peer);
+
+      timeout<T>(500, cb, {
+        _: 'messages.messagesSlice',
+        messages,
+        chats,
+        users,
+        count,
+      });
+      break;
+    }
+
     default:
+      console.log('unmocked call', method, params);
       cb({ type: 'network', code: 100 }, undefined);
   }
 }
