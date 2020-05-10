@@ -4,12 +4,39 @@
     font-weight: 500;
   }
 
-  &__type {
+  & &__info {
+    display: flex;
+    align-items: center;
+  }
+
+  & &__type {
     color: var(--accent-color-inactive);
     font-size: 0.9rem;
   }
 
-  &__voters {
+  & &__recent-voters {
+    padding-left: 8px;
+    display: flex;
+  }
+
+  & &__avatar-wrapper {
+    position: relative;
+    width: 13px;
+    height: 18px;
+    .avatar {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      min-width: 18px;
+      min-height: 18px;
+      border: 1px solid var(--bubble-background);
+    }
+    .avatar.-standard {
+      font-size: 0.6rem;
+    }
+  }
+
+  & &__voters {
     color: var(--accent-color-inactive);
     font-size: 0.9rem;
   }

@@ -1,7 +1,7 @@
 import client from 'client/client';
 import { Update, Peer } from 'mtproto-js';
 import { peerToInputPeer } from 'cache/accessors';
-import { messageCache } from 'cache';
+import { messageCache, userCache, chatCache } from 'cache';
 
 export default class PollsService {
   constructor() {
@@ -15,6 +15,8 @@ export default class PollsService {
       options,
     });
     if (updates._ === 'updates') {
+      userCache.put(updates.users);
+      chatCache.put(updates.chats);
       updates.updates.forEach((update: Update) => {
         if (update._ === 'updateMessagePoll') {
           this.processUpdate(update);

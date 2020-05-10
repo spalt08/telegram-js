@@ -1,10 +1,11 @@
 import { Poll, PollResults, PollAnswerVoters, Peer, Message } from 'mtproto-js';
 import { div, text, span } from 'core/html';
-import { mount } from 'core/dom';
+import { mount, unmountChildren } from 'core/dom';
 import { useWhileMounted, getInterface } from 'core/hooks';
 import { polls } from 'services';
 import { messageCache } from 'cache';
-import { peerMessageToId } from 'helpers/api';
+import { peerMessageToId, userIdToPeer } from 'helpers/api';
+import { profileAvatar } from 'components/profile';
 import pollOption, { PollOptionInterface } from './poll-option';
 
 import './poll.scss';
@@ -23,6 +24,13 @@ function pollType(pollData: Poll) {
   return 'Anonymous Poll';
 }
 
+function buildRecentVotersList(userIds?: number[]) {
+  if (userIds) {
+    return userIds.map((userId) => div`.poll__avatar-wrapper`(profileAvatar(userIdToPeer(userId))));
+  }
+  return [];
+}
+
 export default function poll(peer: Peer, message: Message, info: HTMLElement) {
   if (message._ !== 'message' || message.media?._ !== 'messageMediaPoll') {
     throw new Error('message media must be of type "messageMediaPoll"');
@@ -31,9 +39,10 @@ export default function poll(peer: Peer, message: Message, info: HTMLElement) {
   const pollOptions = div`.poll__options`();
   const totalVotersText = text('');
   const pollTypeText = text(pollType(pollData));
+  const recentVoters = div`poll__recent-voters`(...buildRecentVotersList(results.recent_voters));
   const container = div`.poll`(
     div`.poll__question`(text(pollData.question)),
-    div`poll__type`(pollTypeText),
+    div`poll__info`(div`poll__type`(pollTypeText), recentVoters),
     pollOptions,
     span`.poll__voters`(totalVotersText),
     info,
@@ -78,6 +87,10 @@ export default function poll(peer: Peer, message: Message, info: HTMLElement) {
       pollTypeText.textContent = pollType(updatedPoll);
     }
     if (updatedResults.results) {
+      unmountChildren(recentVoters);
+      buildRecentVotersList(results.recent_voters).forEach((avatar) => {
+        mount(recentVoters, avatar);
+      });
       const updateMaxVoters = Math.max(...updatedResults.results.map((r) => r.voters));
       const updateAnswered = updatedResults.results.findIndex((r) => r.chosen) >= 0;
       updatedResults.results.forEach((r) => {
