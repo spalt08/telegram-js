@@ -8,6 +8,7 @@ import newGroup from './new_group/new_group';
 import contacts from './contacts_list/contacts_list';
 import search from './search/search';
 import info from './info/info';
+import sharedMedia from './shared_media/shared_media';
 import './sidebar.scss';
 
 const elements = {
@@ -17,6 +18,7 @@ const elements = {
   contacts,
   info,
   search,
+  sharedMedia,
 };
 
 type SidebarRendererMap = typeof elements;

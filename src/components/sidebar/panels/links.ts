@@ -2,13 +2,14 @@ import { Peer, Message, MessagesFilter } from 'mtproto-js';
 import { div } from 'core/html';
 import { VirtualizedList } from 'components/ui';
 import { BehaviorSubject } from 'rxjs';
-import { materialSpinner } from 'components/icons';
 import { media } from 'services';
 import { messageCache } from 'cache';
 import { useObservable } from 'core/hooks';
 import { messageToId } from 'helpers/api';
 import { unmount, mount } from 'core/dom';
 import webpageLink from 'components/media/webpage/webpage_link';
+import { panelLoader } from './loader';
+import './links.scss';
 
 const SEARCH_FILTER: MessagesFilter['_'] = 'inputMessagesFilterUrl';
 
@@ -18,8 +19,8 @@ const linkRenderer = (id: string) => {
 };
 
 export default function linksPanel(peer: Peer) {
-  let loader: HTMLElement | undefined = div`.shared-media__loader`(materialSpinner());
-  const container = div`.shared-media__item`(loader);
+  let loader: HTMLElement | undefined = panelLoader();
+  const container = div`.linksPanel`(loader);
 
   const loadMore = () => {
     media.loadMedia(peer, SEARCH_FILTER, messageCache.indices.links.getEarliestPeerMedia(peer)?.id);

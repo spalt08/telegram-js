@@ -1,15 +1,21 @@
-import { div } from 'core/html';
+import { div, nothing } from 'core/html';
 import { getInterface } from 'core/hooks';
 import { mount } from 'core/dom';
-import { heading, contextMenu } from 'components/ui';
+import { heading, contextMenu, tabsPanel } from 'components/ui';
 import * as icons from 'components/icons';
-import infoPanel from './panels/info_panel';
+import { message } from 'services';
+import infoPanel from '../panels/info';
+import mediaPanel from '../panels/media';
+import docsPanel from '../panels/documents';
+import linksPanel from '../panels/links';
 import './info.scss';
 
 type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
 export default function info({ onBack }: SidebarComponentProps) {
   let container: HTMLElement;
+
+  const peer = message.activePeer.value;
 
   const moreContextMenu = contextMenu({
     className: 'infoSidebar__context-menu',
@@ -26,7 +32,7 @@ export default function info({ onBack }: SidebarComponentProps) {
     event.stopPropagation();
   };
 
-  return container = div`.infoSidebar`(
+  container = div`.infoSidebar`(
     heading({
       title: 'Info',
       buttons: [
@@ -34,6 +40,16 @@ export default function info({ onBack }: SidebarComponentProps) {
         { icon: icons.more, position: 'right', onClick: toggleContextMenu },
       ],
     }),
-    infoPanel(),
+    peer ? infoPanel(peer) : nothing,
+    peer ? tabsPanel({ className: 'infoSidebar__panels', headerAlign: 'space-between' }, {
+      // to do: members panel,
+      Media: mediaPanel(peer),
+      Docs: docsPanel(peer),
+      Links: linksPanel(peer),
+    }) : nothing,
   );
+
+  // todo prevent scrolling shared media
+
+  return container;
 }

@@ -2,14 +2,14 @@ import { Peer, Message, MessagesFilter } from 'mtproto-js';
 import { div, nothing } from 'core/html';
 import { VirtualizedList } from 'components/ui';
 import { BehaviorSubject } from 'rxjs';
-import { materialSpinner } from 'components/icons';
 import { media } from 'services';
 import { messageCache } from 'cache';
 import { useObservable } from 'core/hooks';
 import { messageToId } from 'helpers/api';
 import { unmount, mount } from 'core/dom';
 import documentFile from 'components/media/document/file';
-import './docs_panel.scss';
+import { panelLoader } from './loader';
+import './documents.scss';
 
 const SEARCH_FILTER: MessagesFilter['_'] = 'inputMessagesFilterDocument';
 
@@ -22,8 +22,8 @@ const documentRowRenderer = (id: string) => {
 };
 
 export default function docsPanel(peer: Peer) {
-  let loader: HTMLElement | undefined = div`.shared-media__loader`(materialSpinner());
-  const container = div`.shared-media__item`(loader);
+  let loader: HTMLElement | undefined = panelLoader();
+  const container = div`.documentsPanel`(loader);
 
   const loadMore = () => {
     media.loadMedia(peer, SEARCH_FILTER, messageCache.indices.documents.getEarliestPeerMedia(peer)?.id);
