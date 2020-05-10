@@ -11,11 +11,16 @@ $user-bg-colors: (
 );
 
 $break-small: 720px;
+$break-medium: 1024px;
 $break-widescreen: 1680px;
 
 @mixin respond-to($media) {
   @if $media == small {
     @media only screen and (max-width: $break-small) { @content; }
+  }
+
+  @if $media == medium {
+    @media only screen and (max-width: $break-medium) and (min-width: $break-small + 1) { @content; }
   }
 
   @if $media == widescreen {
