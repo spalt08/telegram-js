@@ -20,12 +20,12 @@ type Props = {
 };
 
 function answerIcon() {
-  const container = div`.pollOption__answer`({ style: { display: 'none' } });
+  const container = div`.pollOption__answer.-hidden`();
   return useInterface(container, {
     update: (isCorrect?: boolean) => {
-      unmountChildren(container);
+      container.classList.toggle('-hidden', isCorrect === undefined);
       if (isCorrect !== undefined) {
-        container.style.removeProperty('display');
+        unmountChildren(container);
         mount(container, isCorrect ? checkIcon() : closeIcon());
       }
     },
@@ -99,16 +99,23 @@ export default function pollOption(initialProps: Props) {
     checkbox.classList.toggle('-answered', answered);
     percentage.classList.toggle('-answered', answered);
     line.classList.toggle('-answered', answered);
-    if (currProps.quiz && currProps.voters) {
-      if (currProps.voters.chosen) {
-        if (currProps.voters.correct) {
-          container.classList.add('-correct');
+    getInterface(answer).update();
+    container.classList.remove('-correct');
+    container.classList.remove('-incorrect');
+    if (currProps.voters) {
+      if (currProps.quiz) {
+        if (currProps.voters.chosen) {
+          if (currProps.voters.correct) {
+            container.classList.add('-correct');
+            getInterface(answer).update(true);
+          } else {
+            container.classList.add('-incorrect');
+            getInterface(answer).update(false);
+          }
+        } else if (currProps.voters.correct) {
           getInterface(answer).update(true);
-        } else {
-          container.classList.add('-incorrect');
-          getInterface(answer).update(false);
         }
-      } else if (currProps.voters.correct) {
+      } else if (currProps.voters.chosen) {
         getInterface(answer).update(true);
       }
     }

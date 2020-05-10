@@ -18,6 +18,7 @@
   & &__recent-voters {
     padding-left: 8px;
     display: flex;
+    flex-direction: row-reverse;
   }
 
   & &__avatar-wrapper {

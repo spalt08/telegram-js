@@ -53,6 +53,8 @@
     display: grid;
     align-items: center;
     justify-items: center;
+    opacity: 1;
+    transition: opacity 0.3s 0.2s;
     svg {
       width: 10px;
       height: 10px;
@@ -62,6 +64,10 @@
         stroke-width: 1;
       }
     }
+  }
+
+  & &__answer.-hidden {
+    opacity: 0;
   }
 
   & &__line {
