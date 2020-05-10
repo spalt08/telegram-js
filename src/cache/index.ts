@@ -11,6 +11,7 @@ import Collection, { GetId, makeGetIdFromProp } from './fastStorages/collection'
 import { orderBy } from './fastStorages/indices';
 import messageHistory from './fastStorages/indices/messageHistory';
 import sharedMediaIndex from './fastStorages/indices/sharedMediaIndex';
+import pollsIndex from './fastStorages/indices/pollsIndex';
 
 // todo: Save the main part of the cache to a persistent storage
 
@@ -53,6 +54,7 @@ export const messageCache = new Collection({
     photoVideos: sharedMediaIndex,
     documents: sharedMediaIndex,
     links: sharedMediaIndex,
+    polls: pollsIndex,
   },
 });
 

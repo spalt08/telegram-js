@@ -16,12 +16,12 @@
     stroke: var(--color);
   }
 
-  &__text {
+  & &__text {
     grid-column: 2;
     margin: auto 0 12px 8px;
   }
 
-  &__percentage {
+  & &__percentage {
     grid-row: 1;
     grid-column: 1;
     margin: auto 0 12px 0;
@@ -33,7 +33,7 @@
     cursor: default;
   }
 
-  &__checkbox {
+  & &__checkbox {
     grid-row: 1;
     grid-column: 1;
     margin: auto;
@@ -64,10 +64,12 @@
     }
   }
 
-  &__line {
+  & &__line {
     grid-row: 1;
     grid-column: 1 / 2;
     align-self: end;
+    opacity: 0;
+    transition: opacity 0.1s;
     path {
       stroke: var(--color, var(--accent-color));
       stroke-width: 4px;
@@ -84,6 +86,10 @@
   }
   
   &__percentage.-answered {
+    opacity: 1;
+  }
+
+  &__line.-answered {
     opacity: 1;
   }
 }

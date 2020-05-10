@@ -1,11 +1,13 @@
-import { Poll, PollResults, PollAnswerVoters, Peer } from 'mtproto-js';
+import { Poll, PollResults, PollAnswerVoters, Peer, Message } from 'mtproto-js';
 import { div, text, span } from 'core/html';
 import { mount } from 'core/dom';
 import { useWhileMounted, getInterface } from 'core/hooks';
 import { polls } from 'services';
+import { messageCache } from 'cache';
+import { peerMessageToId } from 'helpers/api';
+import pollOption, { PollOptionInterface } from './poll-option';
 
 import './poll.scss';
-import pollOption, { PollOptionInterface } from './poll-option';
 
 const decoder = new TextDecoder();
 function pollType(pollData: Poll) {
@@ -21,18 +23,24 @@ function pollType(pollData: Poll) {
   return 'Anonymous Poll';
 }
 
-export default function poll(peer: Peer, messageId: number, pollData: Poll, results: PollResults, info: HTMLElement) {
+export default function poll(peer: Peer, message: Message, info: HTMLElement) {
+  if (message._ !== 'message' || message.media?._ !== 'messageMediaPoll') {
+    throw new Error('message media must be of type "messageMediaPoll"');
+  }
+  const { poll: pollData, results } = message.media;
   const pollOptions = div`.poll__options`();
   const totalVotersText = text('');
-  const container = span`.poll`(
+  const pollTypeText = text(pollType(pollData));
+  const container = div`.poll`(
     div`.poll__question`(text(pollData.question)),
-    div`poll__type`(text(pollType(pollData))),
+    div`poll__type`(pollTypeText),
     pollOptions,
     span`.poll__voters`(totalVotersText),
     info,
   );
   const options = new Map<string, PollOptionInterface>();
   const answered = !!results.results && results.results.findIndex((r) => r.chosen) >= 0;
+  const maxVoters = results.results ? Math.max(...results.results.map((r) => r.voters)) : 0;
   pollData.answers.forEach((answer) => {
     const optionKey = decoder.decode(answer.option);
     let voters: PollAnswerVoters | undefined;
@@ -41,13 +49,15 @@ export default function poll(peer: Peer, messageId: number, pollData: Poll, resu
     }
     const option = pollOption({
       quiz: pollData.quiz ?? false,
-      multiple: pollData.multiple_choice ?? false,
+      multipleChoice: pollData.multiple_choice ?? false,
       option: answer,
       answered,
-      initialVoters: voters,
-      initialTotalVoters: results.total_voters ?? 0,
+      closed: pollData.closed ?? false,
+      voters,
+      maxVoters,
+      totalVoters: results.total_voters ?? 0,
       clickCallback: async (reset: () => void) => {
-        await polls.sendVote(peer, messageId, [answer.option]);
+        await polls.sendVote(peer, message.id, [answer.option]);
         reset();
       },
     });
@@ -61,28 +71,37 @@ export default function poll(peer: Peer, messageId: number, pollData: Poll, resu
       : 'No voters yet';
   };
 
-  const updatePollResults = (pollResults: PollResults, initial: boolean) => {
-    const totalVoters = pollResults.total_voters ?? 0;
-    updateTotalVotersText(totalVoters);
-    if (pollResults.results) {
-      const maxVoters = Math.max(...pollResults.results.map((r) => r.voters));
-      const updateAnswered = pollResults.results.findIndex((r) => r.chosen) >= 0;
-      pollResults.results.forEach((r) => {
+  const updatePollResults = (updatedPoll: Poll | undefined, updatedResults: PollResults) => {
+    const updateTotalVoters = updatedResults.total_voters ?? 0;
+    updateTotalVotersText(updateTotalVoters);
+    if (updatedPoll) {
+      pollTypeText.textContent = pollType(updatedPoll);
+    }
+    if (updatedResults.results) {
+      const updateMaxVoters = Math.max(...updatedResults.results.map((r) => r.voters));
+      const updateAnswered = updatedResults.results.findIndex((r) => r.chosen) >= 0;
+      updatedResults.results.forEach((r) => {
         const op = options.get(decoder.decode(r.option));
         if (op) {
-          getInterface(op).updateOption(r, !initial, updateAnswered, maxVoters, totalVoters);
+          getInterface(op).updateOption({
+            voters: r,
+            answered: updateAnswered,
+            closed: updatedPoll?.closed,
+            maxVoters: updateMaxVoters,
+            totalVoters: updateTotalVoters,
+          });
         }
       });
     }
   };
 
-  updatePollResults(results, true);
+  updateTotalVotersText(results.total_voters ?? 0);
 
-  const updateListener = (update: PollResults, initial: boolean) => {
-    updatePollResults(update, initial);
-  };
-
-  useWhileMounted(container, () => polls.subscribe(peer, messageId, updateListener));
+  useWhileMounted(container, () => messageCache.watchItem(peerMessageToId(peer, message.id), (item) => {
+    if (item?._ === 'message' && item.media?._ === 'messageMediaPoll') {
+      updatePollResults(item.media.poll, item.media.results);
+    }
+  }));
 
   return container;
 }

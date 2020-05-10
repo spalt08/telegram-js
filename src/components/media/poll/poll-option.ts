@@ -7,16 +7,15 @@ import pollCheckbox from './poll-checkbox';
 
 import './poll-option.scss';
 
-// const ease = (t: number) => t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
-const ease = (t: number) => t;
-
 type Props = {
   quiz: boolean,
-  multiple: boolean,
+  multipleChoice: boolean,
   option: PollAnswer,
   answered: boolean,
-  initialVoters: PollAnswerVoters | undefined,
-  initialTotalVoters: number,
+  closed: boolean,
+  voters?: PollAnswerVoters,
+  maxVoters: number,
+  totalVoters: number,
   clickCallback: (reset: () => void) => void,
 };
 
@@ -33,83 +32,90 @@ function answerIcon() {
   });
 }
 
-export default function pollOption({ quiz, multiple, option, answered, initialVoters, initialTotalVoters, clickCallback }: Props) {
+export default function pollOption(initialProps: Props) {
+  let prevProps = initialProps;
+  let currProps = initialProps;
+  let firstAnimationCompleted = initialProps.answered;
+
   let path: SVGPathElement;
-  const checkbox = span`.pollOption__checkbox`(pollCheckbox(multiple, clickCallback));
+  const checkbox = span`.pollOption__checkbox`(pollCheckbox(currProps.multipleChoice, currProps.clickCallback));
   const percentage = span`.pollOption__percentage`();
   const answer = answerIcon();
+  const line = svgEl('svg', { width: 300, height: 30, class: 'pollOption__line' }, [
+    path = svgEl('path', { d: 'M20 8 v 3.5 a 13 13 0 0 0 13 13 H 300' }),
+  ]);
   const container = div`.pollOption`(
-    svgEl('svg', { width: 300, height: 30, class: 'pollOption__line' }, [
-      path = svgEl('path', { d: 'M20 8 v 3.5 a 13 13 0 0 0 13 13 H 300' }),
-    ]),
+    line,
     percentage,
     checkbox,
     answer,
-    span`.pollOption__text`(text(option.text)),
+    span`.pollOption__text`(text(currProps.option.text)),
   );
 
-  let voters = initialVoters;
-  let totalVoters = initialTotalVoters ?? 1;
-  // let currentPercentage = 0;
-  // let targetPercentage = 0;
-  let startTime: number;
   const update = (t: number) => {
-    if (quiz && voters) {
-      if (voters.chosen) {
-        if (voters.correct) {
+    const prevVoters = firstAnimationCompleted ? prevProps.voters?.voters ?? 0 : 0;
+    const currVoters = currProps.voters?.voters ?? 0;
+    const p1 = prevVoters > 0 ? prevVoters / prevProps.totalVoters : 0;
+    const p2 = currVoters > 0 ? currVoters / currProps.totalVoters : 0;
+    const p = p1 + (p2 - p1) * t;
+    percentage.textContent = `${Math.round(p * 100)}%`;
+    const x1 = prevVoters > 0 ? prevVoters / prevProps.maxVoters : 0;
+    const x2 = currVoters > 0 ? currVoters / currProps.maxVoters : 0;
+    const x = x1 + (x2 - x1) * t;
+    const t1 = firstAnimationCompleted ? 1 : t;
+    path.style.strokeDasharray = `0 ${Math.round(t1 * 41)} ${Math.round(x * 248)} 1000`;
+  };
+
+  let startTime: number;
+  const rafCallback = (time: number) => {
+    if (!startTime) {
+      startTime = time;
+    }
+    const t = (time - startTime) / (1000 * 0.3);
+    update(Math.min(t, 1));
+    if (t < 1) {
+      requestAnimationFrame(rafCallback);
+    } else {
+      startTime = 0;
+      prevProps = currProps;
+      if (currProps.answered) {
+        firstAnimationCompleted = true;
+      }
+    }
+  };
+
+  const updateOption = (updatedProps: Partial<Props>) => {
+    if (updatedProps !== currProps) {
+      currProps = { ...currProps, ...updatedProps };
+    }
+    if (!currProps.answered) {
+      firstAnimationCompleted = false;
+    }
+    const answered = currProps.answered || currProps.closed;
+    checkbox.classList.toggle('-answered', answered);
+    percentage.classList.toggle('-answered', answered);
+    line.classList.toggle('-answered', answered);
+    if (currProps.quiz && currProps.voters) {
+      if (currProps.voters.chosen) {
+        if (currProps.voters.correct) {
           container.classList.add('-correct');
           getInterface(answer).update(true);
         } else {
           container.classList.add('-incorrect');
           getInterface(answer).update(false);
         }
-      } else if (voters.correct) {
-        // container.classList.add('-correct');
+      } else if (currProps.voters.correct) {
         getInterface(answer).update(true);
       }
     }
-
-    if (totalVoters > 0) {
-      const p = (voters?.voters ?? 0) / totalVoters;
-      percentage.textContent = `${Math.floor(t * p * 100)}%`;
-      path.style.strokeDasharray = `0 ${Math.round(t * 41)} ${Math.round(t * p * 248)} 1000`;
-    } else {
-      percentage.textContent = '';
-      path.style.strokeDasharray = '0 0 0 1000';
-    }
-  };
-  const raf = (time: number) => {
-    if (!startTime) {
-      startTime = time;
-    }
-    const t = ease((time - startTime) / (1000 * 0.4));
-    update(Math.min(t, 1));
-    if (t < 1) {
-      requestAnimationFrame(raf);
-    } else {
-      startTime = 0;
-    }
-  };
-
-  const updateOption = (
-    updateVoters: PollAnswerVoters | undefined,
-    animate: boolean,
-    updateAnswered: boolean,
-    updateMaxVoters: number,
-    updateTotalVoters: number) => {
-    checkbox.classList.toggle('-answered', updateAnswered);
-    percentage.classList.toggle('-answered', updateAnswered);
-    voters = updateVoters;
-    totalVoters = updateTotalVoters;
-    // targetPercentage = totalVoters > 0 ? (voters?.voters ?? 0) / totalVoters : 0;
-    if (animate) {
-      requestAnimationFrame(raf);
+    if (currProps.answered && prevProps !== currProps) {
+      requestAnimationFrame(rafCallback);
     } else {
       update(1);
     }
   };
 
-  updateOption(initialVoters, false, answered, 0, totalVoters);
+  updateOption(currProps);
 
   return useInterface(container, {
     updateOption,

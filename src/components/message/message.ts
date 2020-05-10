@@ -160,7 +160,7 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
   if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document' && getAttributeVideo(msg.media.document)) {
     const extraClass = hasMessage ? 'with-photo' : 'only-photo';
     const previewEl = videoPreview(msg.media.document, {
-      fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined
+      fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined,
     }, peer, msg);
     if (!hasMessage && previewEl instanceof Element) previewEl.classList.add('raw');
 
@@ -213,7 +213,7 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
         { out, className: extraClass },
         reply,
         div`.message__text`(
-          poll(peer, msg.id, msg.media.poll, msg.media.results, info),
+          poll(peer, msg, info),
         ),
       ),
       info,
