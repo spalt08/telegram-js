@@ -7,7 +7,7 @@ import { chatCache, messageCache, userCache } from 'cache';
 import { peerToId } from 'helpers/api';
 import { getDocumentLocation, getAttributeAudio } from 'helpers/files';
 import { download } from 'client/media';
-import MainService from './main';
+import type MainService from './main';
 
 export const enum MediaPlaybackStatus {
   NotStarted,

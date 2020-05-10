@@ -1,4 +1,3 @@
-/* eslint-disable import/no-cycle */
 import { div } from 'core/html';
 import { mount, unmount, listen } from 'core/dom';
 import { useInterface } from 'core/hooks';

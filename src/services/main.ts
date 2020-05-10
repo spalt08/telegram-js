@@ -2,8 +2,8 @@ import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { Photo, Message, Peer, InputStickerSet, Document } from 'mtproto-js';
 import { PhotoOptions } from 'helpers/other';
-import type { SidebarState } from 'components/sidebar/sidebar';
 
+type SidebarState = import('components/sidebar/sidebar').SidebarState;
 
 /**
  * Singleton service class for handling main thread

@@ -3,9 +3,10 @@ import { getInterface } from 'core/hooks';
 import { mount } from 'core/dom';
 import { heading, contextMenu } from 'components/ui';
 import * as icons from 'components/icons';
-import type { SidebarComponentProps } from '../sidebar';
 import infoPanel from './panels/info_panel';
 import './info.scss';
+
+type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
 export default function info({ onBack }: SidebarComponentProps) {
   let container: HTMLElement;
