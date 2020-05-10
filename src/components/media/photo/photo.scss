@@ -54,7 +54,7 @@ $animation-duration: 0.4s;
     object-fit: contain;
     z-index: 1;
     transform: scale(1.1);
-    clip-path: polygon(4.5% 4.5%, 95.5% 4.5%, 95.5% 95.5%, 4.5% 95.5%);
+    clip-path: polygon(4% 4%, 96% 4%, 96% 96%, 4% 96%);
 
     &.no-blur {
       transform: none;
