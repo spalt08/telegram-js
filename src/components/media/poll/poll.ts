@@ -82,10 +82,7 @@ export default function poll(peer: Peer, messageId: number, pollData: Poll, resu
     updatePollResults(update, initial);
   };
 
-  useWhileMounted(container, () => {
-    polls.subscribe(pollData.id, updateListener);
-    return () => polls.unsubscribe(pollData.id, updateListener);
-  });
+  useWhileMounted(container, () => polls.subscribe(peer, messageId, updateListener));
 
   return container;
 }
