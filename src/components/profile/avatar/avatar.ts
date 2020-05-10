@@ -5,14 +5,10 @@ import { getPeerPhotoInputLocation } from 'helpers/photo';
 import { mount } from 'core/dom';
 import { useObservable } from 'core/hooks';
 import { file } from 'client/media';
-import { auth } from 'services';
 import { savedmessages, avatarDeletedaccount } from 'components/icons';
 import { userCache } from 'cache';
+import { isSelf } from 'helpers/api';
 import './avatar.scss';
-
-function isMyself(peer: Peer) {
-  return peer._ === 'peerUser' && peer.user_id === auth.userID;
-}
 
 function isDeletedAccount(peer: Peer) {
   if (peer._ === 'peerUser') {
@@ -25,7 +21,7 @@ function isDeletedAccount(peer: Peer) {
 export default function profileAvatar(peer: Peer, message?: Message, isForDialogList = false) {
   const container = div`.avatar`();
 
-  if (isForDialogList && isMyself(peer)) {
+  if (isForDialogList && isSelf(peer)) {
     container.classList.add('-predefined');
     mount(container, savedmessages());
   } else if (isDeletedAccount(peer)) {

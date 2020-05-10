@@ -12,7 +12,7 @@ import './search.scss';
 
 type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
-export default function search({ onBack }: SidebarComponentProps) {
+export default function messageSearchSidebar({ onBack }: SidebarComponentProps) {
   if (message.activePeer.value) messageSearch.setPeer(message.activePeer.value);
 
   const rootEl = div`.messagesSearch`();

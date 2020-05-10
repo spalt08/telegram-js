@@ -1,9 +1,10 @@
 import { InputPeer, Message, Peer } from 'mtproto-js';
 import { mockMessage } from './message';
 import { users, me } from './user';
+import { mockPhoto } from './photo';
 
 const dateCounters: Record<string, number> = {};
-const histories: Record<string, Message[]> = {};
+const histories: Record<string, Message.message[]> = {};
 const MAX_HISTORY_LIMIT = 500;
 
 function peerToId(peer: InputPeer): string {
@@ -40,6 +41,15 @@ export function mockHistory(peer: InputPeer, from: number[]) {
         out: from_id === me.id,
       }),
     );
+
+    if (i % 10 === 0) {
+      mockPhoto(200, 320, (photo) => {
+        histories[id][i].media = {
+          _: 'messageMediaPhoto',
+          photo,
+        };
+      });
+    }
 
     if (f >= from.length) f = 0;
   }

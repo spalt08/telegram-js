@@ -1,5 +1,6 @@
 import { Dialog, Peer, Message, Updates, UserStatus } from 'mtproto-js';
 import { ARCHIVE_FOLDER_ID, ROOT_FOLDER_ID } from 'const/api';
+import client from 'client/client';
 import { todoAssertHasValue } from './other';
 
 export function peerToId(peer: Peer): string {
@@ -147,4 +148,8 @@ export function areUserStatusesEqual(status1: UserStatus | undefined, status2: U
     case 'userStatusOffline': return status1.was_online === (status2 as typeof status1).was_online;
     default: return true;
   }
+}
+
+export function isSelf(peer: Peer) {
+  return peer._ !== 'peerUser' || peer.user_id !== client.getUserID();
 }
