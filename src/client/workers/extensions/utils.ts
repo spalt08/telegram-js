@@ -1,12 +1,13 @@
 import { InputFileLocation } from 'mtproto-js';
 import { DownloadOptions } from 'client/types';
-import { fetchFileLocation, FilePartResolver, ungzipResponse } from './files';
+import { fetchFileLocation, FilePartResolver, ungzipResponse, ProgressResolver } from './files';
 import { fetchStreamLocation } from './stream';
 
 /**
  * Memrise location for future use
  */
-export function fetchLocation(url: string, location: InputFileLocation, options: DownloadOptions, get: FilePartResolver, cache: Cache) {
+export function fetchLocation(url: string, location: InputFileLocation, options: DownloadOptions, get: FilePartResolver,
+  cache: Cache, progress: ProgressResolver) {
   const [, scope] = /\/(.+?)\//.exec(url) || [];
 
   switch (scope) {
@@ -15,7 +16,7 @@ export function fetchLocation(url: string, location: InputFileLocation, options:
       break;
 
     default:
-      fetchFileLocation(url, location, options, get, cache);
+      fetchFileLocation(url, location, options, get, cache, progress);
   }
 }
 
