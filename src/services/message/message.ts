@@ -1,7 +1,7 @@
 import { BehaviorSubject, Subject } from 'rxjs';
 import { first } from 'rxjs/operators';
 import client from 'client/client';
-import { Message, Peer, MessagesGetMessages, MessagesSendMedia, InputMedia, Updates, Dialog } from 'mtproto-js';
+import { Message, Peer, MessagesGetMessages, MessagesSendMedia, InputMedia, Updates, Dialog, MethodDeclMap } from 'mtproto-js';
 import { dialogCache, messageCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import {
@@ -171,6 +171,8 @@ export default class MessagesService {
         this.loadingNextChunk.next(false);
       }
     }
+
+    this.replyToMessageID.next('');
   }
 
   loadMoreHistory(direction: Direction.Newer | Direction.Older) {
@@ -279,11 +281,17 @@ export default class MessagesService {
     if (!this.activePeer.value || !message) return;
 
     const randId = Math.ceil(Math.random() * 0xFFFFFF).toString(16) + Math.ceil(Math.random() * 0xFFFFFF).toString(16);
-    const params = {
+    const params: MethodDeclMap['messages.sendMessage']['req'] = {
       peer: peerToInputPeer(this.activePeer.value),
       message,
       random_id: randId,
     };
+
+    if (this.replyToMessageID.value) {
+      const replyMsg = messageCache.get(this.replyToMessageID.value);
+      if (replyMsg) params.reply_to_msg_id = replyMsg.id;
+      this.replyToMessageID.next('');
+    }
 
     this.pendingMessages[randId] = {
       _: 'message',
@@ -292,6 +300,7 @@ export default class MessagesService {
       from_id: client.getUserID(),
       to_id: this.activePeer.value,
       date: Math.floor(Date.now() / 1000),
+      reply_to_msg_id: params.reply_to_msg_id,
       media: {
         _: 'messageMediaEmpty',
       },
