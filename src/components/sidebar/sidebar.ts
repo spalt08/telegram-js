@@ -44,17 +44,17 @@ export default function sidebar({ initial, className }: Props) {
   const popState = () => {
     // just close sidebar
     if (stack.length <= 1) {
-      container.classList.add('-hided');
+      container.classList.add('-hidden');
       return;
     }
 
     let element = stack.pop();
 
     if (element) {
-      container.classList.add('-poping-state');
+      container.classList.add('-popping-state');
 
       element.ontransitionend = () => {
-        container.classList.remove('-poping-state');
+        container.classList.remove('-popping-state');
         if (element) {
           unmount(element);
           element = undefined;
@@ -74,12 +74,12 @@ export default function sidebar({ initial, className }: Props) {
     mount(container, element);
     stack.push(element);
 
-    if (container.classList.contains('-hided')) container.classList.remove('-hided');
+    container.classList.remove('-hidden');
   };
 
   // unmount after closing
   listen(container, 'transitionend', () => {
-    if (container.classList.contains('-hided')) {
+    if (container.classList.contains('-hidden')) {
       const element = stack.pop();
       if (element) unmount(element);
     }
