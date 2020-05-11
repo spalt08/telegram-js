@@ -1,6 +1,8 @@
 /* eslint-disable no-param-reassign */
+import { inflate } from 'pako/lib/inflate';
 import { InputFileLocation } from 'mtproto-js';
 import { DownloadOptions } from 'client/types';
+import { StickerMimeType } from 'const';
 
 // constants
 const DOWNLOAD_CHUNK_LIMIT = 1024 * 1024;
@@ -27,6 +29,31 @@ const fileEvents: Record<FileURL, Array<(res: Response) => void>> = {};
 const fileQuene: FileURL[] = [];
 let currentlyProcessing = 0;
 
+
+export function ungzipResponse(response: Response, mime: string = 'application/json') {
+  return response.arrayBuffer()
+    .then((buffer) => new Response(
+      inflate(new Uint8Array(buffer), { to: 'string' }),
+      {
+        headers: {
+          'Content-Type': mime,
+        },
+      },
+    ));
+}
+
+function finishDownload(info: FileInfo, response: Response, cache: Cache, get: FilePartResolver) {
+  if (fileEvents[info.url]) for (let i = 0; i < fileEvents[info.url].length; i++) fileEvents[info.url][i](response.clone());
+  if (info.chunks.length <= 4) cache.put(info.url, response);
+
+  delete fileEvents[info.url];
+  info.processing = false;
+  currentlyProcessing--;
+
+  // Pass Control to quened files
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+  processQuenedDownloads(get, cache);
+}
 /**
  * Loop for getting file parts from network
  */
@@ -38,19 +65,20 @@ export function loopDownload(info: FileInfo, get: FilePartResolver, cache: Cache
     info.chunks.push(ab);
 
     if (ab.byteLength < limit || (info.options!.size && info.options!.size < offset + limit)) {
-      const response = new Response(new Blob(info.chunks, { type }));
+      const response = new Response(new Blob(info.chunks, { type: type || info.options.mime_type }));
 
-      if (fileEvents[info.url]) for (let i = 0; i < fileEvents[info.url].length; i++) fileEvents[info.url][i](response.clone());
-      if (info.chunks.length <= 4) cache.put(info.url, response);
+      // middlewares
+      switch (info.options.mime_type) {
+        case StickerMimeType.TGS:
+          ungzipResponse(response)
+            .then((json) => finishDownload(info, json, cache, get));
+          break;
+
+        default:
+          finishDownload(info, response, cache, get);
+      }
 
       info.chunks = [];
-      info.processing = false;
-      delete fileEvents[info.url];
-      currentlyProcessing--;
-
-      // Pass Control to quened files
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      processQuenedDownloads(get, cache);
     } else {
       loopDownload(info, get, cache);
     }

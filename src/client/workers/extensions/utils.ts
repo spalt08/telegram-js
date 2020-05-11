@@ -1,7 +1,6 @@
-import { inflate } from 'pako/lib/inflate';
 import { InputFileLocation } from 'mtproto-js';
 import { DownloadOptions } from 'client/types';
-import { fetchFileLocation, FilePartResolver } from './files';
+import { fetchFileLocation, FilePartResolver, ungzipResponse } from './files';
 import { fetchStreamLocation } from './stream';
 
 /**
@@ -20,19 +19,9 @@ export function fetchLocation(url: string, location: InputFileLocation, options:
   }
 }
 
-
 /**
  * Load and ungzip .tgs
  */
 export function fetchTGS(url: string): Promise<Response> {
-  return fetch(url)
-    .then((response) => response.arrayBuffer())
-    .then((buffer) => new Response(
-      inflate(new Uint8Array(buffer), { to: 'string' }),
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      },
-    ));
+  return fetch(url).then(ungzipResponse);
 }

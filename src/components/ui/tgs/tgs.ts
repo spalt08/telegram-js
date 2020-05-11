@@ -9,11 +9,12 @@ interface Props {
   className?: string,
   autoplay?: boolean,
   loop?: boolean,
+  onLoad?: () => void;
 }
 
 type AnimationHandler = AnimationItem & { currentFrame: number };
 
-export default function tgs({ src, className, autoplay = true, loop = false }: Props) {
+export default function tgs({ src, className, autoplay = true, loop = false, onLoad }: Props) {
   let animation: AnimationHandler | undefined;
   let isVisible = false;
   let shouldPlay = autoplay;
@@ -32,6 +33,8 @@ export default function tgs({ src, className, autoplay = true, loop = false }: P
         autoplay: isVisible && shouldPlay,
         renderer: 'canvas',
       }) as AnimationHandler;
+
+      if (onLoad) onLoad();
     });
   });
 
