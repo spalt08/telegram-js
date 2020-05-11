@@ -6,7 +6,7 @@ import dialogs from './dialogs/dialogs';
 import settings from './settings/settings';
 import newGroup from './new_group/new_group';
 import contacts from './contacts_list/contacts_list';
-import search from './search/search';
+import messageSearch from './message_search/message_search';
 import info from './info/info';
 import sharedMedia from './shared_media/shared_media';
 import './sidebar.scss';
@@ -17,7 +17,7 @@ const elements = {
   newGroup,
   contacts,
   info,
-  search,
+  messageSearch,
   sharedMedia,
 };
 
