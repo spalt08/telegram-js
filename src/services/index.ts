@@ -11,7 +11,6 @@ import UserService from './user';
 import TopUsersService from './top_users';
 
 export { AuthStage } from './auth';
-export { RightSidebarPanel } from './main';
 
 export const main = new MainService();
 export const auth = new AuthService();

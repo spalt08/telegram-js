@@ -1,54 +1,60 @@
-/* eslint-disable import/no-cycle */
 import { div } from 'core/html';
-import { mount, unmount } from 'core/dom';
+import { mount, unmount, listen } from 'core/dom';
+import { useInterface } from 'core/hooks';
 import wrapper from './wrapper/wrapper';
 import dialogs from './dialogs/dialogs';
 import settings from './settings/settings';
 import newGroup from './new_group/new_group';
 import contacts from './contacts_list/contacts_list';
+import messageSearch from './message_search/message_search';
+import info from './info/info';
+import sharedMedia from './shared_media/shared_media';
 import './sidebar.scss';
 
 const elements = {
-  left: {
-    dialogs,
-    settings,
-    newGroup,
-    contacts,
-  },
+  dialogs,
+  settings,
+  newGroup,
+  contacts,
+  info,
+  messageSearch,
+  sharedMedia,
 };
 
 type SidebarRendererMap = typeof elements;
-type SidebarType = keyof SidebarRendererMap;
-type SidebarState<K extends SidebarType> = keyof SidebarRendererMap[K];
+export type SidebarState = keyof SidebarRendererMap;
 
-type Props<T extends SidebarType> = {
-  kind: T,
-  initial: SidebarState<'left'>,
+type Props = {
+  initial?: SidebarState,
   className?: string,
 };
 
 export type SidebarComponentProps = {
-  onNavigate?: (state: SidebarState<SidebarType>) => void;
+  onNavigate?: (state: SidebarState) => void;
   onBack?: () => void;
 };
-
-export type SidebarComponent = (props: SidebarComponentProps) => void;
 
 /**
  * Class For Managing Sidebar State
  */
-export default function sidebar<T extends SidebarType>({ kind, initial, className }: Props<T>) {
+export default function sidebar({ initial, className }: Props) {
   const container = div`.sidebar${className}`();
   const stack: HTMLElement[] = [];
 
   const popState = () => {
+    // just close sidebar
+    if (stack.length <= 1) {
+      container.classList.add('-hidden');
+      return;
+    }
+
     let element = stack.pop();
 
     if (element) {
-      container.classList.add('-poping-state');
+      container.classList.add('-popping-state');
 
       element.ontransitionend = () => {
-        container.classList.remove('-poping-state');
+        container.classList.remove('-popping-state');
         if (element) {
           unmount(element);
           element = undefined;
@@ -57,9 +63,9 @@ export default function sidebar<T extends SidebarType>({ kind, initial, classNam
     }
   };
 
-  const pushState = (state: SidebarState<'left'>) => {
+  const pushState = (state: SidebarState) => {
     const element = wrapper(
-      elements[kind][state]({
+      elements[state]({
         onNavigate: pushState,
         onBack: popState,
       }),
@@ -67,9 +73,19 @@ export default function sidebar<T extends SidebarType>({ kind, initial, classNam
 
     mount(container, element);
     stack.push(element);
+
+    container.classList.remove('-hidden');
   };
 
-  pushState(initial);
+  // unmount after closing
+  listen(container, 'transitionend', () => {
+    if (container.classList.contains('-hidden')) {
+      const element = stack.pop();
+      if (element) unmount(element);
+    }
+  });
 
-  return container;
+  if (initial) pushState(initial);
+
+  return useInterface(container, { pushState, popState });
 }

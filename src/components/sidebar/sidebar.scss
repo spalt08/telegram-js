@@ -1,12 +1,25 @@
 @import '~styles/variables.scss';
 
+$sidebar-width: 25vw;
+$sidebar-min: 260px;
+$sidebar-max: 380px;
+
 .sidebar {
-  max-width: 420px;
-  min-width: 360px;
+  width: $sidebar-width;
+  max-width: $sidebar-max;
+  min-width: $sidebar-min;
   background-color: #FFFFFF;
   height: 100%;
   position: relative;
   overflow: hidden;
+  transition: .2s ease-out;
+
+  & > * {
+    flex: none;
+    width: $sidebar-width;
+    max-width: $sidebar-max;
+    min-width: $sidebar-min;
+  }
 
   &.-left {
     border-right: 1px solid #EDEEF0;
@@ -17,7 +30,34 @@
     }
   }
 
-  &.-poping-state .sidebarWrapper {
+  &.-right {
+    border-left: 1px solid #EDEEF0;
+
+    // performance tweak
+    will-change: width;
+    z-index: 0;
+    transition: translate3d(0, 0, 0);
+
+
+    @include respond-to(medium) {
+      position: absolute;
+      width: 75vw;
+      min-width: calc(100vw - #{$sidebar-max});
+      max-width: calc(100vw - #{$sidebar-min});
+      right: 0;
+      top: 0;
+      height: 100%;
+      border-left: none;
+
+      & > * {
+        width: 75vw;
+        min-width: calc(100vw - #{$sidebar-max});
+        max-width: calc(100vw - #{$sidebar-min});
+      }
+    }
+  }
+
+  &.-popping-state .sidebarWrapper {
     &:last-child {
       background-color: rgba(0, 0, 0, 0);
     }
@@ -27,6 +67,11 @@
     & .sidebarWrapper__content {
       transform: translate(100%, 0);
     }
+  }
+
+  &.-hidden {
+    width: 0;
+    min-width: 0;
   }
 
   & .sidebarHeading {

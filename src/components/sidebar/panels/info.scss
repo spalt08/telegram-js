@@ -2,40 +2,21 @@
   display: flex;
   flex-direction: column;
   overflow-y: hidden;
-  height: 100%;
-
-  &__title {
-    font-weight: 500;
-    font-size: 20px;
-    flex: 1;
-    padding: 0 20px;
-  }
-
-  &__header {
-    flex: none;
-    display: flex;
-    align-items: center;
-    margin: 6px 12px;
-  }
 
   &__avatar {
     width: 120px;
     height: 120px;
     --initials-font-size: 40px;
-
-    svg {
-      transform: scale(2.5);
-    }
   }
 
   &__name {
     font-weight: 500;
-    font-size: 20px;
-    padding-top: 15px;
+    font-size: 24px;
+    padding-top: 22px;
   }
 
   &__status {
-    margin-bottom: 10px;
+    margin-bottom: 18px;
     color: #707579;
     font-size: 14px;
   }
@@ -43,5 +24,9 @@
   &__avatar, &__name, &__status {
     align-self: center;
     text-align: center;
+  }
+
+  &__checkbox path {
+    fill: #4EA4F5;
   }
 }

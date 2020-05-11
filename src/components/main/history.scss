@@ -8,6 +8,11 @@
   background-size: cover;
   background-position: center center;
 
+  // performance tweak for right sidebar
+  will-change: width;
+  z-index: 0;
+  transform: translate3d(0, 0, 0);
+
   > * {
     flex: none;
   }

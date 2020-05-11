@@ -2,7 +2,7 @@ import { Message, Peer, User } from 'mtproto-js';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { div, nothing } from 'core/html';
 import { userCache } from 'cache';
-import { auth } from 'services';
+import client from 'client/client';
 import avatar from '../avatar/avatar';
 import './avatar_with_status.scss';
 
@@ -14,7 +14,7 @@ interface Props {
 }
 
 function inOnline(user: User | undefined) {
-  return user?._ === 'user' && user.status?._ === 'userStatusOnline' && user.id !== auth.userID;
+  return user?._ === 'user' && user.status?._ === 'userStatusOnline' && user.id !== client.getUserID();
 }
 
 function status(peer: Peer) {

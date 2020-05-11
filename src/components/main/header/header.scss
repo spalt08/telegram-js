@@ -1,12 +1,13 @@
 .header {
   background: #FFFFFF;
-  height: 61px;
+  height: 60px;
   border-bottom: 1px solid #EDEEF0;
   padding: 5px 11px 5px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-direction: row;
+  position: relative;
 
   &.hidden {
     display: none;
@@ -73,5 +74,12 @@
     &__content {
       color: #707579;
     }
+  }
+
+  &__context-menu {
+    transform-origin: right top;
+    position: absolute;
+    right: 14px;
+    top: 62px;
   }
 }

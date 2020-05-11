@@ -1,12 +1,13 @@
 .sidebarHeading {
   width: 100%;
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
   height: 60px;
-  padding: 0 20px;
+  padding: 0 0 0 20px;
 
   & h3 {
+    flex: 1 50%;
     margin: 0;
     padding: 0;
     font-weight: 500;
@@ -15,5 +16,11 @@
 
   &__icon-left {
     margin-right: 12px;
+    flex-shrink: 0;
+  }
+
+  &__icon-right {
+    margin-left: 6px;
+    flex-shrink: 0;
   }
 }
