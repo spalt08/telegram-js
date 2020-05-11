@@ -5,7 +5,7 @@ import { svgCodeToComponent } from 'core/factory';
 import { getInterface, useInterface } from 'core/hooks';
 import spinnerCode from './spinner.svg?raw';
 
-import './poll-checkbox.scss';
+import './poll_checkbox.scss';
 
 const spinnerSvg = svgCodeToComponent(spinnerCode);
 

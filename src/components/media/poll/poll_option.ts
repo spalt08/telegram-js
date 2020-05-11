@@ -3,9 +3,9 @@ import { PollAnswer, PollAnswerVoters } from 'mtproto-js';
 import { text, span, div } from 'core/html';
 import { svgEl, unmountChildren, mount } from 'core/dom';
 import { close as closeIcon, check as checkIcon } from 'components/icons';
-import pollCheckbox from './poll-checkbox';
+import pollCheckbox from './poll_checkbox';
 
-import './poll-option.scss';
+import './poll_option.scss';
 
 type Props = {
   quiz: boolean,

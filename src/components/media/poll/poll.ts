@@ -6,7 +6,7 @@ import { polls } from 'services';
 import { messageCache } from 'cache';
 import { peerMessageToId, userIdToPeer } from 'helpers/api';
 import { profileAvatar } from 'components/profile';
-import pollOption, { PollOptionInterface } from './poll-option';
+import pollOption, { PollOptionInterface } from './poll_option';
 
 import './poll.scss';
 
