@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-globals */
 import { WindowMessage } from 'client/types';
 import { parseRange } from 'helpers/stream';
-import { respond } from './extensions/context';
+import { respond, createNotification } from './extensions/context';
 import { fetchRequest } from './extensions/files';
 import { callMock } from './mocks/call';
 import getFilePart, { fileMap } from './mocks/files';
@@ -10,6 +10,7 @@ import { fetchLocation, fetchTGS } from './extensions/utils';
 
 
 const ctx = self as any as ServiceWorkerGlobalScope;
+const notify = createNotification(ctx.clients);
 const cacheMock: Cache = { put: () => {} } as any;
 const { log } = console;
 
@@ -32,6 +33,10 @@ ctx.addEventListener('activate', (event) => {
   event.waitUntil(ctx.clients.claim());
 });
 
+function fileProgress(url: string, downloaded: number, total: number) {
+  notify('file_progress', { url, downloaded, total });
+}
+
 /**
  * Listen Messages
  */
@@ -49,7 +54,7 @@ ctx.onmessage = (event) => {
 
     case 'location': {
       const { url, location, options } = msg.payload;
-      fetchLocation(url, location, options, getFilePart, cacheMock);
+      fetchLocation(url, location, options, getFilePart, cacheMock, fileProgress);
       break;
     }
 
@@ -75,7 +80,7 @@ ctx.addEventListener('fetch', (event: FetchEvent): void => {
     case 'profiles':
       event.respondWith(
         new Promise((resolve) => {
-          fetchRequest(url, resolve, getFilePart, cacheMock);
+          fetchRequest(url, resolve, getFilePart, cacheMock, fileProgress);
         }),
       );
       break;
