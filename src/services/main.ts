@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
-import { Photo, Message, Peer, InputStickerSet, Document } from 'mtproto-js';
+import { Photo, Message, Peer, InputStickerSet, Document, Poll } from 'mtproto-js';
 import { PhotoOptions } from 'helpers/other';
 
 type SidebarState = import('components/sidebar/sidebar').SidebarState;
@@ -31,6 +31,7 @@ export default class MainService {
   showPopup(type: 'stickerSet', ctx: InputStickerSet): void;
   showPopup(type: 'photo', ctx: { rect: DOMRect, options: PhotoOptions, photo: Photo, peer: Peer, message: Message }): void;
   showPopup(type: 'video', ctx: { rect: DOMRect, video: Document.document, peer?: Peer, message?: Message }): void;
+  showPopup(type: 'pollResults', ctx: { peer: Peer, message: Message.message, poll: Poll }): void;
   showPopup(type: string, ctx?: any): void {
     this.popupCtx = ctx;
     this.popup.next(type);

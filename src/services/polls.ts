@@ -5,7 +5,8 @@ import { messageCache, userCache, chatCache } from 'cache';
 
 export default class PollsService {
   constructor() {
-    client.updates.on('updateMessagePoll', this.processUpdate);
+    client.updates.on('updateMessagePoll', this.processUpdateMessagePoll);
+    client.updates.on('updateMessagePollVote', this.processUpdateMessagePollVote);
   }
 
   public async sendVote(peer: Peer, messageId: number, options: ArrayBuffer[]) {
@@ -19,13 +20,17 @@ export default class PollsService {
       chatCache.put(updates.chats);
       updates.updates.forEach((update: Update) => {
         if (update._ === 'updateMessagePoll') {
-          this.processUpdate(update);
+          this.processUpdateMessagePoll(update);
         }
       });
     }
   }
 
-  private processUpdate = (update: Update.updateMessagePoll) => {
+  private processUpdateMessagePoll = (update: Update.updateMessagePoll) => {
     messageCache.indices.polls.updatePoll(update);
+  };
+
+  private processUpdateMessagePollVote = (update: Update.updateMessagePollVote) => {
+    console.error(update);
   };
 }

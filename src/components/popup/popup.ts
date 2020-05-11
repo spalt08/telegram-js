@@ -6,6 +6,7 @@ import photoPopup from './photo/photo';
 import SendMediaPopup from './send_media/send_media';
 import stickerSetPopup from './sticker_set/sticker_set';
 import videoPopup from './video/video';
+import pollResultsPopup from './poll_results/poll_results';
 import './popup.scss';
 
 /**
@@ -45,6 +46,12 @@ export default function popup() {
         wrapper.classList.add('opened');
         mount(wrapper, element = stickerSetPopup(main.popupCtx));
         break;
+
+      case 'pollResults': {
+        wrapper.classList.add('opened');
+        mount(wrapper, element = pollResultsPopup(main.popupCtx));
+        break;
+      }
 
       default:
         throw new Error('Unknown popup');

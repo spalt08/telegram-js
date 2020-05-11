@@ -2,13 +2,14 @@ import { Poll, PollResults, PollAnswerVoters, Peer, Message } from 'mtproto-js';
 import { div, text, span } from 'core/html';
 import { mount, unmountChildren } from 'core/dom';
 import { useWhileMounted, getInterface } from 'core/hooks';
-import { polls } from 'services';
+import { polls, main } from 'services';
 import { messageCache } from 'cache';
 import { peerMessageToId, userIdToPeer } from 'helpers/api';
 import { profileAvatar } from 'components/profile';
 import pollOption, { PollOptionInterface } from './poll_option';
 
 import './poll.scss';
+import { pluralize } from 'helpers/other';
 
 const decoder = new TextDecoder();
 const encoder = new TextEncoder();
@@ -33,8 +34,8 @@ function buildRecentVotersList(userIds?: number[]) {
   return [];
 }
 
-export default function poll(peer: Peer, message: Message, info: HTMLElement) {
-  if (message._ !== 'message' || message.media?._ !== 'messageMediaPoll') {
+export default function poll(peer: Peer, message: Message.message, info: HTMLElement) {
+  if (message.media?._ !== 'messageMediaPoll') {
     throw new Error('message media must be of type "messageMediaPoll"');
   }
   const { poll: pollData, results } = message.media;
@@ -50,14 +51,18 @@ export default function poll(peer: Peer, message: Message, info: HTMLElement) {
     selectedOptions.clear();
     pollOptions.forEach((po) => getInterface(po).reset());
   };
-  const voteButton = div`.poll__vote-button.-inactive`({
-    onClick: async () => {
-      await submitOptions();
-    },
-  }, text('Vote'));
   const options = new Map<string, PollOptionInterface>();
   const answered = !!results.results && results.results.findIndex((r) => r.chosen) >= 0;
   const maxVoters = results.results ? Math.max(...results.results.map((r) => r.voters)) : 0;
+  const voteButton = div`.poll__vote-button.-inactive`({
+    onClick: async () => {
+      if (answered) {
+        main.showPopup('pollResults', { peer, message, poll: pollData });
+      } else {
+        await submitOptions();
+      }
+    },
+  }, text('Vote'));
   pollData.answers.forEach((answer) => {
     const optionKey = decoder.decode(answer.option);
     let voters: PollAnswerVoters | undefined;
@@ -94,7 +99,7 @@ export default function poll(peer: Peer, message: Message, info: HTMLElement) {
 
   const updateTotalVotersText = (closed: boolean, totalVoters: number) => {
     totalVotersText.textContent = totalVoters > 0
-      ? `${totalVoters} voter${totalVoters > 1 ? 's' : ''}`
+      ? `${totalVoters} ${pluralize(totalVoters, 'voter', 'voters')}`
       : `No voters${closed ? '' : ' yet'}`;
   };
   const updateVoteButtonText = (isAnswered: boolean) => {
