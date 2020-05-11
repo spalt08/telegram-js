@@ -3,7 +3,7 @@ import { storiesOf } from '@storybook/html';
 import { action } from '@storybook/addon-actions';
 import { withKnobs } from '@storybook/addon-knobs';
 import { withMountTrigger, centered, withKnobPeer, withKnobWidth } from 'storybook/decorators';
-import search from './search';
+import search from './message_search';
 
 const stories = storiesOf('Layout | Sidebar', module)
   .addDecorator(withMountTrigger)

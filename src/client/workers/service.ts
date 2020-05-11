@@ -63,6 +63,10 @@ function getFilePartRequest(location: InputFileLocation, offset: number, limit: 
   });
 }
 
+function fileProgress(url: string, downloaded: number, total: number) {
+  notify('file_progress', { url, downloaded, total });
+}
+
 /**
  * Window Message Processing
  */
@@ -80,7 +84,7 @@ function processWindowMessage(msg: WindowMessage, source: Client | MessagePort |
 
     case 'location': {
       const { url, location, options } = msg.payload;
-      fetchLocation(url, location, options, getFilePartRequest, ctx.cache);
+      fetchLocation(url, location, options, getFilePartRequest, ctx.cache, fileProgress);
       break;
     }
 
@@ -151,7 +155,7 @@ ctx.addEventListener('fetch', (event: FetchEvent): void => {
           if (cached) return cached;
 
           return new Promise((resolve) => {
-            fetchRequest(url, resolve, getFilePartRequest, ctx.cache);
+            fetchRequest(url, resolve, getFilePartRequest, ctx.cache, fileProgress);
           });
         }),
       );

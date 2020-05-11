@@ -62,7 +62,7 @@ export default function header() {
     const actions = div`.header__actions`(
       roundButton({
         onClick: () => {
-          main.openSidebar('search');
+          main.openSidebar('messageSearch');
         },
       }, icons.search()),
       roundButton({

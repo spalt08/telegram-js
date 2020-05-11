@@ -57,7 +57,7 @@ $sidebar-max: 380px;
     }
   }
 
-  &.-poping-state .sidebarWrapper {
+  &.-popping-state .sidebarWrapper {
     &:last-child {
       background-color: rgba(0, 0, 0, 0);
     }
@@ -69,7 +69,7 @@ $sidebar-max: 380px;
     }
   }
 
-  &.-hided {
+  &.-hidden {
     width: 0;
     min-width: 0;
   }

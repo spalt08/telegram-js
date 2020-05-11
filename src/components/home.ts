@@ -10,7 +10,7 @@ import './home.scss';
  * Handler for route /
  */
 export default function home() {
-  const rightSidebar = sidebar({ className: '-right -hided' });
+  const rightSidebar = sidebar({ className: '-right -hidden' });
   const container = div`.home`(
     sidebar({ initial: 'dialogs', className: '-left' }),
     history(),

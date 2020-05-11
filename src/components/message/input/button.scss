@@ -1,15 +1,13 @@
 .msgRecordSend {
   position: relative;
   display: flex;
-  flex-shrink: 0;
-  flex-basis: 60PX;
+  flex: none;
   width: 60PX;
   transition: .2s ease-out;
   will-change: width;
   justify-content: flex-end;
 
   &.-recording {
-    flex-basis: 120PX;
     width: 120PX;
     transition: .2s ease-out;
   }

@@ -6,7 +6,7 @@ import dialogs from './dialogs/dialogs';
 import settings from './settings/settings';
 import newGroup from './new_group/new_group';
 import contacts from './contacts_list/contacts_list';
-import search from './search/search';
+import messageSearch from './message_search/message_search';
 import info from './info/info';
 import sharedMedia from './shared_media/shared_media';
 import './sidebar.scss';
@@ -17,7 +17,7 @@ const elements = {
   newGroup,
   contacts,
   info,
-  search,
+  messageSearch,
   sharedMedia,
 };
 
@@ -44,17 +44,17 @@ export default function sidebar({ initial, className }: Props) {
   const popState = () => {
     // just close sidebar
     if (stack.length <= 1) {
-      container.classList.add('-hided');
+      container.classList.add('-hidden');
       return;
     }
 
     let element = stack.pop();
 
     if (element) {
-      container.classList.add('-poping-state');
+      container.classList.add('-popping-state');
 
       element.ontransitionend = () => {
-        container.classList.remove('-poping-state');
+        container.classList.remove('-popping-state');
         if (element) {
           unmount(element);
           element = undefined;
@@ -74,12 +74,12 @@ export default function sidebar({ initial, className }: Props) {
     mount(container, element);
     stack.push(element);
 
-    if (container.classList.contains('-hided')) container.classList.remove('-hided');
+    container.classList.remove('-hidden');
   };
 
   // unmount after closing
   listen(container, 'transitionend', () => {
-    if (container.classList.contains('-hided')) {
+    if (container.classList.contains('-hidden')) {
       const element = stack.pop();
       if (element) unmount(element);
     }

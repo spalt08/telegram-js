@@ -296,6 +296,10 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
       renderedMessage = rm.message;
       renderedInfo = rm.info;
 
+      useContextMenu(renderedMessage, [
+        { icon: icons.reply, label: 'Reply', onClick: () => service.setMessageForReply(id) },
+      ]);
+
       // if unread
       const dialog = dialogCache.get(peerToId(peer));
       if (dialog?._ === 'dialog' && dialog.read_outbox_max_id < msg.id) {
@@ -427,10 +431,6 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
   };
 
   useOnMount(element, () => update(true));
-
-  useContextMenu(element, [
-    { icon: icons.reply, label: 'Reply', onClick: () => service.setMessageForReply(id) },
-  ]);
 
   return useInterface(element, {
     from: () => cached && cached._ !== 'messageEmpty' ? cached.from_id : 0,

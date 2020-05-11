@@ -9,7 +9,7 @@ import { mount } from 'core/dom';
 import { peerMessageToId } from 'helpers/api';
 import { foundMessage } from 'components/sidebar';
 import { pluralize } from 'helpers/other';
-import './search.scss';
+import './message_search.scss';
 
 type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
