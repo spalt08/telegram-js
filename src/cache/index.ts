@@ -42,12 +42,22 @@ export const chatCache = new Collection({
   },
 });
 
+// to do: relocate code above
+const timezoneOffset = new Date().getTimezoneOffset() * 60;
+export const messageGroupMap = new Map<string, string>();
+function getMessageIdWithGroupMemo(message: Readonly<Message>) {
+  const id = messageToId(message);
+  if (message._ !== 'messageEmpty') messageGroupMap.set(id, Math.ceil((message.date - timezoneOffset) / (3600 * 24)).toString());
+
+  return id;
+}
+
 /**
  * Message repo
  * Ref: https://core.telegram.org/constructor/message
  */
 export const messageCache = new Collection({
-  getId: messageToId as GetId<Message, string>,
+  getId: getMessageIdWithGroupMemo as GetId<Message, string>,
   indices: {
     history: messageHistory,
     photoVideos: sharedMediaIndex,

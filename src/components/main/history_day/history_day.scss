@@ -1,0 +1,22 @@
+.historyDay {
+  &__label {
+    position: sticky;
+    z-index: 1;
+    top: 0;
+    text-align: center;
+    padding: 5px 0;
+
+    & span {
+      display: inline-block;
+      margin: 0 auto;
+      width: auto;
+      max-width: 70%;
+      color: #FFFFFF;
+      background: rgba(0, 0, 0, 0.20);
+      height: 26px;
+      border-radius: 13px;
+      line-height: 20px;
+      padding: 3px 10px;
+    }
+  }
+}

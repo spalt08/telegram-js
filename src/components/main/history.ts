@@ -12,9 +12,10 @@ import * as icons from 'components/icons';
 import messageInput from 'components/message/input/input';
 import { Peer } from 'mtproto-js';
 import { compareSamePeerMessageIds, peerMessageToId, peerToId } from 'helpers/api';
-import { messageCache, dialogCache, chatCache } from 'cache';
+import { messageCache, dialogCache, chatCache, messageGroupMap } from 'cache';
 import header from './header/header';
 import './history.scss';
+import historyDay from './history_day/history_day';
 
 function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
   const { length } = messageIds;
@@ -73,7 +74,7 @@ export default function history() {
       const lastReadMessageIndex = getMessageIndex(peerMessageToId(peer, dialog.read_inbox_max_id));
       const newReadMessageIndex = getMessageIndex(peerMessageToId(peer, newestReadMessageId));
       for (let i = Math.floor(lastReadMessageIndex) + 1; i <= newReadMessageIndex; i++) {
-        const msg = messageCache.get(scroll.current[i]);
+        const msg = messageCache.get(scroll.items[i]);
         if (msg && msg._ !== 'messageEmpty' && !msg.out) unread_count--;
       }
     }
@@ -90,9 +91,11 @@ export default function history() {
     items: itemsSubject,
     pivotBottom: true,
     threshold: 2,
-    batch: 35,
+    batch: 20,
     focusFromBottom: true,
-    renderer: (id: string) => message(id, service.activePeer.value!, (mid: string) => scroll.pendingRecalculate.push(mid)),
+    renderer: (id: string) => message(id, service.activePeer.value!), // , (mid: string) => scroll.pendingRecalculate.push(mid)),
+    selectGroup: (id: string) => messageGroupMap.get(id) || '0',
+    renderGroup: historyDay,
     onReachTop: () => service.loadMoreHistory(MessageDirection.Older),
     onReachBottom: () => service.loadMoreHistory(MessageDirection.Newer),
     onFocus: (id: string) => {

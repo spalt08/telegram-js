@@ -27,16 +27,12 @@ import './message.scss';
 
 type MessageInterface = {
   from(): number,
-  day(): number,
   update(): void,
   updateLayout(): void,
   getBorders(): { first: boolean, last: boolean },
   setBorders(first: boolean, last: boolean): void,
   id: string,
 };
-
-const now = new Date();
-const timezoneOffset = now.getTimezoneOffset() * 60;
 
 function messageText(msg: Message.message, info: Node) {
   if (msg.message) {
@@ -229,15 +225,11 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
   let wrapper: Node | undefined;
   let renderedMessage: Node | undefined;
   let renderedInfo: Node | undefined;
-  let dayLabel: Node | undefined;
   let profilePicture: Node | undefined;
   let replyMarkup: Node | undefined;
 
   // previous message before update
   let cached: Message | undefined;
-
-  // utc day number
-  const day = () => Math.ceil(((cached && cached._ !== 'messageEmpty' ? cached.date : 0) - timezoneOffset) / 3600 / 24);
 
   // listen cache changes for auto rerendering
   subject.subscribe((msg: Message | undefined) => {
@@ -334,27 +326,8 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     }
   };
 
-  // update meta elemens (day label, message avatar for chats) depends on classList
+  // update meta elemens (message avatar for chats) depends on classList
   const updateLayout = () => {
-    // remove daylabel
-    if (dayLabel && !element.classList.contains('day')) {
-      unmount(dayLabel);
-      dayLabel = undefined;
-
-      if (onUpdateHeight) onUpdateHeight(id);
-    }
-
-    // display daylabel
-    if (element.classList.contains('day') && !dayLabel) {
-      const mdate = new Date(cached && cached._ !== 'messageEmpty' ? cached.date * 1000 : 0);
-      const label = mdate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
-
-      dayLabel = div`.message-day`(div`.message-day__label`(text(label)));
-      mount(element, dayLabel, container);
-
-      if (onUpdateHeight) onUpdateHeight(id);
-    }
-
     // remove picture
     if (profilePicture && !isLast) {
       unmount(profilePicture);
@@ -370,7 +343,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     }
   };
 
-  // update classList for daylabel, first, last
+  // update classList for first, last
   const update = (recursive: boolean = false) => {
     const nextEl = element.nextElementSibling;
     const prevEl = element.previousElementSibling;
@@ -379,22 +352,12 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     if (nextEl && hasInterface<MessageInterface>(nextEl)) {
       const next = getInterface(nextEl);
 
-      if (cached && cached._ !== 'messageEmpty' && next.from() === cached.from_id && next.day() === day()) {
+      if (cached && cached._ !== 'messageEmpty' && next.from() === cached.from_id) {
         setBorders(isFirst, false);
         getInterface(nextEl).setBorders(false, getInterface(nextEl).getBorders().last);
       } else {
         getInterface(nextEl).setBorders(true, getInterface(nextEl).getBorders().last);
         setBorders(isFirst, true);
-      }
-
-      if (next.day() === day()) {
-        if (nextEl.classList.contains('day')) {
-          nextEl.classList.remove('day');
-          if (recursive) next.updateLayout();
-        }
-      } else if (!nextEl.classList.contains('day')) {
-        nextEl.classList.add('day');
-        if (recursive) next.updateLayout();
       }
     } else {
       setBorders(isFirst, true);
@@ -402,9 +365,6 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
 
     if (!prevEl) {
       setBorders(true, isLast);
-      if (!element.classList.contains('day')) {
-        element.classList.add('day');
-      }
     }
 
     // update previous
@@ -418,7 +378,6 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
   return useInterface(element, {
     from: () => cached && cached._ !== 'messageEmpty' ? cached.from_id : 0,
     updateLayout,
-    day,
     update,
     id,
     getBorders,

@@ -113,11 +113,7 @@ export function listenOnce<K extends keyof HTMLElementEventMap>(element: HTMLEle
 export function listenOnce<K extends keyof SVGElementEventMap>(element: SVGElement, event: K, cb: (event: SVGElementEventMap[K]) => void): void;
 export function listenOnce(element: EventTarget, event: string, cb: (event: Event) => void): void;
 export function listenOnce(element: EventTarget, event: string, cb: (event: Event) => void) {
-  const handle = (e: Event) => {
-    element.removeEventListener(event, handle);
-    cb(e);
-  };
-  element.addEventListener(event, handle);
+  element.addEventListener(event, cb, { once: true });
 }
 
 /**

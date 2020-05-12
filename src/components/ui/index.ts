@@ -7,7 +7,7 @@ export { default as tgs, preloadTgsAssets } from './tgs/tgs';
 export { default as passwordInput } from './password_input/password_input';
 export { default as datetime } from './datetime/datetime';
 export { default as ripple } from './ripple/ripple';
-export { VirtualizedList, default as list } from './list4/list';
+export { VirtualizedList, default as list } from './list5/list';
 export { default as sectionSpinner } from './section_spinner/section_spinner';
 export { default as emoji } from './emoji/emoji';
 export { formattedMessage, highlightLinks } from './formatted_message';

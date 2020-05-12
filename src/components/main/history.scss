@@ -29,6 +29,8 @@
     flex: 1;
     z-index: 0;
     mask-image: linear-gradient(to top, transparent, #000 12px);
+    display: flex;
+    flex-direction: column;
   }
 
   &__spinner {
