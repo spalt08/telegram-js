@@ -312,8 +312,11 @@ export default class MessagesService {
     try {
       result = await client.call('messages.sendMessage', params);
     } catch (err) {
+      console.log(err);
       // todo handling errors
     }
+
+    console.log('send', result);
 
     if (result?._ === 'updateShortSentMessage') {
       this.pendingMessages[randId].id = result.id;
@@ -322,6 +325,15 @@ export default class MessagesService {
 
       messageCache.indices.history.putNewestMessages([this.pendingMessages[randId]]);
       delete this.pendingMessages[randId];
+    }
+
+    if (result?._ === 'updates') {
+      for (let i = 0; i < result.updates.length; i++) {
+        const update = result.updates[i];
+        if (update._ === 'updateNewMessage') {
+          messageCache.indices.history.putNewestMessages([update.message]);
+        }
+      }
     }
   };
 
