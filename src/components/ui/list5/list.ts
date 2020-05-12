@@ -8,6 +8,7 @@ type ListConfig = {
   batch: number,
   pivotBottom?: boolean,
   threshold: number,
+  highlightFocused: boolean,
   onReachTop?: () => void,
   onReachBottom?: () => void,
 };
@@ -19,6 +20,8 @@ type Props = Partial<ListConfig> & {
   renderGroup?: (index: string) => HTMLElement,
   selectGroup?: (index: string) => string;
 };
+
+const ease = (t: number) => t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
 
 const arr_contains = (a: readonly string[], b: readonly string[]): boolean => {
   for (let i = 0; i < b.length; ++i) {
@@ -48,6 +51,7 @@ export class VirtualizedList {
   groupChildrenCount: Record<string, number>;
   heights: Record<string, number>;
   items: readonly string[];
+  pendingItems: readonly string[];
 
   render: Props['renderer'];
   renderGroup: Props['renderGroup'];
@@ -60,6 +64,10 @@ export class VirtualizedList {
   scrollHeight: number = 0;
   firstRendered: number = -1;
   lastRendered: number = -2;
+  isLocked: boolean = false;
+
+  shouldFocus?: string;
+  shouldFocusDirection?: -1 | 1;
 
   constructor({
     items,
@@ -70,17 +78,19 @@ export class VirtualizedList {
     batch = 20,
     threshold = 1,
     pivotBottom = false,
+    highlightFocused = false,
     onReachBottom,
     onReachTop,
   }: Props) {
     this.container = div`.list${className}${pivotBottom ? '-reversed' : ''}`();
 
-    this.cfg = { batch, pivotBottom, threshold, onReachTop, onReachBottom };
+    this.cfg = { batch, pivotBottom, threshold, onReachTop, onReachBottom, highlightFocused };
     this.elements = {};
     this.groups = {};
     this.groupChildrenCount = {};
     this.heights = {};
     this.items = [];
+    this.pendingItems = [];
 
     this.render = renderer;
     this.renderGroup = renderGroup;
@@ -88,7 +98,8 @@ export class VirtualizedList {
 
     // listen items changed
     useMaybeObservable(this.container, items, (next) => {
-      this.update(next.slice(0));
+      if (this.isLocked) this.pendingItems = next.slice(0);
+      else this.update(next.slice(0));
     });
 
     // listen container scroll
@@ -100,7 +111,7 @@ export class VirtualizedList {
       const offset = this.scrollTop = this.container.scrollTop;
 
       // prevent repeating or disabled events
-      if (offset === prevOffset || !this.viewport) return;
+      if (offset === prevOffset || this.isLocked || !this.viewport) return;
 
       // virtualize elements
       if (prevOffset < offset) this.onScrollDown();
@@ -179,7 +190,7 @@ export class VirtualizedList {
       let groupId = this.selectGroup(this.items[offset]);
       let next = this.group(groupId).getBoundingClientRect().height;
 
-      while (offset + count * direction > 0 && offset + count * direction < this.items.length && height + next < maxHeight) {
+      while (offset + count * direction > 0 && offset + count * direction < this.items.length && height + next < maxHeight + 36) {
         height += next;
         count += this.groupChildrenCount[groupId];
 
@@ -189,9 +200,23 @@ export class VirtualizedList {
       }
     }
 
+    // // remove elements inside group or without groupping
+    // let rect = this.element(this.items[offset + count * direction]).getBoundingClientRect();
+    // let distance = rect.top - this.viewport.top + this.scrollTop;
+    // if (direction < 0) distance = this.scrollHeight - distance - rect.height;
+
+    // while (offset + count * direction >= 0 && offset + count * direction < this.items.length && distance + rect.height < maxHeight + 36) {
+    //   height = distance + rect.height;
+    //   count++;
+
+    //   rect = this.element(this.items[offset + count * direction]).getBoundingClientRect();
+    //   distance = rect.top - this.viewport.top + this.scrollTop;
+    //   if (direction < 0) distance = this.scrollHeight - distance - rect.height;
+    // }
+
     // remove elements inside group or without groupping
-    let next = this.element(this.items[offset]).getBoundingClientRect().height;
-    while (offset + count * direction >= 0 && offset + count * direction < this.items.length && height + next < maxHeight) {
+    let next = this.element(this.items[offset + count * direction]).getBoundingClientRect().height;
+    while (offset + count * direction >= 0 && offset + count * direction < this.items.length && height + next < maxHeight + 36) {
       height += next;
       count++;
       next = this.element(this.items[offset + count * direction]).getBoundingClientRect().height;
@@ -206,6 +231,8 @@ export class VirtualizedList {
   init() {
     // already initied
     if (this.firstRendered + this.lastRendered >= 0) return;
+
+    this.lock();
 
     const appendCount = Math.min(this.cfg.batch, this.items.length);
 
@@ -228,6 +255,9 @@ export class VirtualizedList {
       this.viewport = this.container.getBoundingClientRect();
       this.scrollHeight = this.container.scrollHeight;
       this.scrollTop = this.container.scrollTop;
+      this.shouldFocus = undefined;
+      this.shouldFocusDirection = undefined;
+      this.unlock();
     });
   }
 
@@ -240,6 +270,8 @@ export class VirtualizedList {
       const appendCount = Math.min(this.cfg.batch, this.firstRendered);
 
       if (appendCount > 0) {
+        this.lock();
+
         const prevScrollHeight = this.scrollHeight;
         const availableBottomSpace = this.scrollHeight - (this.scrollTop + this.viewport.height) - this.cfg.threshold * this.viewport!.height;
         const toRemove = this.calcElementsToRemove(this.lastRendered, -1, availableBottomSpace);
@@ -257,6 +289,7 @@ export class VirtualizedList {
 
           animationFrameStart().then(() => {
             this.container.scrollTop = this.scrollTop;
+            this.unlock();
           });
         });
       }
@@ -274,6 +307,8 @@ export class VirtualizedList {
       const appendCount = Math.min(this.cfg.batch, this.items.length - this.lastRendered - 1);
 
       if (appendCount > 0) {
+        this.lock();
+
         const availableTopSpace = this.scrollTop - this.cfg.threshold * this.viewport.height;
         const toRemove = this.calcElementsToRemove(this.firstRendered, 1, availableTopSpace);
 
@@ -290,6 +325,8 @@ export class VirtualizedList {
           animationFrameStart().then(() => {
             this.scrollHeight = this.container.scrollHeight;
             this.container.scrollTop = this.scrollTop;
+
+            this.unlock();
           });
         });
       }
@@ -304,6 +341,18 @@ export class VirtualizedList {
     if (this.items.length === 0 || this.lastRendered < this.firstRendered) {
       this.items = next;
       this.init();
+      return;
+    }
+
+    // next chunk was loaded and there is a focused element inside
+    if (this.shouldFocus && next.indexOf(this.shouldFocus) !== -1) {
+      // unmount all elements
+      for (let i = this.firstRendered; i <= this.lastRendered; i++) this.unmount(this.items[i]);
+
+      this.firstRendered = -1;
+      this.lastRendered = -1;
+      this.items = next;
+      this.scrollToVirtualized(this.shouldFocus, this.shouldFocusDirection);
       return;
     }
 
@@ -334,6 +383,8 @@ export class VirtualizedList {
   }
 
   flip(next: readonly string[]) {
+    this.lock();
+
     // visible elements
     const visible = this.items.slice(this.firstRendered, this.lastRendered + 1);
 
@@ -457,10 +508,145 @@ export class VirtualizedList {
       this.items = next.slice(0);
       this.firstRendered = nextFirstRendererd;
       this.lastRendered = nextLastRendered;
+
+      this.unlock();
     });
   }
 
-  focus() {}
+  // scrollTo(item)
+  focus(item: string, direction?: -1 | 1) {
+    const index = this.items.indexOf(item);
+
+    // data wasn't loaded yet or container is locked
+    if (index === -1 || this.isLocked) {
+      this.shouldFocusDirection = direction;
+      this.shouldFocus = item;
+      return;
+    }
+
+    // make virtualized transition
+    if (index < this.firstRendered || index > this.lastRendered) {
+      this.scrollToVirtualized(item, direction || (index < this.firstRendered ? 1 : -1));
+      return;
+    }
+
+    this.scrollTo(item);
+  }
+
+  getScrollToValue(item: string, translate: number = 0) {
+    this.viewport = this.container.getBoundingClientRect();
+    const rect = this.element(item).getBoundingClientRect();
+
+    this.scrollHeight = this.container.scrollHeight - Math.abs(translate);
+    this.scrollTop = this.container.scrollTop;
+
+    let scrollValue = rect.top - this.viewport.top + this.scrollTop + translate;
+
+    if (this.viewport.height > rect.height) scrollValue -= (this.viewport.height - rect.height) / 2;
+
+    scrollValue = Math.max(0, scrollValue);
+    scrollValue = Math.min(this.scrollHeight, scrollValue);
+
+    if (this.items.indexOf(item) === this.lastRendered) scrollValue = this.scrollHeight - this.viewport.height;
+
+    return Math.floor(scrollValue);
+  }
+
+  scrollTo(item: string) {
+    this.lock();
+
+    const scrollValue = this.getScrollToValue(item);
+    const y = this.scrollTop;
+    const dy = scrollValue - y;
+    const duration = 200;
+    let start: number | undefined;
+
+    const elm = this.elements[item];
+    if (this.cfg.highlightFocused) elm.classList.add('-focused');
+
+    const animateScroll = (timestamp: number) => {
+      if (!start) start = timestamp;
+
+      const progress = timestamp - start;
+      const percentage = Math.min(1, progress / duration);
+
+      if (percentage > 0) {
+        this.scrollTop = y + ease(percentage) * dy;
+        this.container.scrollTo(0, this.scrollTop);
+      }
+
+      if (percentage < 1) {
+        requestAnimationFrame(animateScroll);
+      } else {
+        elm.classList.remove('-focused');
+        this.scrollTop = this.container.scrollTop;
+        this.unlock();
+
+        if (dy > 0) this.onScrollDown();
+        if (dy < 0) this.onScrollUp();
+      }
+    };
+
+    requestAnimationFrame(animateScroll);
+  }
+
+  scrollToVirtualized(item: string, direction: number = 0) {
+    const indexOfItem = this.items.indexOf(item);
+    const translate = this.viewport!.height * direction * -1;
+
+    if (indexOfItem === -1) return;
+
+    this.lock();
+
+    // unmount all elements
+    for (let i = this.firstRendered; i <= this.lastRendered; i++) this.unmount(this.items[i]);
+
+    // new elements limit
+    this.firstRendered = Math.max(0, indexOfItem - Math.ceil(this.cfg.batch / 2));
+    this.lastRendered = Math.min(this.items.length - 1, indexOfItem + Math.ceil(this.cfg.batch / 2));
+
+    if (this.cfg.highlightFocused) this.element(item).classList.add('-focused');
+
+    // mount new elements
+    for (let i = this.firstRendered; i <= this.lastRendered; i++) {
+      if (direction !== 0) this.element(this.items[i]).style.transform = `translate(0, ${translate}px)`;
+      this.mount(this.items[i]);
+    }
+
+    this.scrollHeight = this.container.scrollHeight;
+    this.container.scrollTop = this.scrollTop = this.getScrollToValue(item, -translate);
+    animationFrameStart().then(() => this.container.scrollTop = this.scrollTop); // chrome fix
+
+    // on animation end
+    const finishScroll = () => {
+      this.shouldFocus = undefined;
+      this.shouldFocusDirection = undefined;
+      this.scrollTop = this.container.scrollTop;
+      this.unlock();
+      this.element(item).classList.remove('-focused');
+    };
+
+    // animate new elements
+    let callbackFired = 0;
+    if (direction !== 0) {
+      animationFrameStart().then(() => {
+        for (let i = this.firstRendered; i <= this.lastRendered; i++) {
+          const elm = this.element(this.items[i]);
+
+          elm.classList.add('list__scroll-in');
+          elm.style.transform = '';
+
+          // eslint-disable-next-line no-loop-func
+          listenOnce(elm, 'transitionend', () => {
+            elm.classList.remove('list__scroll-in');
+            callbackFired++;
+
+            if (callbackFired === this.lastRendered - this.firstRendered + 1) finishScroll();
+          });
+        }
+      });
+    } else finishScroll();
+  }
 
   clear() {
     unmountChildren(this.container);
@@ -473,6 +659,23 @@ export class VirtualizedList {
     this.firstRendered = -1;
     this.lastRendered = -2;
     this.scrollTop = -1;
+    this.shouldFocus = undefined;
+    this.shouldFocusDirection = undefined;
+  }
+
+  // Lock and unlock updates
+  lock() { this.isLocked = true; }
+  unlock() {
+    this.isLocked = false;
+
+    if (this.pendingItems.length > 0) {
+      const next = this.pendingItems;
+      this.pendingItems = [];
+      this.update(next);
+    }
+    // else if (this.shouldFocus) {
+    //   this.focus(this.shouldFocus, this.shouldFocusDirection);
+    // }
   }
 }
 

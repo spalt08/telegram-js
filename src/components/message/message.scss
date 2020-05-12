@@ -251,7 +251,7 @@ $messageDistance: 4PX;
     &.e1 { font-size: 80px; }
   }
 
-  &.focused &__container {
+  &.-focused &__container {
     background-color: rgba(0, 132, 255, 0.3);
   }
 

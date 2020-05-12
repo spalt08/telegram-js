@@ -28,6 +28,11 @@
     z-index: 1;
   }
 
+  &__scroll-in {
+    transition: transform .2s ease;
+    z-index: 1;
+  }
+
   @keyframes listAppear {
     from {
       opacity: 0;
@@ -53,6 +58,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+
+  &.-focused {
+    transition: .3s ease-in-out;
+    background-color: blue;
+    color: #ffffff;
+  }
 }
 
 .demoListGroup {

@@ -4,7 +4,7 @@ import { withKnobs, number, button } from '@storybook/addon-knobs';
 import { withMountTrigger, fullscreen } from 'storybook/decorators';
 import { div, text as textNode } from 'core/html';
 import { BehaviorSubject } from 'rxjs';
-import list from './list';
+import list, { VirtualizedList } from './list';
 
 const items = new BehaviorSubject<readonly string[]>([]);
 
@@ -34,10 +34,10 @@ const stories = storiesOf('Layout | UI Elements / List 5', module)
   .addDecorator(fullscreen);
 
 const renderer = (id: string) => div`.demoListRow`(textNode(`Item #${+id + 1}`));
-const selectGroup = (index: string) => Math.floor(+index / 10).toString();
+const selectGroup = (index: string) => Math.floor(+index).toString();
 const renderGroup = (index: string) => div`.demoListGroup`(div`.demoListGroup__header`(textNode(index)));
 
-const listTop = list({ items, renderer });
+const listTop = new VirtualizedList({ items, renderer, highlightFocused: true });
 const listGrouped = list({ items, renderer, renderGroup, selectGroup });
 const listBottom = list({ items, renderer, renderGroup, selectGroup, pivotBottom: true });
 
@@ -45,7 +45,10 @@ stories.add('Common', () => {
   align(number('Items', items.value.length || 100));
   button('Shuffle', () => items.next(shuffle(items.value.slice(0))));
 
-  return listTop;
+  const scrollIndex = number('Focus #', 50);
+  button('Scroll', () => listTop.focus(items.value[scrollIndex]));
+
+  return listTop.container;
 });
 
 stories.add('Groupped', () => {
