@@ -4,25 +4,6 @@ $messageSidePadding: 10PX;
 $messageBubblePadding: 7PX $messageSidePadding;
 $messageDistance: 4PX;
 
-.message-day {
-  padding: 8px 0px 5px;
-  text-align: center;
-
-  &__label {
-    display: inline-block;
-    margin: 0 auto;
-    width: auto;
-    max-width: 70%;
-    color: #FFFFFF;
-    background: rgba(0, 0, 0, 0.20);
-    height: 26px;
-    border-radius: 13px;
-    line-height: 20px;
-    padding: 3px 10px;
-    position: sticky;
-  }
-}
-
 .message {
   --bubble-background: #FFFFFF;
   --accent-color: #1da1f1;
@@ -32,6 +13,7 @@ $messageDistance: 4PX;
 
   width: 100%;
   overflow: hidden;
+  z-index: 0;
   transition: background-color .4s ease-out;
   background-color: rgba(0, 0, 0, 0);
 
@@ -42,7 +24,7 @@ $messageDistance: 4PX;
   &__align {
     width: 100%;
     max-width: 740px;
-    padding: ($messageDistance / 2) 20px;
+    padding: 0 20PX;
     display: flex;
     justify-content: flex-start;
     align-items: flex-end;
@@ -254,7 +236,7 @@ $messageDistance: 4PX;
   }
 
   &.first .message {
-    &__align { padding-top: 6px; }
+    &__align { } //padding-top: 6px; }
     &__bubble { border-top-left-radius: 12.5px; }
     &__title { display: block; }
   }

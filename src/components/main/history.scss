@@ -9,13 +9,10 @@
   background-position: center center;
 
   // performance tweak for right sidebar
+  overflow: hidden;
   will-change: width;
   z-index: 0;
   transform: translate3d(0, 0, 0);
-
-  > * {
-    flex: none;
-  }
 
   &__content {
     flex: 1;
@@ -26,11 +23,16 @@
   }
 
   &__list {
-    flex: 1;
     z-index: 0;
     mask-image: linear-gradient(to top, transparent, #000 12px);
     display: flex;
     flex-direction: column;
+    padding-bottom: 8PX;
+  }
+
+  &__list .list__wrapper {
+    flex: none;
+    margin-top: auto;
   }
 
   &__spinner {
@@ -97,11 +99,16 @@
     justify-content: center;
 
     &-text {
-      background-color: rgba(0, 0, 0, 0.3);
-      padding: 2px 8px;
-      font-size: 15px;
-      color: #fff;
-      border-radius: 10px;
+      display: inline-block;
+      margin: 0 auto;
+      width: auto;
+      max-width: 70%;
+      color: #FFFFFF;
+      background: rgba(0, 0, 0, 0.20);
+      height: 26px;
+      border-radius: 13px;
+      line-height: 20px;
+      padding: 3px 10px;
     }
   }
 }

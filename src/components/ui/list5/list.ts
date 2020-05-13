@@ -120,9 +120,7 @@ export class VirtualizedList {
       // virtualize elements
       if (prevOffset < offset) this.onScrollDown();
       else this.onScrollUp();
-    }, { passive: true });
-
-    console.log(this);
+    }, { passive: true, capture: true });
   }
 
   // get element by index
@@ -207,7 +205,7 @@ export class VirtualizedList {
 
         groupId = this.selectGroup(this.items[offset + count * direction]);
         next = this.group(groupId).offsetHeight;
-        if (next === 0) throw new Error(`height cannot be zero: ${direction} ${offset + count * direction} ${lowerLimit} ${upperLimit}`);
+        if (next === 0) throw new Error('height cannot be zero');
       }
     }
 
@@ -231,7 +229,7 @@ export class VirtualizedList {
       height += next;
       count++;
       next = this.element(this.items[offset + count * direction]).offsetHeight;
-      if (next === 0) throw new Error(`height cannot be zero ${this.items[offset + count * direction]}: ${offset + count * direction} ${this.firstRendered}`);
+      if (next === 0) throw new Error('height cannot be zero');
     }
 
     return { height: Math.round(height), count };
@@ -283,37 +281,30 @@ export class VirtualizedList {
       if (appendCount > 0) {
         this.lock();
 
-        const prevScrollHeight = this.container.scrollHeight;
-        const heightLimit = this.scrollHeight - (this.scrollTop + this.viewport.height) - this.paddingBottom;
-
+        const prevScrollHeight = this.scrollHeight;
+        const heightLimit = this.scrollHeight - this.paddingBottom - (this.scrollTop + this.viewport.height);
         const toRemove = this.calcElementsToRemove(this.lastRendered, -1, heightLimit - this.cfg.threshold * this.viewport!.height);
 
+        // unmount elements
+        if (toRemove.height > 0) this.wrapper.style.paddingBottom = `${this.paddingBottom += toRemove.height}px`;
+        for (let i = 0; i < toRemove.count; i++) this.unmount(this.items[this.lastRendered--]);
+
+        // mount top elements
+        for (let i = 0; i < appendCount; i += 1) {
+          this.mount(this.items[--this.firstRendered], this.firstRendered + 1 <= this.lastRendered ? this.items[this.firstRendered + 1] : undefined);
+        }
+
+        // keep scroll position
+        this.scrollHeight = this.container.scrollHeight;
+        const appendedHeight = this.scrollHeight - prevScrollHeight;
+        const newElementsHeight = Math.max(appendedHeight - this.paddingTop, 0);
+
+        this.wrapper.style.paddingTop = `${this.paddingTop = Math.max(0, this.paddingTop - appendedHeight)}px`;
+        if (newElementsHeight > 0) this.container.scrollTop = this.scrollTop += newElementsHeight;
+
         animationFrameStart().then(() => {
-          // unmount elements
-          if (toRemove.height > 0) this.wrapper.style.paddingBottom = `${this.paddingBottom += toRemove.height}px`;
-          for (let i = 0; i < toRemove.count; i++) this.unmount(this.items[this.lastRendered--]);
-
-          // mount top elements
-          for (let i = 0; i < appendCount; i += 1) {
-            this.mount(this.items[--this.firstRendered], this.firstRendered + 1 <= this.lastRendered ? this.items[this.firstRendered + 1] : undefined);
-          }
-
-          // keep scroll position
           this.scrollHeight = this.container.scrollHeight;
-
-          const appendedHeight = this.scrollHeight - prevScrollHeight;
-          const scrollDelta = this.paddingTop < appendedHeight ? appendedHeight - this.paddingTop : 0;
-
-          this.wrapper.style.paddingTop = `${this.paddingTop = Math.max(0, this.paddingTop - appendedHeight)}px`;
-
-          if (scrollDelta > 0) this.container.scrollTop = this.scrollTop += scrollDelta;
-
-          this.scrollHeight = this.container.scrollHeight;
-
           this.unlock();
-          // animationFrameStart().then(() => {
-          //   this.unlock();
-          // });
         });
       }
 
@@ -323,7 +314,7 @@ export class VirtualizedList {
 
   // user has scrolled lower
   onScrollDown() {
-    if (!this.viewport || this.viewport.height === 0) throw new Error('Viewport has not calculated yet');
+    if (!this.viewport) this.viewport = this.container.getBoundingClientRect();
 
     // apply bottom elements and shrink top
     if (this.scrollHeight - this.paddingBottom - this.scrollTop - this.viewport.height < this.cfg.threshold * this.viewport.height) {
@@ -332,35 +323,25 @@ export class VirtualizedList {
       if (appendCount > 0) {
         this.lock();
 
-        // const prevScrollHeight = this.scrollHeight;
-        const prevScrollHeight = this.container.scrollHeight;
+        const prevScrollHeight = this.scrollHeight;
         const heightLimit = this.scrollTop - this.paddingTop;
         const toRemove = this.calcElementsToRemove(this.firstRendered, 1, heightLimit - this.cfg.threshold * this.viewport.height);
 
+        // unmount elements
+        if (toRemove.height > 0) this.wrapper.style.paddingTop = `${this.paddingTop += toRemove.height}px`;
+        for (let i = 0; i < toRemove.count; i++) this.unmount(this.items[this.firstRendered++]);
+
+        // mount bottom elements
+        for (let i = 0; i < appendCount; i += 1) this.mount(this.items[++this.lastRendered]);
+
+        // keep scroll position
+        this.scrollHeight = this.container.scrollHeight;
+        const appendedHeight = this.scrollHeight - prevScrollHeight;
+        this.wrapper.style.paddingBottom = `${this.paddingBottom = Math.max(0, this.paddingBottom - appendedHeight)}px`;
+
         animationFrameStart().then(() => {
-          // unmount elements
-          if (toRemove.height > 0) this.wrapper.style.paddingTop = `${this.paddingTop += toRemove.height}px`;
-          for (let i = 0; i < toRemove.count; i++) this.unmount(this.items[this.firstRendered++]);
-
-          // mount bottom elements
-          for (let i = 0; i < appendCount; i += 1) this.mount(this.items[++this.lastRendered]);
-
-          // keep scroll position
           this.scrollHeight = this.container.scrollHeight;
-          const appendedHeight = this.scrollHeight - prevScrollHeight;
-
-          this.wrapper.style.paddingBottom = `${this.paddingBottom = Math.max(0, this.paddingBottom - appendedHeight)}px`;
-
-          // keep scroll position
-          this.container.scrollTop = this.scrollTop;
-          this.scrollHeight = this.container.scrollHeight;
-
-          // this.scrollHeight = this.container.scrollHeight;
           this.unlock();
-          // animationFrameStart().then(() => {
-          //   this.scrollHeight = this.container.scrollHeight;
-          //   this.unlock();
-          // });
         });
       }
     }

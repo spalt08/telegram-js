@@ -10,9 +10,6 @@
   overflow-y: scroll;
   min-height: 0; // To force the content to scroll
 
-  &.-reversed > :first-child {
-    margin-top: auto;
-  }
 
   &__appearing {
     animation: listAppear .3s ease;

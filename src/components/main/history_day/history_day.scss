@@ -1,10 +1,15 @@
 .historyDay {
+  z-index: 0;
+  overflow: inherit;
+
   &__label {
     position: sticky;
-    z-index: 1;
+    z-index: 2;
     top: 0;
     text-align: center;
-    padding: 5px 0;
+    height: 34PX;
+    padding-top: 4PX;
+    box-sizing: border-box;
 
     & span {
       display: inline-block;
@@ -12,11 +17,11 @@
       width: auto;
       max-width: 70%;
       color: #FFFFFF;
-      background: rgba(0, 0, 0, 0.20);
-      height: 26px;
-      border-radius: 13px;
+      background: rgba(27, 25, 25, 0.2);
+      height: 26PX;
+      border-radius: 13PX;
       line-height: 20px;
-      padding: 3px 10px;
+      padding: 3PX 10PX;
     }
   }
 }
