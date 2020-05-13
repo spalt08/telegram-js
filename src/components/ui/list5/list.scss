@@ -64,12 +64,26 @@
     background-color: blue;
     color: #ffffff;
   }
+
+  &:nth-child(2n) {
+    height: 100px;
+    background-color: #f1f1f1;
+  }
+
+  &:nth-child(3n) {
+    height: 140px;
+  }
+
+  &:nth-child(4n) {
+    height: 300px;
+  }
 }
 
 .demoListGroup {
   &__header {
     position: sticky;
-    background-color: #f1f1f1;
+    background-color: #333333;
+    color: #ffffff;
     top: 0;
     text-align: center;
   }

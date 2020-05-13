@@ -34,7 +34,7 @@ const stories = storiesOf('Layout | UI Elements / List 5', module)
   .addDecorator(fullscreen);
 
 const renderer = (id: string) => div`.demoListRow`(textNode(`Item #${+id + 1}`));
-const selectGroup = (index: string) => Math.floor(+index).toString();
+const selectGroup = (index: string) => Math.floor(+index / 10).toString();
 const renderGroup = (index: string) => div`.demoListGroup`(div`.demoListGroup__header`(textNode(index)));
 
 const listTop = new VirtualizedList({ items, renderer, highlightFocused: true });
@@ -42,7 +42,7 @@ const listGrouped = list({ items, renderer, renderGroup, selectGroup });
 const listBottom = list({ items, renderer, renderGroup, selectGroup, pivotBottom: true });
 
 stories.add('Common', () => {
-  align(number('Items', items.value.length || 100));
+  align(number('Items', items.value.length || 500));
   button('Shuffle', () => items.next(shuffle(items.value.slice(0))));
 
   const scrollIndex = number('Focus #', 50);
@@ -52,7 +52,7 @@ stories.add('Common', () => {
 });
 
 stories.add('Groupped', () => {
-  align(number('Items', items.value.length || 100));
+  align(number('Items', items.value.length || 500));
   button('Shuffle', () => items.next(shuffle(items.value.slice(0))));
 
   return listGrouped;

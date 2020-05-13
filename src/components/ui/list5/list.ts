@@ -104,9 +104,6 @@ export class VirtualizedList {
 
     // listen container scroll
     listen(this.container, 'scroll', () => {
-      // not initialized
-      if (this.scrollTop === -1) return;
-
       const prevOffset = this.scrollTop;
       const offset = this.scrollTop = this.container.scrollTop;
 
@@ -117,6 +114,8 @@ export class VirtualizedList {
       if (prevOffset < offset) this.onScrollDown();
       else this.onScrollUp();
     }, { passive: true });
+
+    console.log(this);
   }
 
   // get element by index
@@ -190,7 +189,7 @@ export class VirtualizedList {
       let groupId = this.selectGroup(this.items[offset]);
       let next = this.group(groupId).offsetHeight;
 
-      while (offset + count * direction > 0 && offset + count * direction < this.items.length && height + next < maxHeight - 36) {
+      while (offset + count * direction > 0 && offset + count * direction < this.items.length && height + next < maxHeight) {
         height += next;
         count += this.groupChildrenCount[groupId];
 
@@ -287,9 +286,10 @@ export class VirtualizedList {
           this.scrollHeight = this.container.scrollHeight;
           this.container.scrollTop = this.scrollTop = Math.round(this.scrollTop + this.scrollHeight - prevScrollHeight + toRemove.height);
 
-          animationFrameStart().then(() => {
-            this.unlock();
-          });
+          this.unlock();
+          // animationFrameStart().then(() => {
+          //   this.unlock();
+          // });
         });
       }
 
@@ -323,10 +323,12 @@ export class VirtualizedList {
           // keep scroll position
           this.container.scrollTop = this.scrollTop = Math.round(this.scrollTop - toRemove.height);
 
-          animationFrameStart().then(() => {
-            this.scrollHeight = this.container.scrollHeight;
-            this.unlock();
-          });
+          this.scrollHeight = this.container.scrollHeight;
+          this.unlock();
+          // animationFrameStart().then(() => {
+          //   this.scrollHeight = this.container.scrollHeight;
+          //   this.unlock();
+          // });
         });
       }
     }
