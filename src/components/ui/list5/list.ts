@@ -203,9 +203,11 @@ export class VirtualizedList {
         height += next;
         count += this.groupChildrenCount[groupId];
 
+        if (offset + count * direction < lowerLimit || offset + count * direction > upperLimit) break;
+
         groupId = this.selectGroup(this.items[offset + count * direction]);
         next = this.group(groupId).offsetHeight;
-        if (next === 0) throw new Error(`height cannot be zero ${groupId}`);
+        if (next === 0) throw new Error(`height cannot be zero: ${direction} ${offset + count * direction} ${lowerLimit} ${upperLimit}`);
       }
     }
 
@@ -292,7 +294,9 @@ export class VirtualizedList {
           for (let i = 0; i < toRemove.count; i++) this.unmount(this.items[this.lastRendered--]);
 
           // mount top elements
-          for (let i = 0; i < appendCount; i += 1) this.mount(this.items[--this.firstRendered], this.items[this.firstRendered + 1]);
+          for (let i = 0; i < appendCount; i += 1) {
+            this.mount(this.items[--this.firstRendered], this.firstRendered + 1 <= this.lastRendered ? this.items[this.firstRendered + 1] : undefined);
+          }
 
           // keep scroll position
           this.scrollHeight = this.container.scrollHeight;
