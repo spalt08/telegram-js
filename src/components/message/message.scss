@@ -31,15 +31,12 @@ $messageDistance: 4PX;
   --accent-color-inactive: #707579;
 
   width: 100%;
+  overflow: hidden;
+  transition: background-color .4s ease-out;
+  background-color: rgba(0, 0, 0, 0);
 
   & .photo {
     background-color: #fff;
-  }
-
-  &__container {
-    width: 100%;
-    transition: background-color .4s ease-out;
-    background-color: rgba(0, 0, 0, 0);
   }
 
   &__align {
@@ -50,6 +47,7 @@ $messageDistance: 4PX;
     justify-content: flex-start;
     align-items: flex-end;
     margin: 0 auto;
+    overflow: hidden;
   }
 
   &__wrap {

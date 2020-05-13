@@ -1,9 +1,9 @@
 .bubble2 {
   position: relative;
   min-height: 36PX;
-  min-width: 42PX;
+  min-width: 44PX;
   overflow: hidden;
-  padding: 0PX 2PX 3PX 7PX;
+  padding: 0PX 2PX 3PX 9PX;
 
   &__background {
     position: absolute !important;
@@ -14,16 +14,26 @@
     height: 100%;
     overflow: hidden;
     border-style: solid;
-    border-left-width: 23PX;
+    border-left-width: 25PX;
     border-top-width: 16PX;
     border-right-width: 18PX;
     border-bottom-width: 19PX;
-    border-image: url(./images/bubble_in-central.png) 32 36 38 46 fill;
+    border-image: url(./images/bubble_in-central.png) 32 36 38 50 fill;
     padding-left: 7PX;
   }
 
   & > * {
     z-index: 1;
     position: relative;
+  }
+
+  &.-out {
+    padding: 0PX 9PX 3PX 2PX;
+  }
+
+  &.-out &__background {
+    border-left-width: 18PX;
+    border-right-width: 25PX;
+    border-image: url(./images/bubble_out-central.png) 32 50 38 36 fill;
   }
 }

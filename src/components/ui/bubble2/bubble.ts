@@ -6,14 +6,13 @@ interface Props {
   className?: string,
   out?: boolean;
   masked?: boolean;
-  onlyMedia?: boolean;
+  media?: boolean;
 }
 
 export default function bubble({
   className = '',
   out = false,
-  masked = false,
-  onlyMedia = false,
+  media = false,
 }: Props, ...children: Node[]) {
   const element = div`.bubble2${className}`(
     div`.bubble2__background`(),
@@ -21,7 +20,7 @@ export default function bubble({
   );
 
   if (out) element.classList.add('-out');
-  if (masked) element.classList.add('-masked');
+  if (media) element.classList.add('-media');
 
   return useInterface(element, {
     updateBorders: (first: boolean, last: boolean) => {

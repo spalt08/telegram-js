@@ -3,7 +3,7 @@ import { useInterface, hasInterface, getInterface, useOnMount } from 'core/hooks
 import { mount, unmount } from 'core/dom';
 import { messageCache, dialogCache } from 'cache';
 import { Peer, Message, Dialog } from 'mtproto-js';
-import { formattedMessage, bubble, BubbleInterface, messageInfo, MessageInfoInterface } from 'components/ui';
+import { formattedMessage, bubble, messageInfo, MessageInfoInterface } from 'components/ui';
 import { profileAvatar, profileTitle } from 'components/profile';
 import webpagePreview from 'components/media/webpage/preview';
 import photoPreview from 'components/media/photo/preview';
@@ -109,7 +109,7 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
 
     return {
       message: bubble(
-        { out, className: extraClass, masked: !hasMessage, onlyMedia: !hasReply && !hasMessage },
+        { out, className: extraClass, media: true },
         reply,
         photoEl || nothing,
         messageText(msg, info),
@@ -142,7 +142,7 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
 
     return {
       message: bubble(
-        { out, className: extraClass, masked: !hasMessage, onlyMedia: !hasReply && !hasMessage },
+        { out, className: extraClass, media: true },
         reply,
         video,
         messageText(msg, info),
@@ -160,7 +160,7 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
 
     return {
       message: bubble(
-        { out, className: extraClass, masked: !hasMessage, onlyMedia: !hasReply && !hasMessage },
+        { out, className: extraClass, media: true },
         reply,
         previewEl || nothing,
         messageText(msg, info),
@@ -217,10 +217,11 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
 };
 
 export default function message(id: string, peer: Peer, onUpdateHeight?: (id: string) => void) {
-  const element = div`.message`();
-  const subject = messageCache.useItemBehaviorSubject(element, id);
+  const container = div`.message`();
+  const subject = messageCache.useItemBehaviorSubject(container, id);
 
-  let container: Node | undefined;
+  if (peer._ !== 'peerUser') container.classList.add('chat');
+
   let aligner: HTMLElement | undefined;
   let wrapper: Node | undefined;
   let renderedMessage: Node | undefined;
@@ -233,27 +234,16 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
 
   // listen cache changes for auto rerendering
   subject.subscribe((msg: Message | undefined) => {
-    // first render
-    if (!container) {
-      if (!msg) return;
-      if (msg._ === 'messageEmpty') container = div`.message__empty`();
-      if (msg._ === 'messageService') container = messageSerivce(peer, msg);
-      else container = div`.message__container`();
-
-      if (peer._ !== 'peerUser') element.classList.add('chat');
-
-      mount(element, container);
-    }
-
-    if (msg && msg._ !== 'messageEmpty' && msg.out) {
-      element.classList.add('out');
-    }
+    if (!msg) return;
 
     // shouldn't rerender service and empty message
     if (!msg || msg._ !== 'message') {
+      if (msg._ === 'messageService') mount(container, messageSerivce(peer, msg));
       cached = msg;
       return;
     }
+
+    if (msg.out) container.classList.add('out');
 
     // first render for common message
     if (!aligner || !wrapper) {
@@ -319,9 +309,9 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
   const setBorders = (first: boolean, last: boolean) => {
     isFirst = first;
     isLast = last;
-    element.classList.toggle('first', first);
-    element.classList.toggle('last', last);
-    if (hasInterface<BubbleInterface>(renderedMessage)) {
+    container.classList.toggle('first', first);
+    container.classList.toggle('last', last);
+    if (hasInterface<any>(renderedMessage)) {
       getInterface(renderedMessage).updateBorders(first, last);
     }
   };
@@ -335,7 +325,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     }
 
     // display picture
-    if (aligner && element.classList.contains('chat') && isLast && !element.classList.contains('out')
+    if (aligner && container.classList.contains('chat') && isLast && !container.classList.contains('out')
       && !profilePicture && cached && cached._ !== 'messageEmpty') {
       const senderPeer = messageToSenderPeer(cached);
       profilePicture = div`.message__profile`(profileAvatar(senderPeer));
@@ -345,8 +335,8 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
 
   // update classList for first, last
   const update = (recursive: boolean = false) => {
-    const nextEl = element.nextElementSibling;
-    const prevEl = element.previousElementSibling;
+    const nextEl = container.nextElementSibling;
+    const prevEl = container.previousElementSibling;
 
     // check next message meta
     if (nextEl && hasInterface<MessageInterface>(nextEl)) {
@@ -373,9 +363,9 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     updateLayout();
   };
 
-  useOnMount(element, () => update(true));
+  useOnMount(container, () => update(true));
 
-  return useInterface(element, {
+  return useInterface(container, {
     from: () => cached && cached._ !== 'messageEmpty' ? cached.from_id : 0,
     updateLayout,
     update,
