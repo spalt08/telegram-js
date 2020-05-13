@@ -152,7 +152,7 @@ export default function history() {
           [MessageDirection.Newer]: -1,
           [MessageDirection.Older]: 1,
           [MessageDirection.Around]: undefined,
-        }[focus.direction],
+        }[focus.direction] as 1 | -1 | undefined,
       );
     }
   });

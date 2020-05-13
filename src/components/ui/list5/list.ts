@@ -116,7 +116,7 @@ export class VirtualizedList {
       // virtualize elements
       if (prevOffset < offset) this.onScrollDown();
       else this.onScrollUp();
-    }, { passive: true, capture: true });
+    }, { passive: true });
   }
 
   // get element by index
@@ -188,14 +188,14 @@ export class VirtualizedList {
     // try to remove whole groups first
     if (this.renderGroup && this.selectGroup) {
       let groupId = this.selectGroup(this.items[offset]);
-      let next = this.group(groupId).getBoundingClientRect().height;
+      let next = this.group(groupId).offsetHeight;
 
-      while (offset + count * direction > 0 && offset + count * direction < this.items.length && height + next < maxHeight + 36) {
+      while (offset + count * direction > 0 && offset + count * direction < this.items.length && height + next < maxHeight - 36) {
         height += next;
         count += this.groupChildrenCount[groupId];
 
         groupId = this.selectGroup(this.items[offset + count * direction]);
-        next = this.group(groupId).getBoundingClientRect().height;
+        next = this.group(groupId).offsetHeight;
         if (next === 0) throw new Error('height cannot be zero');
       }
     }
@@ -215,15 +215,15 @@ export class VirtualizedList {
     // }
 
     // remove elements inside group or without groupping
-    let next = this.element(this.items[offset + count * direction]).getBoundingClientRect().height;
-    while (offset + count * direction >= 0 && offset + count * direction < this.items.length && height + next < maxHeight + 36) {
+    let next = this.element(this.items[offset + count * direction]).offsetHeight;
+    while (offset + count * direction >= 0 && offset + count * direction < this.items.length && height + next < maxHeight - 36) {
       height += next;
       count++;
-      next = this.element(this.items[offset + count * direction]).getBoundingClientRect().height;
+      next = this.element(this.items[offset + count * direction]).offsetHeight;
       if (next === 0) throw new Error('height cannot be zero');
     }
 
-    return { height, count };
+    return { height: Math.round(height), count };
   }
 
 
@@ -234,30 +234,30 @@ export class VirtualizedList {
 
     this.lock();
 
-    const appendCount = Math.min(this.cfg.batch, this.items.length);
-
-    if (appendCount > 0) {
-      this.firstRendered = this.cfg.pivotBottom ? Math.max(0, this.items.length - this.cfg.batch) : 0;
-      this.lastRendered = this.firstRendered - 1;
-    }
-
-    // render {appendCount} elements
-    for (let i = 0; i < appendCount; i += 1) this.mount(this.items[++this.lastRendered]);
-
-    // set initial scroll position
-    if (this.cfg.pivotBottom) {
-      // avoid recalculation state inside frame (chrome)
-      queueMicrotask(() => this.container.scrollTop = 9999);
-    } else this.scrollTop = 0;
-
-    // set initial values
     animationFrameStart().then(() => {
-      this.viewport = this.container.getBoundingClientRect();
-      this.scrollHeight = this.container.scrollHeight;
-      this.scrollTop = this.container.scrollTop;
-      this.shouldFocus = undefined;
-      this.shouldFocusDirection = undefined;
-      this.unlock();
+      const appendCount = Math.min(this.cfg.batch, this.items.length);
+
+      if (appendCount > 0) {
+        this.firstRendered = this.cfg.pivotBottom ? Math.max(0, this.items.length - this.cfg.batch) : 0;
+        this.lastRendered = this.firstRendered - 1;
+      }
+
+      // render {appendCount} elements
+      for (let i = 0; i < appendCount; i += 1) this.mount(this.items[++this.lastRendered]);
+
+      // set initial scroll position
+      if (this.cfg.pivotBottom) this.container.scrollTop = 9999;
+      else this.scrollTop = 0;
+
+      // set initial values
+      animationFrameStart().then(() => {
+        this.viewport = this.container.getBoundingClientRect();
+        this.scrollHeight = this.container.scrollHeight;
+        this.scrollTop = this.container.scrollTop;
+        this.shouldFocus = undefined;
+        this.shouldFocusDirection = undefined;
+        this.unlock();
+      });
     });
   }
 
@@ -285,10 +285,9 @@ export class VirtualizedList {
 
           // keep scroll position
           this.scrollHeight = this.container.scrollHeight;
-          this.container.scrollTop = this.scrollTop += this.scrollHeight - prevScrollHeight + toRemove.height;
+          this.container.scrollTop = this.scrollTop = Math.round(this.scrollTop + this.scrollHeight - prevScrollHeight + toRemove.height);
 
           animationFrameStart().then(() => {
-            this.container.scrollTop = this.scrollTop;
             this.unlock();
           });
         });
@@ -309,8 +308,10 @@ export class VirtualizedList {
       if (appendCount > 0) {
         this.lock();
 
+        // const prevScrollHeight = this.scrollHeight;
         const availableTopSpace = this.scrollTop - this.cfg.threshold * this.viewport.height;
         const toRemove = this.calcElementsToRemove(this.firstRendered, 1, availableTopSpace);
+        // console.log(toRemove, appendCount);
 
         animationFrameStart().then(() => {
           // unmount elements
@@ -320,12 +321,10 @@ export class VirtualizedList {
           for (let i = 0; i < appendCount; i += 1) this.mount(this.items[++this.lastRendered]);
 
           // keep scroll position
-          this.container.scrollTop = this.scrollTop -= toRemove.height;
+          this.container.scrollTop = this.scrollTop = Math.round(this.scrollTop - toRemove.height);
 
           animationFrameStart().then(() => {
             this.scrollHeight = this.container.scrollHeight;
-            this.container.scrollTop = this.scrollTop;
-
             this.unlock();
           });
         });
