@@ -3,6 +3,7 @@
 .list {
   height: 100%;
   overflow: scroll;
+  box-sizing: border-box;
   z-index: 0;
   transform: translate3d(0, 0, 0); // https://stackoverflow.com/a/30533339/1118709
   overflow-x: hidden;
