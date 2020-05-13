@@ -1,0 +1,14 @@
+.groupWithAvatar {
+  display: flex;
+  flex-direction: row;
+
+  &__avatar {
+    position: sticky;
+    bottom: 4px;
+    align-self: flex-end;
+    width: 34px;
+    height: 34px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+  }
+}
