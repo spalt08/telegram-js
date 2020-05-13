@@ -191,12 +191,15 @@ export class VirtualizedList {
   calcElementsToRemove(offset: number, direction: -1 | 1, maxHeight: number) {
     let count = 0; let height = 0;
 
+    const lowerLimit = direction === 1 ? this.firstRendered : this.firstRendered + 1;
+    const upperLimit = direction === 1 ? this.lastRendered - 1 : this.lastRendered;
+
     // try to remove whole groups first
     if (this.renderGroup && this.selectGroup) {
       let groupId = this.selectGroup(this.items[offset]);
       let next = this.group(groupId).offsetHeight;
 
-      while (offset + count * direction > this.firstRendered && offset + count * direction < this.lastRendered && height + next < maxHeight) {
+      while (offset + count * direction >= lowerLimit && offset + count * direction <= upperLimit && height + next < maxHeight) {
         height += next;
         count += this.groupChildrenCount[groupId];
 
@@ -222,7 +225,7 @@ export class VirtualizedList {
 
     // remove elements inside group or without groupping
     let next = this.element(this.items[offset + count * direction]).offsetHeight;
-    while (offset + count * direction > this.firstRendered && offset + count * direction < this.lastRendered && height + next < maxHeight - 36) {
+    while (offset + count * direction >= lowerLimit && offset + count * direction <= upperLimit && height + next < maxHeight - 36) {
       height += next;
       count++;
       next = this.element(this.items[offset + count * direction]).offsetHeight;
