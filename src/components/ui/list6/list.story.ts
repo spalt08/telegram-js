@@ -22,14 +22,15 @@ stories.add('List 6', () => {
     for (let i = 0; i < Math.round(Math.random() * 9 + 1); i++) {
       const avatarGroup = groupWithAvatar(1 + Math.round(Math.random() * 2));
       const avatarGroupKey = Math.random();
-      for (let j = 0; j < Math.round(Math.random() * 9 + 1); j++) {
+      const messagesCount = Math.round(Math.random() * 9 + 1);
+      for (let j = 0; j < messagesCount; j++) {
         const itemKey = Math.random();
         const b = bubble({}, text(loremIpsum()));
         b.style.margin = '4px';
         b.style.width = 'fit-content';
         b.style.maxWidth = '500px';
 
-        getInterface(b).updateBorders(j === 0, j === 9);
+        getInterface(b).updateBorders(j === 0, j === messagesCount - 1);
         getInterface(avatarGroup).addItem([itemKey], b);
       }
       getInterface(group).addItem([avatarGroupKey], avatarGroup);
