@@ -360,11 +360,7 @@ export class VirtualizedList {
 
     // next chunk was loaded and there is a focused element inside
     if (this.shouldFocus && next.indexOf(this.shouldFocus) !== -1) {
-      // unmount all elements
-      for (let i = this.firstRendered; i <= this.lastRendered; i++) this.unmount(this.items[i]);
-
-      this.firstRendered = -1;
-      this.lastRendered = -1;
+      this.unmountAll();
       this.items = next;
       this.scrollToVirtualized(this.shouldFocus, this.shouldFocusDirection);
       return;
@@ -604,6 +600,17 @@ export class VirtualizedList {
     requestAnimationFrame(animateScroll);
   }
 
+  unmountAll() {
+    // unmount all elements
+    for (let i = this.firstRendered; i <= this.lastRendered; i++) this.unmount(this.items[i]);
+    this.wrapper.style.paddingTop = '';
+    this.wrapper.style.paddingBottom = '';
+    this.paddingTop = 0;
+    this.paddingBottom = 0;
+    this.firstRendered = -1;
+    this.lastRendered = -2;
+  }
+
   scrollToVirtualized(item: string, direction: number = 0) {
     const indexOfItem = this.items.indexOf(item);
     const translate = this.viewport!.height * direction * -1;
@@ -611,9 +618,7 @@ export class VirtualizedList {
     if (indexOfItem === -1) return;
 
     this.lock();
-
-    // unmount all elements
-    for (let i = this.firstRendered; i <= this.lastRendered; i++) this.unmount(this.items[i]);
+    this.unmountAll();
 
     // new elements limit
     this.firstRendered = Math.max(0, indexOfItem - Math.ceil(this.cfg.batch / 2));

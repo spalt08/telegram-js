@@ -14,7 +14,7 @@ $messageDistance: 4PX;
   width: 100%;
   overflow: hidden;
   z-index: 0;
-  transition: background-color .4s ease-out;
+  transition: background-color .4s ease-out, transform .25s ease-out;
   background-color: rgba(0, 0, 0, 0);
 
   & .photo {
@@ -231,7 +231,7 @@ $messageDistance: 4PX;
     &.e1 { font-size: 80px; }
   }
 
-  &.-focused &__container {
+  &.-focused {
     background-color: rgba(0, 132, 255, 0.3);
   }
 
