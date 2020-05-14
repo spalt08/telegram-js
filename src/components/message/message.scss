@@ -32,10 +32,8 @@ $messageDistance: 4PX;
     overflow: hidden;
   }
 
-  &__wrap {
+  & .bubble2 {
     max-width: 75%;
-    display: inline-block;
-    width: auto;
   }
 
   & .only-sticker, &.out &.only-sticker {
@@ -65,13 +63,14 @@ $messageDistance: 4PX;
     transform: translate3d(0, 0, 0);
   }
 
-  .bubble {
-    &.with-webpage { max-width: 440px; }
-    &.with-webpage-media { width: 340px; }
-    &.with-photo { width: 320px; }
+  .bubble2 {
+    /* size + 11PX padding */
+    &.with-webpage { max-width: 451px; }
+    &.with-webpage-media { width: 351px; }
+    &.with-photo { width: 331px; }
 
     &.only-photo {
-      max-width: 320px;
+      max-width: 331px;
     }
   }
 

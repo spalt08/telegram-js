@@ -223,7 +223,6 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
   if (peer._ !== 'peerUser') container.classList.add('chat');
 
   let aligner: HTMLElement | undefined;
-  let wrapper: Node | undefined;
   let renderedMessage: Node | undefined;
   let renderedInfo: Node | undefined;
   let profilePicture: Node | undefined;
@@ -246,9 +245,8 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     if (msg.out) container.classList.add('out');
 
     // first render for common message
-    if (!aligner || !wrapper) {
-      wrapper = div`.message__wrap`();
-      aligner = div`.message__align`(wrapper);
+    if (!aligner) {
+      aligner = div`.message__align`();
       mount(container, aligner);
     }
 
@@ -282,7 +280,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
         }
       }
 
-      mount(wrapper, renderedMessage);
+      mount(aligner, renderedMessage);
 
       if (onUpdateHeight) onUpdateHeight(id);
     }
@@ -290,7 +288,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     // render reply markup
     if (msg.reply_markup && !replyMarkup) {
       replyMarkup = replyMarkupRenderer(msg.reply_markup);
-      mount(wrapper, replyMarkup);
+      mount(aligner, replyMarkup);
 
       if (msg.reply_markup._ === 'replyKeyboardMarkup' || msg.reply_markup._ === 'replyInlineMarkup') {
         aligner.classList.add('with-reply-markup');
@@ -329,7 +327,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
       && !profilePicture && cached && cached._ !== 'messageEmpty') {
       const senderPeer = messageToSenderPeer(cached);
       profilePicture = div`.message__profile`(profileAvatar(senderPeer));
-      mount(aligner, profilePicture, wrapper);
+      mount(aligner, profilePicture, aligner.firstChild || undefined);
     }
   };
 
@@ -363,7 +361,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     updateLayout();
   };
 
-  // useOnMount(container, () => update(true));
+  useOnMount(container, () => update(true));
 
   return useInterface(container, {
     from: () => cached && cached._ !== 'messageEmpty' ? cached.from_id : 0,

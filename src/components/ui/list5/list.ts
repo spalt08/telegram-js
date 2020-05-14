@@ -188,49 +188,53 @@ export class VirtualizedList {
   // get height and number of elements to be removed
   calcElementsToRemove(offset: number, direction: -1 | 1, maxHeight: number) {
     let count = 0; let height = 0;
+    if (!this.viewport) this.viewport = this.container.getBoundingClientRect();
 
     const lowerLimit = direction === 1 ? this.firstRendered : this.firstRendered + 1;
     const upperLimit = direction === 1 ? this.lastRendered - 1 : this.lastRendered;
 
     // try to remove whole groups first
     if (this.renderGroup && this.selectGroup) {
-      let groupId = this.selectGroup(this.items[offset]);
-      let next = this.group(groupId).offsetHeight;
+      while (offset + count * direction >= lowerLimit && offset + count * direction <= upperLimit) {
+        const groupId = this.selectGroup(this.items[offset + count * direction]);
+        const next = this.group(groupId).offsetHeight;
 
-      while (offset + count * direction >= lowerLimit && offset + count * direction <= upperLimit && height + next < maxHeight) {
-        height += next;
-        count += this.groupChildrenCount[groupId];
+        if (height + next < maxHeight) {
+          height += next;
+          count += this.groupChildrenCount[groupId];
+        } else break;
 
-        if (offset + count * direction < lowerLimit || offset + count * direction > upperLimit) break;
-
-        groupId = this.selectGroup(this.items[offset + count * direction]);
-        next = this.group(groupId).offsetHeight;
         if (next === 0) throw new Error('height cannot be zero');
       }
     }
 
-    // // remove elements inside group or without groupping
-    // let rect = this.element(this.items[offset + count * direction]).getBoundingClientRect();
-    // let distance = rect.top - this.viewport.top + this.scrollTop;
-    // if (direction < 0) distance = this.scrollHeight - distance - rect.height;
+    // remove elements inside group or without groupping
+    let nextHeight = 0;
+    while (offset + count * direction >= lowerLimit && offset + count * direction <= upperLimit) {
+      const rect = this.element(this.items[offset + count * direction]).getBoundingClientRect();
 
-    // while (offset + count * direction >= 0 && offset + count * direction < this.items.length && distance + rect.height < maxHeight + 36) {
-    //   height = distance + rect.height;
-    //   count++;
+      if (direction > 0) nextHeight = rect.top - this.viewport.top + this.scrollTop - this.paddingTop + rect.height;
+      else nextHeight = this.scrollHeight - this.paddingBottom - (rect.top - this.viewport.top + this.scrollTop);
 
-    //   rect = this.element(this.items[offset + count * direction]).getBoundingClientRect();
-    //   distance = rect.top - this.viewport.top + this.scrollTop;
-    //   if (direction < 0) distance = this.scrollHeight - distance - rect.height;
-    // }
+      if (height < maxHeight - 36) {
+        height = nextHeight;
+        count++;
+      } else break;
+
+      if (rect.height === 0) throw new Error('height cannot be zero');
+    }
 
     // remove elements inside group or without groupping
-    let next = this.element(this.items[offset + count * direction]).offsetHeight;
-    while (offset + count * direction >= lowerLimit && offset + count * direction <= upperLimit && height + next < maxHeight - 36) {
-      height += next;
-      count++;
-      next = this.element(this.items[offset + count * direction]).offsetHeight;
-      if (next === 0) throw new Error('height cannot be zero');
-    }
+    // while (offset + count * direction >= lowerLimit && offset + count * direction <= upperLimit) {
+    //   const next = this.element(this.items[offset + count * direction]).offsetHeight;
+
+    //   if (height + next < maxHeight - 36) {
+    //     height += next;
+    //     count++;
+    //   } else break;
+
+    //   if (next === 0) throw new Error('height cannot be zero');
+    // }
 
     return { height: Math.round(height), count };
   }
@@ -289,6 +293,7 @@ export class VirtualizedList {
         if (toRemove.height > 0) this.wrapper.style.paddingBottom = `${this.paddingBottom += toRemove.height}px`;
         for (let i = 0; i < toRemove.count; i++) this.unmount(this.items[this.lastRendered--]);
 
+        if (this.firstRendered > this.lastRendered) console.log('break', this.firstRendered, this.lastRendered);
         // mount top elements
         for (let i = 0; i < appendCount; i += 1) {
           this.mount(this.items[--this.firstRendered], this.firstRendered + 1 <= this.lastRendered ? this.items[this.firstRendered + 1] : undefined);
@@ -331,6 +336,7 @@ export class VirtualizedList {
         if (toRemove.height > 0) this.wrapper.style.paddingTop = `${this.paddingTop += toRemove.height}px`;
         for (let i = 0; i < toRemove.count; i++) this.unmount(this.items[this.firstRendered++]);
 
+        if (this.firstRendered > this.lastRendered) console.log('break', this.firstRendered, this.lastRendered);
         // mount bottom elements
         for (let i = 0; i < appendCount; i += 1) this.mount(this.items[++this.lastRendered]);
 
