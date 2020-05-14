@@ -47,12 +47,12 @@ if (!window.queueMicrotask) {
 export class VirtualizedList {
   container: HTMLDivElement;
   wrapper: HTMLDivElement;
-  elements: Record<string, HTMLElement>;
-  groups: Record<string, HTMLElement>;
-  groupChildrenCount: Record<string, number>;
-  heights: Record<string, number>;
-  items: readonly string[];
-  pendingItems: readonly string[];
+  elements: Record<string, HTMLElement> = {};
+  positions: Record<string, { top: number, bottom: number, height: number }> = {};
+  groups: Record<string, HTMLElement> = {};
+  groupChildrenCount: Record<string, number> = {};
+  items: readonly string[] = [];
+  pendingItems: readonly string[] = [];
 
   render: Props['renderer'];
   renderGroup: Props['renderGroup'];
@@ -89,12 +89,6 @@ export class VirtualizedList {
     this.container = div`.list${className}${pivotBottom ? '-reversed' : ''}`(this.wrapper);
 
     this.cfg = { batch, pivotBottom, threshold, onReachTop, onReachBottom, highlightFocused };
-    this.elements = {};
-    this.groups = {};
-    this.groupChildrenCount = {};
-    this.heights = {};
-    this.items = [];
-    this.pendingItems = [];
 
     this.render = renderer;
     this.renderGroup = renderGroup;
@@ -190,30 +184,18 @@ export class VirtualizedList {
     let count = 0; let height = 0;
     if (!this.viewport) this.viewport = this.container.getBoundingClientRect();
 
-    const lowerLimit = direction === 1 ? this.firstRendered : this.firstRendered + 1;
-    const upperLimit = direction === 1 ? this.lastRendered - 1 : this.lastRendered;
-
-    // try to remove whole groups first
-    if (this.renderGroup && this.selectGroup) {
-      while (offset + count * direction >= lowerLimit && offset + count * direction <= upperLimit) {
-        const groupId = this.selectGroup(this.items[offset + count * direction]);
-        const next = this.group(groupId).offsetHeight;
-
-        if (height + next < maxHeight) {
-          height += next;
-          count += this.groupChildrenCount[groupId];
-        } else break;
-
-        if (next === 0) throw new Error('height cannot be zero');
-      }
-    }
-
-    // remove elements inside group or without groupping
     let nextHeight = 0;
-    while (offset + count * direction >= lowerLimit && offset + count * direction <= upperLimit) {
-      const rect = this.element(this.items[offset + count * direction]).getBoundingClientRect();
+    while (offset + count * direction >= this.firstRendered && offset + count * direction <= this.lastRendered) {
+      const id = this.items[offset + count * direction];
+      const rect = this.element(id).getBoundingClientRect();
 
-      if (direction > 0) nextHeight = rect.top - this.viewport.top + this.scrollTop - this.paddingTop + rect.height;
+      this.positions[id] = {
+        height: rect.height,
+        top: rect.top - this.viewport.top + this.scrollTop,
+        bottom: this.scrollHeight - (rect.bottom - this.viewport.top + this.scrollTop),
+      };
+
+      if (direction > 0) nextHeight = rect.bottom - this.viewport.top + this.scrollTop - this.paddingTop;
       else nextHeight = this.scrollHeight - this.paddingBottom - (rect.top - this.viewport.top + this.scrollTop);
 
       if (height < maxHeight - 36) {
@@ -221,24 +203,29 @@ export class VirtualizedList {
         count++;
       } else break;
 
-      if (rect.height === 0) throw new Error('height cannot be zero');
+      if (rect.height === 0) throw new Error(`height cannot be zero: ${offset + count * direction}: ${this.firstRendered} ${this.lastRendered}`);
     }
-
-    // remove elements inside group or without groupping
-    // while (offset + count * direction >= lowerLimit && offset + count * direction <= upperLimit) {
-    //   const next = this.element(this.items[offset + count * direction]).offsetHeight;
-
-    //   if (height + next < maxHeight - 36) {
-    //     height += next;
-    //     count++;
-    //   } else break;
-
-    //   if (next === 0) throw new Error('height cannot be zero');
-    // }
 
     return { height: Math.round(height), count };
   }
 
+  onAddedHeight(height: number, placement: 'top' | 'bottom') {
+    const keys = Object.keys(this.positions);
+
+    for (let i = 0; i < keys.length; i++) {
+      this.positions[keys[i]][placement] += height;
+    }
+  }
+
+  getElementByOffset(offset: number): number | undefined {
+    for (let i = 0; i < this.items.length; i++) {
+      const position = this.positions[this.items[i]];
+
+      if (position && position.top <= offset && position.top + position.height >= offset) return i;
+    }
+
+    return undefined;
+  }
 
   // render initial state - first min(batch, current.length) elements
   init() {
@@ -280,7 +267,7 @@ export class VirtualizedList {
 
     // apply top elements and shrink bottom
     if (this.scrollTop - this.paddingTop < this.cfg.threshold * this.viewport.height) {
-      const appendCount = Math.min(this.cfg.batch, this.firstRendered);
+      let appendCount = Math.min(this.cfg.batch, this.firstRendered);
 
       if (appendCount > 0) {
         this.lock();
@@ -293,7 +280,23 @@ export class VirtualizedList {
         if (toRemove.height > 0) this.wrapper.style.paddingBottom = `${this.paddingBottom += toRemove.height}px`;
         for (let i = 0; i < toRemove.count; i++) this.unmount(this.items[this.lastRendered--]);
 
-        if (this.firstRendered > this.lastRendered) console.log('break', this.firstRendered, this.lastRendered);
+        // if user scrolled to fast
+        if (this.firstRendered > this.lastRendered) {
+          const next = this.getElementByOffset(this.scrollTop + this.viewport.height * 1.5);
+
+          if (next) {
+            this.lastRendered = next;
+            this.firstRendered = next + 1;
+            appendCount = Math.min(appendCount, this.firstRendered);
+
+            const position = this.positions[this.items[next]];
+            this.wrapper.style.paddingTop = `${this.paddingTop = position.top}px`;
+            this.wrapper.style.paddingBottom = `${this.paddingBottom = position.bottom}px`;
+          }
+
+          console.log('break', next, ' -> ', this.firstRendered, this.lastRendered);
+        }
+
         // mount top elements
         for (let i = 0; i < appendCount; i += 1) {
           this.mount(this.items[--this.firstRendered], this.firstRendered + 1 <= this.lastRendered ? this.items[this.firstRendered + 1] : undefined);
@@ -309,7 +312,10 @@ export class VirtualizedList {
 
         animationFrameStart().then(() => {
           this.scrollHeight = this.container.scrollHeight;
+          this.scrollTop = this.container.scrollTop;
+          if (newElementsHeight > 0) this.onAddedHeight(newElementsHeight, 'top');
           this.unlock();
+          this.onScrollUp();
         });
       }
 
@@ -323,7 +329,7 @@ export class VirtualizedList {
 
     // apply bottom elements and shrink top
     if (this.scrollHeight - this.paddingBottom - this.scrollTop - this.viewport.height < this.cfg.threshold * this.viewport.height) {
-      const appendCount = Math.min(this.cfg.batch, this.items.length - this.lastRendered - 1);
+      let appendCount = Math.min(this.cfg.batch, this.items.length - this.lastRendered - 1);
 
       if (appendCount > 0) {
         this.lock();
@@ -336,18 +342,39 @@ export class VirtualizedList {
         if (toRemove.height > 0) this.wrapper.style.paddingTop = `${this.paddingTop += toRemove.height}px`;
         for (let i = 0; i < toRemove.count; i++) this.unmount(this.items[this.firstRendered++]);
 
-        if (this.firstRendered > this.lastRendered) console.log('break', this.firstRendered, this.lastRendered);
+        // if user scrolled to fast
+        if (this.firstRendered > this.lastRendered) {
+          const next = this.getElementByOffset(this.scrollTop - this.viewport.height / 2);
+
+          if (next) {
+            this.firstRendered = next;
+            this.lastRendered = next - 1;
+            appendCount = Math.min(appendCount, this.items.length - this.lastRendered - 1);
+
+            const position = this.positions[this.items[next]];
+            this.wrapper.style.paddingTop = `${this.paddingTop = position.top}px`;
+            this.wrapper.style.paddingBottom = `${this.paddingBottom = position.bottom}px`;
+          }
+
+          console.log('break', next, ' -> ', this.firstRendered, this.lastRendered);
+        }
+
         // mount bottom elements
         for (let i = 0; i < appendCount; i += 1) this.mount(this.items[++this.lastRendered]);
 
         // keep scroll position
         this.scrollHeight = this.container.scrollHeight;
         const appendedHeight = this.scrollHeight - prevScrollHeight;
+        const newElementsHeight = Math.max(appendedHeight - this.paddingBottom, 0);
+
         this.wrapper.style.paddingBottom = `${this.paddingBottom = Math.max(0, this.paddingBottom - appendedHeight)}px`;
 
         animationFrameStart().then(() => {
           this.scrollHeight = this.container.scrollHeight;
+          this.scrollTop = this.container.scrollTop;
+          if (newElementsHeight > 0) this.onAddedHeight(newElementsHeight, 'bottom');
           this.unlock();
+          this.onScrollDown();
         });
       }
     }
