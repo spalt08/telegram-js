@@ -94,3 +94,15 @@ $animation-duration: 0.4s;
     filter: none;
   }
 }
+
+.photo2 {
+  background: transparent;
+  overflow: hidden;
+  object-fit: cover;
+  background-position: center center;
+  background-size: cover;
+
+  &.-contain {
+    object-fit: contain;
+  }
+}

@@ -6,7 +6,7 @@ import { fetchRequest } from './extensions/files';
 import { callMock } from './mocks/call';
 import getFilePart, { fileMap } from './mocks/files';
 import { fetchStreamRequest } from './extensions/stream';
-import { fetchLocation, fetchTGS } from './extensions/utils';
+import { fetchLocation, fetchTGS, fetchCachedSize } from './extensions/utils';
 
 
 const ctx = self as any as ServiceWorkerGlobalScope;
@@ -93,6 +93,12 @@ ctx.addEventListener('fetch', (event: FetchEvent): void => {
       event.respondWith(new Promise((resolve) => {
         fetchStreamRequest(url, offset, end, resolve, getFilePart);
       }));
+      break;
+    }
+
+    case 'cached': {
+      const [, bytes] = /\/cached\/(.*?).svg/.exec(url) || [];
+      event.respondWith(fetchCachedSize(bytes));
       break;
     }
 

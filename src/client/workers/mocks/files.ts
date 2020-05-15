@@ -9,7 +9,9 @@ export default function getFilePart(location: InputFileLocation, offset: number,
   _options: DownloadOptions, ready: (buf: ArrayBuffer, mime?: string) => void) {
   const url = fileMap[locationToURL(location)];
 
-  fetch(url)
-    .then((resp) => resp.arrayBuffer())
-    .then((buf) => ready(buf.slice(offset, offset + limit), ''));
+  setTimeout(() => {
+    fetch(url)
+      .then((resp) => resp.arrayBuffer())
+      .then((buf) => ready(buf.slice(offset, offset + limit), ''));
+  }, 1000);
 }
