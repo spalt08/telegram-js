@@ -7,7 +7,7 @@ import { parseRange } from 'helpers/stream';
 import { createNotification, respond } from './extensions/context';
 import { load, save } from './extensions/db';
 import { fetchRequest } from './extensions/files';
-import { fetchLocation, fetchTGS } from './extensions/utils';
+import { fetchLocation, fetchTGS, fetchCachedSize, fetchSrippedSize } from './extensions/utils';
 import { fetchStreamRequest } from './extensions/stream';
 
 type ExtendedWorkerScope = {
@@ -172,6 +172,18 @@ ctx.addEventListener('fetch', (event: FetchEvent): void => {
       event.respondWith(new Promise((resolve) => {
         fetchStreamRequest(url, offset, end, resolve, getFilePartRequest);
       }));
+      break;
+    }
+
+    case 'cached': {
+      const [, bytes] = /\/cached\/(.*?).svg/.exec(url) || [];
+      event.respondWith(fetchCachedSize(bytes));
+      break;
+    }
+
+    case 'stripped': {
+      const [, bytes] = /\/stripped\/(.*?).svg/.exec(url) || [];
+      event.respondWith(fetchSrippedSize(bytes));
       break;
     }
 
