@@ -1,6 +1,6 @@
 import { useInterface, getInterface } from 'core/hooks';
 import { PollAnswer, PollAnswerVoters } from 'mtproto-js';
-import { text, span, div } from 'core/html';
+import { text, span, div, label } from 'core/html';
 import { svgEl, unmountChildren, mount } from 'core/dom';
 import { close as closeIcon, check as checkIcon } from 'components/icons';
 import pollCheckbox from './poll_checkbox';
@@ -48,7 +48,7 @@ export default function pollOption(initialProps: Props) {
   const line = svgEl('svg', { width: 300, height: 30, class: 'pollOption__line' }, [
     path = svgEl('path', { d: 'M20 8 v 3.5 a 13 13 0 0 0 13 13 H 300' }),
   ]);
-  const container = div`.pollOption`(
+  const container = label`.pollOption`(
     line,
     percentage,
     checkbox,

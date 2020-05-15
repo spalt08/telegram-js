@@ -6,10 +6,11 @@ import { polls, main } from 'services';
 import { messageCache } from 'cache';
 import { peerMessageToId, userIdToPeer } from 'helpers/api';
 import { profileAvatar } from 'components/profile';
+import { pluralize } from 'helpers/other';
 import pollOption, { PollOptionInterface } from './poll_option';
+import voteFooter, { VoteButtonState } from './vote_footer';
 
 import './poll.scss';
-import { pluralize } from 'helpers/other';
 
 const decoder = new TextDecoder();
 const encoder = new TextEncoder();
@@ -19,12 +20,9 @@ function pollType(pollData: Poll) {
     return 'Final Results';
   }
   if (pollData.quiz) {
-    return 'Quiz';
+    return pollData.public_voters ? 'Quiz' : 'Anonymous Quiz';
   }
-  if (pollData.public_voters) {
-    return 'Poll';
-  }
-  return 'Anonymous Poll';
+  return pollData.public_voters ? 'Poll' : 'Anonymous Poll';
 }
 
 function buildRecentVotersList(userIds?: number[]) {
@@ -54,15 +52,12 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
   const options = new Map<string, PollOptionInterface>();
   const answered = !!results.results && results.results.findIndex((r) => r.chosen) >= 0;
   const maxVoters = results.results ? Math.max(...results.results.map((r) => r.voters)) : 0;
-  const voteButton = div`.poll__vote-button.-inactive`({
-    onClick: async () => {
-      if (answered) {
-        main.showPopup('pollResults', { peer, message, poll: pollData });
-      } else {
-        await submitOptions();
-      }
-    },
-  }, text('Vote'));
+  const voteFooterEl = voteFooter(
+    pollData.quiz ?? false,
+    pollData.public_voters ?? false,
+    pollData.multiple_choice ?? false,
+    () => { submitOptions(); },
+    () => { main.showPopup('pollResults', { peer, message, poll: pollData }); });
   pollData.answers.forEach((answer) => {
     const optionKey = decoder.decode(answer.option);
     let voters: PollAnswerVoters | undefined;
@@ -86,7 +81,7 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
           } else {
             selectedOptions.delete(optKey);
           }
-          voteButton.classList.toggle('-inactive', selectedOptions.size === 0);
+          voteFooterEl.classList.toggle('-inactive', selectedOptions.size === 0);
         } else {
           selectedOptions.add(decoder.decode(answer.option));
           await submitOptions();
@@ -102,8 +97,13 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
       ? `${totalVoters} ${pluralize(totalVoters, 'voter', 'voters')}`
       : `No voters${closed ? '' : ' yet'}`;
   };
-  const updateVoteButtonText = (isAnswered: boolean) => {
-    voteButton.textContent = isAnswered ? 'View Results' : 'Vote';
+
+  const updateVoteButtonText = (voted: boolean) => {
+    getInterface(voteFooterEl).updateState(voted ? VoteButtonState.ShowResults : VoteButtonState.Vote);
+  };
+
+  const updateVoters = (voters: number) => {
+    getInterface(voteFooterEl).updateVoters(voters);
   };
 
   const updatePollResults = (updatedPoll: Poll | undefined, updatedResults: PollResults) => {
@@ -120,6 +120,7 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
       const updateMaxVoters = Math.max(...updatedResults.results.map((r) => r.voters));
       const updateAnswered = updatedResults.results.findIndex((r) => r.chosen) >= 0;
       updateVoteButtonText(updateAnswered);
+      updateVoters(updateTotalVoters);
       updatedResults.results.forEach((r) => {
         const op = options.get(decoder.decode(r.option));
         if (op) {
@@ -137,13 +138,19 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
 
   updateTotalVotersText(pollData.closed ?? false, results.total_voters ?? 0);
   updateVoteButtonText(answered);
+  updateVoters(results.total_voters ?? 0);
 
+  info.classList.add('poll__message-info');
   const container = div`.poll`(
-    div`.poll__question`(text(pollData.question)),
-    div`poll__info`(div`poll__type`(pollTypeText), recentVoters),
-    div`.poll__options`(...pollOptions),
-    pollData.multiple_choice ? voteButton : span`.poll__voters`(totalVotersText),
-    info,
+    div`.poll__body`(
+      div`.poll__question`(text(pollData.question)),
+      div`poll__info`(div`poll__type`(pollTypeText), recentVoters),
+      div`.poll__options`(...pollOptions),
+    ),
+    div`.poll__footer`(
+      voteFooterEl,
+      info,
+    ),
   );
 
   useWhileMounted(container, () => messageCache.watchItem(peerMessageToId(peer, message.id), (item) => {

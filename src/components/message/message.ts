@@ -207,14 +207,12 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
 
   // with poll
   if (msg.media._ === 'messageMediaPoll') {
-    const extraClass = hasMessage ? 'with-poll' : 'only-poll';
+    const extraClass = 'with-poll';
     return {
       message: bubble(
         { out, className: extraClass },
         reply,
-        div`.message__text`(
-          poll(peer, msg, info),
-        ),
+        poll(peer, msg, info),
       ),
       info,
     };

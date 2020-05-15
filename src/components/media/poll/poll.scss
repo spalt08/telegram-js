@@ -1,6 +1,26 @@
 .poll {
   user-select: none;
-  max-width: 300px;
+  font-size: 1rem;
+
+  & &__body {
+    padding: 7PX 10PX 0 10PX;
+  }
+
+  & &__footer {
+    display: grid;
+
+    >* {
+      grid-row: 1;
+      grid-column: 1;
+    }
+  }
+
+  &__message-info {
+    justify-self: end;
+    align-self: end;
+    margin: 0 10PX 1PX 0 !important;
+  }
+
   &__question {
     font-weight: 500;
   }
@@ -25,6 +45,7 @@
     position: relative;
     width: 13px;
     height: 18px;
+
     .avatar {
       position: absolute;
       width: 18px;
@@ -33,6 +54,7 @@
       min-height: 18px;
       border: 1px solid var(--bubble-background);
     }
+
     .avatar.-standard {
       font-size: 0.6rem;
     }
@@ -41,13 +63,15 @@
   & &__voters {
     color: var(--accent-color-inactive);
     font-size: 0.9rem;
+    padding: 10px 0 4px 10px;
   }
 
   & &__vote-button {
-    text-align: center;    
+    margin: 8PX 0;
+    text-transform: uppercase;
+    text-align: center;
     color: var(--accent-color);
     transition: color 0.3s;
-    transform: translateY(10px);
     cursor: pointer;
   }
 
