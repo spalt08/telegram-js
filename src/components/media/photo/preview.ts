@@ -3,7 +3,7 @@ import { listen } from 'core/dom';
 import { getInterface } from 'core/hooks';
 import { PhotoOptions } from 'helpers/other';
 import { main } from 'services';
-import photoRenderer from './photo2';
+import photoRenderer from './photo';
 
 
 export default function photoPreview(photo: Photo.photo, peer: Peer, message: Message.message, options: PhotoOptions = {}) {
