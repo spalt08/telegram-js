@@ -10,7 +10,6 @@
   overflow-y: scroll;
   min-height: 0; // To force the content to scroll
 
-
   &__appearing {
     animation: listAppear .3s ease;
     z-index: 1;
@@ -27,7 +26,7 @@
   }
 
   &__scroll-in {
-    transition: transform .2s ease;
+    transition: transform .2s ease-out, background-color .3s ease;
     z-index: 1;
   }
 
@@ -56,29 +55,42 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: rgba(0, 0, 255, 0);
+  transition: transform .2s ease, background-color .3s ease;
 
   &.-focused {
-    transition: .3s ease-in-out;
-    background-color: blue;
+    transition: transform .2s ease;
+    background-color: rgba(0, 0, 255, 0.7) !important;
     color: #ffffff;
   }
 
-  &:nth-child(2n) {
+  &.item1 {
     height: 100px;
-    background-color: #f1f1f1;
+    background-color: rgba(240, 240, 240, 1);
   }
 
-  &:nth-child(3n) {
+  &.item2 {
     height: 140px;
   }
 
-  &:nth-child(4n) {
+  &.item3 {
     height: 300px;
+    background-color: rgba(240, 240, 240, 1);
+  }
+
+  &.item4 {
+    height: 140px;
+  }
+
+  &.item5 {
+    height: 30px;
+    background-color: rgba(240, 240, 240, 1);
   }
 }
 
 .demoListGroup {
   &__header {
+    height: 20PX;
     position: sticky;
     background-color: #333333;
     color: #ffffff;

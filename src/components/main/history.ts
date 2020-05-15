@@ -96,6 +96,7 @@ export default function history() {
     renderer: (id: string) => message(id, service.activePeer.value!), // , (mid: string) => scroll.pendingRecalculate.push(mid)),
     selectGroup: (id: string) => messageGroupMap.get(id) || '0',
     renderGroup: historyDay,
+    groupPadding: 34,
     onReachTop: () => service.loadMoreHistory(MessageDirection.Older),
     onReachBottom: () => service.loadMoreHistory(MessageDirection.Newer),
     onFocus: (id: string) => {

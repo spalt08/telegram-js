@@ -11,6 +11,7 @@ type ListConfig = {
   highlightFocused: boolean,
   onReachTop?: () => void,
   onReachBottom?: () => void,
+  groupPadding?: number,
 };
 
 type Props = Partial<ListConfig> & {
@@ -77,6 +78,7 @@ export class VirtualizedList {
     renderer,
     renderGroup,
     selectGroup,
+    groupPadding,
     className = '',
     batch = 20,
     threshold = 1,
@@ -88,7 +90,7 @@ export class VirtualizedList {
     this.wrapper = div`.list__wrapper`();
     this.container = div`.list${className}${pivotBottom ? '-reversed' : ''}`(this.wrapper);
 
-    this.cfg = { batch, pivotBottom, threshold, onReachTop, onReachBottom, highlightFocused };
+    this.cfg = { batch, pivotBottom, threshold, onReachTop, onReachBottom, highlightFocused, groupPadding };
 
     this.render = renderer;
     this.renderGroup = renderGroup;
@@ -191,8 +193,8 @@ export class VirtualizedList {
 
       this.positions[id] = {
         height: rect.height,
-        top: rect.top - this.viewport.top + this.scrollTop,
-        bottom: this.scrollHeight - (rect.bottom - this.viewport.top + this.scrollTop),
+        top: Math.round(rect.top - this.viewport.top + this.scrollTop),
+        bottom: Math.round(this.scrollHeight - (rect.bottom - this.viewport.top + this.scrollTop)),
       };
 
       if (direction > 0) nextHeight = rect.bottom - this.viewport.top + this.scrollTop - this.paddingTop;
@@ -204,6 +206,14 @@ export class VirtualizedList {
       } else break;
 
       if (rect.height === 0) throw new Error(`height cannot be zero: ${offset + count * direction}: ${this.firstRendered} ${this.lastRendered}`);
+    }
+
+    if (this.selectGroup && this.cfg.groupPadding && offset + count * direction > this.firstRendered
+      && offset + count * direction < this.lastRendered) {
+      const groupId = this.selectGroup(this.items[offset + count * direction]);
+      const siblingGroupId = this.selectGroup(this.items[offset + count * direction + direction]);
+      if (direction === 1 && groupId === siblingGroupId) height -= this.cfg.groupPadding;
+      if (direction === -1 && groupId !== siblingGroupId) height += this.cfg.groupPadding;
     }
 
     return { height: Math.round(height), count };
@@ -284,7 +294,7 @@ export class VirtualizedList {
         if (this.firstRendered > this.lastRendered) {
           const next = this.getElementByOffset(this.scrollTop + this.viewport.height * 1.5);
 
-          if (next) {
+          if (next !== undefined) {
             this.lastRendered = next;
             this.firstRendered = next + 1;
             appendCount = Math.min(appendCount, this.firstRendered);
@@ -293,8 +303,6 @@ export class VirtualizedList {
             this.wrapper.style.paddingTop = `${this.paddingTop = position.top}px`;
             this.wrapper.style.paddingBottom = `${this.paddingBottom = position.bottom}px`;
           }
-
-          console.log('break', next, ' -> ', this.firstRendered, this.lastRendered);
         }
 
         // mount top elements
@@ -307,7 +315,7 @@ export class VirtualizedList {
         const appendedHeight = this.scrollHeight - prevScrollHeight;
         const newElementsHeight = Math.max(appendedHeight - this.paddingTop, 0);
 
-        this.wrapper.style.paddingTop = `${this.paddingTop = Math.max(0, this.paddingTop - appendedHeight)}px`;
+        this.wrapper.style.paddingTop = `${this.paddingTop = this.firstRendered === 0 ? 0 : Math.max(0, this.paddingTop - appendedHeight)}px`;
         if (newElementsHeight > 0) this.container.scrollTop = this.scrollTop += newElementsHeight;
 
         animationFrameStart().then(() => {
@@ -346,7 +354,7 @@ export class VirtualizedList {
         if (this.firstRendered > this.lastRendered) {
           const next = this.getElementByOffset(this.scrollTop - this.viewport.height / 2);
 
-          if (next) {
+          if (next !== undefined) {
             this.firstRendered = next;
             this.lastRendered = next - 1;
             appendCount = Math.min(appendCount, this.items.length - this.lastRendered - 1);
@@ -355,8 +363,6 @@ export class VirtualizedList {
             this.wrapper.style.paddingTop = `${this.paddingTop = position.top}px`;
             this.wrapper.style.paddingBottom = `${this.paddingBottom = position.bottom}px`;
           }
-
-          console.log('break', next, ' -> ', this.firstRendered, this.lastRendered);
         }
 
         // mount bottom elements
@@ -601,7 +607,7 @@ export class VirtualizedList {
     const scrollValue = this.getScrollToValue(item);
     const y = this.scrollTop;
     const dy = scrollValue - y;
-    const duration = 200;
+    const duration = 300;
     let start: number | undefined;
 
     const elm = this.elements[item];
@@ -708,7 +714,6 @@ export class VirtualizedList {
     this.elements = {};
     this.groups = {};
     this.groupChildrenCount = {};
-    this.heights = {};
     this.items = [];
     this.firstRendered = -1;
     this.lastRendered = -2;

@@ -33,13 +33,13 @@ const stories = storiesOf('Layout | UI Elements / List 5', module)
   .addDecorator(withMountTrigger)
   .addDecorator(fullscreen);
 
-const renderer = (id: string) => div`.demoListRow`(textNode(`Item #${+id + 1}`));
+const renderer = (id: string) => div`.demoListRow${`item${+id % 6}`}`(textNode(`Item #${+id + 1}`));
 const selectGroup = (index: string) => Math.floor(+index / 10).toString();
 const renderGroup = (index: string) => div`.demoListGroup`(div`.demoListGroup__header`(textNode(index)));
 
 const listTop = new VirtualizedList({ items, renderer, highlightFocused: true });
-const listGrouped = list({ items, renderer, renderGroup, selectGroup });
-const listBottom = list({ items, renderer, renderGroup, selectGroup, pivotBottom: true });
+const listGrouped = list({ items, renderer, renderGroup, selectGroup, groupPadding: 20 });
+const listBottom = list({ items, renderer, renderGroup, selectGroup, groupPadding: 20, pivotBottom: true });
 
 stories.add('Common', () => {
   align(number('Items', items.value.length || 500));

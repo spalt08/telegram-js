@@ -361,7 +361,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     updateLayout();
   };
 
-  useOnMount(container, () => update(true));
+  // useOnMount(container, () => update(true));
 
   return useInterface(container, {
     from: () => cached && cached._ !== 'messageEmpty' ? cached.from_id : 0,
