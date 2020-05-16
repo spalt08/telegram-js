@@ -36,7 +36,15 @@ if (!window.queueMicrotask) {
   window.queueMicrotask = (cb: () => void) => cb();
 }
 
-const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+function isIOS() {
+  if (/iPad|iPhone|iPod/.test(navigator.platform)) {
+    return true;
+  }
+  // eslint-disable-next-line compat/compat
+  return (navigator.maxTouchPoints && navigator.maxTouchPoints > 2) && /MacIntel/.test(navigator.platform);
+}
+
+const iOS = isIOS();
 
 /**
  * Scrollable virtualized list with flip animations
@@ -80,7 +88,7 @@ export class VirtualizedList {
     renderer,
     renderGroup,
     selectGroup,
-    groupPadding, 
+    groupPadding,
     className = '',
     batch = 20,
     threshold = 1,
@@ -147,13 +155,13 @@ export class VirtualizedList {
           mount(group, this.element(id), this.element(before));
           if (!group.parentElement) mount(this.wrapper, group);
 
-        // mount in the end of group before next group
+          // mount in the end of group before next group
         } else {
           mount(group, this.element(id));
           if (!group.parentElement) mount(this.wrapper, group, groupBefore);
         }
 
-      // mount inside group at the end
+        // mount inside group at the end
       } else {
         mount(group, this.element(id));
         if (!group.parentElement) mount(this.wrapper, group);
@@ -161,7 +169,7 @@ export class VirtualizedList {
 
       this.groupChildrenCount[groupId]++;
 
-    // mount without groupping
+      // mount without groupping
     } else mount(this.wrapper, this.element(id), before ? this.element(before) : undefined);
   }
 
@@ -179,7 +187,7 @@ export class VirtualizedList {
         if (this.groupChildrenCount[groupId] <= 0) unmount(group);
       }
 
-    // unmount without groupping
+      // unmount without groupping
     } else unmount(this.element(id));
   }
 
@@ -454,7 +462,7 @@ export class VirtualizedList {
       nextFirstRendererd = this.firstRendered;
       nextLastRendered = Math.min(this.firstRendered + visible.length - 1, next.length - 1);
 
-    // keep last element visible
+      // keep last element visible
     } else {
       nextLastRendered = Math.max(-1, next.length - (this.items.length - this.lastRendered - 1) - 1);
       nextFirstRendererd = Math.max(nextLastRendered - (this.lastRendered - this.firstRendered), 0);
@@ -501,7 +509,7 @@ export class VirtualizedList {
         elm.classList.add('list__appearing');
         listenOnce(elm, 'animationend', () => elm.classList.remove('list__appearing'));
 
-      // swap elements
+        // swap elements
       } else if (nextItemIndex !== j) {
         let item = renderedItems[j];
         let item2 = '';
