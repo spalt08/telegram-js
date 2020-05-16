@@ -80,7 +80,7 @@ export class VirtualizedList {
     renderer,
     renderGroup,
     selectGroup,
-    groupPadding,
+    groupPadding, 
     className = '',
     batch = 20,
     threshold = 1,
@@ -283,7 +283,6 @@ export class VirtualizedList {
 
       if (appendCount > 0) {
         this.lock();
-        if (iOS) this.container.style.overflow = 'hidden';
 
         const prevScrollHeight = this.scrollHeight;
         const heightLimit = this.scrollHeight - this.paddingBottom - (this.scrollTop + this.viewport.height);
@@ -321,6 +320,7 @@ export class VirtualizedList {
         this.wrapper.style.paddingTop = `${this.paddingTop = Math.max(0, this.paddingTop - appendedHeight)}px`;
         if (newElementsHeight > 0) {
           if (iOS) {
+            this.container.style.overflow = 'hidden';
             this.container.scrollTop = this.scrollTop = this.container.scrollTop + newElementsHeight;
             this.container.style.overflow = '';
           } else this.container.scrollTop = this.scrollTop += newElementsHeight;
