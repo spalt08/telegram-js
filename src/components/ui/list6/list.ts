@@ -9,11 +9,14 @@ export default function list() {
   const group = listGroup((container) => container);
   const container = div`.list`(group);
   listen(container, 'scroll', () => {
-    getInterface(group).updateVisibleRange(container.scrollTop, container.scrollTop + container.scrollHeight);
+    const { scrollTop } = container;
+    getInterface(group).updateVisibleRange(scrollTop - 2000, scrollTop + container.clientHeight + 2000);
+    if (scrollTop !== container.scrollTop) {
+      container.scrollTo({ top: scrollTop });
+    }
   });
   return useInterface(container, {
-    addItem: <T>(path: [T, ...any[]], item: Node) => {
-      getInterface(group).addItem(path, item);
-    },
+    insert: getInterface(group).insert,
+    size: getInterface(group).size,
   });
 }
