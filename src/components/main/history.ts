@@ -118,9 +118,11 @@ export default function history() {
     onClick: () => service.activePeer.value && service.selectPeer(service.activePeer.value, Infinity),
   }, icons.down());
 
+  mount(scroll.container, downButton);
+
   const messageInputEl = messageInput();
   const headerEl = header();
-  const historySection = div`.history__content`(scroll.container, downButton);
+  const historySection = scroll.container;
 
   useObservable(container, service.activePeer, (next) => {
     if (next) {

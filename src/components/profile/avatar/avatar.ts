@@ -30,15 +30,12 @@ export default function profileAvatar(peer: Peer, message?: Message, isForDialog
   } else {
     const location = getPeerPhotoInputLocation(peer, message);
     if (location) {
-      container.classList.add('-picture');
-      mount(container, div`.avatar__picture`(
-        img({ src: file(location, {}) }),
-      ));
-    } else {
-      container.classList.add('-standard');
-      container.classList.add(`-color-${peerToColorCode(peer)}`);
-      useObservable(container, peerToInitials(peer)[1], (initials) => container.textContent = initials);
+      return img`.avatar.-picture`({ src: file(location, {}) });
     }
+
+    container.classList.add('-standard');
+    container.classList.add(`-color-${peerToColorCode(peer)}`);
+    useObservable(container, peerToInitials(peer)[1], (initials) => container.textContent = initials);
   }
 
   return container;

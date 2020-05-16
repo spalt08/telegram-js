@@ -42,14 +42,14 @@ export function mockHistory(peer: InputPeer, from: number[]) {
       }),
     );
 
-    // if (i % 10 === 0) {
-    //   mockPhoto(200, 320, (photo) => {
-    //     histories[id][i].media = {
-    //       _: 'messageMediaPhoto',
-    //       photo,
-    //     };
-    //   });
-    // }
+    if (i % 10 === 0) {
+      mockPhoto(200, 320, (photo) => {
+        histories[id][i].media = {
+          _: 'messageMediaPhoto',
+          photo,
+        };
+      });
+    }
 
     if (f >= from.length) f = 0;
   }

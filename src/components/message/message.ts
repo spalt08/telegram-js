@@ -263,22 +263,23 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
         { icon: icons.reply, label: 'Reply', onClick: () => service.setMessageForReply(id) },
       ]);
 
+      // to do: optimize
       // if unread
-      const dialog = dialogCache.get(peerToId(peer));
-      if (dialog?._ === 'dialog' && dialog.read_outbox_max_id < msg.id) {
-        if (hasInterface<MessageInfoInterface>(renderedInfo)) {
-          getInterface(renderedInfo).updateStatus('unread');
+      // const dialog = dialogCache.get(peerToId(peer));
+      // if (dialog?._ === 'dialog' && dialog.read_outbox_max_id < msg.id) {
+      //   if (hasInterface<MessageInfoInterface>(renderedInfo)) {
+      //     getInterface(renderedInfo).updateStatus('unread');
 
-          const unsubscribe = dialogCache.watchItem(peerToId(peer), (nextDialog: Dialog) => {
-            if (nextDialog._ === 'dialog' && nextDialog.read_outbox_max_id >= msg.id) {
-              if (hasInterface<MessageInfoInterface>(renderedInfo)) {
-                getInterface(renderedInfo).updateStatus('read');
-              }
-              unsubscribe();
-            }
-          });
-        }
-      }
+      //     const unsubscribe = dialogCache.watchItem(peerToId(peer), (nextDialog: Dialog) => {
+      //       if (nextDialog._ === 'dialog' && nextDialog.read_outbox_max_id >= msg.id) {
+      //         if (hasInterface<MessageInfoInterface>(renderedInfo)) {
+      //           getInterface(renderedInfo).updateStatus('read');
+      //         }
+      //         unsubscribe();
+      //       }
+      //     });
+      //   }
+      // }
 
       mount(aligner, renderedMessage);
 
@@ -326,7 +327,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     if (aligner && container.classList.contains('chat') && isLast && !container.classList.contains('out')
       && !profilePicture && cached && cached._ !== 'messageEmpty') {
       const senderPeer = messageToSenderPeer(cached);
-      profilePicture = div`.message__profile`(profileAvatar(senderPeer));
+      profilePicture = profileAvatar(senderPeer);
       mount(aligner, profilePicture, aligner.firstChild || undefined);
     }
   };
@@ -361,7 +362,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     updateLayout();
   };
 
-  // useOnMount(container, () => update(true));
+  useOnMount(container, () => update(true));
 
   return useInterface(container, {
     from: () => cached && cached._ !== 'messageEmpty' ? cached.from_id : 0,

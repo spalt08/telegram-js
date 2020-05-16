@@ -12,14 +12,11 @@ $messageDistance: 4PX;
   --accent-color-inactive: #707579;
 
   width: 100%;
-  overflow: hidden;
-  z-index: 0;
   transition: background-color .4s ease-out, transform .25s ease-out;
   background-color: rgba(0, 0, 0, 0);
-
-  & .photo {
-    background-color: #fff;
-  }
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
 
   &__align {
     width: 100%;
@@ -28,12 +25,32 @@ $messageDistance: 4PX;
     display: flex;
     justify-content: flex-start;
     align-items: flex-end;
-    margin: 0 auto;
     overflow: hidden;
+  }
+
+  & .avatar {
+    width: 34PX;
+    height: 34PX;
+    margin-right: -5PX;
+    margin-bottom: 3PX;
+    --initials-font-size: 13PX;
+  }
+
+  & .photo {
+    background-color: #fff;
   }
 
   & .bubble2 {
     max-width: 75%;
+
+    /* size + 11PX padding */
+    &.with-webpage { max-width: 451px; }
+    &.with-webpage-media { width: 351px; }
+    &.with-photo { width: 331px; }
+
+    &.only-photo {
+      max-width: 331px;
+    }
   }
 
   & .only-sticker, &.out &.only-sticker {
@@ -61,17 +78,6 @@ $messageDistance: 4PX;
 
   &.with-video {
     transform: translate3d(0, 0, 0);
-  }
-
-  .bubble2 {
-    /* size + 11PX padding */
-    &.with-webpage { max-width: 451px; }
-    &.with-webpage-media { width: 351px; }
-    &.with-photo { width: 331px; }
-
-    &.only-photo {
-      max-width: 331px;
-    }
   }
 
   &__info {
@@ -178,13 +184,6 @@ $messageDistance: 4PX;
     margin-top: -3px;
   }
 
-  &__profile {
-    width: 34PX;
-    height: 34PX;
-    margin-right: 4PX;
-    --initials-font-size: 13PX;
-  }
-
   &__media-padded {
     padding: 10px $messageSidePadding;
   }
@@ -235,7 +234,7 @@ $messageDistance: 4PX;
   }
 
   &.first .message {
-    &__align { } //padding-top: 6px; }
+    &__align { padding-top: 4px; }
     &__bubble { border-top-left-radius: 12.5px; }
     &__title { display: block; }
   }
@@ -256,8 +255,8 @@ $messageDistance: 4PX;
     }
   }
 
-  &.chat &__align { padding-left: 58px; }
-  &.chat.out &__align, &.chat.last &__align { padding-left: 20px; }
+  &.chat &__align { padding-left: 49PX; }
+  &.chat.out &__align, &.chat.last &__align { padding-left: 20PX; }
   &.chat &__align.with-reply-markup.rm-rows-1 &__profile { margin-bottom: 45px; }
   &.chat &__align.with-reply-markup.rm-rows-2 &__profile { margin-bottom: 85px; }
   &.chat &__align.with-reply-markup.rm-rows-3 &__profile { margin-bottom: 125px; }

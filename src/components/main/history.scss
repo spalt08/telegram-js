@@ -14,18 +14,13 @@
   z-index: 0;
   transform: translate3d(0, 0, 0);
 
-  &__content {
+  &__list {
+    mask-image: linear-gradient(to top, transparent, #000 12px);
     flex: 1;
     min-height: 0;
     display: flex;
     flex-direction: column;
     position: relative;
-  }
-
-  &__list {
-    mask-image: linear-gradient(to top, transparent, #000 12px);
-    display: flex;
-    flex-direction: column;
     //  padding-bottom: 8PX;
   }
 

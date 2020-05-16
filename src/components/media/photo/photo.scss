@@ -43,14 +43,14 @@ $animation-duration: 0.4s;
     height: 108% !important;
     margin: -4%;
     object-fit: cover;
-    filter: blur(10PX);
+    filter: blur(3PX);
     z-index: 0;
     opacity: 0.4;
   }
 
   &__thumbnail {
     position: absolute;
-    filter: blur(10PX);
+    filter: blur(4PX);
     object-fit: contain;
     z-index: 1;
     transform: scale(1.1);

@@ -2,7 +2,9 @@
 
 .list {
   height: 100%;
-  overflow: hidden scroll;
+  overflow: scroll;
+  overflow-x: hidden;
+  overflow-y: scroll;
   -webkit-overflow-scrolling: touch;
   perspective: 1000;
   z-index: 0;
