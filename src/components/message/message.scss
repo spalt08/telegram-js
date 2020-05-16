@@ -63,6 +63,15 @@ $messageDistance: 4PX;
       margin-bottom: 10px;
     }
   }
+
+  & .only-sticker &__reply {
+    background: #FFFFFF;
+  }
+
+  &.out .only-sticker &__reply {
+    background: #EEFFDE;
+  }
+
   & .only-sticker { 
     position: relative;
     flex-direction: row-reverse;
@@ -148,7 +157,6 @@ $messageDistance: 4PX;
     $ripplePadding: 5PX 5PX;
 
     padding: 10px $messageSidePadding;
-    background: #FFFFFF;
     border-radius: 6px;
     min-width: 0;
 
@@ -170,8 +178,6 @@ $messageDistance: 4PX;
     }
 
     .message.out & {
-      background: #EEFFDE;
-
       &_ripple_content:hover {
         background: rgba(#000, 0.08);
       }

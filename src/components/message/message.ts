@@ -44,7 +44,7 @@ function messageText(msg: Message.message, info: Node) {
 // message renderer
 const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info: Node } => {
   const out = msg.out ?? false;
-  const info = messageInfo({ className: 'message__info', status: 'read' }, msg);
+  const info = nothing; // messageInfo({ className: 'message__info', status: 'read' }, msg);
   const hasReply = !!msg.reply_to_msg_id;
   const hasMessage = !!msg.message;
   const reply = hasReply ? messageReply(msg.reply_to_msg_id!, peer, msg) : nothing;
@@ -248,7 +248,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     if (!aligner) {
       aligner = div`.message__align`();
       mount(container, aligner);
-    }
+    } else return;
 
     // re-rendering
     if (!renderedMessage || !cached || (cached._ === 'message' && msg.message !== cached.message)) {
@@ -341,7 +341,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     if (nextEl && hasInterface<MessageInterface>(nextEl)) {
       const next = getInterface(nextEl);
 
-      if (cached && cached._ !== 'messageEmpty' && next.from() === cached.from_id) {
+      if (cached && cached._ !== 'messageEmpty' && next.from && next.from() === cached.from_id) {
         setBorders(isFirst, false);
         getInterface(nextEl).setBorders(false, getInterface(nextEl).getBorders().last);
       } else {
@@ -353,6 +353,8 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     }
 
     if (!prevEl) {
+      setBorders(true, isLast);
+    } else if (!getInterface(prevEl)) {
       setBorders(true, isLast);
     }
 
