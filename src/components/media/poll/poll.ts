@@ -1,5 +1,5 @@
 import { Poll, PollResults, PollAnswerVoters, Peer, Message } from 'mtproto-js';
-import { div, text, span } from 'core/html';
+import { div, text } from 'core/html';
 import { mount, unmountChildren } from 'core/dom';
 import { useWhileMounted, getInterface } from 'core/hooks';
 import { polls, main } from 'services';
@@ -8,7 +8,7 @@ import { peerMessageToId, userIdToPeer } from 'helpers/api';
 import { profileAvatar } from 'components/profile';
 import { pluralize } from 'helpers/other';
 import pollOption, { PollOptionInterface } from './poll_option';
-import voteFooter, { VoteButtonState } from './vote_footer';
+import pollFooter, { VoteButtonState } from './poll_footer';
 
 import './poll.scss';
 
@@ -36,7 +36,8 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
   if (message.media?._ !== 'messageMediaPoll') {
     throw new Error('message media must be of type "messageMediaPoll"');
   }
-  const { poll: pollData, results } = message.media;
+  const { results } = message.media;
+  const pollData = message.media.poll as Required<Poll.poll>;
   const selectedOptions = new Set<string>();
   const pollOptions: ReturnType<typeof pollOption>[] = [];
   const totalVotersText = text('');
@@ -52,10 +53,10 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
   const options = new Map<string, PollOptionInterface>();
   const answered = !!results.results && results.results.findIndex((r) => r.chosen) >= 0;
   const maxVoters = results.results ? Math.max(...results.results.map((r) => r.voters)) : 0;
-  const voteFooterEl = voteFooter(
-    pollData.quiz ?? false,
-    pollData.public_voters ?? false,
-    pollData.multiple_choice ?? false,
+  const voteFooterEl = pollFooter(
+    pollData.quiz,
+    pollData.public_voters,
+    pollData.multiple_choice,
     () => { submitOptions(); },
     () => { main.showPopup('pollResults', { peer, message, poll: pollData }); });
   pollData.answers.forEach((answer) => {
@@ -65,11 +66,11 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
       voters = results.results.find((r) => decoder.decode(r.option) === optionKey);
     }
     const option = pollOption({
-      quiz: pollData.quiz ?? false,
-      multipleChoice: pollData.multiple_choice ?? false,
+      quiz: pollData.quiz,
+      multipleChoice: pollData.multiple_choice,
       option: answer,
       answered,
-      closed: pollData.closed ?? false,
+      closed: pollData.closed,
       voters,
       maxVoters,
       totalVoters: results.total_voters ?? 0,

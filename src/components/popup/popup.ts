@@ -18,7 +18,7 @@ export default function popup() {
 
   useObservable(wrapper, main.popup, (type: string) => {
     if (element) unmount(element);
-    if (wrapper.classList.contains('closing')) wrapper.classList.remove('closing');
+    wrapper.classList.remove('closing');
 
     switch (type) {
       case '':

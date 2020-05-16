@@ -1,6 +1,6 @@
 import { text, div } from 'core/html';
 import { ripple } from 'components/ui';
-import { useInterface } from 'core/hooks';
+import { useInterface, getInterface } from 'core/hooks';
 import { pluralize } from 'helpers/other';
 
 export enum VoteButtonState {
@@ -39,14 +39,17 @@ function formatStateText(state: VoteButtonState, voters: number, quiz: boolean, 
   return voteText;
 }
 
-export default function voteFooter(quiz: boolean, publicVoters: boolean, multipleChoice: boolean, onSubmit: () => void, onShowResults: () => void) {
+export default function pollFooter(quiz: boolean, publicVoters: boolean, multipleChoice: boolean, onSubmit: () => void, onShowResults: () => void) {
   let state = VoteButtonState.Vote;
   let voters = 0;
   const stateText = text('');
-  const container: HTMLElement = ripple({}, [
+  const container = ripple({}, [
     div`.poll__vote-button.-inactive`(
       {
         onClick: async () => {
+          if (!publicVoters) {
+            return;
+          }
           if (state === VoteButtonState.ShowResults) {
             onShowResults();
           } else {
@@ -58,14 +61,22 @@ export default function voteFooter(quiz: boolean, publicVoters: boolean, multipl
     ),
   ]);
 
-  return useInterface(container, {
+  const updateState = () => {
+    stateText.textContent = formatStateText(state, voters, quiz, publicVoters, multipleChoice);
+    getInterface(container).setEnabled(false);
+  };
+
+  updateState();
+
+  return useInterface(container as HTMLElement, {
+    ...getInterface(container),
     updateState: (newState: VoteButtonState) => {
       state = newState;
-      stateText.textContent = formatStateText(state, voters, quiz, publicVoters, multipleChoice);
+      updateState();
     },
     updateVoters: (newVoters: number) => {
       voters = newVoters;
-      stateText.textContent = formatStateText(state, voters, quiz, publicVoters, multipleChoice);
+      updateState();
     },
   });
 }

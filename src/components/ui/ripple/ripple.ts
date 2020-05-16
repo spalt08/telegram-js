@@ -16,8 +16,12 @@ interface Props extends Record<string, any> {
 export default function ripple({ tag = 'div', className = '', contentClass = '', onClick, ...props }: Props, children: Node[] = []) {
   const contentEl = div`.ripple__content ${contentClass}`(...children);
   const element = el(tag, { className: `ripple ${className}`, ...props }, [contentEl]);
+  let enabled = true;
 
   listen(element, 'click', (event) => {
+    if (!enabled) {
+      return;
+    }
     const rect = element.getBoundingClientRect();
     const effect = div`.ripple__effect`({
       style: {
@@ -41,6 +45,9 @@ export default function ripple({ tag = 'div', className = '', contentClass = '',
   return useInterface(element, {
     mountChild(...moreChildren: Node[]) {
       moreChildren.forEach((child) => mount(contentEl, child));
+    },
+    setEnabled: (value: boolean) => {
+      enabled = value;
     },
   });
 }
