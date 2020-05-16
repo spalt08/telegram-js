@@ -23,11 +23,10 @@
   }
 
   &__list {
-    z-index: 0;
     mask-image: linear-gradient(to top, transparent, #000 12px);
     display: flex;
     flex-direction: column;
-    padding-bottom: 8PX;
+    //  padding-bottom: 8PX;
   }
 
   &__list .list__wrapper {

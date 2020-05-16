@@ -11,7 +11,7 @@
     padding-top: 4PX;
     box-sizing: border-box;
 
-    /* Disable sticky dates in Firefox due to rendering lags */
+    /* Disable sticky dates in Firefox due to rendering */
     @-moz-document url-prefix() {
       & { position: static;}
     }

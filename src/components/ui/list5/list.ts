@@ -36,6 +36,8 @@ if (!window.queueMicrotask) {
   window.queueMicrotask = (cb: () => void) => cb();
 }
 
+const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
 /**
  * Scrollable virtualized list with flip animations
  *
@@ -256,7 +258,7 @@ export class VirtualizedList {
       for (let i = 0; i < appendCount; i += 1) this.mount(this.items[++this.lastRendered]);
 
       // set initial scroll position
-      if (this.cfg.pivotBottom) this.container.scrollTo(0, 9999);
+      if (this.cfg.pivotBottom) this.container.scrollTop = 9999;
       else this.scrollTop = 0;
 
       // set initial values
@@ -281,6 +283,7 @@ export class VirtualizedList {
 
       if (appendCount > 0) {
         this.lock();
+        if (iOS) this.container.style.overflow = 'hidden';
 
         const prevScrollHeight = this.scrollHeight;
         const heightLimit = this.scrollHeight - this.paddingBottom - (this.scrollTop + this.viewport.height);
@@ -315,8 +318,13 @@ export class VirtualizedList {
         const appendedHeight = this.scrollHeight - prevScrollHeight;
         const newElementsHeight = Math.max(appendedHeight - this.paddingTop, 0);
 
-        this.wrapper.style.paddingTop = `${this.paddingTop = this.firstRendered === 0 ? 0 : Math.max(0, this.paddingTop - appendedHeight)}px`;
-        if (newElementsHeight > 0) this.container.scrollTo(0, this.scrollTop += newElementsHeight);
+        this.wrapper.style.paddingTop = `${this.paddingTop = Math.max(0, this.paddingTop - appendedHeight)}px`;
+        if (newElementsHeight > 0) {
+          if (iOS) {
+            this.container.scrollTop = this.scrollTop = this.container.scrollTop + newElementsHeight;
+            this.container.style.overflow = '';
+          } else this.container.scrollTop = this.scrollTop += newElementsHeight;
+        }
 
         animationFrameStart().then(() => {
           this.scrollHeight = this.container.scrollHeight;
@@ -514,7 +522,7 @@ export class VirtualizedList {
       nextVisible.push(nextItem);
     }
 
-    this.container.scrollTo(0, this.scrollTop -= (this.scrollHeight - this.container.scrollHeight));
+    this.container.scrollTop = this.scrollTop -= (this.scrollHeight - this.container.scrollHeight);
     this.scrollHeight = this.container.scrollHeight;
 
     // get position of nextVisible elements
@@ -672,7 +680,7 @@ export class VirtualizedList {
     }
 
     this.scrollHeight = this.container.scrollHeight;
-    this.container.scrollTo(0, this.scrollTop = this.getScrollToValue(item, -translate));
+    this.container.scrollTop = this.scrollTop = this.getScrollToValue(item, -translate);
     animationFrameStart().then(() => this.container.scrollTop = this.scrollTop); // chrome fix
 
     // on animation end
