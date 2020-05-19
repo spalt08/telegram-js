@@ -44,7 +44,7 @@ function messageText(msg: Message.message, info: Node) {
 // message renderer
 const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info: Node } => {
   const out = msg.out ?? false;
-  const info = nothing; // messageInfo({ className: 'message__info', status: 'read' }, msg);
+  const info = messageInfo({ className: 'message__info', status: 'read' }, msg);
   const hasReply = !!msg.reply_to_msg_id;
   const hasMessage = !!msg.message;
   const reply = hasReply ? messageReply(msg.reply_to_msg_id!, peer, msg) : nothing;
@@ -265,21 +265,21 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
 
       // to do: optimize
       // if unread
-      // const dialog = dialogCache.get(peerToId(peer));
-      // if (dialog?._ === 'dialog' && dialog.read_outbox_max_id < msg.id) {
-      //   if (hasInterface<MessageInfoInterface>(renderedInfo)) {
-      //     getInterface(renderedInfo).updateStatus('unread');
+      const dialog = dialogCache.get(peerToId(peer));
+      if (dialog?._ === 'dialog' && dialog.read_outbox_max_id < msg.id) {
+        if (hasInterface<MessageInfoInterface>(renderedInfo)) {
+          getInterface(renderedInfo).updateStatus('unread');
 
-      //     const unsubscribe = dialogCache.watchItem(peerToId(peer), (nextDialog: Dialog) => {
-      //       if (nextDialog._ === 'dialog' && nextDialog.read_outbox_max_id >= msg.id) {
-      //         if (hasInterface<MessageInfoInterface>(renderedInfo)) {
-      //           getInterface(renderedInfo).updateStatus('read');
-      //         }
-      //         unsubscribe();
-      //       }
-      //     });
-      //   }
-      // }
+          const unsubscribe = dialogCache.watchItem(peerToId(peer), (nextDialog: Dialog) => {
+            if (nextDialog._ === 'dialog' && nextDialog.read_outbox_max_id >= msg.id) {
+              if (hasInterface<MessageInfoInterface>(renderedInfo)) {
+                getInterface(renderedInfo).updateStatus('read');
+              }
+              unsubscribe();
+            }
+          });
+        }
+      }
 
       mount(aligner, renderedMessage);
 

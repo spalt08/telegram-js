@@ -7,10 +7,11 @@ import { listen, mount } from 'core/dom';
 import { getInterface, hasInterface, useListenWhileMounted } from 'core/hooks';
 import { close } from 'components/icons';
 import { profileAvatar, profileTitle } from 'components/profile';
-import photoRenderer, { PhotoOptions } from 'components/media/photo/photo';
+import photoRenderer from 'components/media/photo/photo';
 import { datetime } from 'components/ui';
 import { main } from 'services';
 import { KeyboardKeys } from 'const';
+import { PhotoOptions } from 'helpers/other';
 import { PopupInterface } from '../interface';
 
 type Props = {

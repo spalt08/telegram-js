@@ -44,9 +44,19 @@
 
   &__bubble {
     flex: 1 50%;
-    .bubble__shadow, .bubble__background {
+    .bubble2__background {
       transform: scale(-1, 1);
+      width: calc(100% + 6PX);
     }
+
+    .bubble2__content {
+      padding-left: 2PX;
+      padding-right: 3PX;
+    }
+  }
+
+  & .msgRecordSend {
+    margin-bottom: 3PX;
   }
 
   &__bubble-content {

@@ -1,6 +1,6 @@
 import { Photo, Document } from 'mtproto-js';
 import { div, img, nothing } from 'core/html';
-import { mount, listenOnce, unmount } from 'core/dom';
+import { mount, unmount } from 'core/dom';
 import { getThumbnail, getSize, getPhotoLocation } from 'helpers/photo';
 import './photo.scss';
 import { useInterface } from 'core/hooks';
@@ -59,38 +59,6 @@ export default function photoRenderer(photo: Photo.photo | Document.document, op
       unmount(thumbnail);
     }
   };
-
-
-  // const render = (src: string | null) => {
-  //   if (src === null) return;
-  //   if (loader) unmount(loader);
-  //   if (image) unmount(image);
-
-  //   url = src;
-
-  //   if (thumbnail) {
-  //     thumbnail.classList.add('removed');
-  //     listenOnce(thumbnail, 'animationend', () => thumbnail && unmount(thumbnail));
-  //   }
-
-  //   mount(container, image = img`${loadedFromCache ? '' : 'unblur'}`({ src, alt: 'Message Photo' }), thumbnail);
-  // };
-
-  // // load or render cached
-  // if (!url) {
-  //   useOnMount(container, () => {
-  //     if (!url) {
-  //       if (showLoader) {
-  //         loader = div`.photo__loader`(materialSpinner());
-  //         mount(container, loader);
-  //       }
-
-  //       download(location, { size: size.size, dc_id: photo.dc_id }, render);
-  //     }
-  //   });
-  // } else {
-  //   render(url);
-  // }
 
   // interfaces
   const rect = () => fit === 'cover' ? container.getBoundingClientRect() : (image || thumbnail || container).getBoundingClientRect();

@@ -12,11 +12,9 @@ $messageDistance: 4PX;
   --accent-color-inactive: #707579;
 
   width: 100%;
-  transition: background-color .4s ease-out, transform .25s ease-out;
   background-color: rgba(0, 0, 0, 0);
   display: flex;
   justify-content: center;
-  overflow: hidden;
 
   &__align {
     width: 100%;
@@ -25,7 +23,6 @@ $messageDistance: 4PX;
     display: flex;
     justify-content: flex-start;
     align-items: flex-end;
-    overflow: hidden;
   }
 
   & .avatar {
@@ -50,6 +47,11 @@ $messageDistance: 4PX;
 
     &.only-photo {
       max-width: 331px;
+    }
+    
+    &.-last.only-photo .bubble2__content {
+      padding-left: 1PX;
+      padding-right: 1PX;
     }
   }
 
@@ -236,6 +238,7 @@ $messageDistance: 4PX;
   }
 
   &.-focused {
+    transition: background-color .4s ease-out;
     background-color: rgba(0, 132, 255, 0.3);
   }
 

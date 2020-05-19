@@ -6,16 +6,12 @@
   overflow-x: hidden;
   overflow-y: scroll;
   -webkit-overflow-scrolling: touch;
-  z-index: 0;
   transform: translate3d(0, 0, 0); // https://stackoverflow.com/a/30533339/1118709
   min-height: 0; // To force the content to scroll
 
 
   &__wrapper {
-    box-sizing: border-box;
-    overflow-x: hidden;
-    z-index: 0;
-    transform: translateZ(0);  // https://stackoverflow.com/a/30533339/1118709
+    overflow: visible;
   }
 
   &__appearing {

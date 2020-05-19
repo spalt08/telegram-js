@@ -8,20 +8,22 @@
   background-size: cover;
   background-position: center center;
 
-  // performance tweak for right sidebar
-  overflow: hidden;
+  // performance tweak for right sidebar  
   will-change: width;
   z-index: 0;
   transform: translate3d(0, 0, 0);
 
   &__list {
+    display: flex;
+    flex-direction: column;
+    //  padding-bottom: 8PX;
+  }
+
+  &__content {
     mask-image: linear-gradient(to top, transparent, #000 12px);
     flex: 1;
     min-height: 0;
-    display: flex;
-    flex-direction: column;
     position: relative;
-    //  padding-bottom: 8PX;
   }
 
   &__list .list__wrapper {
@@ -65,7 +67,7 @@
     transition: all 550ms cubic-bezier(.44,1.59,.53,1);
 
     > svg {
-      $icon-size: 40px;
+      $icon-size: 32px;
       width: $icon-size;
       height: $icon-size;
       position: absolute;

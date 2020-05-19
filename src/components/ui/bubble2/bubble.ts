@@ -16,7 +16,7 @@ export default function bubble({
 }: Props, ...children: Node[]) {
   const element = div`.bubble2${className}`(
     div`.bubble2__background`(),
-    ...children,
+    div`.bubble2__content`(...children),
   );
 
   if (out) element.classList.add('-out');

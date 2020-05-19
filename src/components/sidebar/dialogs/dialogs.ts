@@ -76,8 +76,8 @@ export default function dialogs({ onNavigate }: SidebarComponentProps) {
   const listEl = new VirtualizedList({
     className: 'dialogs',
     items: service.dialogs,
-    threshold: 2,
-    batch: 30,
+    threshold: 4,
+    batch: 40,
     pivotBottom: false,
     renderer: dialog,
     onReachBottom: () => service.loadMoreDialogs(),

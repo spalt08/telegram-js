@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign, import/no-extraneous-dependencies */
 import { storiesOf } from '@storybook/html';
 import { withKnobs, number, button } from '@storybook/addon-knobs';
+import { action } from '@storybook/addon-actions';
 import { withMountTrigger, fullscreen } from 'storybook/decorators';
 import { div, text as textNode } from 'core/html';
 import { BehaviorSubject } from 'rxjs';
@@ -48,6 +49,7 @@ stories.add('Common', () => {
   const scrollIndex = number('Focus #', 50);
   button('Scroll', () => listTop.focus(items.value[scrollIndex]));
 
+  listTop.cfg.onTrace = action('trace');
   return listTop.container;
 });
 

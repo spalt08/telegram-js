@@ -3,7 +3,6 @@ $animation-duration: 0.4s;
 .photo {
   position: relative;
   background: transparent;
-  overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -50,7 +49,6 @@ $animation-duration: 0.4s;
   }
 
   &__thumbnail {
-    overflow: hidden;
     position: absolute;
    //filter: blur(4PX);
     object-fit: contain;

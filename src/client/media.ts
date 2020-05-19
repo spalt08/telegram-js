@@ -1,7 +1,7 @@
 import { InputFileLocation, Document } from 'mtproto-js';
 import { BehaviorSubject } from 'rxjs';
 import { locationToURL, getStreamServiceURL, getDocumentLocation } from 'helpers/files';
-import { useWhileMounted, useOnMount, useObservable } from 'core/hooks';
+import { useObservable } from 'core/hooks';
 import { task, listenMessage } from './context';
 import { UploadResolver, UploadProgressResolver, DownloadResolver,
   DownloadProgressResolver, DownloadOptions } from './types';

@@ -2,7 +2,7 @@ import binarySearch from 'binary-search';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { button, div, text } from 'core/html';
-import { mount, unmount } from 'core/dom';
+import { mount, unmount, animationFrameStart } from 'core/dom';
 import { useObservable } from 'core/hooks';
 import { message as service, dialog as dialogService } from 'services';
 import { Direction as MessageDirection } from 'services/message/types';
@@ -90,19 +90,21 @@ export default function history() {
     className: 'history__list',
     items: itemsSubject,
     pivotBottom: true,
-    threshold: 3,
-    batch: 20,
-    focusFromBottom: true,
+    threshold: 4,
+    batch: 35,
+    initialPaddingBottom: 10,
     renderer: (id: string) => message(id, service.activePeer.value!), // , (mid: string) => scroll.pendingRecalculate.push(mid)),
     selectGroup: (id: string) => messageGroupMap.get(id) || '0',
     renderGroup: historyDay,
     groupPadding: 34,
     onReachTop: () => service.loadMoreHistory(MessageDirection.Older),
     onReachBottom: () => service.loadMoreHistory(MessageDirection.Newer),
-    onFocus: (id: string) => {
-      updateDownButtonState(id);
+    onTrace: (_top?: string, bottom?: string) => {
+      if (!bottom) return;
 
-      const numericId = messageCache.get(id)?.id;
+      updateDownButtonState(bottom);
+
+      const numericId = messageCache.get(bottom)?.id;
       if (numericId !== undefined) {
         reportRead(numericId);
         updateUnreadCounter(numericId);
@@ -118,11 +120,22 @@ export default function history() {
     onClick: () => service.activePeer.value && service.selectPeer(service.activePeer.value, Infinity),
   }, icons.down());
 
-  mount(scroll.container, downButton);
-
   const messageInputEl = messageInput();
   const headerEl = header();
-  const historySection = scroll.container;
+  const historySection = div`.history__content`(scroll.container);
+
+  mount(historySection, downButton);
+
+  useObservable(container, showSpinnerObservable, (show) => {
+    if (show && !spinner) {
+      mount(historySection, spinner = sectionSpinner({ className: 'history__spinner', useBackdrop: true }));
+    } else if (!show && spinner) {
+      animationFrameStart().then(() => {
+        if (spinner) unmount(spinner);
+        spinner = undefined;
+      });
+    }
+  });
 
   useObservable(container, service.activePeer, (next) => {
     if (next) {
@@ -168,15 +181,6 @@ export default function history() {
   useObservable(container, service.history, (data) => itemsSubject.next(
     service.activePeer.value ? prepareIdsList(service.activePeer.value, data.ids) : [],
   ));
-
-  useObservable(container, showSpinnerObservable, (show) => {
-    if (show && !spinner) {
-      mount(historySection, spinner = sectionSpinner({ className: 'history__spinner', useBackdrop: true }));
-    } else if (!show && spinner) {
-      unmount(spinner);
-      spinner = undefined;
-    }
-  });
 
   return container;
 }

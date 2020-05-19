@@ -11,7 +11,9 @@ type ListConfig = {
   highlightFocused: boolean,
   onReachTop?: () => void,
   onReachBottom?: () => void,
+  onTrace?: (top?: string, bottom?: string) => void,
   groupPadding?: number,
+  initialPaddingBottom: number,
 };
 
 type Props = Partial<ListConfig> & {
@@ -79,6 +81,8 @@ export class VirtualizedList {
   firstRendered: number = -1;
   lastRendered: number = -2;
   isLocked: boolean = false;
+  top?: string;
+  bottom?: string;
 
   shouldFocus?: string;
   shouldFocusDirection?: -1 | 1;
@@ -96,15 +100,19 @@ export class VirtualizedList {
     highlightFocused = false,
     onReachBottom,
     onReachTop,
+    onTrace,
+    initialPaddingBottom = 0,
   }: Props) {
     this.wrapper = div`.list__wrapper`();
     this.container = div`.list${className}${pivotBottom ? '-reversed' : ''}`(this.wrapper);
 
-    this.cfg = { batch, pivotBottom, threshold, onReachTop, onReachBottom, highlightFocused, groupPadding };
+    this.cfg = { batch, pivotBottom, threshold, onReachTop, onReachBottom, highlightFocused, groupPadding, initialPaddingBottom, onTrace };
 
     this.render = renderer;
     this.renderGroup = renderGroup;
     this.selectGroup = selectGroup;
+
+    if (initialPaddingBottom) this.wrapper.style.paddingBottom = `${this.paddingBottom = initialPaddingBottom}px`;
 
     // listen items changed
     useMaybeObservable(this.container, items, (next) => {
@@ -291,6 +299,7 @@ export class VirtualizedList {
 
       if (appendCount > 0) {
         this.lock();
+        if (iOS) this.container.style.overflow = 'hidden';
 
         const prevScrollHeight = this.scrollHeight;
         const heightLimit = this.scrollHeight - this.paddingBottom - (this.scrollTop + this.viewport.height);
@@ -326,13 +335,14 @@ export class VirtualizedList {
         const newElementsHeight = Math.max(appendedHeight - this.paddingTop, 0);
 
         this.wrapper.style.paddingTop = `${this.paddingTop = Math.max(0, this.paddingTop - appendedHeight)}px`;
+
         if (newElementsHeight > 0) {
           if (iOS) {
-            this.container.style.overflow = 'hidden';
             this.container.scrollTop = this.scrollTop = this.container.scrollTop + newElementsHeight;
-            this.container.style.overflow = '';
           } else this.container.scrollTop = this.scrollTop += newElementsHeight;
         }
+
+        if (iOS) this.container.style.overflow = '';
 
         animationFrameStart().then(() => {
           this.scrollHeight = this.container.scrollHeight;
@@ -341,10 +351,10 @@ export class VirtualizedList {
           this.unlock();
           this.onScrollUp();
         });
-      }
+      } else this.trace();
 
       if (this.cfg.onReachTop && this.firstRendered <= this.cfg.batch * 3) this.cfg.onReachTop();
-    }
+    } else this.trace();
   }
 
   // user has scrolled lower
@@ -389,7 +399,8 @@ export class VirtualizedList {
         const appendedHeight = this.scrollHeight - prevScrollHeight;
         const newElementsHeight = Math.max(appendedHeight - this.paddingBottom, 0);
 
-        this.wrapper.style.paddingBottom = `${this.paddingBottom = Math.max(0, this.paddingBottom - appendedHeight)}px`;
+        if (this.lastRendered === this.items.length - 1) this.paddingBottom = this.cfg.initialPaddingBottom;
+        this.wrapper.style.paddingBottom = `${this.paddingBottom = Math.max(this.cfg.initialPaddingBottom, this.paddingBottom - appendedHeight)}px`;
 
         animationFrameStart().then(() => {
           this.scrollHeight = this.container.scrollHeight;
@@ -398,10 +409,10 @@ export class VirtualizedList {
           this.unlock();
           this.onScrollDown();
         });
-      }
-    }
+      } else this.trace();
 
-    if (this.cfg.onReachBottom && this.items.length - this.lastRendered - 1 <= this.cfg.batch * 1) this.cfg.onReachBottom();
+      if (this.cfg.onReachBottom && this.items.length - this.lastRendered - 1 <= this.cfg.batch * 1) this.cfg.onReachBottom();
+    } else this.trace();
   }
 
   // perform behaviour subject list update
@@ -645,6 +656,7 @@ export class VirtualizedList {
       } else {
         elm.classList.remove('-focused');
         this.scrollTop = this.container.scrollTop;
+        this.trace();
         this.unlock();
 
         if (dy > 0) this.onScrollDown();
@@ -658,10 +670,8 @@ export class VirtualizedList {
   unmountAll() {
     // unmount all elements
     for (let i = this.firstRendered; i <= this.lastRendered; i++) this.unmount(this.items[i]);
-    this.wrapper.style.paddingTop = '';
-    this.wrapper.style.paddingBottom = '';
-    this.paddingTop = 0;
-    this.paddingBottom = 0;
+    this.wrapper.style.paddingBottom = `${this.paddingBottom = this.cfg.initialPaddingBottom}px`;
+    this.wrapper.style.paddingTop = `${this.paddingTop = 0}px`;
     this.firstRendered = -1;
     this.lastRendered = -2;
   }
@@ -696,6 +706,7 @@ export class VirtualizedList {
       this.shouldFocus = undefined;
       this.shouldFocusDirection = undefined;
       this.scrollTop = this.container.scrollTop;
+      this.trace();
       this.unlock();
       this.element(item).classList.remove('-focused');
     };
@@ -722,11 +733,44 @@ export class VirtualizedList {
     } else finishScroll();
   }
 
+  trace() {
+    if (!this.cfg.onTrace) return;
+    if (!this.viewport) this.viewport = this.container.getBoundingClientRect();
+
+    const prevTop = this.top;
+    const prevBottom = this.bottom;
+
+    for (let i = this.firstRendered; i <= this.lastRendered; i++) {
+      const item = this.items[i];
+
+      if (!this.positions[item]) {
+        const brect = this.element(item).getBoundingClientRect();
+        this.positions[item] = {
+          height: brect.height,
+          top: Math.round(brect.top - this.viewport.top + this.scrollTop),
+          bottom: Math.round(this.scrollHeight - (brect.bottom - this.viewport.top + this.scrollTop)),
+        };
+      }
+
+      const rect = this.positions[item];
+
+      if (rect.top <= this.scrollTop) {
+        this.top = item;
+      } else if (rect.top < this.scrollTop + this.viewport.height) {
+        this.bottom = item;
+      } else {
+        break;
+      }
+    }
+
+    if (this.cfg.onTrace && (this.top !== prevTop || this.bottom !== prevBottom)) this.cfg.onTrace(this.top, this.bottom);
+  }
+
   clear() {
     unmountChildren(this.wrapper);
 
     this.wrapper.style.paddingTop = `${this.paddingTop = 0}px`;
-    this.wrapper.style.paddingBottom = `${this.paddingBottom = 0}px`;
+    this.wrapper.style.paddingBottom = `${this.paddingBottom = this.cfg.initialPaddingBottom}px`;
     this.elements = {};
     this.groups = {};
     this.groupChildrenCount = {};
