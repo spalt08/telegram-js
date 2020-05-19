@@ -90,7 +90,7 @@ export default function history() {
     className: 'history__list',
     items: itemsSubject,
     pivotBottom: true,
-    threshold: 2,
+    threshold: 3,
     batch: 20,
     focusFromBottom: true,
     renderer: (id: string) => message(id, service.activePeer.value!), // , (mid: string) => scroll.pendingRecalculate.push(mid)),

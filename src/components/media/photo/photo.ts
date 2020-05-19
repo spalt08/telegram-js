@@ -54,8 +54,9 @@ export default function photoRenderer(photo: Photo.photo | Document.document, op
 
   image.onload = () => {
     if (thumbnail) {
-      thumbnail.classList.add('removed');
-      listenOnce(thumbnail, 'animationend', () => thumbnail && unmount(thumbnail));
+      // thumbnail.classList.add('removed');
+      // listenOnce(thumbnail, 'animationend', () => thumbnail && unmount(thumbnail));
+      unmount(thumbnail);
     }
   };
 

@@ -39,22 +39,24 @@ $animation-duration: 0.4s;
     position: absolute;
     left: 0;
     top: 0;
-    width: 108% !important;
-    height: 108% !important;
-    margin: -4%;
+    width: 100% !important;
+    height: 100% !important;
+   // margin: -4%;
     object-fit: cover;
-    filter: blur(3PX);
+   // filter: blur(3PX);
     z-index: 0;
     opacity: 0.4;
+    overflow: hidden;
   }
 
   &__thumbnail {
+    overflow: hidden;
     position: absolute;
-    filter: blur(4PX);
+   //filter: blur(4PX);
     object-fit: contain;
     z-index: 1;
-    transform: scale(1.1);
-    clip-path: polygon(4% 4%, 96% 4%, 96% 96%, 4% 96%);
+    // transform: scale(1.1);
+    // clip-path: polygon(4% 4%, 96% 4%, 96% 96%, 4% 96%);
 
     &.no-blur {
       transform: none;
