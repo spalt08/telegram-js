@@ -3,6 +3,11 @@
   position: relative;
   display: flex;
   flex-direction: column;
+
+  &__items {
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 // ::-webkit-scrollbar {
