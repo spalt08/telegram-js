@@ -248,7 +248,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     if (!aligner) {
       aligner = div`.message__align`();
       mount(container, aligner);
-    } else return;
+    }
 
     // re-rendering
     if (!renderedMessage || !cached || (cached._ === 'message' && msg.message !== cached.message)) {

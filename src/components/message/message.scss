@@ -55,15 +55,21 @@ $messageDistance: 4PX;
     }
   }
 
-  & .only-sticker, &.out &.only-sticker {
+  & .only-sticker {
     background: none;
     display: flex;
     align-items: flex-start;
+    padding-left: 9PX;
 
     .message__reply {
       max-width: 400px;
       margin-bottom: 10px;
     }
+  }
+
+  &.out &.only-sticker {
+    padding-right: 9PX;
+    padding-left: 0;
   }
 
   & .only-sticker &__reply {
