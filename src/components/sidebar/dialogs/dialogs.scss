@@ -9,9 +9,6 @@
   position: relative;
   transition: transform .3s ease-out;
 
-  // Optimization: overflow hidden and z-index together lock the element to an independent render unit
-  z-index: 0;
-
   &__head {
     width: 100%;
     flex: none;

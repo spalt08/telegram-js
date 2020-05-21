@@ -77,7 +77,7 @@ export default function dialogs({ onNavigate }: SidebarComponentProps) {
     className: 'dialogs',
     items: service.dialogs,
     threshold: 2,
-    batch: navigator.userAgent.indexOf('Safari') > -1 ? 10 : 20,
+    batch: 20,
     pivotBottom: false,
     renderer: dialog,
     onReachBottom: () => service.loadMoreDialogs(),

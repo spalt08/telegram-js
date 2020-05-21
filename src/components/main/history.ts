@@ -14,8 +14,8 @@ import { Peer } from 'mtproto-js';
 import { compareSamePeerMessageIds, peerMessageToId, peerToId } from 'helpers/api';
 import { messageCache, dialogCache, chatCache, messageGroupMap } from 'cache';
 import header from './header/header';
-import './history.scss';
 import historyDay from './history_day/history_day';
+import './history.scss';
 
 function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
   const { length } = messageIds;

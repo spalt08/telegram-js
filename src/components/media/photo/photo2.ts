@@ -2,10 +2,10 @@ import { Photo, Document } from 'mtproto-js';
 import { img, nothing } from 'core/html';
 import { watchVisibility } from 'core/dom';
 import { getPhotoLocation, getThumbnailService } from 'helpers/photo';
-import './photo.scss';
 import { useInterface } from 'core/hooks';
 import { PhotoOptions } from 'helpers/other';
 import { file } from 'client/media';
+import './photo.scss';
 
 export default function photoRenderer(photo: Photo.photo | Document.document, options: PhotoOptions) {
   if (photo?._ !== 'photo' && photo?._ !== 'document') return nothing;

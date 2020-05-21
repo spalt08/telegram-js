@@ -6,12 +6,12 @@
   overflow-x: hidden;
   overflow-y: scroll;
   -webkit-overflow-scrolling: touch;
-  transform: translate3d(0, 0, 0); // https://stackoverflow.com/a/30533339/1118709
+  will-change: scroll-position;
   min-height: 0; // To force the content to scroll
 
 
   &__wrapper {
-    overflow: visible;
+    will-change: transform;
   }
 
   &__appearing {

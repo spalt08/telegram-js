@@ -22,7 +22,8 @@
     width: 100%;
     transition: background-color 0.2s;
 
-    &:hover, &.-selected {
+    // temporary disable dialog hover due to safari rendering issues
+    &.-selected { // &:hover, 
       background-color: rgba(#707579, 0.08);
     }
 

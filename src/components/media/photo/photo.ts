@@ -2,11 +2,11 @@ import { Photo, Document } from 'mtproto-js';
 import { div, img, nothing } from 'core/html';
 import { mount, unmount } from 'core/dom';
 import { getThumbnail, getSize, getPhotoLocation } from 'helpers/photo';
-import './photo.scss';
 import { useInterface } from 'core/hooks';
 import { PhotoOptions } from 'helpers/other';
 import { usePhotoSize } from 'helpers/files';
 import { file, hasCached } from 'client/media';
+import './photo.scss';
 
 export default function photoRenderer(photo: Photo.photo | Document.document, options: PhotoOptions) {
   if (photo?._ !== 'photo' && photo?._ !== 'document') return nothing;

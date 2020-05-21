@@ -7,11 +7,9 @@
   background-image: url(~assets/chamomile-blurred.jpg);
   background-size: cover;
   background-position: center center;
+  background-attachment: fixed;
 
   // performance tweak for right sidebar  
-  will-change: width;
-  z-index: 0;
-  transform: translate3d(0, 0, 0);
 
   &__list {
     display: flex;

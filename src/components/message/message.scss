@@ -93,10 +93,6 @@ $messageDistance: 4PX;
 
   & .as-emoji { padding-top: 10px; }
 
-  &.with-video {
-    transform: translate3d(0, 0, 0);
-  }
-
   &__info {
     user-select: none;
     float: right;

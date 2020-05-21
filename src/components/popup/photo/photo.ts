@@ -1,6 +1,5 @@
 import { div, nothing, text } from 'core/html';
 import { Message, Peer, Photo } from 'mtproto-js';
-import './photo.scss';
 import { cached } from 'client/media';
 import { getPhotoLocation, getOrientation, getSize } from 'helpers/photo';
 import { listen, mount } from 'core/dom';
@@ -13,6 +12,7 @@ import { main } from 'services';
 import { KeyboardKeys } from 'const';
 import { PhotoOptions } from 'helpers/other';
 import { PopupInterface } from '../interface';
+import './photo.scss';
 
 type Props = {
   rect: DOMRect,
