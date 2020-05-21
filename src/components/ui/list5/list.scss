@@ -6,12 +6,22 @@
   overflow-x: hidden;
   overflow-y: scroll;
   -webkit-overflow-scrolling: touch;
-  will-change: scroll-position;
+  will-change: transform;
   min-height: 0; // To force the content to scroll
-
+  transform: translate3d(0, 0, 0);
 
   &__wrapper {
     will-change: transform;
+    transform: translate3d(0, 0, 0);
+  }
+
+  &.-safari {
+    will-change: scroll-position;
+    transform: none;
+  }
+
+  &.-safari &__wrapper {
+    transform: none;
   }
 
   &__appearing {

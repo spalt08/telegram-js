@@ -91,7 +91,7 @@ export default function history() {
     items: itemsSubject,
     pivotBottom: true,
     threshold: 2,
-    batch: navigator.userAgent.indexOf('Safari') > -1 ? 5 : 20,
+    batch: 20, // navigator.userAgent.indexOf('Safari') > -1 ? 5 : 20,
     initialPaddingBottom: 10,
     renderer: (id: string) => message(id, service.activePeer.value!), // , (mid: string) => scroll.pendingRecalculate.push(mid)),
     selectGroup: (id: string) => messageGroupMap.get(id) || '0',

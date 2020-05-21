@@ -47,6 +47,11 @@ function isIOS() {
   return (navigator.maxTouchPoints && navigator.maxTouchPoints > 2) && /MacIntel/.test(navigator.platform);
 }
 
+function isSafari() {
+  return navigator.userAgent.indexOf('Safari') > -1;
+}
+
+const Safari = isSafari();
 const iOS = isIOS();
 
 /**
@@ -106,9 +111,11 @@ export class VirtualizedList {
     initialPaddingBottom = 0,
   }: Props) {
     this.wrapper = div`.list__wrapper`();
-    this.container = div`.list${className}${pivotBottom ? '-reversed' : ''}`(this.wrapper);
+    this.container = div`.list${className}${pivotBottom ? '-reversed' : ''}${Safari ? '-safari' : ''}`(this.wrapper);
 
-    this.cfg = { batch, batchService, pivotBottom, threshold, onReachTop, onReachBottom, highlightFocused, groupPadding, initialPaddingBottom, onTrace };
+    this.cfg = {
+      batch, batchService, pivotBottom, threshold, onReachTop, onReachBottom, highlightFocused, groupPadding, initialPaddingBottom, onTrace,
+    };
 
     this.render = renderer;
     this.renderGroup = renderGroup;
@@ -220,7 +227,7 @@ export class VirtualizedList {
       if (direction > 0) nextHeight = rect.bottom - this.viewport.top + this.scrollTop - this.paddingTop;
       else nextHeight = this.scrollHeight - this.paddingBottom - (rect.top - this.viewport.top + this.scrollTop);
 
-      if (height < maxHeight - 36) {
+      if (height < maxHeight - (this.cfg.groupPadding || 0)) {
         height = nextHeight;
         count++;
       } else break;
@@ -231,7 +238,7 @@ export class VirtualizedList {
     if (this.selectGroup && this.cfg.groupPadding && offset + count * direction > this.firstRendered
       && offset + count * direction < this.lastRendered) {
       const groupId = this.selectGroup(this.items[offset + count * direction]);
-      const siblingGroupId = this.selectGroup(this.items[offset + count * direction + direction]);
+      const siblingGroupId = this.selectGroup(this.items[offset + count * direction - direction]);
       if (direction === 1 && groupId === siblingGroupId) height -= this.cfg.groupPadding;
       if (direction === -1 && groupId !== siblingGroupId) height += this.cfg.groupPadding;
     }
@@ -357,7 +364,7 @@ export class VirtualizedList {
         return;
       }
 
-      if (this.cfg.onReachTop && this.firstRendered <= this.cfg.batchService) this.cfg.onReachTop();
+      if (this.cfg.onReachTop && this.firstRendered <= this.cfg.batchService * 2) this.cfg.onReachTop();
     }
 
     this.trace();
@@ -416,10 +423,10 @@ export class VirtualizedList {
           this.onScrollDown();
         });
 
-        return
+        return;
       }
 
-      if (this.cfg.onReachBottom && this.items.length - this.lastRendered - 1 <= this.cfg.batchService) this.cfg.onReachBottom();
+      if (this.cfg.onReachBottom && this.items.length - this.lastRendered - 1 <= this.cfg.batchService * 2) this.cfg.onReachBottom();
     }
 
     this.trace();
@@ -623,17 +630,19 @@ export class VirtualizedList {
     this.viewport = this.container.getBoundingClientRect();
     const rect = this.element(item).getBoundingClientRect();
 
-    this.scrollHeight = this.container.scrollHeight - Math.abs(translate);
+    this.scrollHeight = Math.round(this.container.scrollHeight - Math.abs(translate));
     this.scrollTop = this.container.scrollTop;
+
+    if (translate < 0) this.scrollHeight += this.cfg.initialPaddingBottom;
 
     let scrollValue = rect.top - this.viewport.top + this.scrollTop + translate;
 
     if (this.viewport.height > rect.height) scrollValue -= (this.viewport.height - rect.height) / 2;
 
     scrollValue = Math.max(0, scrollValue);
-    scrollValue = Math.min(this.scrollHeight, scrollValue);
+    scrollValue = Math.min(this.scrollHeight - this.viewport.height, scrollValue);
 
-    if (this.items.indexOf(item) === this.lastRendered) scrollValue = this.scrollHeight - this.viewport.height;
+    if (this.items.indexOf(item) === this.lastRendered) scrollValue = this.scrollHeight - this.viewport.height + 1;
 
     return Math.floor(scrollValue);
   }
@@ -658,7 +667,7 @@ export class VirtualizedList {
 
       if (percentage > 0) {
         this.scrollTop = y + ease(percentage) * dy;
-        this.container.scrollTo(0, this.scrollTop);
+        this.container.scrollTop = this.scrollTop;
       }
 
       if (percentage < 1) {
@@ -666,6 +675,7 @@ export class VirtualizedList {
       } else {
         elm.classList.remove('-focused');
         this.scrollTop = this.container.scrollTop;
+        this.scrollHeight = this.container.scrollHeight;
         this.trace();
         this.unlock();
 
@@ -684,6 +694,7 @@ export class VirtualizedList {
     this.wrapper.style.paddingTop = `${this.paddingTop = 0}px`;
     this.firstRendered = -1;
     this.lastRendered = -2;
+    this.positions = {};
   }
 
   scrollToVirtualized(item: string, direction: number = 0) {
@@ -707,7 +718,6 @@ export class VirtualizedList {
       this.mount(this.items[i]);
     }
 
-    this.scrollHeight = this.container.scrollHeight;
     this.container.scrollTop = this.scrollTop = this.getScrollToValue(item, -translate);
     animationFrameStart().then(() => this.container.scrollTop = this.scrollTop); // chrome fix
 
@@ -715,6 +725,7 @@ export class VirtualizedList {
     const finishScroll = () => {
       this.shouldFocus = undefined;
       this.shouldFocusDirection = undefined;
+      this.scrollHeight = this.container.scrollHeight;
       this.scrollTop = this.container.scrollTop;
       this.trace();
       this.unlock();
@@ -783,6 +794,7 @@ export class VirtualizedList {
     this.wrapper.style.paddingBottom = `${this.paddingBottom = this.cfg.initialPaddingBottom}px`;
     this.elements = {};
     this.groups = {};
+    this.positions = {};
     this.groupChildrenCount = {};
     this.items = [];
     this.firstRendered = -1;

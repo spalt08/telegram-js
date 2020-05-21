@@ -30,10 +30,7 @@ const initNetwork = () => load(dbkey).then((meta: any) => {
   ctx.network.on('metaChanged', (newMeta) => save(dbkey, newMeta));
   ctx.network.on('metaChanged', (state) => notify('authorization_updated', { dc: state.baseDC, user: state.userID || 0 }));
   ctx.network.on('networkChanged', (state) => notify('network_updated', state));
-  ctx.network.updates.on((update) => {
-    console.log(update);
-    notify('update', update);
-  });
+  ctx.network.updates.on((update) => notify('update', update));
   ctx.network.updates.fetch();
 });
 
