@@ -6,6 +6,7 @@ import { mount, animationFrameStart, unmountChildren, listen, unmount, listenOnc
 
 type ListConfig = {
   batch: number,
+  batchService: number,
   pivotBottom?: boolean,
   threshold: number,
   highlightFocused: boolean,
@@ -95,6 +96,7 @@ export class VirtualizedList {
     groupPadding,
     className = '',
     batch = 20,
+    batchService = 20,
     threshold = 1,
     pivotBottom = false,
     highlightFocused = false,
@@ -106,7 +108,7 @@ export class VirtualizedList {
     this.wrapper = div`.list__wrapper`();
     this.container = div`.list${className}${pivotBottom ? '-reversed' : ''}`(this.wrapper);
 
-    this.cfg = { batch, pivotBottom, threshold, onReachTop, onReachBottom, highlightFocused, groupPadding, initialPaddingBottom, onTrace };
+    this.cfg = { batch, batchService, pivotBottom, threshold, onReachTop, onReachBottom, highlightFocused, groupPadding, initialPaddingBottom, onTrace };
 
     this.render = renderer;
     this.renderGroup = renderGroup;
@@ -263,10 +265,10 @@ export class VirtualizedList {
     this.lock();
 
     animationFrameStart().then(() => {
-      const appendCount = Math.min(this.cfg.batch, this.items.length);
+      const appendCount = Math.min(this.cfg.batchService, this.items.length);
 
       if (appendCount > 0) {
-        this.firstRendered = this.cfg.pivotBottom ? Math.max(0, this.items.length - this.cfg.batch) : 0;
+        this.firstRendered = this.cfg.pivotBottom ? Math.max(0, this.items.length - this.cfg.batchService) : 0;
         this.lastRendered = this.firstRendered - 1;
       }
 
@@ -351,10 +353,14 @@ export class VirtualizedList {
           this.unlock();
           this.onScrollUp();
         });
-      } else this.trace();
 
-      if (this.cfg.onReachTop && this.firstRendered <= this.cfg.batch * 3) this.cfg.onReachTop();
-    } else this.trace();
+        return;
+      }
+
+      if (this.cfg.onReachTop && this.firstRendered <= this.cfg.batchService) this.cfg.onReachTop();
+    }
+
+    this.trace();
   }
 
   // user has scrolled lower
@@ -409,10 +415,14 @@ export class VirtualizedList {
           this.unlock();
           this.onScrollDown();
         });
-      } else this.trace();
 
-      if (this.cfg.onReachBottom && this.items.length - this.lastRendered - 1 <= this.cfg.batch * 1) this.cfg.onReachBottom();
-    } else this.trace();
+        return
+      }
+
+      if (this.cfg.onReachBottom && this.items.length - this.lastRendered - 1 <= this.cfg.batchService) this.cfg.onReachBottom();
+    }
+
+    this.trace();
   }
 
   // perform behaviour subject list update
@@ -686,8 +696,8 @@ export class VirtualizedList {
     this.unmountAll();
 
     // new elements limit
-    this.firstRendered = Math.max(0, indexOfItem - Math.ceil(this.cfg.batch / 2));
-    this.lastRendered = Math.min(this.items.length - 1, indexOfItem + Math.ceil(this.cfg.batch / 2));
+    this.firstRendered = Math.max(0, indexOfItem - Math.ceil(this.cfg.batchService / 2));
+    this.lastRendered = Math.min(this.items.length - 1, indexOfItem + Math.ceil(this.cfg.batchService / 2));
 
     if (this.cfg.highlightFocused) this.element(item).classList.add('-focused');
 

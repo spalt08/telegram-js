@@ -7,6 +7,7 @@
   background-color: #FFFFFF;
   height: 100%;
   position: relative;
+  transition: transform .3s ease-out;
 
   // Optimization: overflow hidden and z-index together lock the element to an independent render unit
   z-index: 0;
