@@ -32,7 +32,7 @@ export function makeGetIdFromProp<
 export default class Collection<TItem, TIndices extends IndicesFactories<any, any>, TId extends keyof any = keyof any> {
   public getId: GetId<TItem, TId>;
 
-  public readonly changes: Observable<ChangeEvent<TItem>[]>;
+  public readonly changes: Observable<['add' | 'update' | 'remove', Readonly<TItem>, TId][]>;
 
   public readonly indices: IndicesFromFactories<TIndices>;
 
@@ -48,7 +48,7 @@ export default class Collection<TItem, TIndices extends IndicesFactories<any, an
     this.getId = getId;
     this.changes = this.storage.changes.pipe(map(
       (events) => events.map(
-        ([action, _key, item]) => [action, item],
+        ([action, key, item]) => [action, item, key],
       ),
     ));
     this.indices = mapObject(indices, (indexFactory) => indexFactory(this)) as IndicesFromFactories<TIndices>;
@@ -106,10 +106,6 @@ export default class Collection<TItem, TIndices extends IndicesFactories<any, an
 
   public batchChanges(run: () => void) {
     this.storage.batchChanges(run);
-  }
-
-  public getStorage() {
-    return this.storage;
   }
 
   protected itemsToObject(items: Readonly<TItem>[]) {

@@ -113,9 +113,9 @@ export const pinnedMessageCache = new Collection<Message.message, {}, string>({
 const timezoneOffset = new Date().getTimezoneOffset() * 60;
 export const messageDayMap = new Map<string, string>();
 
-messageCache.getStorage().changes.subscribe(
+messageCache.changes.subscribe(
   (events) => events.map(
-    ([action, key, message]) => action !== 'remove' && message._ !== 'messageEmpty'
+    ([action, message, key]) => action !== 'remove' && message._ !== 'messageEmpty'
     && messageDayMap.set(key, Math.ceil((message.date - timezoneOffset) / (3600 * 24)).toString()),
   ),
 );
