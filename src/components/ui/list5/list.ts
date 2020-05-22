@@ -47,8 +47,12 @@ function isIOS() {
   return (navigator.maxTouchPoints && navigator.maxTouchPoints > 2) && /MacIntel/.test(navigator.platform);
 }
 
+function isChrome() {
+  return navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+}
+
 function isSafari() {
-  return navigator.userAgent.indexOf('Safari') > -1;
+  return !isChrome() && navigator.userAgent.toLowerCase().indexOf('safari') > -1;
 }
 
 const Safari = isSafari();
@@ -318,51 +322,51 @@ export class VirtualizedList {
         if (toRemove.height > 0) this.wrapper.style.paddingBottom = `${this.paddingBottom += toRemove.height}px`;
         for (let i = 0; i < toRemove.count; i++) this.unmount(this.items[this.lastRendered--]);
 
+
+        // if user scrolled to fast
+        if (this.firstRendered > this.lastRendered) {
+          const next = this.getElementByOffset(this.scrollTop + this.viewport!.height * 1.5);
+
+          if (next !== undefined) {
+            this.lastRendered = next;
+            this.firstRendered = next + 1;
+            appendCount = Math.min(appendCount, this.firstRendered);
+
+            const position = this.positions[this.items[next]];
+            this.wrapper.style.paddingTop = `${this.paddingTop = position.top}px`;
+            this.wrapper.style.paddingBottom = `${this.paddingBottom = position.bottom}px`;
+          }
+        }
+
+        // mount top elements
+        for (let i = 0; i < appendCount; i += 1) {
+          this.mount(
+            this.items[--this.firstRendered],
+            this.firstRendered + 1 <= this.lastRendered ? this.items[this.firstRendered + 1] : undefined,
+          );
+        }
+
+        // keep scroll position
+        this.scrollHeight = this.container.scrollHeight;
+        const appendedHeight = this.scrollHeight - prevScrollHeight;
+        const newElementsHeight = Math.max(appendedHeight - this.paddingTop, 0);
+
+        this.wrapper.style.paddingTop = `${this.paddingTop = Math.max(0, this.paddingTop - appendedHeight)}px`;
+
+        if (newElementsHeight > 0) {
+          if (iOS) {
+            this.container.scrollTop = this.scrollTop = this.container.scrollTop + newElementsHeight;
+          } else this.container.scrollTop = this.scrollTop += newElementsHeight;
+        }
+
+        if (iOS) this.container.style.overflow = '';
+
         animationFrameStart().then(() => {
-          this.scrollTop = this.container.scrollTop;
-
-          // if user scrolled to fast
-          if (this.firstRendered > this.lastRendered) {
-            const next = this.getElementByOffset(this.scrollTop + this.viewport!.height * 1.5);
-
-            if (next !== undefined) {
-              this.lastRendered = next;
-              this.firstRendered = next + 1;
-              appendCount = Math.min(appendCount, this.firstRendered);
-
-              const position = this.positions[this.items[next]];
-              this.wrapper.style.paddingTop = `${this.paddingTop = position.top}px`;
-              this.wrapper.style.paddingBottom = `${this.paddingBottom = position.bottom}px`;
-            }
-          }
-
-          // mount top elements
-          for (let i = 0; i < appendCount; i += 1) {
-            this.mount(this.items[--this.firstRendered], this.firstRendered + 1 <= this.lastRendered ? this.items[this.firstRendered + 1] : undefined);
-          }
-
-          // keep scroll position
           this.scrollHeight = this.container.scrollHeight;
-          const appendedHeight = this.scrollHeight - prevScrollHeight;
-          const newElementsHeight = Math.max(appendedHeight - this.paddingTop, 0);
-
-          this.wrapper.style.paddingTop = `${this.paddingTop = Math.max(0, this.paddingTop - appendedHeight)}px`;
-
-          if (newElementsHeight > 0) {
-            if (iOS) {
-              this.container.scrollTop = this.scrollTop = this.container.scrollTop + newElementsHeight;
-            } else this.container.scrollTop = this.scrollTop += newElementsHeight;
-          }
-
-          if (iOS) this.container.style.overflow = '';
-
-          animationFrameStart().then(() => {
-            this.scrollHeight = this.container.scrollHeight;
-            this.scrollTop = this.container.scrollTop;
-            if (newElementsHeight > 0) this.onAddedHeight(newElementsHeight, 'top');
-            this.unlock();
-            this.onScrollUp();
-          });
+          this.scrollTop = this.container.scrollTop;
+          if (newElementsHeight > 0) this.onAddedHeight(newElementsHeight, 'top');
+          this.unlock();
+          this.onScrollUp();
         });
 
         return;
@@ -393,40 +397,38 @@ export class VirtualizedList {
         if (toRemove.height > 0) this.wrapper.style.paddingTop = `${this.paddingTop += toRemove.height}px`;
         for (let i = 0; i < toRemove.count; i++) this.unmount(this.items[this.firstRendered++]);
 
-        animationFrameStart().then(() => {
-          // if user scrolled to fast
-          if (this.firstRendered > this.lastRendered) {
-            const next = this.getElementByOffset(this.scrollTop - this.viewport!.height / 2);
+        // if user scrolled to fast
+        if (this.firstRendered > this.lastRendered) {
+          const next = this.getElementByOffset(this.scrollTop - this.viewport!.height / 2);
 
-            if (next !== undefined) {
-              this.firstRendered = next;
-              this.lastRendered = next - 1;
-              appendCount = Math.min(appendCount, this.items.length - this.lastRendered - 1);
+          if (next !== undefined) {
+            this.firstRendered = next;
+            this.lastRendered = next - 1;
+            appendCount = Math.min(appendCount, this.items.length - this.lastRendered - 1);
 
-              const position = this.positions[this.items[next]];
-              this.wrapper.style.paddingTop = `${this.paddingTop = position.top}px`;
-              this.wrapper.style.paddingBottom = `${this.paddingBottom = position.bottom}px`;
-            }
+            const position = this.positions[this.items[next]];
+            this.wrapper.style.paddingTop = `${this.paddingTop = position.top}px`;
+            this.wrapper.style.paddingBottom = `${this.paddingBottom = position.bottom}px`;
           }
+        }
 
-          // mount bottom elements
-          for (let i = 0; i < appendCount; i += 1) this.mount(this.items[++this.lastRendered]);
+        // mount bottom elements
+        for (let i = 0; i < appendCount; i += 1) this.mount(this.items[++this.lastRendered]);
 
-          // keep scroll position
+        // keep scroll position
+        this.scrollHeight = this.container.scrollHeight;
+        const appendedHeight = this.scrollHeight - prevScrollHeight;
+        const newElementsHeight = Math.max(appendedHeight - this.paddingBottom, 0);
+
+        if (this.lastRendered === this.items.length - 1) this.paddingBottom = this.cfg.initialPaddingBottom;
+        this.wrapper.style.paddingBottom = `${this.paddingBottom = Math.max(this.cfg.initialPaddingBottom, this.paddingBottom - appendedHeight)}px`;
+
+        animationFrameStart().then(() => {
           this.scrollHeight = this.container.scrollHeight;
-          const appendedHeight = this.scrollHeight - prevScrollHeight;
-          const newElementsHeight = Math.max(appendedHeight - this.paddingBottom, 0);
-
-          if (this.lastRendered === this.items.length - 1) this.paddingBottom = this.cfg.initialPaddingBottom;
-          this.wrapper.style.paddingBottom = `${this.paddingBottom = Math.max(this.cfg.initialPaddingBottom, this.paddingBottom - appendedHeight)}px`;
-
-          animationFrameStart().then(() => {
-            this.scrollHeight = this.container.scrollHeight;
-            this.scrollTop = this.container.scrollTop;
-            if (newElementsHeight > 0) this.onAddedHeight(newElementsHeight, 'bottom');
-            this.unlock();
-            this.onScrollDown();
-          });
+          this.scrollTop = this.container.scrollTop;
+          if (newElementsHeight > 0) this.onAddedHeight(newElementsHeight, 'bottom');
+          this.unlock();
+          this.onScrollDown();
         });
 
         return;
@@ -713,8 +715,12 @@ export class VirtualizedList {
     this.unmountAll();
 
     // new elements limit
-    this.firstRendered = Math.max(0, indexOfItem - Math.ceil(this.cfg.batchService / 2));
-    this.lastRendered = Math.min(this.items.length - 1, indexOfItem + Math.ceil(this.cfg.batchService / 2));
+    const halfBatch = Math.ceil(this.cfg.batchService / 2);
+    this.firstRendered = Math.max(0, indexOfItem - halfBatch);
+    this.lastRendered = Math.min(this.items.length - 1, indexOfItem + halfBatch);
+
+    if (this.firstRendered >= this.items.length - this.cfg.batchService) this.firstRendered -= halfBatch;
+    if (this.lastRendered <= this.cfg.batchService) this.firstRendered += halfBatch;
 
     if (this.cfg.highlightFocused) this.element(item).classList.add('-focused');
 
