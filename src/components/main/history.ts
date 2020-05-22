@@ -12,7 +12,7 @@ import * as icons from 'components/icons';
 import messageInput from 'components/message/input/input';
 import { Peer } from 'mtproto-js';
 import { compareSamePeerMessageIds, peerMessageToId, peerToId } from 'helpers/api';
-import { messageCache, dialogCache, chatCache, messageGroupMap } from 'cache';
+import { messageCache, dialogCache, chatCache, messageDayMap } from 'cache';
 import header from './header/header';
 import historyDay from './history_day/history_day';
 import './history.scss';
@@ -94,7 +94,7 @@ export default function history() {
     batch: 20, // navigator.userAgent.indexOf('Safari') > -1 ? 5 : 20,
     initialPaddingBottom: 10,
     renderer: (id: string) => message(id, service.activePeer.value!), // , (mid: string) => scroll.pendingRecalculate.push(mid)),
-    selectGroup: (id: string) => messageGroupMap.get(id) || '0',
+    selectGroup: (id: string) => messageDayMap.get(id) || '0',
     renderGroup: historyDay,
     groupPadding: 34,
     onReachTop: () => service.loadMoreHistory(MessageDirection.Older),

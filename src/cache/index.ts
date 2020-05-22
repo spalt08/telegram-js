@@ -42,22 +42,12 @@ export const chatCache = new Collection({
   },
 });
 
-// to do: relocate code above
-const timezoneOffset = new Date().getTimezoneOffset() * 60;
-export const messageGroupMap = new Map<string, string>();
-function getMessageIdWithGroupMemo(message: Readonly<Message>) {
-  const id = messageToId(message);
-  if (message._ !== 'messageEmpty') messageGroupMap.set(id, Math.ceil((message.date - timezoneOffset) / (3600 * 24)).toString());
-
-  return id;
-}
-
 /**
  * Message repo
  * Ref: https://core.telegram.org/constructor/message
  */
 export const messageCache = new Collection({
-  getId: getMessageIdWithGroupMemo as GetId<Message, string>,
+  getId: messageToId as GetId<Message, string>,
   indices: {
     history: messageHistory,
     photoVideos: sharedMediaIndex,
@@ -116,6 +106,23 @@ export const pinnedMessageCache = new Collection<Message.message, {}, string>({
   getId: (msg: Message.message) => peerToId(msg.to_id),
 });
 
+
+/**
+ * Message Dates
+ */
+const timezoneOffset = new Date().getTimezoneOffset() * 60;
+export const messageDayMap = new Map<string, string>();
+
+messageCache.getStorage().changes.subscribe(
+  (events) => events.map(
+    ([action, key, message]) => action !== 'remove' && message._ !== 'messageEmpty'
+    && messageDayMap.set(key, Math.ceil((message.date - timezoneOffset) / (3600 * 24)).toString()),
+  ),
+);
+
+/**
+ * Debug
+ */
 if (process.env.NODE_ENV !== 'production') {
   (window as any).mcache = messageCache;
   (window as any).ccache = chatCache;

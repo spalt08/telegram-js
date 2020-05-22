@@ -108,6 +108,10 @@ export default class Collection<TItem, TIndices extends IndicesFactories<any, an
     this.storage.batchChanges(run);
   }
 
+  public getStorage() {
+    return this.storage;
+  }
+
   protected itemsToObject(items: Readonly<TItem>[]) {
     const itemsObject = {} as Record<TId, Readonly<TItem>>;
 
