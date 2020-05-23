@@ -7,7 +7,7 @@ export { default as tgs, preloadTgsAssets } from './tgs/tgs';
 export { default as passwordInput } from './password_input/password_input';
 export { default as datetime } from './datetime/datetime';
 export { default as ripple } from './ripple/ripple';
-export { VirtualizedList, default as list } from './list4/list';
+export { VirtualizedList, default as list } from './list5/list';
 export { default as sectionSpinner } from './section_spinner/section_spinner';
 export { default as emoji } from './emoji/emoji';
 export { formattedMessage, highlightLinks } from './formatted_message';
@@ -22,7 +22,7 @@ export { default as virtualScrollBar } from './virtual_scroll_bar/virtual_scroll
 export { default as waveform } from './waveform/waveform';
 export { default as audioSeekbar } from './audio_seekbar/audio_seekbar';
 export { default as playButton } from './play_button/play_button';
-export { BubbleInterface, default as bubble } from './bubble/bubble';
+export { default as bubble } from './bubble2/bubble';
 export { MessageInfoInterface, default as messageInfo } from './message_info/message_info';
 export { default as roundButton } from './round_button/round_button';
 export { default as heading } from './heading/heading';

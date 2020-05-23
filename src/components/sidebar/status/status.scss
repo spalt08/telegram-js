@@ -14,19 +14,9 @@ $height: 62px;
   opacity: 1;
   transition: transform $animation-duration ease-in-out, opacity $animation-duration ease-in-out;
 
-  & + .dialogs {
-    will-change: transform;
-    transition: transform $animation-duration ease-in-out;
-    transform: translate3d(0, $height, 0);
-  }
-
   &.hidden {
     transform: scaleY(0);
     opacity: 0;
-  }
-
-  &.hidden + .dialogs {
-    transform: translate3d(0, 0, 0);
   }
 
   &__container {

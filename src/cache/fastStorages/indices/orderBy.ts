@@ -38,9 +38,7 @@ export default function orderBy<TItem>(compare: CompareFunction<TItem>, filter: 
     collection.changes.subscribe((collectionChanges) => {
       const indexChanges: ChangeEvent[] = [];
 
-      collectionChanges.forEach(([action, item]) => {
-        const id = collection.getId(item);
-
+      collectionChanges.forEach(([action, item, id]) => {
         switch (action) {
           case 'add': {
             if (filter(item)) {

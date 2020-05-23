@@ -7,28 +7,26 @@
   background-image: url(~assets/chamomile-blurred.jpg);
   background-size: cover;
   background-position: center center;
+  background-attachment: fixed;
 
-  // performance tweak for right sidebar
-  will-change: width;
-  z-index: 0;
-  transform: translate3d(0, 0, 0);
+  // performance tweak for right sidebar  
 
-  > * {
-    flex: none;
+  &__list {
+    display: flex;
+    flex-direction: column;
+    //  padding-bottom: 8PX;
   }
 
   &__content {
+    mask-image: linear-gradient(to top, transparent, #000 12px);
     flex: 1;
     min-height: 0;
-    display: flex;
-    flex-direction: column;
     position: relative;
   }
 
-  &__list {
-    flex: 1;
-    z-index: 0;
-    mask-image: linear-gradient(to top, transparent, #000 12px);
+  &__list .list__wrapper {
+    flex: none;
+    margin-top: auto;
   }
 
   &__spinner {
@@ -67,7 +65,7 @@
     transition: all 550ms cubic-bezier(.44,1.59,.53,1);
 
     > svg {
-      $icon-size: 40px;
+      $icon-size: 32px;
       width: $icon-size;
       height: $icon-size;
       position: absolute;
@@ -95,11 +93,16 @@
     justify-content: center;
 
     &-text {
-      background-color: rgba(0, 0, 0, 0.3);
-      padding: 2px 8px;
-      font-size: 15px;
-      color: #fff;
-      border-radius: 10px;
+      display: inline-block;
+      margin: 0 auto;
+      width: auto;
+      max-width: 70%;
+      color: #FFFFFF;
+      background: rgba(0, 0, 0, 0.20);
+      height: 26px;
+      border-radius: 13px;
+      line-height: 20px;
+      padding: 3px 10px;
     }
   }
 }

@@ -1,7 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { userCache, chatCache, messageCache, dialogCache } from 'cache';
-import { dialogPeerToDialogId, dialogToId, peerMessageToId, peerToId } from 'helpers/api';
+import { dialogPeerToDialogId, peerMessageToId, peerToId } from 'helpers/api';
 import {
   Peer,
   InputDialogPeer,
@@ -33,9 +33,8 @@ export default class DialogsService {
     });
 
     dialogCache.changes.subscribe((changes) => {
-      changes.forEach(([action, dialog]) => {
+      changes.forEach(([action, _dialog, dialogId]) => {
         if (action === 'remove') {
-          const dialogId = dialogToId(dialog);
           if (this.readReporters[dialogId]) {
             this.readReporters[dialogId].destroy();
             delete this.readReporters[dialogId];

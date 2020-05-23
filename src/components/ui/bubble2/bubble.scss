@@ -1,0 +1,94 @@
+.bubble2 {
+  position: relative;
+
+  &__content {
+    z-index: 1;
+    position: relative;
+    min-height: 36PX;
+    min-width: 44PX;
+    padding: 0PX 2PX 3PX 9PX;
+  }
+
+  &__background {
+    position: absolute;
+    z-index: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-style: solid;
+    border-left-width: 25PX;
+    border-top-width: 16PX;
+    border-right-width: 18PX;
+    border-bottom-width: 19PX;
+    border-color: transparent;
+    border-image: url(./images/bubble_in-central.png) 32 36 38 50 fill;
+    padding-left: 7PX;
+  }
+
+  &.-first &__background {
+    border-image: url(./images/bubble_in-first.png) 32 36 38 50 fill;
+  }
+
+  &.-last &__background {
+    border-image: url(./images/bubble_in-last.png) 32 36 38 50 fill;
+  }
+
+  &.-first.-last &__background {
+    border-image: url(./images/bubble_in-first-last.png) 32 36 38 50 fill;
+  }
+
+  &.-out &__content {
+    padding: 0PX 9PX 3PX 2PX;
+  }
+
+  &.-out &__background {
+    border-left-width: 18PX;
+    border-right-width: 25PX;
+    border-image: url(./images/bubble_out-central.png) 32 50 38 36 fill;
+  }
+
+  &.-out.-first &__background {
+    border-image: url(./images/bubble_out-first.png) 32 50 38 36 fill;
+  }
+
+  &.-out.-last &__background {
+    border-image: url(./images/bubble_out-last.png) 32 50 38 36 fill;
+  }
+
+  &.-out.-first.-last &__background {
+    border-image: url(./images/bubble_out-first-last.png) 32 50 38 36 fill;
+  }
+
+  &.-media &__content {
+    mask-border: url(./images/mask_in-central.png) 32 36 38 50 / 16PX 18PX 19PX 25PX stretch;
+  }
+
+  &.-media.-first &__content {
+    mask-border: url(./images/mask_in-first.png) 32 36 38 50 / 16PX 18PX 19PX 25PX stretch;
+  }
+
+  &.-media.-last &__content {
+    mask-border: url(./images/mask_in-last.png) 32 36 38 50 / 16PX 18PX 19PX 25PX stretch;
+  }
+
+  &.-media.-first.-last &__content {
+    mask-border: url(./images/mask_in-first-last.png) 32 36 38 50 / 16PX 18PX 19PX 25PX stretch;
+  }
+
+  &.-media.-out &__content {
+    mask-border: url(./images/mask_out-central.png) 32 50 38 36 / 16PX 25PX 19PX 18PX stretch;
+  }
+
+  &.-media.-out.-first &__content {
+    mask-border: url(./images/mask_out-first.png) 32 50 38 36 / 16PX 25PX 19PX 18PX stretch;
+  }
+
+  &.-media.-out.-last &__content {
+    mask-border: url(./images/mask_out-last.png) 32 50 38 36 / 16PX 25PX 19PX 18PX stretch;
+  }
+
+  &.-media.-out.-first.-last &__content {
+    mask-border: url(./images/mask_out-first-last.png) 32 50 38 36 / 16PX 25PX 19PX 18PX stretch;
+  }
+}

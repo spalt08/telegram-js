@@ -64,7 +64,7 @@ export default function stickerPanel(onSelect?: (sticker: Document) => void) {
           mount(tabsEl, tabs[set.id]);
 
           listen(tabs[set.id], 'click', () => {
-            list.focus(set.id, list.current.indexOf(set.id) > list.current.indexOf(list.topElement || '') ? -1 : 1);
+            list.focus(set.id, list.items.indexOf(set.id) > list.items.indexOf(list.top || '') ? -1 : 1);
           });
         }
 
@@ -106,13 +106,13 @@ export default function stickerPanel(onSelect?: (sticker: Document) => void) {
   return useInterface(container, {
     update() {},
     shouldRemove() {
-      for (let i = list.first; i <= list.last; i++) {
-        if (list.elements[list.current[i]]) getInterface(list.elements[list.current[i]] as ReturnType<typeof stickerSet>).pauseAll();
+      for (let i = list.firstRendered; i <= list.lastRendered; i++) {
+        if (list.elements[list.items[i]]) getInterface(list.elements[list.items[i]] as ReturnType<typeof stickerSet>).pauseAll();
       }
     },
     didAppear() {
-      for (let i = list.first; i <= list.last; i++) {
-        if (list.elements[list.current[i]]) getInterface(list.elements[list.current[i]] as ReturnType<typeof stickerSet>).playAll();
+      for (let i = list.firstRendered; i <= list.lastRendered; i++) {
+        if (list.elements[list.items[i]]) getInterface(list.elements[list.items[i]] as ReturnType<typeof stickerSet>).playAll();
       }
     },
   });

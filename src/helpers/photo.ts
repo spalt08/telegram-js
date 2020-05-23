@@ -6,6 +6,12 @@ import { PhotoFitMode } from './other';
 function a2s(ab: ArrayBuffer): string {
   return String.fromCharCode.apply(null, new Uint8Array(ab) as any as number[]);
 }
+function a2h(ab: ArrayBuffer): string {
+  const buffer = new Uint8Array(ab);
+  let hex = '';
+  for (let i = 0; i < buffer.length; i++) hex += `0${buffer[i].toString(16)}`.slice(-2);
+  return hex;
+}
 
 /**
  * Ref: https://github.com/telegramdesktop/tdesktop/blob/bec39d89e19670eb436dc794a8f20b657cb87c71/Telegram/SourceFiles/ui/image/image.cpp#L225
@@ -42,6 +48,22 @@ export function getThumbnail(sizes: PhotoSize[]) {
   }
 
   return null;
+}
+
+export function getThumbnailService(sizes: PhotoSize[]) {
+  for (let i = 0; i < sizes.length; i += 1) {
+    const size = sizes[i];
+
+    if (size._ === 'photoStrippedSize') {
+      return `/stripped/${a2h(size.bytes)}.svg`;
+    }
+
+    if (size._ === 'photoCachedSize') {
+      return `/cached/${a2h(size.bytes)}.svg`;
+    }
+  }
+
+  return '';
 }
 
 export type PhotoOrinetation = 'landscape' | 'portrait';

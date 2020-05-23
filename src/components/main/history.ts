@@ -2,7 +2,7 @@ import binarySearch from 'binary-search';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { button, div, text } from 'core/html';
-import { mount, unmount } from 'core/dom';
+import { mount, unmount, animationFrameStart } from 'core/dom';
 import { useObservable } from 'core/hooks';
 import { message as service, dialog as dialogService } from 'services';
 import { Direction as MessageDirection } from 'services/message/types';
@@ -12,8 +12,9 @@ import * as icons from 'components/icons';
 import messageInput from 'components/message/input/input';
 import { Peer } from 'mtproto-js';
 import { compareSamePeerMessageIds, peerMessageToId, peerToId } from 'helpers/api';
-import { messageCache, dialogCache, chatCache } from 'cache';
+import { messageCache, dialogCache, chatCache, messageDayMap } from 'cache';
 import header from './header/header';
+import historyDay from './history_day/history_day';
 import './history.scss';
 
 function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
@@ -73,7 +74,7 @@ export default function history() {
       const lastReadMessageIndex = getMessageIndex(peerMessageToId(peer, dialog.read_inbox_max_id));
       const newReadMessageIndex = getMessageIndex(peerMessageToId(peer, newestReadMessageId));
       for (let i = Math.floor(lastReadMessageIndex) + 1; i <= newReadMessageIndex; i++) {
-        const msg = messageCache.get(scroll.current[i]);
+        const msg = messageCache.get(scroll.items[i]);
         if (msg && msg._ !== 'messageEmpty' && !msg.out) unread_count--;
       }
     }
@@ -90,15 +91,20 @@ export default function history() {
     items: itemsSubject,
     pivotBottom: true,
     threshold: 2,
-    batch: 35,
-    focusFromBottom: true,
-    renderer: (id: string) => message(id, service.activePeer.value!, (mid: string) => scroll.pendingRecalculate.push(mid)),
+    batch: 20, // navigator.userAgent.indexOf('Safari') > -1 ? 5 : 20,
+    initialPaddingBottom: 10,
+    renderer: (id: string) => message(id, service.activePeer.value!), // , (mid: string) => scroll.pendingRecalculate.push(mid)),
+    selectGroup: (id: string) => messageDayMap.get(id) || '0',
+    renderGroup: historyDay,
+    groupPadding: 34,
     onReachTop: () => service.loadMoreHistory(MessageDirection.Older),
     onReachBottom: () => service.loadMoreHistory(MessageDirection.Newer),
-    onFocus: (id: string) => {
-      updateDownButtonState(id);
+    onTrace: (_top?: string, bottom?: string) => {
+      if (!bottom) return;
 
-      const numericId = messageCache.get(id)?.id;
+      updateDownButtonState(bottom);
+
+      const numericId = messageCache.get(bottom)?.id;
       if (numericId !== undefined) {
         reportRead(numericId);
         updateUnreadCounter(numericId);
@@ -116,7 +122,20 @@ export default function history() {
 
   const messageInputEl = messageInput();
   const headerEl = header();
-  const historySection = div`.history__content`(scroll.container, downButton);
+  const historySection = div`.history__content`(scroll.container);
+
+  mount(historySection, downButton);
+
+  useObservable(container, showSpinnerObservable, (show) => {
+    if (show && !spinner) {
+      mount(historySection, spinner = sectionSpinner({ className: 'history__spinner', useBackdrop: true }));
+    } else if (!show && spinner) {
+      animationFrameStart().then(() => {
+        if (spinner) unmount(spinner);
+        spinner = undefined;
+      });
+    }
+  });
 
   useObservable(container, service.activePeer, (next) => {
     if (next) {
@@ -149,7 +168,7 @@ export default function history() {
           [MessageDirection.Newer]: -1,
           [MessageDirection.Older]: 1,
           [MessageDirection.Around]: undefined,
-        }[focus.direction],
+        }[focus.direction] as 1 | -1 | undefined,
       );
     }
   });
@@ -162,15 +181,6 @@ export default function history() {
   useObservable(container, service.history, (data) => itemsSubject.next(
     service.activePeer.value ? prepareIdsList(service.activePeer.value, data.ids) : [],
   ));
-
-  useObservable(container, showSpinnerObservable, (show) => {
-    if (show && !spinner) {
-      mount(historySection, spinner = sectionSpinner({ className: 'history__spinner', useBackdrop: true }));
-    } else if (!show && spinner) {
-      unmount(spinner);
-      spinner = undefined;
-    }
-  });
 
   return container;
 }

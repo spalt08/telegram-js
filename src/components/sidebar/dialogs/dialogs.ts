@@ -77,7 +77,7 @@ export default function dialogs({ onNavigate }: SidebarComponentProps) {
     className: 'dialogs',
     items: service.dialogs,
     threshold: 2,
-    batch: 30,
+    batch: 20,
     pivotBottom: false,
     renderer: dialog,
     onReachBottom: () => service.loadMoreDialogs(),

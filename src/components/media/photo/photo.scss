@@ -3,7 +3,6 @@ $animation-duration: 0.4s;
 .photo {
   position: relative;
   background: transparent;
-  overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -39,22 +38,23 @@ $animation-duration: 0.4s;
     position: absolute;
     left: 0;
     top: 0;
-    width: 108% !important;
-    height: 108% !important;
-    margin: -4%;
+    width: 100% !important;
+    height: 100% !important;
+   // margin: -4%;
     object-fit: cover;
-    filter: blur(10PX);
+   // filter: blur(3PX);
     z-index: 0;
     opacity: 0.4;
+    overflow: hidden;
   }
 
   &__thumbnail {
     position: absolute;
-    filter: blur(10PX);
+   //filter: blur(4PX);
     object-fit: contain;
     z-index: 1;
-    transform: scale(1.1);
-    clip-path: polygon(4% 4%, 96% 4%, 96% 96%, 4% 96%);
+    // transform: scale(1.1);
+    // clip-path: polygon(4% 4%, 96% 4%, 96% 96%, 4% 96%);
 
     &.no-blur {
       transform: none;
@@ -92,5 +92,17 @@ $animation-duration: 0.4s;
   }
   to {
     filter: none;
+  }
+}
+
+.photo2 {
+  background: transparent;
+  overflow: hidden;
+  object-fit: cover;
+  background-position: center center;
+  background-size: cover;
+
+  &.-contain {
+    object-fit: contain;
   }
 }
