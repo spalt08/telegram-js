@@ -1,11 +1,10 @@
 import { checkbox } from 'components/ui';
-import { div } from 'core/html';
 import { mount, unmount } from 'core/dom';
 import { svgCodeToComponent } from 'core/factory';
 import { getInterface, useInterface } from 'core/hooks';
-import spinnerCode from './spinner.svg?raw';
-
+import { div } from 'core/html';
 import './poll_checkbox.scss';
+import spinnerCode from './spinner.svg?raw';
 
 const spinnerSvg = svgCodeToComponent(spinnerCode);
 

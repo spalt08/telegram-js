@@ -1,16 +1,16 @@
-import { Poll, PollResults, PollAnswerVoters, Peer, Message } from 'mtproto-js';
-import { div, text } from 'core/html';
-import { mount, unmountChildren } from 'core/dom';
-import { useWhileMounted, getInterface } from 'core/hooks';
-import { polls, main } from 'services';
 import { messageCache } from 'cache';
-import { peerMessageToId, userIdToPeer } from 'helpers/api';
 import { profileAvatar } from 'components/profile';
+import { mount, unmountChildren } from 'core/dom';
+import { getInterface, useWhileMounted } from 'core/hooks';
+import { div, text } from 'core/html';
+import { peerMessageToId, userIdToPeer } from 'helpers/api';
 import { pluralize } from 'helpers/other';
-import pollOption, { PollOptionInterface } from './poll_option';
-import pollFooter, { VoteButtonState } from './poll_footer';
-
+import { Message, Peer, Poll, PollAnswerVoters, PollResults } from 'mtproto-js';
+import { main, polls } from 'services';
 import './poll.scss';
+import pollFooter, { VoteButtonState } from './poll_footer';
+import pollOption, { PollOptionInterface } from './poll_option';
+
 
 const decoder = new TextDecoder();
 const encoder = new TextEncoder();
@@ -36,8 +36,9 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
   if (message.media?._ !== 'messageMediaPoll') {
     throw new Error('message media must be of type "messageMediaPoll"');
   }
-  const { results } = message.media;
-  const pollData = message.media.poll as Required<Poll.poll>;
+  const { media } = message;
+  const { results } = media;
+  const pollData = media.poll as Required<Poll.poll>;
   const selectedOptions = new Set<string>();
   const pollOptions: ReturnType<typeof pollOption>[] = [];
   const totalVotersText = text('');
@@ -53,12 +54,15 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
   const options = new Map<string, PollOptionInterface>();
   const answered = !!results.results && results.results.findIndex((r) => r.chosen) >= 0;
   const maxVoters = results.results ? Math.max(...results.results.map((r) => r.voters)) : 0;
-  const voteFooterEl = pollFooter(
-    pollData.quiz,
-    pollData.public_voters,
-    pollData.multiple_choice,
-    () => { submitOptions(); },
-    () => { main.showPopup('pollResults', { peer, message, poll: pollData }); });
+
+  const voteFooterEl = pollFooter({
+    quiz: pollData.quiz,
+    publicVoters: pollData.public_voters,
+    multipleChoice: pollData.multiple_choice,
+    onSubmit: () => { submitOptions(); },
+    onShowResults: () => { main.showPopup('pollResults', { peer, message, poll: media }); },
+  });
+
   pollData.answers.forEach((answer) => {
     const optionKey = decoder.decode(answer.option);
     let voters: PollAnswerVoters | undefined;
@@ -99,17 +103,21 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
       : `No voters${closed ? '' : ' yet'}`;
   };
 
-  const updateVoteButtonText = (voted: boolean) => {
-    getInterface(voteFooterEl).updateState(voted ? VoteButtonState.ShowResults : VoteButtonState.Vote);
+  const updateVoteButtonText = (closed: boolean, voted: boolean, publicVoters: boolean) => {
+    if (voted && !publicVoters) {
+      getInterface(voteFooterEl).updateState(VoteButtonState.Inactive);
+    } else {
+      getInterface(voteFooterEl).updateState(closed || voted ? VoteButtonState.ShowResults : VoteButtonState.Vote);
+    }
   };
 
   const updateVoters = (voters: number) => {
     getInterface(voteFooterEl).updateVoters(voters);
   };
 
-  const updatePollResults = (updatedPoll: Poll | undefined, updatedResults: PollResults) => {
+  const updatePollResults = (updatedPoll: Required<Poll>, updatedResults: PollResults) => {
     const updateTotalVoters = updatedResults.total_voters ?? 0;
-    updateTotalVotersText(updatedPoll?.closed ?? false, updateTotalVoters);
+    updateTotalVotersText(updatedPoll.closed, updateTotalVoters);
     if (updatedPoll) {
       pollTypeText.textContent = pollType(updatedPoll);
     }
@@ -120,7 +128,7 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
       });
       const updateMaxVoters = Math.max(...updatedResults.results.map((r) => r.voters));
       const updateAnswered = updatedResults.results.findIndex((r) => r.chosen) >= 0;
-      updateVoteButtonText(updateAnswered);
+      updateVoteButtonText(updatedPoll.closed, updateAnswered, updatedPoll.public_voters);
       updateVoters(updateTotalVoters);
       updatedResults.results.forEach((r) => {
         const op = options.get(decoder.decode(r.option));
@@ -137,8 +145,8 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
     }
   };
 
-  updateTotalVotersText(pollData.closed ?? false, results.total_voters ?? 0);
-  updateVoteButtonText(answered);
+  updateTotalVotersText(pollData.closed, results.total_voters ?? 0);
+  updateVoteButtonText(pollData.closed, answered, pollData.public_voters);
   updateVoters(results.total_voters ?? 0);
 
   info.classList.add('poll__message-info');
@@ -156,7 +164,7 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
 
   useWhileMounted(container, () => messageCache.watchItem(peerMessageToId(peer, message.id), (item) => {
     if (item?._ === 'message' && item.media?._ === 'messageMediaPoll') {
-      updatePollResults(item.media.poll, item.media.results);
+      updatePollResults(item.media.poll as Required<Poll>, item.media.results);
     }
   }));
 

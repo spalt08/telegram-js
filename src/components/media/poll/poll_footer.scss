@@ -1,0 +1,18 @@
+.pollFooter {
+  display: grid;
+  margin: 8PX 0;
+  text-align: center;
+  color: var(--accent-color);
+  transition: color 0.3s;
+  cursor: pointer;
+
+  >* {
+    grid-row: 1;
+    grid-column: 1;
+  }
+}
+
+.pollFooter.-inactive {
+  color: var(--accent-color-inactive);
+  cursor: default;
+}

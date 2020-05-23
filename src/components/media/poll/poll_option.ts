@@ -1,10 +1,9 @@
-import { useInterface, getInterface } from 'core/hooks';
+import { check as checkIcon, close as closeIcon } from 'components/icons';
+import { mount, svgEl, unmountChildren } from 'core/dom';
+import { getInterface, useInterface } from 'core/hooks';
+import { div, label, span, text } from 'core/html';
 import { PollAnswer, PollAnswerVoters } from 'mtproto-js';
-import { text, span, div, label } from 'core/html';
-import { svgEl, unmountChildren, mount } from 'core/dom';
-import { close as closeIcon, check as checkIcon } from 'components/icons';
 import pollCheckbox from './poll_checkbox';
-
 import './poll_option.scss';
 
 type Props = {

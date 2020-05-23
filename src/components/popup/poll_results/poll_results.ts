@@ -1,26 +1,27 @@
-import { Poll, Peer, Message, MessageUserVote } from 'mtproto-js';
+import { messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
-import { div, text } from 'core/html';
+import client from 'client/client';
 import { listen } from 'core/dom';
 import { getInterface } from 'core/hooks';
-import client from 'client/client';
-import { userCache, messageCache } from 'cache';
+import { div, text } from 'core/html';
 import { peerMessageToId } from 'helpers/api';
+import { Message, MessageUserVote, Peer } from 'mtproto-js';
 import popupCommon from '../popup_common';
-import pollResultOption from './poll_result_option';
-
 import './poll_results.scss';
+import pollResultOption from './poll_result_option';
 
 export type PollResultsContext = {
   peer: Peer,
   message: Message.message,
-  poll: Poll,
 };
 
 const decoder = new TextDecoder();
 
-export default function pollResultsPopup({ peer, message, poll }: PollResultsContext) {
-  // const loader = materialSpinner({ className: 'pollResultsPopup__loading' });
+export default function pollResultsPopup({ peer, message }: PollResultsContext) {
+  if (message.media?._ !== 'messageMediaPoll') {
+    throw new Error('message media must be of type "messageMediaPoll"');
+  }
+  const { poll } = message.media;
   const close = div`.popup__close`();
   const options = new Map(poll.answers.map((answer) => [
     decoder.decode(answer.option),
@@ -29,7 +30,6 @@ export default function pollResultsPopup({ peer, message, poll }: PollResultsCon
   const content = div`.popup__content.pollResultsPopup`(
     div`pollResultsPopup__question`(text(poll.question)),
     div`pollResultsPopup__options`(...options.values()),
-    // loader,
   );
   const container = popupCommon(
     div`.popup__header`(
@@ -81,6 +81,7 @@ export default function pollResultsPopup({ peer, message, poll }: PollResultsCon
     });
   };
 
+  // todo: fetch all votes. Now we only get first 50 voters per answer.
   async function loadData() {
     for (let index = 0; index < poll.answers.length; index++) {
       const answer = poll.answers[index];

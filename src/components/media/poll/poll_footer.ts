@@ -1,31 +1,38 @@
-import { text, div } from 'core/html';
 import { ripple } from 'components/ui';
-import { useInterface, getInterface } from 'core/hooks';
+import { getInterface, useInterface } from 'core/hooks';
+import { div, text } from 'core/html';
 import { pluralize } from 'helpers/other';
+import './poll_footer.scss';
 
 export enum VoteButtonState {
+  Inactive,
   Vote,
   ShowResults,
 }
 
-const voteText = 'Vote';
-const viewResultsText = 'View Results';
+const voteText = 'VOTE';
+const viewResultsText = 'VIEW RESULTS';
 
-function pluralizeVoters(voters: number, single: string, plural: string) {
+function pluralizeVoters(quiz: boolean, voters: number) {
+  if (quiz) {
+    return voters > 0
+      ? `${voters} ${pluralize(voters, 'answer', 'answers')}`
+      : 'No answers';
+  }
   return voters > 0
-    ? `${voters} ${pluralize(voters, single, plural)}`
-    : `No ${plural}`;
+    ? `${voters} ${pluralize(voters, 'vote', 'votess')}`
+    : 'No votes';
 }
 
 function formatStateText(state: VoteButtonState, voters: number, quiz: boolean, publicVoters: boolean, multipleChoice: boolean) {
-  if (!multipleChoice && !quiz) {
-    return pluralizeVoters(voters, 'vote', 'votes');
+  if (state === VoteButtonState.Inactive || (!multipleChoice && !quiz)) {
+    return pluralizeVoters(quiz, voters);
   }
   if (quiz) {
     if (state === VoteButtonState.ShowResults && publicVoters) {
       return viewResultsText;
     }
-    return pluralizeVoters(voters, 'answer', 'answers');
+    return pluralizeVoters(quiz, voters);
   }
 
   // Only multiple choice vote case left.
@@ -33,23 +40,28 @@ function formatStateText(state: VoteButtonState, voters: number, quiz: boolean, 
     if (publicVoters) {
       return viewResultsText;
     }
-    return pluralizeVoters(voters, 'vote', 'votes');
+    return pluralizeVoters(quiz, voters);
   }
 
   return voteText;
 }
 
-export default function pollFooter(quiz: boolean, publicVoters: boolean, multipleChoice: boolean, onSubmit: () => void, onShowResults: () => void) {
+type Props = {
+  quiz: boolean,
+  publicVoters: boolean,
+  multipleChoice: boolean,
+  onSubmit: () => void,
+  onShowResults: () => void,
+};
+
+export default function pollFooter({ quiz, publicVoters, multipleChoice, onSubmit, onShowResults }: Props) {
   let state = VoteButtonState.Vote;
   let voters = 0;
   const stateText = text('');
   const container = ripple({}, [
-    div`.poll__vote-button.-inactive`(
+    div`.pollFooter.-inactive`(
       {
         onClick: async () => {
-          if (!publicVoters) {
-            return;
-          }
           if (state === VoteButtonState.ShowResults) {
             onShowResults();
           } else {
@@ -63,7 +75,7 @@ export default function pollFooter(quiz: boolean, publicVoters: boolean, multipl
 
   const updateState = () => {
     stateText.textContent = formatStateText(state, voters, quiz, publicVoters, multipleChoice);
-    getInterface(container).setEnabled(false);
+    getInterface(container).setEnabled(voters > 0 && state !== VoteButtonState.Inactive);
   };
 
   updateState();

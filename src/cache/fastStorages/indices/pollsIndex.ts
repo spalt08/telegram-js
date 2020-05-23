@@ -1,6 +1,8 @@
-import { Message, Update, PollResults } from 'mtproto-js';
 import { messageToId } from 'helpers/api';
+import { Message, PollResults, Update } from 'mtproto-js';
 import Collection from '../collection';
+
+const decoder = new TextDecoder();
 
 export default function pollsIndex(collection: Collection<Message, any>) {
   const pollMessageIds = new Map<string, Set<string>>();
@@ -11,17 +13,20 @@ export default function pollsIndex(collection: Collection<Message, any>) {
       }
       switch (action) {
         case 'add': {
-          let messages = pollMessageIds.get(item.media.poll.id);
-          if (!messages) {
-            pollMessageIds.set(item.media.poll.id, messages = new Set());
+          let messageIds = pollMessageIds.get(item.media.poll.id);
+          if (!messageIds) {
+            pollMessageIds.set(item.media.poll.id, messageIds = new Set());
           }
-          messages.add(messageToId(item));
+          messageIds.add(messageToId(item));
           break;
         }
         case 'remove': {
-          const messages = pollMessageIds.get(item.media.poll.id);
-          if (messages) {
-            messages.delete(messageToId(item));
+          const messageIds = pollMessageIds.get(item.media.poll.id);
+          if (messageIds) {
+            messageIds.delete(messageToId(item));
+            if (messageIds.size === 0) {
+              pollMessageIds.delete(item.media.poll.id);
+            }
           }
           break;
         }
@@ -31,26 +36,24 @@ export default function pollsIndex(collection: Collection<Message, any>) {
     );
   });
 
-  const expandMinUpdateResults = (prevResults: PollResults, newResults: PollResults) => {
-    if (!newResults.min) {
-      return newResults;
+  const applyMinPollResults = (prevPollResults: PollResults, newPollResults: PollResults) => {
+    if (!newPollResults.min) {
+      return newPollResults;
     }
-    const result: PollResults = { ...prevResults, ...newResults };
-    if (prevResults.results && newResults.results) {
-      const results = result.results = [...newResults.results.map((r) => ({ ...r }))];
-      const decoder = new TextDecoder();
-      const prevResultOptions = new Map(prevResults.results.map((r) => [decoder.decode(r.option), r]));
-      results.forEach((option) => {
-        const prevOptions = prevResultOptions.get(decoder.decode(option.option));
-        if (prevOptions) {
-          // eslint-disable-next-line no-param-reassign
-          option.correct = prevOptions.correct;
-          // eslint-disable-next-line no-param-reassign
-          option.chosen = prevOptions.chosen;
+    const pollResults: PollResults = { ...prevPollResults, ...newPollResults };
+    if (prevPollResults.results && newPollResults.results) {
+      const results = pollResults.results = newPollResults.results.map((r) => ({ ...r }));
+      const prevResultOptions = new Map(prevPollResults.results.map((r) => [decoder.decode(r.option), r]));
+      for (let index = 0; index < results.length; index++) {
+        const result = results[index];
+        const prevResults = prevResultOptions.get(decoder.decode(result.option));
+        if (prevResults) {
+          result.correct = prevResults.correct;
+          result.chosen = prevResults.chosen;
         }
-      });
+      }
     }
-    return result;
+    return pollResults;
   };
 
   return {
@@ -60,15 +63,16 @@ export default function pollsIndex(collection: Collection<Message, any>) {
         messageIds.forEach((messageId) => {
           const message = collection.get(messageId);
           if (message?._ === 'message' && message.media?._ === 'messageMediaPoll') {
-            const expandedResults = expandMinUpdateResults(message.media.results, update.results);
+            const updatedResults = applyMinPollResults(message.media.results, update.results);
             const updatedMedia = {
               ...message.media,
-              results: expandedResults,
+              results: updatedResults,
             };
             if (update.poll) {
               updatedMedia.poll = update.poll;
             }
             const updatedMessage = {
+              ...message,
               media: updatedMedia,
             };
             collection.change(messageId, updatedMessage);
