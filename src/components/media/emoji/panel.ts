@@ -19,8 +19,8 @@ const categoryIcons: Record<string, SVGSVGElement> = {
 export default function emojiPanel(onSelect?: (emoji: string) => void) {
   let active: string = '';
 
-  const onFocus = (nextActive: string) => {
-    if (active !== nextActive) {
+  const onTrace = (nextActive?: string) => {
+    if (nextActive && active !== nextActive) {
       if (active) categoryIcons[active].classList.remove('active');
       categoryIcons[nextActive].classList.add('active');
       active = nextActive;
@@ -34,7 +34,7 @@ export default function emojiPanel(onSelect?: (emoji: string) => void) {
     renderer: (key: string) => emojiCategory(key, onSelect),
     batch: 9,
     threshold: 1,
-    onFocus,
+    onTrace,
   });
 
   const recentIcon = div`.emoji-panel__tab`(icons.recent());
@@ -59,8 +59,7 @@ export default function emojiPanel(onSelect?: (emoji: string) => void) {
 
   return useInterface(container, {
     update() {
-      categoryList.updateHeights(true);
-      categoryList.updateTopElement();
+      categoryList.trace();
     },
   });
 }

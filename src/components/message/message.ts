@@ -3,7 +3,7 @@ import { useInterface, hasInterface, getInterface, useOnMount } from 'core/hooks
 import { mount, unmount } from 'core/dom';
 import { messageCache, dialogCache } from 'cache';
 import { Peer, Message, Dialog } from 'mtproto-js';
-import { formattedMessage, bubble, BubbleInterface, messageInfo, MessageInfoInterface } from 'components/ui';
+import { formattedMessage, bubble, messageInfo, MessageInfoInterface } from 'components/ui';
 import { profileAvatar, profileTitle } from 'components/profile';
 import webpagePreview from 'components/media/webpage/preview';
 import photoPreview from 'components/media/photo/preview';
@@ -28,16 +28,12 @@ import './message.scss';
 
 type MessageInterface = {
   from(): number,
-  day(): number,
   update(): void,
   updateLayout(): void,
   getBorders(): { first: boolean, last: boolean },
   setBorders(first: boolean, last: boolean): void,
   id: string,
 };
-
-const now = new Date();
-const timezoneOffset = now.getTimezoneOffset() * 60;
 
 function messageText(msg: Message.message, info: Node) {
   if (msg.message) {
@@ -114,7 +110,7 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
 
     return {
       message: bubble(
-        { out, className: extraClass, masked: !hasMessage, onlyMedia: !hasReply && !hasMessage },
+        { out, className: extraClass, media: true },
         reply,
         photoEl || nothing,
         messageText(msg, info),
@@ -147,7 +143,7 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
 
     return {
       message: bubble(
-        { out, className: extraClass, masked: !hasMessage, onlyMedia: !hasReply && !hasMessage },
+        { out, className: extraClass, media: true },
         reply,
         video,
         messageText(msg, info),
@@ -166,7 +162,7 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
 
     return {
       message: bubble(
-        { out, className: extraClass, masked: !hasMessage, onlyMedia: !hasReply && !hasMessage },
+        { out, className: extraClass, media: true },
         reply,
         previewEl || nothing,
         messageText(msg, info),
@@ -236,54 +232,38 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
 };
 
 export default function message(id: string, peer: Peer, onUpdateHeight?: (id: string) => void) {
-  const element = div`.message`();
-  const subject = messageCache.useItemBehaviorSubject(element, id);
+  const container = div`.message`();
+  const subject = messageCache.useItemBehaviorSubject(container, id);
 
-  let container: Node | undefined;
+  if (peer._ !== 'peerUser') container.classList.add('chat');
+
   let aligner: HTMLElement | undefined;
-  let wrapper: Node | undefined;
   let renderedMessage: Node | undefined;
   let renderedInfo: Node | undefined;
-  let dayLabel: Node | undefined;
   let profilePicture: Node | undefined;
   let replyMarkup: Node | undefined;
 
   // previous message before update
   let cached: Message | undefined;
 
-  // utc day number
-  const day = () => Math.ceil(((cached && cached._ !== 'messageEmpty' ? cached.date : 0) - timezoneOffset) / 3600 / 24);
-
   // listen cache changes for auto rerendering
   subject.subscribe((msg: Message | undefined) => {
-    // first render
-    if (!container) {
-      if (!msg) return;
-      if (msg._ === 'messageEmpty') container = div`.message__empty`();
-      if (msg._ === 'messageService') container = messageSerivce(peer, msg);
-      else container = div`.message__container`();
-
-      if (peer._ !== 'peerUser') element.classList.add('chat');
-
-      mount(element, container);
-    }
-
-    if (msg && msg._ !== 'messageEmpty' && msg.out) {
-      element.classList.add('out');
-    }
+    if (!msg) return;
 
     // shouldn't rerender service and empty message
     if (!msg || msg._ !== 'message') {
+      if (msg._ === 'messageService') mount(container, messageSerivce(peer, msg));
       cached = msg;
       return;
     }
 
+    if (msg.out) container.classList.add('out');
+
     // first render for common message
-    if (!aligner || !wrapper) {
-      wrapper = div`.message__wrap`();
-      aligner = div`.message__align`(wrapper);
+    if (!aligner) {
+      aligner = div`.message__align`();
       mount(container, aligner);
-    }
+    } else return;
 
     // re-rendering
     if (!renderedMessage || !cached || (cached._ === 'message' && msg.message !== cached.message)) {
@@ -298,6 +278,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
         { icon: icons.reply, label: 'Reply', onClick: () => service.setMessageForReply(id) },
       ]);
 
+      // to do: optimize
       // if unread
       const dialog = dialogCache.get(peerToId(peer));
       if (dialog?._ === 'dialog' && dialog.read_outbox_max_id < msg.id) {
@@ -315,7 +296,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
         }
       }
 
-      mount(wrapper, renderedMessage);
+      mount(aligner, renderedMessage);
 
       if (onUpdateHeight) onUpdateHeight(id);
     }
@@ -323,7 +304,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     // render reply markup
     if (msg.reply_markup && !replyMarkup) {
       replyMarkup = replyMarkupRenderer(msg.reply_markup);
-      mount(wrapper, replyMarkup);
+      mount(aligner, replyMarkup);
 
       if (msg.reply_markup._ === 'replyKeyboardMarkup' || msg.reply_markup._ === 'replyInlineMarkup') {
         aligner.classList.add('with-reply-markup');
@@ -342,34 +323,15 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
   const setBorders = (first: boolean, last: boolean) => {
     isFirst = first;
     isLast = last;
-    element.classList.toggle('first', first);
-    element.classList.toggle('last', last);
-    if (hasInterface<BubbleInterface>(renderedMessage)) {
+    container.classList.toggle('first', first);
+    container.classList.toggle('last', last);
+    if (hasInterface<any>(renderedMessage)) {
       getInterface(renderedMessage).updateBorders(first, last);
     }
   };
 
-  // update meta elemens (day label, message avatar for chats) depends on classList
+  // update meta elemens (message avatar for chats) depends on classList
   const updateLayout = () => {
-    // remove daylabel
-    if (dayLabel && !element.classList.contains('day')) {
-      unmount(dayLabel);
-      dayLabel = undefined;
-
-      if (onUpdateHeight) onUpdateHeight(id);
-    }
-
-    // display daylabel
-    if (element.classList.contains('day') && !dayLabel) {
-      const mdate = new Date(cached && cached._ !== 'messageEmpty' ? cached.date * 1000 : 0);
-      const label = mdate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
-
-      dayLabel = div`.message-day`(div`.message-day__label`(text(label)));
-      mount(element, dayLabel, container);
-
-      if (onUpdateHeight) onUpdateHeight(id);
-    }
-
     // remove picture
     if (profilePicture && !isLast) {
       unmount(profilePicture);
@@ -377,39 +339,29 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     }
 
     // display picture
-    if (aligner && element.classList.contains('chat') && isLast && !element.classList.contains('out')
+    if (aligner && container.classList.contains('chat') && isLast && !container.classList.contains('out')
       && !profilePicture && cached && cached._ !== 'messageEmpty') {
       const senderPeer = messageToSenderPeer(cached);
-      profilePicture = div`.message__profile`(profileAvatar(senderPeer));
-      mount(aligner, profilePicture, wrapper);
+      profilePicture = profileAvatar(senderPeer);
+      mount(aligner, profilePicture, aligner.firstChild || undefined);
     }
   };
 
-  // update classList for daylabel, first, last
+  // update classList for first, last
   const update = (recursive: boolean = false) => {
-    const nextEl = element.nextElementSibling;
-    const prevEl = element.previousElementSibling;
+    const nextEl = container.nextElementSibling;
+    const prevEl = container.previousElementSibling;
 
     // check next message meta
     if (nextEl && hasInterface<MessageInterface>(nextEl)) {
       const next = getInterface(nextEl);
 
-      if (cached && cached._ !== 'messageEmpty' && next.from() === cached.from_id && next.day() === day()) {
+      if (cached && cached._ !== 'messageEmpty' && next.from && next.from() === cached.from_id) {
         setBorders(isFirst, false);
         getInterface(nextEl).setBorders(false, getInterface(nextEl).getBorders().last);
       } else {
         getInterface(nextEl).setBorders(true, getInterface(nextEl).getBorders().last);
         setBorders(isFirst, true);
-      }
-
-      if (next.day() === day()) {
-        if (nextEl.classList.contains('day')) {
-          nextEl.classList.remove('day');
-          if (recursive) next.updateLayout();
-        }
-      } else if (!nextEl.classList.contains('day')) {
-        nextEl.classList.add('day');
-        if (recursive) next.updateLayout();
       }
     } else {
       setBorders(isFirst, true);
@@ -417,9 +369,8 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
 
     if (!prevEl) {
       setBorders(true, isLast);
-      if (!element.classList.contains('day')) {
-        element.classList.add('day');
-      }
+    } else if (!getInterface(prevEl)) {
+      setBorders(true, isLast);
     }
 
     // update previous
@@ -428,12 +379,11 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     updateLayout();
   };
 
-  useOnMount(element, () => update(true));
+  useOnMount(container, () => update(true));
 
-  return useInterface(element, {
+  return useInterface(container, {
     from: () => cached && cached._ !== 'messageEmpty' ? cached.from_id : 0,
     updateLayout,
-    day,
     update,
     id,
     getBorders,

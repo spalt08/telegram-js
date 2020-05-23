@@ -16,6 +16,7 @@ import 'styles/global.scss';
 
 export function withMountTrigger(getStory: StoryFn<Node>, context: StoryContext) {
   const element = getStory(context);
+
   triggerMountRecursive(element);
   return element;
 }

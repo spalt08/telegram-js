@@ -7,7 +7,7 @@ import { parseRange } from 'helpers/stream';
 import { createNotification, respond } from './extensions/context';
 import { load, save } from './extensions/db';
 import { fetchRequest } from './extensions/files';
-import { fetchLocation, fetchTGS } from './extensions/utils';
+import { fetchLocation, fetchTGS, fetchCachedSize, fetchSrippedSize } from './extensions/utils';
 import { fetchStreamRequest } from './extensions/stream';
 
 type ExtendedWorkerScope = {
@@ -30,10 +30,7 @@ const initNetwork = () => load(dbkey).then((meta: any) => {
   ctx.network.on('metaChanged', (newMeta) => save(dbkey, newMeta));
   ctx.network.on('metaChanged', (state) => notify('authorization_updated', { dc: state.baseDC, user: state.userID || 0 }));
   ctx.network.on('networkChanged', (state) => notify('network_updated', state));
-  ctx.network.updates.on((update) => {
-    console.log(update);
-    notify('update', update);
-  });
+  ctx.network.updates.on((update) => notify('update', update));
   ctx.network.updates.fetch();
 });
 
@@ -172,6 +169,18 @@ ctx.addEventListener('fetch', (event: FetchEvent): void => {
       event.respondWith(new Promise((resolve) => {
         fetchStreamRequest(url, offset, end, resolve, getFilePartRequest);
       }));
+      break;
+    }
+
+    case 'cached': {
+      const [, bytes] = /\/cached\/(.*?).svg/.exec(url) || [];
+      event.respondWith(fetchCachedSize(bytes));
+      break;
+    }
+
+    case 'stripped': {
+      const [, bytes] = /\/stripped\/(.*?).svg/.exec(url) || [];
+      event.respondWith(fetchSrippedSize(bytes));
       break;
     }
 

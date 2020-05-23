@@ -1,0 +1,32 @@
+.historyDay {
+  z-index: 0;
+  overflow: visible;
+
+  &__label {
+    position: sticky;
+    z-index: 2;
+    top: 0;
+    text-align: center;
+    height: 34PX;
+    padding-top: 4PX;
+    box-sizing: border-box;
+
+    /* Disable sticky dates in Firefox due to rendering */
+    @-moz-document url-prefix() {
+      & { position: static;}
+    }
+
+    & span {
+      display: inline-block;
+      margin: 0 auto;
+      width: auto;
+      max-width: 70%;
+      color: #FFFFFF;
+      background: rgba(27, 25, 25, 0.2);
+      height: 26PX;
+      border-radius: 13PX;
+      line-height: 20px;
+      padding: 3PX 10PX;
+    }
+  }
+}

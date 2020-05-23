@@ -1,4 +1,4 @@
-import lottie, { AnimationItem } from 'lottie-web';
+import { AnimationItem } from 'lottie-web';
 import loadLottie from 'lazy-modules/lottie';
 import { div } from 'core/html';
 import { useInterface, useOnMount } from 'core/hooks';
@@ -16,43 +16,46 @@ type AnimationHandler = AnimationItem & { currentFrame: number };
 
 export default function tgs({ src, className, autoplay = true, loop = false, onLoad }: Props) {
   let animation: AnimationHandler | undefined;
+  let animationData: any;
   let isVisible = false;
   let shouldPlay = autoplay;
 
   const container = div({ className });
 
-  useOnMount(container, () => {
-    Promise.all([
-      loadLottie(),
-      fetch(src).then((res) => res.json()),
-    ]).then(([lottiePlayer, animationData]: [typeof lottie, any]) => {
-      animation = lottiePlayer.loadAnimation({
+  const loadAnimation = () => (
+    loadLottie().then((player) => {
+      if (onLoad) onLoad();
+      if (animation) return animation;
+
+      return animation = player.loadAnimation({
         container,
         loop,
         animationData,
         autoplay: isVisible && shouldPlay,
         renderer: 'canvas',
       }) as AnimationHandler;
+    })
+  );
 
-      if (onLoad) onLoad();
-    });
+  const playAnimation = () => {
+    if (animationData && !animation) loadAnimation().then((handler) => shouldPlay && handler.play());
+    if (shouldPlay && animation) animation.play();
+  };
+
+  useOnMount(container, () => {
+    fetch(src)
+      .then((res) => res.json())
+      .then((data: any) => {
+        animationData = data;
+        if (isVisible) loadAnimation();
+      });
   });
 
   watchVisibility(container, (_isVisible) => {
     isVisible = _isVisible;
-    if (animation) {
-      if (isVisible) {
-        // If Lottie is initialized before the element is mounted, the TGS will have 0 size and there for be invisible.
-        // This method mustn't be called in onMount because it reads the DOM sizes that causes a layout recalculation.
-        animation.resize();
 
-        if (shouldPlay) {
-          animation.play();
-        }
-      } else {
-        animation.stop();
-      }
-    }
+    if (isVisible && animationData) playAnimation();
+    else if (!isVisible && animation) animation.stop();
   });
 
   return useInterface(container, {

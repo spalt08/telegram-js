@@ -20,7 +20,7 @@ export interface Options<TItem, TIndices, TId extends keyof any> {
   data?: Readonly<TItem>[];
 }
 
-export type ChangeEvent<TItem> = ['add' | 'update' | 'remove', Readonly<TItem>];
+export type ChangeEvent<TItem, TId> = ['add' | 'update' | 'remove', Readonly<TItem>, TId];
 
 export function makeGetIdFromProp<
   TIdProp extends keyof any,
@@ -32,7 +32,7 @@ export function makeGetIdFromProp<
 export default class Collection<TItem, TIndices extends IndicesFactories<any, any>, TId extends keyof any = keyof any> {
   public getId: GetId<TItem, TId>;
 
-  public readonly changes: Observable<ChangeEvent<TItem>[]>;
+  public readonly changes: Observable<ChangeEvent<TItem, TId>[]>;
 
   public readonly indices: IndicesFromFactories<TIndices>;
 
@@ -48,7 +48,7 @@ export default class Collection<TItem, TIndices extends IndicesFactories<any, an
     this.getId = getId;
     this.changes = this.storage.changes.pipe(map(
       (events) => events.map(
-        ([action, _key, item]) => [action, item],
+        ([action, key, item]) => [action, item, key],
       ),
     ));
     this.indices = mapObject(indices, (indexFactory) => indexFactory(this)) as IndicesFromFactories<TIndices>;

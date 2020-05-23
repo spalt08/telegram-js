@@ -1,0 +1,114 @@
+@import '~styles/variables.scss';
+
+.list {
+  height: 100%;
+  overflow: scroll;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+  will-change: transform;
+  min-height: 0; // To force the content to scroll
+  transform: translate3d(0, 0, 0);
+
+  &__wrapper {
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
+  }
+
+  &.-safari {
+    will-change: scroll-position;
+    transform: none;
+  }
+
+  &.-safari &__wrapper {
+    transform: none;
+  }
+
+  &__appearing {
+    animation: listAppear .3s ease;
+    z-index: 1;
+  }
+
+  &__removing {
+    position: absolute;
+    animation: listRemove .3s ease;
+  }
+
+  &__flipping {
+    transition: transform .3s ease;
+    z-index: 1;
+  }
+
+  &__scroll-in {
+    transition: transform .2s ease-out, background-color .3s ease;
+    z-index: 1;
+  }
+
+  @keyframes listAppear {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes listScrolled {
+    from {
+      transform: translateY(-100vh);
+    }
+  }
+
+  @keyframes listRemove {
+    to {
+      opacity: 0;
+    }
+  }
+}
+
+.demoListRow {
+  width: 100%;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 255, 0);
+  transition: transform .2s ease, background-color .3s ease;
+
+  &.-focused {
+    transition: transform .2s ease;
+    background-color: rgba(0, 0, 255, 0.7) !important;
+    color: #ffffff;
+  }
+
+  &.item1 {
+    height: 100px;
+    background-color: rgba(240, 240, 240, 1);
+  }
+
+  &.item2 {
+    height: 140px;
+  }
+
+  &.item3 {
+    height: 300px;
+    background-color: rgba(240, 240, 240, 1);
+  }
+
+  &.item4 {
+    height: 140px;
+  }
+
+  &.item5 {
+    height: 30px;
+    background-color: rgba(240, 240, 240, 1);
+  }
+}
+
+.demoListGroup {
+  &__header {
+    height: 20PX;
+    position: sticky;
+    background-color: #333333;
+    color: #ffffff;
+    top: 0;
+    text-align: center;
+  }
+}

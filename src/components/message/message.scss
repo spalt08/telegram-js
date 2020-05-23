@@ -4,25 +4,6 @@ $messageSidePadding: 10PX;
 $messageBubblePadding: 7PX $messageSidePadding;
 $messageDistance: 4PX;
 
-.message-day {
-  padding: 8px 0px 5px;
-  text-align: center;
-
-  &__label {
-    display: inline-block;
-    margin: 0 auto;
-    width: auto;
-    max-width: 70%;
-    color: #FFFFFF;
-    background: rgba(0, 0, 0, 0.20);
-    height: 26px;
-    border-radius: 13px;
-    line-height: 20px;
-    padding: 3px 10px;
-    position: sticky;
-  }
-}
-
 .message {
   --bubble-background: #FFFFFF;
   --accent-color: #1da1f1;
@@ -31,43 +12,75 @@ $messageDistance: 4PX;
   --accent-color-inactive: #707579;
 
   width: 100%;
+  background-color: rgba(0, 0, 0, 0);
+  display: flex;
+  justify-content: center;
+
+  &__align {
+    width: 100%;
+    max-width: 740px;
+    padding: 0 20PX;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-end;
+  }
+
+  & .avatar {
+    width: 34PX;
+    height: 34PX;
+    margin-right: -5PX;
+    margin-bottom: 3PX;
+    --initials-font-size: 13PX;
+  }
 
   & .photo {
     background-color: #fff;
   }
 
-  &__container {
-    width: 100%;
-    transition: background-color .4s ease-out;
-    background-color: rgba(0, 0, 0, 0);
-  }
-
-  &__align {
-    width: 100%;
-    max-width: 740px;
-    padding: ($messageDistance / 2) 20px;
-    display: flex;
-    justify-content: flex-start;
-    align-items: flex-end;
-    margin: 0 auto;
-  }
-
-  &__wrap {
+  & .bubble2 {
     max-width: 75%;
-    display: inline-block;
-    width: auto;
+
+    /* size + 11PX padding */
+    &.with-webpage { max-width: 451px; }
+    &.with-webpage-media { width: 351px; }
+    &.with-photo { width: 331px; }
+    &.with-poll { width: 331px; }
+
+    &.only-photo {
+      max-width: 331px;
+    }
+    
+    &.-last.only-photo .bubble2__content {
+      padding-left: 1PX;
+      padding-right: 1PX;
+    }
   }
 
-  & .only-sticker, &.out &.only-sticker {
+  & .only-sticker {
     background: none;
     display: flex;
     align-items: flex-start;
+    padding-left: 9PX;
 
     .message__reply {
       max-width: 400px;
       margin-bottom: 10px;
     }
   }
+
+  &.out &.only-sticker {
+    padding-right: 9PX;
+    padding-left: 0;
+  }
+
+  & .only-sticker &__reply {
+    background: #FFFFFF;
+  }
+
+  &.out .only-sticker &__reply {
+    background: #EEFFDE;
+  }
+
   & .only-sticker { 
     position: relative;
     flex-direction: row-reverse;
@@ -80,19 +93,6 @@ $messageDistance: 4PX;
   }
 
   & .as-emoji { padding-top: 10px; }
-
-  &.with-video {
-    transform: translate3d(0, 0, 0);
-  }
-
-  .bubble {
-    &.with-webpage { max-width: 440px; }
-    &.with-webpage-media { width: 340px; }
-    &.with-photo { width: 320px; }
-    &.with-poll { width: 320px; }
-
-    &.only-photo { max-width: 320px; }
-  }
 
   &__info {
     user-select: none;
@@ -162,7 +162,6 @@ $messageDistance: 4PX;
     $ripplePadding: 5PX 5PX;
 
     padding: 10px $messageSidePadding;
-    background: #FFFFFF;
     border-radius: 6px;
     min-width: 0;
 
@@ -184,8 +183,6 @@ $messageDistance: 4PX;
     }
 
     .message.out & {
-      background: #EEFFDE;
-
       &_ripple_content:hover {
         background: rgba(#000, 0.08);
       }
@@ -196,13 +193,6 @@ $messageDistance: 4PX;
   &__media-padded + &__text {
     padding-top: 0;
     margin-top: -3px;
-  }
-
-  &__profile {
-    width: 34PX;
-    height: 34PX;
-    margin-right: 4PX;
-    --initials-font-size: 13PX;
   }
 
   &__media-padded {
@@ -250,12 +240,12 @@ $messageDistance: 4PX;
     &.e1 { font-size: 80px; }
   }
 
-  &.focused &__container {
+  &.-focused {
     background-color: rgba(0, 132, 255, 0.3);
   }
 
   &.first .message {
-    &__align { padding-top: 6px; }
+    &__align { padding-top: 4px; }
     &__bubble { border-top-left-radius: 12.5px; }
     &__title { display: block; }
   }
@@ -276,8 +266,8 @@ $messageDistance: 4PX;
     }
   }
 
-  &.chat &__align { padding-left: 58px; }
-  &.chat.out &__align, &.chat.last &__align { padding-left: 20px; }
+  &.chat &__align { padding-left: 49PX; }
+  &.chat.out &__align, &.chat.last &__align { padding-left: 20PX; }
   &.chat &__align.with-reply-markup.rm-rows-1 &__profile { margin-bottom: 45px; }
   &.chat &__align.with-reply-markup.rm-rows-2 &__profile { margin-bottom: 85px; }
   &.chat &__align.with-reply-markup.rm-rows-3 &__profile { margin-bottom: 125px; }

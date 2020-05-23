@@ -7,10 +7,12 @@
     "build": "webpack --mode=production --progress",
     "build:noprogress": "webpack --mode=production",
     "build:mtproto": "yarn remove mtproto-js && cd ./packages/mtproto-js && yarn install && cd ../../ && yarn add file:./packages/mtproto-js",
+    "build:storybook": "build-storybook -c ./storybook -o ./dist-storybook",
     "start": "webpack-dev-server --progress",
     "analyze:prod": "npm run build -- --analyze",
     "analyze:dev": "npm start -- --analyze",
-    "storybook": "start-storybook -p 3001 -c ./storybook"
+    "storybook": "start-storybook -p 3001 -c ./storybook",
+    "storybook-ssl": "start-storybook -p 3001 -c ./storybook --https --ssl-cert=\"./storybook/server.crt\" --ssl-key=\"./storybook/server.key\""
   },
   "private": true,
   "repository": {

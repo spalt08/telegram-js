@@ -9,9 +9,7 @@ html {
   overflow: hidden;
 }
 
-*,
-*::before,
-*::after {
+* {
   box-sizing: inherit;
 }
 

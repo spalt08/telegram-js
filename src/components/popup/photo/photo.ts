@@ -1,17 +1,18 @@
 import { div, nothing, text } from 'core/html';
 import { Message, Peer, Photo } from 'mtproto-js';
-import './photo.scss';
 import { cached } from 'client/media';
 import { getPhotoLocation, getOrientation, getSize } from 'helpers/photo';
 import { listen, mount } from 'core/dom';
 import { getInterface, hasInterface, useListenWhileMounted } from 'core/hooks';
 import { close } from 'components/icons';
 import { profileAvatar, profileTitle } from 'components/profile';
-import photoRenderer, { PhotoOptions } from 'components/media/photo/photo';
+import photoRenderer from 'components/media/photo/photo';
 import { datetime } from 'components/ui';
 import { main } from 'services';
 import { KeyboardKeys } from 'const';
+import { PhotoOptions } from 'helpers/other';
 import { PopupInterface } from '../interface';
+import './photo.scss';
 
 type Props = {
   rect: DOMRect,
