@@ -100,6 +100,7 @@ $messageDistance: 4PX;
     transform: translateX(3px);
     margin-left: 5px;
     margin-top: 9px;
+    margin-bottom: 4px;
   }
 
   & .only-sticker &__info, & .only-photo &__info, & .only-audio &__info, & .only-document &__info, & .with-webpage &__info, & .with-webpage-media &__info {
@@ -108,7 +109,7 @@ $messageDistance: 4PX;
     bottom: 3PX;
     z-index: 1;
     transform: none;
-    margin-bottom: 0;
+    margin-bottom: 2px;
   }
 
   & .only-audio &__info, & .only-document &__info {

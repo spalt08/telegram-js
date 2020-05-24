@@ -4,7 +4,7 @@ import client from 'client/client';
 import { listen } from 'core/dom';
 import { getInterface } from 'core/hooks';
 import { div, text } from 'core/html';
-import { peerMessageToId } from 'helpers/api';
+import { messageToId } from 'helpers/api';
 import { Message, MessageUserVote, Peer } from 'mtproto-js';
 import popupCommon from '../popup_common';
 import './poll_results.scss';
@@ -12,13 +12,14 @@ import pollResultOption from './poll_result_option';
 
 export type PollResultsContext = {
   peer: Peer,
-  message: Message.message,
+  messageId: string,
 };
 
 const decoder = new TextDecoder();
 
-export default function pollResultsPopup({ peer, message }: PollResultsContext) {
-  if (message.media?._ !== 'messageMediaPoll') {
+export default function pollResultsPopup({ peer, messageId }: PollResultsContext) {
+  const message = messageCache.get(messageId);
+  if (message?._ !== 'message' || message.media?._ !== 'messageMediaPoll') {
     throw new Error('message media must be of type "messageMediaPoll"');
   }
   const { poll } = message.media;
@@ -53,7 +54,7 @@ export default function pollResultsPopup({ peer, message }: PollResultsContext) 
     }
   };
 
-  messageCache.watchItem(peerMessageToId(peer, message.id), (msg) => {
+  messageCache.watchItem(messageToId(message), (msg) => {
     updateOptions(msg);
   });
 
@@ -87,7 +88,7 @@ export default function pollResultsPopup({ peer, message }: PollResultsContext) 
       const answer = poll.answers[index];
       const request = {
         peer: peerToInputPeer(peer),
-        id: message.id,
+        id: message!.id,
         limit: 50,
         option: answer.option,
       };

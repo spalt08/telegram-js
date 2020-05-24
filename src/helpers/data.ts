@@ -94,6 +94,10 @@ export function getFirstLetter(str: string) {
     if (str[i] >= '0' && str[i] <= '9') {
       return str[i];
     }
+    // surrogate pair (U+D800 to U+DFFF)
+    if ((str.charCodeAt(i) & 0xf800) === 0xd800) {
+      return str.slice(i, 2);
+    }
   }
 
   return '';
@@ -115,6 +119,7 @@ export function getFirstLetters(title: string) {
 }
 
 export function areIteratorsEqual(it1: Iterator<any, any, undefined>, it2: Iterator<any, any, undefined>): boolean {
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const result1 = it1.next();
     const result2 = it2.next();

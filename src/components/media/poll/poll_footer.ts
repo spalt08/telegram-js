@@ -5,9 +5,8 @@ import { pluralize } from 'helpers/other';
 import './poll_footer.scss';
 
 export enum VoteButtonState {
-  Inactive,
   Vote,
-  ShowResults,
+  ViewResults,
 }
 
 const voteText = 'VOTE';
@@ -20,30 +19,25 @@ function pluralizeVoters(quiz: boolean, voters: number) {
       : 'No answers';
   }
   return voters > 0
-    ? `${voters} ${pluralize(voters, 'vote', 'votess')}`
+    ? `${voters} ${pluralize(voters, 'vote', 'votes')}`
     : 'No votes';
 }
 
 function formatStateText(state: VoteButtonState, voters: number, quiz: boolean, publicVoters: boolean, multipleChoice: boolean) {
-  if (state === VoteButtonState.Inactive || (!multipleChoice && !quiz)) {
-    return pluralizeVoters(quiz, voters);
+  switch (state) {
+    case VoteButtonState.Vote:
+      if (multipleChoice) {
+        return voteText;
+      }
+      return pluralizeVoters(quiz, voters);
+    case VoteButtonState.ViewResults:
+      if (publicVoters && voters > 0) {
+        return viewResultsText;
+      }
+      return pluralizeVoters(quiz, voters);
+    default:
+      return voteText;
   }
-  if (quiz) {
-    if (state === VoteButtonState.ShowResults && publicVoters) {
-      return viewResultsText;
-    }
-    return pluralizeVoters(quiz, voters);
-  }
-
-  // Only multiple choice vote case left.
-  if (state === VoteButtonState.ShowResults) {
-    if (publicVoters) {
-      return viewResultsText;
-    }
-    return pluralizeVoters(quiz, voters);
-  }
-
-  return voteText;
 }
 
 type Props = {
@@ -51,39 +45,53 @@ type Props = {
   publicVoters: boolean,
   multipleChoice: boolean,
   onSubmit: () => void,
-  onShowResults: () => void,
+  onViewResults: () => void,
 };
 
-export default function pollFooter({ quiz, publicVoters, multipleChoice, onSubmit, onShowResults }: Props) {
+export default function pollFooter({ quiz, publicVoters, multipleChoice, onSubmit, onViewResults }: Props) {
   let state = VoteButtonState.Vote;
   let voters = 0;
+  let optionsSelected = false;
   const stateText = text('');
-  const container = ripple({}, [
-    div`.pollFooter.-inactive`(
-      {
-        onClick: async () => {
-          if (state === VoteButtonState.ShowResults) {
-            onShowResults();
-          } else {
-            onSubmit();
-          }
-        },
+  const footer = div`.pollFooter`(
+    {
+      onClick: async () => {
+        switch (state) {
+          case VoteButtonState.ViewResults:
+            if (voters > 0 && publicVoters) {
+              onViewResults();
+            }
+            break;
+          case VoteButtonState.Vote:
+            if (multipleChoice) {
+              onSubmit();
+            }
+            break;
+          default:
+            break;
+        }
       },
-      stateText,
-    ),
-  ]);
+    },
+    stateText,
+  );
+  const container = ripple({}, [footer]);
+
+  const setRippleEnable = getInterface(container).setEnabled;
 
   const updateState = () => {
     stateText.textContent = formatStateText(state, voters, quiz, publicVoters, multipleChoice);
-    getInterface(container).setEnabled(voters > 0 && state !== VoteButtonState.Inactive);
+    const enabled = (state === VoteButtonState.Vote && optionsSelected)
+      || (state === VoteButtonState.ViewResults && publicVoters && voters > 0);
+    setRippleEnable(enabled);
+    footer.classList.toggle('-inactive', !enabled);
   };
 
   updateState();
 
   return useInterface(container as HTMLElement, {
-    ...getInterface(container),
-    updateState: (newState: VoteButtonState) => {
+    updateState: (newState: VoteButtonState, newOptionsSelected: boolean) => {
       state = newState;
+      optionsSelected = newOptionsSelected;
       updateState();
     },
     updateVoters: (newVoters: number) => {
