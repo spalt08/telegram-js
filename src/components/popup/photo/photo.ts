@@ -1,16 +1,16 @@
-import { div, nothing, text } from 'core/html';
-import { Message, Peer, Photo } from 'mtproto-js';
 import { cached } from 'client/media';
-import { getPhotoLocation, getOrientation, getSize } from 'helpers/photo';
+import { close } from 'components/icons';
+import photoRenderer from 'components/media/photo/photo';
+import { profileAvatar, profileTitle } from 'components/profile';
+import { datetime } from 'components/ui';
+import { KeyboardKeys } from 'const';
 import { listen, mount } from 'core/dom';
 import { getInterface, hasInterface, useListenWhileMounted } from 'core/hooks';
-import { close } from 'components/icons';
-import { profileAvatar, profileTitle } from 'components/profile';
-import photoRenderer from 'components/media/photo/photo';
-import { datetime } from 'components/ui';
-import { main } from 'services';
-import { KeyboardKeys } from 'const';
+import { div, nothing, text } from 'core/html';
 import { PhotoOptions } from 'helpers/other';
+import { getOrientation, getPhotoLocation, getSize } from 'helpers/photo';
+import { Message, Peer, Photo } from 'mtproto-js';
+import { main } from 'services';
 import { PopupInterface } from '../interface';
 import './photo.scss';
 
@@ -52,6 +52,7 @@ export default function photoPopup({ rect, options, photo, peer, message }: Prop
     width: Math.min(1200, window.innerWidth * 0.85),
     height: Math.max(100, window.innerHeight - 160),
     showLoader: false,
+    thumb: options.thumb,
   });
 
   if (!(photoEl instanceof HTMLElement)) return nothing;
