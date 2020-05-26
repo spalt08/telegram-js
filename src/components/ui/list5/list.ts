@@ -1,8 +1,8 @@
-import { MaybeObservable } from 'core/types';
-import { div } from 'core/html';
-import './list.scss';
+import { animationFrameStart, listen, listenOnce, mount, unmount, unmountChildren } from 'core/dom';
 import { useMaybeObservable } from 'core/hooks';
-import { mount, animationFrameStart, unmountChildren, listen, unmount, listenOnce } from 'core/dom';
+import { div } from 'core/html';
+import { MaybeObservable } from 'core/types';
+import './list.scss';
 
 type ListConfig = {
   batch: number,
@@ -114,7 +114,7 @@ export class VirtualizedList {
     onTrace,
     initialPaddingBottom = 0,
   }: Props) {
-    this.wrapper = div`.list__wrapper`();
+    this.wrapper = div`.list__wrapper`({ tabIndex: -1 });
     this.container = div`.list${className}${pivotBottom ? '-reversed' : ''}${Safari ? '-safari' : ''}`(this.wrapper);
 
     this.cfg = {
