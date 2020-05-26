@@ -1,12 +1,12 @@
 .message-service {
   padding: 6PX 0px 3PX;
   text-align: center;
+  max-width: 70%;
 
   &__label {
     display: inline-block;
     margin: 0 auto;
     width: auto;
-    max-width: 70%;
     color: #FFFFFF;
     background: rgba(0, 0, 0, 0.20);
     height: 26px;
