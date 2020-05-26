@@ -8,7 +8,7 @@ export type PhotoOptions = {
   height?: number,
   minWidth?: number,
   minHeight?: number,
-  thumb?: boolean,
+  thumb?: boolean | string,
   showLoader?: boolean,
 };
 

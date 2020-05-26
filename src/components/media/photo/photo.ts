@@ -1,11 +1,11 @@
-import { Photo, Document } from 'mtproto-js';
-import { div, img, nothing } from 'core/html';
-import { mount, unmount } from 'core/dom';
-import { getThumbnail, getSize, getPhotoLocation } from 'helpers/photo';
-import { useInterface } from 'core/hooks';
-import { PhotoOptions } from 'helpers/other';
-import { usePhotoSize } from 'helpers/files';
 import { file, hasCached } from 'client/media';
+import { mount, unmount } from 'core/dom';
+import { useInterface } from 'core/hooks';
+import { div, img, nothing } from 'core/html';
+import { usePhotoSize } from 'helpers/files';
+import { PhotoOptions } from 'helpers/other';
+import { getPhotoLocation, getSize, getThumbnail } from 'helpers/photo';
+import { Document, Photo } from 'mtproto-js';
 import './photo.scss';
 
 export default function photoRenderer(photo: Photo.photo | Document.document, options: PhotoOptions) {
@@ -33,13 +33,18 @@ export default function photoRenderer(photo: Photo.photo | Document.document, op
 
   // diplay thumbnail
   if (thumb) {
-    hasCached(src, (exists) => {
-      if (exists) return;
-      if (!thumbSrc) thumbSrc = getThumbnail((photo._ === 'photo' ? photo.sizes : photo.thumbs) ?? []);
-
-      thumbnail = img({ className: 'photo__thumbnail', src: thumbSrc, alt: 'Message photo' });
+    if (typeof thumb === 'string') {
+      thumbnail = img({ className: 'photo__thumbnail', src: thumb, alt: 'Message photo' });
       mount(container, thumbnail);
-    });
+    } else {
+      hasCached(src, (exists) => {
+        if (exists) return;
+        if (!thumbSrc) thumbSrc = getThumbnail((photo._ === 'photo' ? photo.sizes : photo.thumbs) ?? []);
+
+        thumbnail = img({ className: 'photo__thumbnail', src: thumbSrc, alt: 'Message photo' });
+        mount(container, thumbnail);
+      });
+    }
   }
 
   // show background
@@ -68,6 +73,7 @@ export default function photoRenderer(photo: Photo.photo | Document.document, op
       thumbnail.classList.add('no-blur');
     }
   };
+  const getImageSrc = () => image.src;
 
-  return useInterface(container, { rect, setThumb });
+  return useInterface(container, { rect, setThumb, getImageSrc });
 }

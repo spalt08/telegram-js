@@ -1,7 +1,7 @@
-import { Photo, Peer, Message } from 'mtproto-js';
 import { listen } from 'core/dom';
 import { getInterface } from 'core/hooks';
 import { PhotoOptions } from 'helpers/other';
+import { Message, Peer, Photo } from 'mtproto-js';
 import { main } from 'services';
 import photoRenderer from './photo';
 
@@ -16,8 +16,9 @@ export default function photoPreview(photo: Photo.photo, peer: Peer, message: Me
       if (!(photoEl instanceof HTMLElement)) return;
 
       const rect = getInterface(photoEl).rect();
+      const thumbSrc = getInterface(photoEl).getImageSrc();
 
-      if (rect) main.showPopup('photo', { rect, options, peer, photo, message });
+      main.showPopup('photo', { rect, options: { ...options, thumb: thumbSrc }, peer, photo, message });
     });
   }
 
