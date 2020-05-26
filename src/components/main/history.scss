@@ -27,6 +27,7 @@
   &__list .list__wrapper {
     flex: none;
     margin-top: auto;
+    outline: none !important;
   }
 
   &__spinner {
