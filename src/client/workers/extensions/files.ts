@@ -1,8 +1,8 @@
 /* eslint-disable no-param-reassign */
-import { inflate } from 'pako/lib/inflate';
-import { InputFileLocation } from 'mtproto-js';
 import { DownloadOptions } from 'client/types';
 import { StickerMimeType } from 'const';
+import { InputFileLocation } from 'mtproto-js';
+import { inflate } from 'pako/lib/inflate';
 
 // constants
 const DOWNLOAD_CHUNK_LIMIT = 1024 * 1024;
@@ -26,11 +26,11 @@ type FileInfo = {
 };
 
 /**
- * File Infos, Resolvers and Quene
+ * File Infos, Resolvers and Queue
  */
 const files = new Map<FileURL, FileInfo>();
 const fileEvents: Record<FileURL, Array<(res: Response) => void>> = {};
-const fileQuene: FileURL[] = [];
+const fileQueue: FileURL[] = [];
 let currentlyProcessing = 0;
 
 
@@ -55,9 +55,9 @@ function finishDownload(info: FileInfo, response: Response, cache: Cache, get: F
   info.processing = false;
   currentlyProcessing--;
 
-  // Pass Control to quened files
+  // Pass Control to queued files
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  processQuenedDownloads(get, cache, progress);
+  processQueuedDownloads(get, cache, progress);
 }
 /**
  * Loop for getting file parts from network
@@ -115,9 +115,9 @@ export function fetchFileLocation(url: FileURL | string, location: InputFileLoca
 /**
  * Download Initializator
  */
-export function processQuenedDownloads(get: FilePartResolver, cache: Cache, progress: ProgressResolver) {
-  while (fileQuene.length > 0 && currentlyProcessing < MAX_CONCURRENT_DOWNLOADS) {
-    const url = fileQuene.shift();
+export function processQueuedDownloads(get: FilePartResolver, cache: Cache, progress: ProgressResolver) {
+  while (fileQueue.length > 0 && currentlyProcessing < MAX_CONCURRENT_DOWNLOADS) {
+    const url = fileQueue.shift();
     if (url) {
       currentlyProcessing++;
       initDownload(url, get, cache, progress);
@@ -126,16 +126,16 @@ export function processQuenedDownloads(get: FilePartResolver, cache: Cache, prog
 }
 
 /**
- * Download Quene
+ * Download Queue
  */
-export function putDownloadQuene(url: string, get: FilePartResolver, cache: Cache, progress: ProgressResolver) {
-  fileQuene.push(url);
-  fileQuene.sort((left, right) => (files.get(right)!.options.priority || 0) - (files.get(left)!.options.priority || 0));
-  processQuenedDownloads(get, cache, progress);
+export function putDownloadQueue(url: string, get: FilePartResolver, cache: Cache, progress: ProgressResolver) {
+  fileQueue.push(url);
+  fileQueue.sort((left, right) => (files.get(right)!.options.priority || 0) - (files.get(left)!.options.priority || 0));
+  processQueuedDownloads(get, cache, progress);
 }
 
 /**
- * Capture fetch request for quened downloads
+ * Capture fetch request for queued downloads
  */
 export function fetchRequest(url: string, resolve: (res: Response) => void, get: FilePartResolver, cache: Cache, progress: ProgressResolver) {
   if (!fileEvents[url]) fileEvents[url] = [];

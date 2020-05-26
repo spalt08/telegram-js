@@ -1,14 +1,14 @@
 /* eslint-disable no-restricted-globals */
-import { Client as NetworkHandler, InputFileLocation } from 'mtproto-js';
+import { DownloadOptions, WindowMessage } from 'client/types';
 import { CLIENT_CONFIG } from 'const/api';
-import { WindowMessage, DownloadOptions } from 'client/types';
 import { typeToMime } from 'helpers/files';
 import { parseRange } from 'helpers/stream';
+import { Client as NetworkHandler, InputFileLocation } from 'mtproto-js';
 import { createNotification, respond } from './extensions/context';
 import { load, save } from './extensions/db';
 import { fetchRequest } from './extensions/files';
-import { fetchLocation, fetchTGS, fetchCachedSize, fetchSrippedSize } from './extensions/utils';
 import { fetchStreamRequest } from './extensions/stream';
+import { fetchCachedSize, fetchLocation, fetchSrippedSize, fetchTGS } from './extensions/utils';
 
 type ExtendedWorkerScope = {
   cache: Cache,
@@ -147,6 +147,20 @@ ctx.addEventListener('fetch', (event: FetchEvent): void => {
   const [, url, scope] = /http[:s]+\/\/.*?(\/(.*?)\/.*$)/.exec(event.request.url) || [];
 
   switch (scope) {
+    case 'assets':
+      event.respondWith(
+        ctx.cache.match(url).then((cached) => {
+          if (cached) return cached;
+
+          return fetch(url).then((response) => {
+            if (response.ok) {
+              ctx.cache.put(url, response);
+            }
+
+            return response;
+          });
+        }));
+      break;
     case 'documents':
     case 'photos':
     case 'profiles':
@@ -185,7 +199,7 @@ ctx.addEventListener('fetch', (event: FetchEvent): void => {
     }
 
     default:
-      if (url && url.indexOf('.tgs') > -1) event.respondWith(fetchTGS(url));
+      if (url && url.endsWith('.tgs')) event.respondWith(fetchTGS(url));
       else event.respondWith(fetch(event.request.url));
   }
 });
