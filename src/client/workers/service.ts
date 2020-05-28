@@ -1,14 +1,14 @@
 /* eslint-disable no-restricted-globals */
-import { Client as NetworkHandler, InputFileLocation } from 'mtproto-js';
+import { DownloadOptions, WindowMessage } from 'client/types';
 import { CLIENT_CONFIG } from 'const/api';
-import { WindowMessage, DownloadOptions } from 'client/types';
 import { typeToMime } from 'helpers/files';
 import { parseRange } from 'helpers/stream';
+import { Client as NetworkHandler, InputFileLocation } from 'mtproto-js';
 import { createNotification, respond } from './extensions/context';
 import { load, save } from './extensions/db';
 import { fetchRequest } from './extensions/files';
-import { fetchLocation, fetchTGS, fetchCachedSize, fetchSrippedSize } from './extensions/utils';
 import { fetchStreamRequest } from './extensions/stream';
+import { fetchCachedSize, fetchLocation, fetchSrippedSize, fetchTGS } from './extensions/utils';
 
 type ExtendedWorkerScope = {
   cache: Cache,
@@ -55,7 +55,7 @@ function getFilePartRequest(location: InputFileLocation, offset: number, limit: 
 
     // todo handling errors
     if (err || !result || result._ === 'upload.fileCdnRedirect') {
-      throw new Error(`Error while donwloading file: ${JSON.stringify(err)}`);
+      throw new Error(`Error while downloading file: ${JSON.stringify(err)}`);
       return;
     }
 
@@ -185,7 +185,7 @@ ctx.addEventListener('fetch', (event: FetchEvent): void => {
     }
 
     default:
-      if (url && url.indexOf('.tgs') > -1) event.respondWith(fetchTGS(url));
+      if (url && url.endsWith('.tgs')) event.respondWith(fetchTGS(url));
       else event.respondWith(fetch(event.request.url));
   }
 });
