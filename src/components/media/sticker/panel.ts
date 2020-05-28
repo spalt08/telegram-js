@@ -1,9 +1,9 @@
 import { div } from 'core/html';
 import { media } from 'services';
 import { materialSpinner, recent } from 'components/icons';
-import { useObservable, useInterface, getInterface, useOnMount } from 'core/hooks';
+import { useObservable, useInterface, getInterface } from 'core/hooks';
 import { Document, StickerSet } from 'mtproto-js';
-import { mount, unmount, listen } from 'core/dom';
+import { mount, unmount, listen, animationFrameStart } from 'core/dom';
 import { BehaviorSubject } from 'rxjs';
 import { VirtualizedList } from 'components/ui';
 import stickerSet from './set';
@@ -37,7 +37,7 @@ export default function stickerPanel(onSelect?: (sticker: Document) => void) {
     items,
     renderer,
     batch: 1,
-    threshold: 1,
+    threshold: 2,
     pivotBottom: false,
   });
 
@@ -53,7 +53,7 @@ export default function stickerPanel(onSelect?: (sticker: Document) => void) {
   // load sets
   useObservable(container, media.stickerSets, (sets: StickerSet[]) => {
     if (sets.length > 0) {
-      const newSets = [];
+      const newSets: string[] = [];
 
       for (let i = 0; i < sets.length; i += 1) {
         const set = sets[i];
@@ -77,7 +77,9 @@ export default function stickerPanel(onSelect?: (sticker: Document) => void) {
         loader = undefined;
       }
 
-      items.next([...items.value, ...newSets]);
+      animationFrameStart().then(() => {
+        items.next([...items.value, ...newSets]);
+      });
     }
   });
 
@@ -99,10 +101,6 @@ export default function stickerPanel(onSelect?: (sticker: Document) => void) {
     }
   });
 
-  useOnMount(container, () => {
-    media.loadRecentStickers();
-  });
-
   return useInterface(container, {
     update() {},
     shouldRemove() {
@@ -111,9 +109,11 @@ export default function stickerPanel(onSelect?: (sticker: Document) => void) {
       }
     },
     didAppear() {
-      for (let i = list.firstRendered; i <= list.lastRendered; i++) {
-        if (list.elements[list.items[i]]) getInterface(list.elements[list.items[i]] as ReturnType<typeof stickerSet>).playAll();
-      }
+      media.loadRecentStickers();
+
+      // for (let i = list.firstRendered; i <= list.lastRendered; i++) {
+      //   if (list.elements[list.items[i]]) getInterface(list.elements[list.items[i]] as ReturnType<typeof stickerSet>).playAll();
+      // }
     },
   });
 }

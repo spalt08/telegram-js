@@ -1,7 +1,7 @@
 import { AnimationItem } from 'lottie-web';
 import loadLottie from 'lazy-modules/lottie';
 import { div } from 'core/html';
-import { useInterface, useOnMount } from 'core/hooks';
+import { useInterface, useOnMount, useOnUnmount } from 'core/hooks';
 import { watchVisibility } from 'core/dom';
 
 interface Props {
@@ -13,53 +13,82 @@ interface Props {
 }
 
 type AnimationHandler = AnimationItem & { currentFrame: number };
+let loadQueuened = 0;
 
 export default function tgs({ src, className, autoplay = true, loop = false, onLoad }: Props) {
   let animation: AnimationHandler | undefined;
   let animationData: any;
   let isVisible = false;
+  let isRequested = false;
   let shouldPlay = autoplay;
 
   const container = div({ className });
 
   const loadAnimation = () => (
-    loadLottie().then((player) => {
-      if (onLoad) onLoad();
-      if (animation) return animation;
+    new Promise<AnimationHandler>((resolve) => {
+      const queue = ++loadQueuened;
 
-      return animation = player.loadAnimation({
-        container,
-        loop,
-        animationData,
-        autoplay: isVisible && shouldPlay,
-        renderer: 'canvas',
-      }) as AnimationHandler;
+      const loadOnFrame = () => {
+        if (loadQueuened <= queue) {
+          loadLottie().then((player) => {
+            // console.log('loadAnimation');
+            if (onLoad) onLoad();
+            if (animation) resolve(animation);
+
+            animation = player.loadAnimation({
+              container,
+              loop,
+              animationData,
+              autoplay: isVisible && shouldPlay,
+              renderer: 'canvas',
+            }) as AnimationHandler;
+
+            animationData = undefined;
+            resolve(animation);
+            requestAnimationFrame(() => loadQueuened--);
+          });
+        } else {
+          requestAnimationFrame(loadOnFrame);
+        }
+      };
+
+      if (queue === 1) loadOnFrame();
+      else requestAnimationFrame(loadOnFrame);
     })
   );
 
   const playAnimation = () => {
+    // console.log('playAnimation');
     if (animationData && !animation) loadAnimation().then((handler) => shouldPlay && handler.play());
     if (shouldPlay && animation) animation.play();
   };
 
   useOnMount(container, () => {
+    if (isRequested) return;
+
+    isRequested = true;
     fetch(src)
       .then((res) => res.json())
       .then((data: any) => {
         animationData = data;
-        if (isVisible) loadAnimation();
+        if (isVisible) playAnimation();
       });
+  });
+
+  useOnUnmount(container, () => {
+    if (animation) animation.stop();
   });
 
   watchVisibility(container, (_isVisible) => {
     isVisible = _isVisible;
 
-    if (isVisible && animationData) playAnimation();
+    if (isVisible && isRequested) playAnimation();
     else if (!isVisible && animation) animation.stop();
   });
 
   return useInterface(container, {
     play() {
+      // console.log('playi');
       shouldPlay = true;
       if (isVisible && animation) {
         animation.play();
@@ -68,7 +97,7 @@ export default function tgs({ src, className, autoplay = true, loop = false, onL
     pause() {
       shouldPlay = false;
       if (animation) {
-        animation.pause();
+        animation.stop();
       }
     },
     resize() {

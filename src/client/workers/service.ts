@@ -71,13 +71,12 @@ function fileProgress(url: string, downloaded: number, total: number) {
  * Window Message Processing
  */
 function processWindowMessage(msg: WindowMessage, source: Client | MessagePort | ServiceWorker | null = null) {
-  if (msg.type !== 'location') log('message', msg.type);
-
   if (!msg || !msg.type) return;
 
   switch (msg.type) {
     case 'call': {
       const { id, payload: { method, params, headers } } = msg;
+      log('call', method);
       ctx.network.call(method, params, headers, (error, result) => source && respond(source, id, 'rpc_result', { error, result }));
       break;
     }
