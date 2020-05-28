@@ -55,7 +55,7 @@ function getFilePartRequest(location: InputFileLocation, offset: number, limit: 
 
     // todo handling errors
     if (err || !result || result._ === 'upload.fileCdnRedirect') {
-      throw new Error(`Error while donwloading file: ${JSON.stringify(err)}`);
+      throw new Error(`Error while downloading file: ${JSON.stringify(err)}`);
       return;
     }
 
@@ -147,20 +147,6 @@ ctx.addEventListener('fetch', (event: FetchEvent): void => {
   const [, url, scope] = /http[:s]+\/\/.*?(\/(.*?)\/.*$)/.exec(event.request.url) || [];
 
   switch (scope) {
-    case 'assets':
-      event.respondWith(
-        ctx.cache.match(url).then((cached) => {
-          if (cached) return cached;
-
-          return fetch(url).then((response) => {
-            if (response.ok) {
-              ctx.cache.put(url, response);
-            }
-
-            return response;
-          });
-        }));
-      break;
     case 'documents':
     case 'photos':
     case 'profiles':
