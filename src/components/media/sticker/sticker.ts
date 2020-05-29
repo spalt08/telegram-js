@@ -3,7 +3,7 @@ import { Document } from 'mtproto-js';
 import { mount, unmount, listen } from 'core/dom';
 import { getThumbnail, getSize, getPhotoLocation } from 'helpers/photo';
 import { getDocumentLocation } from 'helpers/files';
-import { hasCached, file } from 'client/media';
+import { file } from 'client/media';
 import { tgs } from 'components/ui';
 import { useInterface, getInterface } from 'core/hooks';
 import { StickerMimeType } from 'const';
@@ -30,13 +30,13 @@ export default function stickerRenderer(sticker: Document.document,
   if (sticker.thumbs && sticker.thumbs.length > 0) {
     const tsize = getSize(sticker.thumbs, 200, 200, 'cover');
 
-    if (tsize) {
-      const loc = getPhotoLocation(sticker, tsize.type);
-      thumbnail = img({ className: 'sticker__thumb', src: file(loc, {}), alt: 'Sticker Preview' });
-    } else {
-      const thumbSrc = getThumbnail(sticker.thumbs!);
-      if (thumbSrc) thumbnail = img({ className: 'sticker__thumb', src: getThumbnail(sticker.thumbs!), alt: 'Sticker Preview' });
-    }
+    // if (tsize) {
+    //   const loc = getPhotoLocation(sticker, tsize.type);
+    //   thumbnail = img({ className: 'sticker__thumb', src: file(loc, {}), alt: 'Sticker Preview' });
+    // } else {
+    //   const thumbSrc = getThumbnail(sticker.thumbs!);
+    //   if (thumbSrc) thumbnail = img({ className: 'sticker__thumb', src: getThumbnail(sticker.thumbs!), alt: 'Sticker Preview' });
+    // }
 
     if (thumbnail) mount(container, thumbnail);
   }
@@ -53,8 +53,8 @@ export default function stickerRenderer(sticker: Document.document,
 
   switch (sticker.mime_type) {
     case StickerMimeType.TGS:
-      // animated = tgs({ src, className: `sticker__tgs${thumbnail ? ' animated' : ''}`, autoplay, loop: true, playOnHover, onLoad: removeThumb });
-      // mount(container, animated);
+      animated = tgs({ src, className: `sticker__tgs${thumbnail ? ' animated' : ''}`, autoplay, loop: true, playOnHover, onLoad: removeThumb });
+      mount(container, animated);
       break;
 
     case StickerMimeType.WebP: {

@@ -14,29 +14,48 @@ interface Props {
 }
 
 type AnimationHandler = AnimationItem & { currentFrame: number };
+type LottieLoadCallback = (lottie: LottiePlayer) => void;
+const queue: Array<LottieLoadCallback> = [];
+let lottie: LottiePlayer | undefined;
+let isFreezed = false;
+let isProcessing = false;
 
-const queue: Array<(lottie: LottiePlayer) => void> = [];
-let isQueueing = false;
+export function tgsFreeze() {
+  if (lottie) lottie.freeze();
+  isFreezed = true;
+}
 
 function load() {
-  isQueueing = true;
+  isProcessing = true;
 
-  loadLottie().then((lottie) => {
-    const cb = queue.shift();
-
-    if (!cb) {
-      isQueueing = false;
+  loadLottie().then((player) => {
+    if (isFreezed) {
+      isProcessing = false;
       return;
     }
 
-    cb(lottie);
+    const cb = queue.shift();
+
+    if (!cb) {
+      isProcessing = false;
+      return;
+    }
+
+    cb(lottie = player);
     requestAnimationFrame(() => requestAnimationFrame(load));
   });
 }
 
 function queueLoading(cb: (lottie: LottiePlayer) => void) {
   queue.push(cb);
-  if (!isQueueing) load();
+  if (!isProcessing && !isFreezed) load();
+}
+
+export function tgsUnFreeze() {
+  if (lottie) lottie.unfreeze();
+
+  if (!isProcessing) load();
+  isFreezed = false;
 }
 
 export default function tgs({ src, className, autoplay = true, loop = false, playOnHover = false, onLoad }: Props) {
@@ -52,16 +71,17 @@ export default function tgs({ src, className, autoplay = true, loop = false, pla
   const loadAnimation = () => {
     if (animation && shouldPlay && isVisible) animation.play();
 
-
     if (!animation && animationData) {
       if (isLoading) return;
 
       isLoading = true;
 
-      queueLoading((lottie) => {
+      queueLoading((player) => {
+        isLoading = false;
+
         if (!isVisible) return;
 
-        animation = lottie.loadAnimation({
+        animation = player.loadAnimation({
           container,
           loop,
           animationData,
@@ -69,10 +89,8 @@ export default function tgs({ src, className, autoplay = true, loop = false, pla
           renderer: 'canvas',
         }) as AnimationHandler;
 
-        animationData = undefined;
-
+        animation.frameRate = 30;
         if (onLoad) onLoad();
-        if (shouldPlay && isVisible) animation.play();
       });
     }
   };
