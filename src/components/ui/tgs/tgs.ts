@@ -1,66 +1,86 @@
 import { AnimationItem } from 'lottie-web';
-import loadLottie from 'lazy-modules/lottie';
+import loadLottie, { LottiePlayer } from 'lazy-modules/lottie';
 import { div } from 'core/html';
 import { useInterface, useOnMount, useOnUnmount } from 'core/hooks';
-import { watchVisibility } from 'core/dom';
+import { watchVisibility, listen } from 'core/dom';
 
 interface Props {
   src: string,
   className?: string,
   autoplay?: boolean,
   loop?: boolean,
+  playOnHover?: boolean,
   onLoad?: () => void;
 }
 
 type AnimationHandler = AnimationItem & { currentFrame: number };
-let loadQueuened = 0;
 
-export default function tgs({ src, className, autoplay = true, loop = false, onLoad }: Props) {
+const queue: Array<(lottie: LottiePlayer) => void> = [];
+let isQueueing = false;
+
+function load() {
+  isQueueing = true;
+
+  loadLottie().then((lottie) => {
+    const cb = queue.shift();
+
+    if (!cb) {
+      isQueueing = false;
+      return;
+    }
+
+    cb(lottie);
+    requestAnimationFrame(() => requestAnimationFrame(load));
+  });
+}
+
+function queueLoading(cb: (lottie: LottiePlayer) => void) {
+  queue.push(cb);
+  if (!isQueueing) load();
+}
+
+export default function tgs({ src, className, autoplay = true, loop = false, playOnHover = false, onLoad }: Props) {
   let animation: AnimationHandler | undefined;
   let animationData: any;
   let isVisible = false;
   let isRequested = false;
+  let isLoading = false;
   let shouldPlay = autoplay;
 
   const container = div({ className });
 
-  const loadAnimation = () => (
-    new Promise<AnimationHandler>((resolve) => {
-      const queue = ++loadQueuened;
+  const loadAnimation = () => {
+    if (animation && shouldPlay && isVisible) animation.play();
 
-      const loadOnFrame = () => {
-        if (loadQueuened <= queue) {
-          loadLottie().then((player) => {
-            // console.log('loadAnimation');
-            if (onLoad) onLoad();
-            if (animation) resolve(animation);
 
-            animation = player.loadAnimation({
-              container,
-              loop,
-              animationData,
-              autoplay: isVisible && shouldPlay,
-              renderer: 'canvas',
-            }) as AnimationHandler;
+    if (!animation && animationData) {
+      if (isLoading) return;
 
-            animationData = undefined;
-            resolve(animation);
-            requestAnimationFrame(() => loadQueuened--);
-          });
-        } else {
-          requestAnimationFrame(loadOnFrame);
-        }
-      };
+      isLoading = true;
 
-      if (queue === 1) loadOnFrame();
-      else requestAnimationFrame(loadOnFrame);
-    })
-  );
+      queueLoading((lottie) => {
+        if (!isVisible) return;
+
+        animation = lottie.loadAnimation({
+          container,
+          loop,
+          animationData,
+          autoplay: isVisible && shouldPlay,
+          renderer: 'canvas',
+        }) as AnimationHandler;
+
+        animationData = undefined;
+
+        if (onLoad) onLoad();
+        if (shouldPlay && isVisible) animation.play();
+      });
+    }
+  };
 
   const playAnimation = () => {
     // console.log('playAnimation');
-    if (animationData && !animation) loadAnimation().then((handler) => shouldPlay && handler.play());
-    if (shouldPlay && animation) animation.play();
+    if (animationData && !animation) loadAnimation();
+    if (shouldPlay && animation && animation.isPaused) animation.play();
   };
 
   useOnMount(container, () => {
@@ -76,14 +96,22 @@ export default function tgs({ src, className, autoplay = true, loop = false, onL
   });
 
   useOnUnmount(container, () => {
-    if (animation) animation.stop();
+    if (animation) {
+      animation.destroy();
+      animation = undefined;
+    }
   });
+
+  if (playOnHover) {
+    listen(container, 'mouseenter', () => animation && animation.isPaused && animation.play());
+    listen(container, 'mouseleave', () => animation && !animation.isPaused && animation.pause());
+  }
 
   watchVisibility(container, (_isVisible) => {
     isVisible = _isVisible;
 
     if (isVisible && isRequested) playAnimation();
-    else if (!isVisible && animation) animation.stop();
+    else if (!isVisible && animation && !animation.isPaused) animation.pause();
   });
 
   return useInterface(container, {
@@ -97,7 +125,7 @@ export default function tgs({ src, className, autoplay = true, loop = false, onL
     pause() {
       shouldPlay = false;
       if (animation) {
-        animation.stop();
+        animation.pause();
       }
     },
     resize() {

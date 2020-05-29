@@ -37,7 +37,8 @@ export default function stickerPanel(onSelect?: (sticker: Document) => void) {
     items,
     renderer,
     batch: 1,
-    threshold: 2,
+    threshold: 3,
+    batchService: 1,
     pivotBottom: false,
   });
 
