@@ -1,11 +1,11 @@
 import { div, img } from 'core/html';
 import { Document } from 'mtproto-js';
-import { mount, unmount, listen } from 'core/dom';
+import { mount, listen } from 'core/dom';
 import { getThumbnail, getSize, getPhotoLocation } from 'helpers/photo';
 import { getDocumentLocation } from 'helpers/files';
 import { file } from 'client/media';
 import { tgs } from 'components/ui';
-import { useInterface, getInterface } from 'core/hooks';
+import { useInterface, getInterface, useOnMount } from 'core/hooks';
 import { StickerMimeType } from 'const';
 import './sticker.scss';
 
@@ -30,25 +30,19 @@ export default function stickerRenderer(sticker: Document.document,
   if (sticker.thumbs && sticker.thumbs.length > 0) {
     const tsize = getSize(sticker.thumbs, 200, 200, 'cover');
 
-    // if (tsize) {
-    //   const loc = getPhotoLocation(sticker, tsize.type);
-    //   thumbnail = img({ className: 'sticker__thumb', src: file(loc, {}), alt: 'Sticker Preview' });
-    // } else {
-    //   const thumbSrc = getThumbnail(sticker.thumbs!);
-    //   if (thumbSrc) thumbnail = img({ className: 'sticker__thumb', src: getThumbnail(sticker.thumbs!), alt: 'Sticker Preview' });
-    // }
+    if (tsize) {
+      const loc = getPhotoLocation(sticker, tsize.type);
+      thumbnail = img({ className: 'sticker__thumb', src: file(loc, {}), alt: 'Sticker Preview' });
+    } else {
+      const thumbSrc = getThumbnail(sticker.thumbs!);
+      if (thumbSrc) thumbnail = img({ className: 'sticker__thumb', src: getThumbnail(sticker.thumbs!), alt: 'Sticker Preview' });
+    }
 
     if (thumbnail) mount(container, thumbnail);
   }
 
   const removeThumb = () => {
-    if (thumbnail) {
-      thumbnail.classList.add('removed');
-      thumbnail.onanimationend = () => {
-        unmount(thumbnail!);
-        thumbnail = undefined;
-      };
-    }
+    if (thumbnail) thumbnail.style.display = 'none';
   };
 
   switch (sticker.mime_type) {
@@ -67,6 +61,9 @@ export default function stickerRenderer(sticker: Document.document,
     default:
   }
 
+  useOnMount(container, () => {
+    if (thumbnail) thumbnail.style.display = '';
+  });
 
   if (onClick) listen(container, 'click', () => onClick(sticker));
 

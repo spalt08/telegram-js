@@ -1,15 +1,11 @@
 import { peerMessageToId } from 'helpers/api';
-import { quote, ripple } from 'components/ui';
-import { profileTitle } from 'components/profile';
-import photoRenderer from 'components/media/photo/photo';
-import { unmount } from 'core/dom';
+import { ripple } from 'components/ui';
 import { div } from 'core/html';
 import { getInterface } from 'core/hooks';
 import { messageCache } from 'cache';
-import { messageToSenderPeer } from 'cache/accessors';
 import { Peer, Message } from 'mtproto-js';
 import { message as service } from 'services';
-import messageShort from './short';
+import messageQuote from './quote';
 
 export default function messageReply(id: number, peer: Peer, original: Message.message) {
   const fullId = peerMessageToId(peer, id);
@@ -24,31 +20,18 @@ export default function messageReply(id: number, peer: Peer, original: Message.m
   let replyQuote: HTMLElement | undefined;
 
   const renderReply = (message: Message | undefined) => {
-    if (replyQuote) {
-      unmount(replyQuote);
-      replyQuote = undefined;
+    if (replyQuote) return;
+
+    if (message && message._ !== 'messageEmpty') {
+      replyQuote = messageQuote(message);
+      getInterface(contentElement).mountChild(replyQuote);
     }
-
-    if (!message || message._ === 'messageEmpty') return;
-
-    let preview: Node | undefined;
-
-    if (message._ === 'message' && message.media?._ === 'messageMediaPhoto' && message.media.photo?._ === 'photo') {
-      preview = div`.quote__img`(photoRenderer(message.media.photo, { fit: 'cover', width: 32, height: 32 }));
-    }
-
-    replyQuote = quote(
-      profileTitle(messageToSenderPeer(message)),
-      message._ === 'message' && message.message ? message.message : messageShort(message),
-      preview,
-    );
-
-    getInterface(contentElement).mountChild(replyQuote);
   };
 
   if (!messageCache.has(fullId)) {
     service.loadMessageReply(original);
   }
+
   messageCache.useItemBehaviorSubject(contentElement, fullId).subscribe(renderReply);
 
   return div`.message__reply`(contentElement);
