@@ -40,7 +40,7 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
   const pollData = media.poll as Required<Poll.poll>;
   const selectedOptions = new Set<string>();
   const pollOptions: ReturnType<typeof pollOption>[] = [];
-  const pollTypeText = text(pollType(pollData));
+  const pollHeader = text(pollType(pollData));
   const recentVoters = div`poll__recent-voters`(...buildRecentVotersList(results.recent_voters));
   const options = new Map<string, PollOptionInterface>();
   let answered = !!results.results && results.results.findIndex((r) => r.chosen) >= 0;
@@ -83,7 +83,7 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
       voters,
       maxVoters,
       totalVoters: results.total_voters ?? 0,
-      clickCallback: async (selected) => {
+      clickCallback: (selected) => {
         if (pollData.multiple_choice) {
           const optKey = decoder.decode(answer.option);
           if (selected) {
@@ -94,7 +94,7 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
           getInterface(voteFooterEl).updateState(answered ? VoteButtonState.ViewResults : VoteButtonState.Vote, selectedOptions.size > 0);
         } else {
           selectedOptions.add(decoder.decode(answer.option));
-          await submitOptions();
+          submitOptions();
         }
       },
     });
@@ -117,7 +117,7 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
   const updatePollResults = (updatedPoll: Required<Poll>, updatedResults: PollResults) => {
     const updateTotalVoters = updatedResults.total_voters ?? 0;
     if (updatedPoll) {
-      pollTypeText.textContent = pollType(updatedPoll);
+      pollHeader.textContent = pollType(updatedPoll);
     }
     const voters = updatedResults.results ?? [];
     unmountChildren(recentVoters);
@@ -148,7 +148,7 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
   const container = div`.poll`(
     div`.poll__body`(
       div`.poll__question`(text(pollData.question)),
-      div`poll__info`(div`poll__type`(pollTypeText), recentVoters),
+      div`poll__info`(div`poll__type`(pollHeader), recentVoters),
       div`.poll__options`(...pollOptions),
     ),
     div`.poll__footer`(

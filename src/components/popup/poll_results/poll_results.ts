@@ -2,7 +2,7 @@ import { messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import client from 'client/client';
 import { listen } from 'core/dom';
-import { getInterface } from 'core/hooks';
+import { getInterface, useObservable } from 'core/hooks';
 import { div, text } from 'core/html';
 import { messageToId } from 'helpers/api';
 import { Message, MessageUserVote, Peer } from 'mtproto-js';
@@ -54,7 +54,7 @@ export default function pollResultsPopup({ peer, messageId }: PollResultsContext
     }
   };
 
-  messageCache.watchItem(messageToId(message), (msg) => {
+  useObservable(container, messageCache.useItemBehaviorSubject(container, messageToId(message)), (msg) => {
     updateOptions(msg);
   });
 

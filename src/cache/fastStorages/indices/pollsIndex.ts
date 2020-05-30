@@ -1,13 +1,12 @@
-import { messageToId } from 'helpers/api';
 import { Message, PollResults, Update } from 'mtproto-js';
 import Collection from '../collection';
 
 const decoder = new TextDecoder();
 
-export default function pollsIndex(collection: Collection<Message, any>) {
+export default function pollsIndex(collection: Collection<Message, any, string>) {
   const pollMessageIds = new Map<string, Set<string>>();
   collection.changes.subscribe((collectionChanges) => {
-    collectionChanges.forEach(([action, item]) => {
+    collectionChanges.forEach(([action, item, key]) => {
       if (item._ !== 'message' || item.media?._ !== 'messageMediaPoll') {
         return;
       }
@@ -17,13 +16,13 @@ export default function pollsIndex(collection: Collection<Message, any>) {
           if (!messageIds) {
             pollMessageIds.set(item.media.poll.id, messageIds = new Set());
           }
-          messageIds.add(messageToId(item));
+          messageIds.add(key);
           break;
         }
         case 'remove': {
           const messageIds = pollMessageIds.get(item.media.poll.id);
           if (messageIds) {
-            messageIds.delete(messageToId(item));
+            messageIds.delete(key);
             if (messageIds.size === 0) {
               pollMessageIds.delete(item.media.poll.id);
             }

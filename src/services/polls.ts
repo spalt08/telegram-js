@@ -1,7 +1,6 @@
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import client from 'client/client';
-import { messageToId } from 'helpers/api';
 import { Peer, Update } from 'mtproto-js';
 
 export default class PollsService {
@@ -11,16 +10,17 @@ export default class PollsService {
 
     // Telegram doesn't send poll update when poll is closed by timeout. Thus we have to setup a timer which triggers poll close.
     messageCache.changes.subscribe((changes) => {
-      changes.forEach(([changeType, message]) => {
+      changes.forEach(([changeType, message, id]) => {
         if (changeType === 'add') {
           if (message?._ === 'message' && message?.media?._ === 'messageMediaPoll') {
+            let timeout = 0;
             if (message.media.poll.close_period) {
-              this.schedulePollClose(messageToId(message), message.media.poll.close_period * 1000);
+              timeout = message.media.poll.close_period * 1000 - (Date.now() - message.date * 1000);
             } else if (message.media.poll.close_date) {
-              const timeout = new Date(message.media.poll.close_date * 1000).getTime() - Date.now();
-              if (timeout > 0) {
-                this.schedulePollClose(messageToId(message), timeout);
-              }
+              timeout = message.media.poll.close_date * 1000 - Date.now();
+            }
+            if (timeout > 0) {
+              this.schedulePollClose(id, timeout);
             }
           }
         }
