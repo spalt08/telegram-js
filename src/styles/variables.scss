@@ -52,3 +52,21 @@ $break-widescreen: 1680px;
     height: 0;
   }
 }
+
+:root {
+  --content-padding: 20px;
+  --content-message-padding: 11px;
+  --bubble-max-width: 75%;
+  --bubble-background: #FFFFFF;
+  --accent-color: #1da1f1;
+  --voice-message-bar: #1da1f1;
+  --voice-message-bar-transparent: rgba(112, 117, 121, 0.35);
+  --accent-color-inactive: #707579;
+  --animation-sidebar: .3s ease-in-out;
+
+  @include respond-to(small) {
+    --content-padding: 12px;
+    --content-message-padding: 3px;
+    --bubble-max-width: 80%;
+  }
+}

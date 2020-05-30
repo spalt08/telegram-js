@@ -4,7 +4,7 @@
   background: #FFFFFF;
   height: 60px;
   border-bottom: 1px solid #EDEEF0;
-  padding: 5px 11px 5px 20px;
+  padding: 5px var(--content-padding) 5px var(--content-padding);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -63,6 +63,7 @@
   &__actions {
     flex: none;
     display: flex;
+    margin-right: -9px;
   }
 
   &__typing-indicator {

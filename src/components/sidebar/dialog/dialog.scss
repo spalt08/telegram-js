@@ -1,6 +1,12 @@
+@import '~styles/variables.scss';
+
 .dialog {
   width: 100%;
   padding: 2px 3px 2px 8px;
+
+  @include respond-to(small) {
+    padding: 0;
+  }
 
   &__wrapper {
     &.-pinned + &:not(.-pinned) {
@@ -30,6 +36,11 @@
     &_content {
       display: flex;
       align-items: center;
+    }
+
+    @include respond-to(small) {
+      border-radius: 0;
+      padding: 9PX var(--content-padding);
     }
   }
 

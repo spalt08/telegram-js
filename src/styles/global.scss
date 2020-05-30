@@ -1,3 +1,5 @@
+@import '~styles/variables.scss';
+
 html {
   box-sizing: border-box;
   font-size: 15PX;
@@ -84,6 +86,10 @@ strong {
   &::-webkit-scrollbar {
     width: 6px;
     height: 6px;
+
+    @include respond-to(small) {
+      width: 1PX;
+    }
 
     /* Track */
     &-track {
