@@ -23,6 +23,14 @@ $break-widescreen: 1680px;
     @media only screen and (max-width: $break-medium) and (min-width: $break-small + 1) { @content; }
   }
 
+  @if $media == small-medium {
+    @media only screen and (max-width: $break-medium) { @content; }
+  }
+
+  @if $media == desktop {
+    @media only screen and (min-width: $break-medium + 1) { @content; }
+  }
+
   @if $media == widescreen {
     @media only screen and (min-width: $break-widescreen) { @content; }
   }

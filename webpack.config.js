@@ -142,6 +142,7 @@ module.exports = (env, argv) => {
       new ServiceWorkerWebpackPlugin({
         entry: path.join(__dirname, 'src/client/workers/service.ts'),
         filename: 'sw.js',
+        excludes: ['**/*'],
       }),
       new CleanWebpackPlugin(),
       new HtmlWebpackPlugin({ template: 'src/index.ejs' }),

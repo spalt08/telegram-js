@@ -11,4 +11,58 @@
     border-right: 1px solid #EDEEF0;
     margin: 0 auto;
   }
+
+  &__left-sidebar-fade, &__right-sidebar-fade {
+    position: fixed;
+    left: 0;
+    top: 0;
+  }
+
+  @include respond-to(small) {
+    & .sidebar.-left {
+      z-index: 0;
+    }
+
+    &__left-sidebar-fade {
+      display: none;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.0);
+      transition: background-color var(--animation-sidebar);
+
+      &.-opening {
+        background-color: rgba(0, 0, 0, 0.3);
+      }
+    }
+  }
+
+  @include respond-to(small-medium) {
+    & .history {
+      z-index: 2;
+    }
+  
+    & .sidebar.-right {
+      z-index: 4;
+    }
+
+    &__right-sidebar-fade {
+      z-index: 3;
+      display: none;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.0);
+      transition: background-color var(--animation-sidebar);
+
+      &.-opening {
+        background-color: rgba(0, 0, 0, 0.3);
+      }
+    }
+  }
+
+  @include respond-to(medium) {
+    & .sidebar.-left {
+      z-index: 8;
+    }
+  }
 }
