@@ -16,12 +16,12 @@
     stroke: var(--color);
   }
 
-  & &__text {
+  &__text {
     grid-column: 2;
     margin: auto 0 12px 8px;
   }
 
-  & &__percentage {
+  &__percentage {
     grid-row: 1;
     grid-column: 1;
     margin: auto 0 12px 0;
@@ -33,7 +33,7 @@
     cursor: default;
   }
 
-  & &__checkbox {
+  &__checkbox {
     grid-row: 1;
     grid-column: 1;
     margin: auto;
@@ -41,7 +41,7 @@
     transition: opacity 0.3s;
   }
 
-  & &__answer {
+  &__answer {
     background-color: var(--color, var(--accent-color));
     border-radius: 100%;
     grid-row: 1;
@@ -66,16 +66,20 @@
     }
   }
 
-  & &__answer.-hidden {
+  &__answer.-hidden {
     opacity: 0;
   }
 
-  & &__line {
+  &__line {
     grid-row: 1;
     grid-column: 1 / 2;
     align-self: end;
     opacity: 0;
     transition: opacity 0.1s;
+    svg {
+      width: 300px;
+      height: 30px;
+    }
     path {
       stroke: var(--color, var(--accent-color));
       stroke-width: 4px;

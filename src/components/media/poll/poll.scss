@@ -2,11 +2,11 @@
   user-select: none;
   font-size: 1rem;
 
-  & &__body {
+  &__body {
     padding: 7PX 10PX 0 10PX;
   }
 
-  & &__footer {
+  &__footer {
     display: grid;
 
     >* {
@@ -25,17 +25,17 @@
     font-weight: 500;
   }
 
-  & &__info {
+  &__info {
     display: flex;
     align-items: center;
   }
 
-  & &__type {
+  &__type {
     color: var(--accent-color-inactive);
     font-size: 0.9rem;
   }
 
-  & &__recent-voters {
+  &__recent-voters {
     padding-left: 8px;
     display: flex;
     flex-direction: row-reverse;
@@ -53,20 +53,17 @@
       min-width: 18px;
       min-height: 18px;
       border: 1px solid var(--bubble-background);
-    }
-
-    .avatar.-standard {
-      font-size: 0.6rem;
+      --initials-font-size: 0.6rem;
     }
   }
 
-  & &__voters {
+  &__voters {
     color: var(--accent-color-inactive);
     font-size: 0.9rem;
     padding: 10px 0 4px 10px;
   }
 
-  & &__vote-button {
+  &__vote-button {
     margin: 8PX 0;
     text-align: center;
     color: var(--accent-color);
@@ -74,7 +71,7 @@
     cursor: pointer;
   }
 
-  & &__vote-button.-inactive {
+  &__vote-button.-inactive {
     color: var(--accent-color-inactive);
     cursor: default;
   }

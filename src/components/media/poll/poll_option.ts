@@ -44,7 +44,7 @@ export default function pollOption(initialProps: Props) {
   const checkbox = span`.pollOption__checkbox`(checkboxEl);
   const percentage = span`.pollOption__percentage`();
   const answer = answerIcon();
-  const line = svgEl('svg', { width: 300, height: 30, class: 'pollOption__line' }, [
+  const line = svgEl('svg', { class: 'pollOption__line' }, [
     path = svgEl('path', { d: 'M20 8 v 3.5 a 13 13 0 0 0 13 13 H 300' }),
   ]);
   const container = label`.pollOption`(

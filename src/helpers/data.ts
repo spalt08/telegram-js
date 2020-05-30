@@ -1,4 +1,5 @@
 import binarySearch from 'binary-search';
+import { getSurrogatePairAtIndex } from './emoji';
 
 /*
 Helper functions to work with a pure data not related to any business logic
@@ -94,9 +95,9 @@ export function getFirstLetter(str: string) {
     if (str[i] >= '0' && str[i] <= '9') {
       return str[i];
     }
-    // surrogate pair (U+D800 to U+DFFF)
-    if ((str.charCodeAt(i) & 0xf800) === 0xd800) {
-      return str.slice(i, 2);
+    const surrogatePair = getSurrogatePairAtIndex(str, i);
+    if (surrogatePair) {
+      return surrogatePair;
     }
   }
 

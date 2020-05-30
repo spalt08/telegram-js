@@ -1,5 +1,5 @@
 import { checkbox } from 'components/ui';
-import { mount, unmount } from 'core/dom';
+import { animationFrameStart, mount, unmount } from 'core/dom';
 import { svgCodeToComponent } from 'core/factory';
 import { getInterface, useInterface } from 'core/hooks';
 import { div } from 'core/html';
@@ -29,7 +29,10 @@ export default function pollCheckbox({ multiple, clickCallback }: Props) {
     onChange: (checked) => {
       unmount(cb);
       const effect = div`.pollCheckbox__ripple`({
-        onAnimationEnd: () => setTimeout(() => unmount(effect), 1000),
+        onAnimationEnd: async () => {
+          await animationFrameStart();
+          unmount(effect);
+        },
       });
       mount(container, effect);
       mount(container, spinner);
