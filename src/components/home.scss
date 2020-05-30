@@ -11,13 +11,4 @@
     border-right: 1px solid #EDEEF0;
     margin: 0 auto;
   }
-
-  & .history {
-    flex: 1 50%;
-    overflow: hidden;
-
-    @include respond-to(small) {
-      display: none;
-    }
-  }
 }

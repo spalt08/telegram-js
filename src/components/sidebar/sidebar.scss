@@ -19,6 +19,11 @@ $sidebar-max: 400px;
     width: $sidebar-width;
     max-width: $sidebar-max;
     min-width: $sidebar-min;
+
+    @include respond-to(small) {
+      width: 100%;
+      max-width: 100%;
+    }
   }
 
   &.-left {
@@ -27,6 +32,13 @@ $sidebar-max: 400px;
     @include respond-to(small) {
       width: 100%;
       max-width: 100%;
+      will-change: transform;
+      transition: transform .3s ease-out .1s;
+      transform: translateX(0);
+
+      &.hidden {
+        transform: translateX(-25%);
+      }
     }
   }
 
@@ -37,7 +49,6 @@ $sidebar-max: 400px;
     will-change: width;
     z-index: 0;
     transition: translate3d(0, 0, 0);
-
 
     @include respond-to(medium) {
       position: absolute;
@@ -53,6 +64,21 @@ $sidebar-max: 400px;
         width: 75vw;
         min-width: calc(100vw - #{$sidebar-max});
         max-width: calc(100vw - #{$sidebar-min});
+      }
+    }
+
+    @include respond-to(small) {
+      position: absolute;
+      width: 100%;
+      max-width: 100%;
+      right: 0;
+      top: 0;
+      height: 100%;
+      border-left: none;
+
+      & > * {
+        width: 100%;
+        max-width: 100%;
       }
     }
   }

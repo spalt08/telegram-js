@@ -17,6 +17,10 @@ import header from './header/header';
 import historyDay from './history_day/history_day';
 import './history.scss';
 
+type Props = {
+  onBackToContacts: () => void,
+};
+
 function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
   const { length } = messageIds;
   const reversed = new Array(length);
@@ -26,7 +30,7 @@ function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
   return reversed;
 }
 
-export default function history() {
+export default function history({ onBackToContacts }: Props) {
   const welcome = div`.history__welcome`(div`.history__welcome-text`(text('Select a chat to start messaging')));
   const container = div`.history`(welcome);
   const showDownButton = new BehaviorSubject(false);
@@ -121,7 +125,7 @@ export default function history() {
   }, icons.down());
 
   const messageInputEl = messageInput();
-  const headerEl = header();
+  const headerEl = header({ onBackToContacts });
   const historySection = div`.history__content`(scroll.container);
 
   mount(historySection, downButton);

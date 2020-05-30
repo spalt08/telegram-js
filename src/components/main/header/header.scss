@@ -1,3 +1,5 @@
+@import '~styles/variables.scss';
+
 .header {
   background: #FFFFFF;
   height: 60px;
@@ -81,5 +83,25 @@
     position: absolute;
     right: 14px;
     top: 62px;
+  }
+
+  &__back {
+    flex: none;
+    margin: 0 8px 0 -9px;
+    display: none;
+  }
+
+  @include respond-to(small) {
+    &__back {
+      display: flex;
+    }
+
+    &__search {
+      display: none;
+    }
+
+    &__profile {
+      max-width: calc(100% - 96px);
+    }
   }
 }
