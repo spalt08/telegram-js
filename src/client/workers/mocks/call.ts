@@ -25,7 +25,7 @@ export function callMock<T extends keyof MethodDeclMap>(method: T, params: Metho
     case 'auth.sendCode':
       timeout(100, cb, {
         _: 'auth.sentCode',
-        type: { _: 'auth.sentCodeTypeApp' },
+        type: { _: 'auth.sentCodeTypeApp', length: 5 },
         phone_code_hash: 'hash',
       });
       break;

@@ -21,15 +21,41 @@ interface Props {
  */
 export default function codeBasic({ onFocus, onBlur, onChange }: Props) {
   const isProcessing = new BehaviorSubject<boolean>(false);
+
+  async function checkCode(code: string) {
+    if (!isProcessing.value) {
+      try {
+        isProcessing.next(true);
+        await auth.checkCode(code);
+      } finally {
+        isProcessing.next(false);
+      }
+    }
+  }
+
   const err = auth.errCode;
+  let inputEl: HTMLInputElement;
 
   const inputCode = textInput({
     label: 'Code',
     error: err.pipe(humanizeErrorOperator()),
     disabled: isProcessing,
-    onChange(val: string) {
+    maxLength: auth.codeLength !== -1 ? auth.codeLength : undefined,
+    ref: (el: HTMLInputElement) => { inputEl = el; },
+    onChange: async (val: string) => {
       if (err.value !== undefined) err.next(undefined);
-      onChange(val);
+
+      const value = val.trim();
+
+      inputEl.value = value;
+
+      onChange(value);
+
+      if (auth.codeLength === value.length) {
+        inputEl.blur();
+
+        await checkCode(value);
+      }
     },
     onFocus,
     onBlur,
@@ -63,15 +89,7 @@ export default function codeBasic({ onFocus, onBlur, onChange }: Props) {
     event.preventDefault();
     blurAll(element);
 
-    if (!isProcessing.value) {
-      try {
-        isProcessing.next(true);
-        const code = getInterface(inputCode).getValue();
-        await auth.checkCode(code);
-      } finally {
-        isProcessing.next(false);
-      }
-    }
+    await checkCode(getInterface(inputCode).getValue());
   });
 
   return element;
