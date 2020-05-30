@@ -55,9 +55,11 @@
     justify-items: center;
     opacity: 1;
     transition: opacity 0.3s 0.2s;
+
     svg {
       width: 10px;
       height: 10px;
+
       path {
         fill: white;
         stroke: white;
@@ -76,10 +78,9 @@
     align-self: end;
     opacity: 0;
     transition: opacity 0.1s;
-    svg {
-      width: 300px;
-      height: 30px;
-    }
+    width: 300px;
+    height: 30px;
+
     path {
       stroke: var(--color, var(--accent-color));
       stroke-width: 4px;
@@ -89,12 +90,12 @@
       stroke-dashoffset: 1;
     }
   }
-  
+
   &__checkbox.-answered {
     opacity: 0;
     pointer-events: none;
   }
-  
+
   &__percentage.-answered {
     opacity: 1;
   }
@@ -103,7 +104,7 @@
     opacity: 1;
   }
 
-  .checkbox__input:checked + .checkbox__box {
+  .checkbox__input:checked+.checkbox__box {
     border-color: var(--accent-color);
     background: var(--accent-color);
   }
