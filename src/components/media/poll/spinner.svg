@@ -1,0 +1,11 @@
+<svg width="18px" height="18px" viewBox="0 0 18 18" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <circle r="8" cx="9" cy="9" stroke="#8d969c" stroke-width="2" fill="none" stroke-dasharray="39 100">
+      <animateTransform attributeName="transform"
+                        attributeType="XML"
+                        type="rotate"
+                        from="0 9 9"
+                        to="360 9 9"
+                        dur="0.4s"
+                        repeatCount="indefinite"/>
+    </circle>
+</svg>

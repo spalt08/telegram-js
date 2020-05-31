@@ -1,9 +1,10 @@
 import client from 'client/client';
+import { Update } from 'mtproto-js';
 import { userCache } from '../cache';
 
 export default class UsersService {
   constructor() {
-    client.updates.on('updateUserStatus', (update) => {
+    client.updates.on('updateUserStatus', (update: Update.updateUserStatus) => {
       const user = userCache.get(update.user_id);
       if (user && user._ !== 'userEmpty') {
         userCache.put({ ...user, status: update.status });

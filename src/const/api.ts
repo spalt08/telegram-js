@@ -11,7 +11,7 @@ export const CLIENT_CONFIG = {
   debug: false,
   protocol: 'intermediate',
   transport: 'websocket',
-  APILayer: 105,
+  APILayer: 113,
   APIID: API_ID,
   APIHash: API_HASH,
   deviceModel: 'test',

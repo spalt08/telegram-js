@@ -75,3 +75,7 @@ function isSafari() {
 export const Safari = isSafari();
 export const iOS = isIOS();
 export const Chrome = isChrome();
+
+export function pluralize(n: number, single: string, multiple: string) {
+  return Math.abs(n) !== 1 ? multiple : single;
+}

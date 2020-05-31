@@ -1,4 +1,5 @@
 import binarySearch from 'binary-search';
+import { getSurrogatePairAtIndex } from './emoji';
 
 /*
 Helper functions to work with a pure data not related to any business logic
@@ -94,6 +95,10 @@ export function getFirstLetter(str: string) {
     if (str[i] >= '0' && str[i] <= '9') {
       return str[i];
     }
+    const surrogatePair = getSurrogatePairAtIndex(str, i);
+    if (surrogatePair) {
+      return surrogatePair;
+    }
   }
 
   return '';
@@ -115,6 +120,7 @@ export function getFirstLetters(title: string) {
 }
 
 export function areIteratorsEqual(it1: Iterator<any, any, undefined>, it2: Iterator<any, any, undefined>): boolean {
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const result1 = it1.next();
     const result2 = it2.next();

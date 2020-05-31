@@ -7,6 +7,7 @@
   min-height: 30px;
   border-radius: 50%;
   overflow: hidden;
+  user-select: none;
   flex: none;
 
   &.-standard {

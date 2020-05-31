@@ -1,29 +1,30 @@
-import { div, text, nothing, span } from 'core/html';
-import { useInterface, hasInterface, getInterface, useOnMount } from 'core/hooks';
-import { mount, unmount } from 'core/dom';
-import { messageCache, dialogCache } from 'cache';
-import { Peer, Message, Dialog } from 'mtproto-js';
-import { formattedMessage, bubble, messageInfo, MessageInfoInterface } from 'components/ui';
-import { profileAvatar, profileTitle } from 'components/profile';
-import webpagePreview from 'components/media/webpage/preview';
-import photoPreview from 'components/media/photo/preview';
-import { getAttributeSticker, getAttributeVideo, getAttributeAnimated, getAttributeAudio } from 'helpers/files';
-import stickerRenderer from 'components/media/sticker/sticker';
-import documentFile from 'components/media/document/file';
-import videoPreview from 'components/media/video/preview';
-import videoRenderer from 'components/media/video/video';
-import audio from 'components/media/audio/audio';
+import { dialogCache, messageCache } from 'cache';
 import { messageToSenderPeer, peerToColorCode } from 'cache/accessors';
-import { userIdToPeer, peerToId } from 'helpers/api';
-import { isEmoji } from 'helpers/message';
-import { main, message as service } from 'services';
-import { todoAssertHasValue } from 'helpers/other';
 import { useContextMenu } from 'components/global_context_menu';
 import * as icons from 'components/icons';
-import messageSerivce from './service';
+import audio from 'components/media/audio/audio';
+import documentFile from 'components/media/document/file';
+import photoPreview from 'components/media/photo/preview';
+import poll from 'components/media/poll/poll';
+import stickerRenderer from 'components/media/sticker/sticker';
+import videoPreview from 'components/media/video/preview';
+import videoRenderer from 'components/media/video/video';
+import webpagePreview from 'components/media/webpage/preview';
+import { profileAvatar, profileTitle } from 'components/profile';
+import { bubble, formattedMessage, messageInfo, MessageInfoInterface } from 'components/ui';
+import { mount, unmount } from 'core/dom';
+import { getInterface, hasInterface, useInterface, useOnMount } from 'core/hooks';
+import { div, nothing, span, text } from 'core/html';
+import { peerToId, userIdToPeer } from 'helpers/api';
+import { getAttributeAnimated, getAttributeAudio, getAttributeSticker, getAttributeVideo } from 'helpers/files';
+import { isEmoji } from 'helpers/message';
+import { todoAssertHasValue } from 'helpers/other';
+import { Dialog, Message, Peer } from 'mtproto-js';
+import { main, message as service } from 'services';
+import './message.scss';
 import messageReply from './reply';
 import replyMarkupRenderer from './reply_markup';
-import './message.scss';
+import messageSerivce from './service';
 
 type MessageInterface = {
   from(): number,
@@ -155,7 +156,8 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
   if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document' && getAttributeVideo(msg.media.document)) {
     const extraClass = hasMessage ? 'with-photo' : 'only-photo';
     const previewEl = videoPreview(msg.media.document, {
-      fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined }, peer, msg);
+      fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined,
+    }, peer, msg);
     if (!hasMessage && previewEl instanceof Element) previewEl.classList.add('raw');
 
     return {
@@ -199,7 +201,19 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
     };
   }
 
-  // console.log(msg.media);
+  // with poll
+  if (msg.media._ === 'messageMediaPoll') {
+    return {
+      message: bubble(
+        { out, className: 'with-poll' },
+        reply,
+        poll(peer, msg, info),
+      ),
+      info,
+    };
+  }
+
+  // console.log(msg);
 
   // fallback
   return {
