@@ -50,3 +50,7 @@ export function formatNumber(n: number) {
   base = abbrev.indexOf(suffix) + 1;
   return suffix ? round(n / (1000 ** base), 1) + suffix : `${n}`;
 }
+
+export function pluralize(n: number, single: string, multiple: string) {
+  return Math.abs(n) !== 1 ? multiple : single;
+}

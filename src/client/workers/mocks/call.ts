@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { MethodDeclMap } from 'mtproto-js';
+import { MethodDeclMap, PollResults, PollAnswerVoters, MessageEntity } from 'mtproto-js';
 import { users } from './user';
 import { chats } from './chat';
 import { mockDialogForPeers } from './dialog';
@@ -65,6 +65,55 @@ export function callMock<T extends keyof MethodDeclMap>(method: T, params: Metho
         pts_count: 0,
       });
       break;
+
+    case 'messages.sendVote': {
+      const { options } = params as MethodDeclMap['messages.sendVote']['req'];
+      const selectedOption = new Uint8Array(options[0])[0];
+      const pollAnswerVoters1 = Math.round(Math.random() * 100);
+      const pollAnswerVoters2 = Math.round(Math.random() * 100);
+      const pollAnswerVoters3 = Math.round(Math.random() * 100);
+      const result = {
+        _: 'updates',
+        updates: [
+          {
+            _: 'updateMessagePoll',
+            poll_id: '1',
+            results: {
+              _: 'pollResults',
+              results: [
+                {
+                  _: 'pollAnswerVoters',
+                  chosen: selectedOption === 0,
+                  correct: false,
+                  option: new Int8Array([0]).buffer,
+                  voters: pollAnswerVoters1,
+                },
+                {
+                  _: 'pollAnswerVoters',
+                  chosen: selectedOption === 1,
+                  correct: true,
+                  option: new Int8Array([1]).buffer,
+                  voters: pollAnswerVoters2,
+                },
+                {
+                  _: 'pollAnswerVoters',
+                  chosen: selectedOption === 2,
+                  correct: false,
+                  option: new Int8Array([2]).buffer,
+                  voters: pollAnswerVoters3,
+                },
+              ] as PollAnswerVoters[],
+              total_voters: pollAnswerVoters1 + pollAnswerVoters2 + pollAnswerVoters3,
+              recent_voters: [],
+              solution: 'string',
+              solution_entities: [] as MessageEntity[],
+            } as PollResults,
+          },
+        ],
+      };
+      timeout<T>(1000, cb, result);
+      break;
+    }
 
     case 'messages.search': {
       const { peer, filter, limit, offset_id } = params as MethodDeclMap['messages.search']['req'];

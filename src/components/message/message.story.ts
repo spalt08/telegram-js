@@ -11,6 +11,7 @@ import message from './message';
 
 // Stories with media
 require('./stories/photo.story');
+require('./stories/poll.story');
 
 // Stories with text
 const stories = storiesOf('Layout | Message', module)

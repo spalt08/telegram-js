@@ -1,10 +1,10 @@
-import { Message, Peer } from 'mtproto-js';
-import { div, strong, text } from 'core/html';
-import { profileTitle } from 'components/profile';
-import './service.scss';
-import { todoAssertHasValue } from 'helpers/other';
 import { userCache } from 'cache';
 import { userToTitle } from 'cache/accessors';
+import { profileTitle } from 'components/profile';
+import { div, strong, text } from 'core/html';
+import { todoAssertHasValue } from 'helpers/other';
+import { Message, Peer } from 'mtproto-js';
+import './service.scss';
 
 export default function messageSerivce(originalPeer: Peer, msg: Message.messageService) {
   const peer: Peer = msg.from_id !== 0
@@ -63,7 +63,7 @@ export default function messageSerivce(originalPeer: Peer, msg: Message.messageS
       break;
     }
     case 'messageActionChatDeleteUser':
-      if (originalPeer._ !== 'peerUser') {
+      if (peer === originalPeer) {
         innerContent = [
           strong(profileTitle(peer)),
           text(' left the group'),

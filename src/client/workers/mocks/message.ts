@@ -37,6 +37,7 @@ export function mockMessage({
   grouped_id = '',
   restriction_reason = [],
   date = 0,
+  media = undefined,
 }: Partial<Message.message> & { from_id: number, to_id: Peer }): Message.message {
   return {
     _: 'message',
@@ -61,5 +62,6 @@ export function mockMessage({
     post_author,
     grouped_id,
     restriction_reason,
+    media,
   };
 }

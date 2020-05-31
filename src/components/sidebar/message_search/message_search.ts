@@ -8,6 +8,7 @@ import { useToBehaviorSubject } from 'core/hooks';
 import { mount } from 'core/dom';
 import { peerMessageToId } from 'helpers/api';
 import { foundMessage } from 'components/sidebar';
+import { pluralize } from 'helpers/other';
 import './message_search.scss';
 
 type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
@@ -71,7 +72,7 @@ export default function messageSearchSidebar({ onBack }: SidebarComponentProps) 
       if (result.count === 0) {
         return 'Nothing is found';
       }
-      return `${result.count} message${result.count === 1 ? '' : 's'} found`;
+      return `${result.count} ${pluralize(result.count, 'message', 'messages')} found`;
     }))),
   ));
   mount(rootEl, resultList.container);

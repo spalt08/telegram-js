@@ -1,11 +1,11 @@
-import { Document, Message } from 'mtproto-js';
-import { div, text } from 'core/html';
-import { getAttributeFilename, getReadableSize, getDocumentLocation } from 'helpers/files';
-import { downloadByUrl } from 'helpers/other';
+import { cached as getCached, file } from 'client/media';
+import { materialSpinner } from 'components/icons';
 import { datetime } from 'components/ui';
-import { listen, mount, unmountChildren, unmount } from 'core/dom';
-import { materialSpinner, down } from 'components/icons';
-import { download, cached as getCached, file } from 'client/media';
+import { listen, mount, unmountChildren } from 'core/dom';
+import { div, text } from 'core/html';
+import { getAttributeFilename, getDocumentLocation, getReadableSize } from 'helpers/files';
+import { downloadByUrl } from 'helpers/other';
+import { Document, Message } from 'mtproto-js';
 import photoRenderer from '../photo/photo';
 import './file.scss';
 
@@ -64,7 +64,7 @@ export default function documentFile(document: Document.document, message?: Mess
     sizeEl.textContent = '0%';
 
     downloadByUrl(filename, file(getDocumentLocation(document, ''), { dc_id: document.dc_id, size: document.size, mime_type: document.mime_type }));
-  
+
     // download(
     //   getDocumentLocation(document, ''),
     //   { dc_id: document.dc_id, size: document.size, mime_type: document.mime_type },

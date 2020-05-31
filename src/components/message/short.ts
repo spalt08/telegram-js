@@ -40,7 +40,7 @@ export default function messageShort(msg: Message) {
           case 'messageMediaGeo': return '📍 Location';
           case 'messageMediaContact': return '👤 Contact';
           case 'messageMediaGeoLive': return '📍 Live Location';
-          case 'messageMediaPoll': return '📊 Poll';
+          case 'messageMediaPoll': return `📊 ${msg.media.poll.question}`;
           case 'messageMediaDocument':
             if (msg.media.document?._ === 'document') {
               const isSticker = getAttributeSticker(msg.media.document);
