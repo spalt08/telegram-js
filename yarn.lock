@@ -1770,6 +1770,12 @@
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/@types/parse-json/-/parse-json-4.0.0.tgz#2f8bb441434d163b35fb8ffdccd7138927ffb8c0"
 
+"@types/pngjs@^3.4.2":
+  version "3.4.2"
+  resolved "https://registry.yarnpkg.com/@types/pngjs/-/pngjs-3.4.2.tgz#8dc49b45fbcf18a5873179e3664f049388e39ecf"
+  dependencies:
+    "@types/node" "*"
+
 "@types/prop-types@*":
   version "15.7.3"
   resolved "https://registry.yarnpkg.com/@types/prop-types/-/prop-types-15.7.3.tgz#2ab0d5da2e5815f94b0b9d4b95d1e5f243ab2ca7"
@@ -5273,6 +5279,14 @@ fast-levenshtein@^2.0.6, fast-levenshtein@~2.0.6:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/fast-levenshtein/-/fast-levenshtein-2.0.6.tgz#3d8a5c66883a16a30ca8643e851f19baa7797917"
 
+fast-png@^5.0.2:
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/fast-png/-/fast-png-5.0.2.tgz#2e689005ef89cbe4ba0200ff43f7da171a83ab5d"
+  dependencies:
+    "@types/pako" "^1.0.1"
+    iobuffer "^5.0.2"
+    pako "^1.0.10"
+
 fast-safe-stringify@^1.0.8, fast-safe-stringify@^1.2.1:
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/fast-safe-stringify/-/fast-safe-stringify-1.2.3.tgz#9fe22c37fb2f7f86f06b8f004377dbf8f1ee7bc1"
@@ -6626,6 +6640,10 @@ invert-kv@^1.0.0:
 invert-kv@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/invert-kv/-/invert-kv-2.0.0.tgz#7393f5afa59ec9ff5f67a27620d11c226e3eec02"
+
+iobuffer@^5.0.2:
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/iobuffer/-/iobuffer-5.0.2.tgz#90f6ead2afd24cc9d2f2befbbb2a501552d70d4f"
 
 ip-regex@^1.0.1:
   version "1.0.3"
@@ -9558,9 +9576,17 @@ pn@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/pn/-/pn-1.1.0.tgz#e2f4cef0e219f463c179ab37463e4e1ecdccbafb"
 
+png-pong@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/png-pong/-/png-pong-1.0.1.tgz#6bcd36554e8ce3582b6ed04b672dafd5c9585aea"
+
 pngjs@^3.0.0, pngjs@^3.2.0, pngjs@^3.3.3:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/pngjs/-/pngjs-3.4.0.tgz#99ca7d725965fb655814eaf65f38f12bbdbf555f"
+
+pngjs@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/pngjs/-/pngjs-5.0.0.tgz#e79dd2b215767fd9c04561c01236df960bce7fbb"
 
 pnp-webpack-plugin@1.5.0:
   version "1.5.0"
