@@ -12,7 +12,7 @@ import * as icons from 'components/icons';
 import messageInput from 'components/message/input/input';
 import { Peer } from 'mtproto-js';
 import { compareSamePeerMessageIds, peerMessageToId, peerToId } from 'helpers/api';
-import { iOS } from 'helpers/other';
+import { iOS } from 'helpers/browser';
 import { messageCache, dialogCache, chatCache, messageDayMap } from 'cache';
 import header from './header/header';
 import historyDay from './history_day/history_day';

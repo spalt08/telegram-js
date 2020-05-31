@@ -10,7 +10,7 @@ interface FileReaderSync {
 //   new(): FileReaderSync;
 // };
 
-declare module 'aes-js'
+declare module 'vendor/libwebp-0.2.0'
 declare module 'mp4box'
 declare module 'serviceworker-webpack-plugin/lib/runtime'
 

@@ -2,7 +2,7 @@ import { animationFrameStart, listen, listenOnce, mount, unmount, unmountChildre
 import { useMaybeObservable } from 'core/hooks';
 import { div } from 'core/html';
 import { MaybeObservable } from 'core/types';
-import { Safari, iOS } from 'helpers/other';
+import { Safari, iOS } from 'helpers/browser';
 import './list.scss';
 import { tgsFreeze, tgsUnFreeze } from '../tgs/tgs';
 

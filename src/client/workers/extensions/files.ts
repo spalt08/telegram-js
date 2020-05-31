@@ -3,6 +3,8 @@ import { DownloadOptions } from 'client/types';
 import { StickerMimeType } from 'const';
 import { InputFileLocation } from 'mtproto-js';
 import { inflate } from 'pako/lib/inflate';
+import { Safari } from 'helpers/browser';
+import { webp2png } from './webp';
 
 // constants
 const DOWNLOAD_CHUNK_LIMIT = 1024 * 1024;
@@ -47,8 +49,8 @@ export function ungzipResponse(response: Response, mime: string = 'application/j
 }
 
 function finishDownload(info: FileInfo, response: Response, cache: Cache, get: FilePartResolver, progress: ProgressResolver) {
-  if (fileEvents[info.url]) for (let i = 0; i < fileEvents[info.url].length; i++) fileEvents[info.url][i](response.clone());
   if (info.chunks.length <= 10) cache.put(info.url, response); // 10 mb cache limit
+  if (fileEvents[info.url]) for (let i = 0; i < fileEvents[info.url].length; i++) fileEvents[info.url][i](response.clone());
 
   delete fileEvents[info.url];
   info.chunks = [];
@@ -82,6 +84,14 @@ export function loopDownload(info: FileInfo, get: FilePartResolver, cache: Cache
             .then((json) => finishDownload(info, json, cache, get, progress));
           break;
 
+        case StickerMimeType.WebP: {
+          if (Safari) {
+            webp2png(response)
+              .then((png) => finishDownload(info, png, cache, get, progress));
+            break;
+          }
+        }
+        // eslint-disable-next-line no-fallthrough
         default:
           finishDownload(info, response, cache, get, progress);
       }
