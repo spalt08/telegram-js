@@ -9,6 +9,7 @@
   will-change: transform;
   min-height: 0; // To force the content to scroll
   transform: translate3d(0, 0, 0);
+  position: absolute;
 
   &__wrapper {
     will-change: transform;
