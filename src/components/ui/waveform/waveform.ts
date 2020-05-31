@@ -105,14 +105,17 @@ export default function waveform(doc: Document.document, barsCount: number, seek
     }
 
     const pp = Math.max(0, Math.min(1, playProgress));
-    const x = Math.floor(pp * bars.length) * 4 + 1;
-    const val = waveformDecoded[Math.floor(pp * (bars.length - 1))];
-    const h = Math.round((val * height) / peak);
-    currentBar.setAttribute('opacity', (pp * bars.length - Math.floor(pp * bars.length)).toString());
-    currentBar.setAttribute('x1', x.toString());
-    currentBar.setAttribute('x2', x.toString());
-    currentBar.setAttribute('y1', (1 + height - h).toString());
-    currentBar.setAttribute('y2', (1 + height).toString());
+    const index = Math.trunc(pp * bars.length);
+    const x = index * 4 + 1;
+    if (index < waveformDecoded.length) {
+      const val = waveformDecoded[index];
+      const h = Math.round((val * height) / peak);
+      currentBar.setAttribute('opacity', ((pp * bars.length) % 1).toString());
+      currentBar.setAttribute('x1', x.toString());
+      currentBar.setAttribute('x2', x.toString());
+      currentBar.setAttribute('y1', (1 + height - h).toString());
+      currentBar.setAttribute('y2', (1 + height).toString());
+    }
   };
 
   listen(svg, 'mousemove', (e) => {
