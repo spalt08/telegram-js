@@ -98,7 +98,7 @@ export default function history({ onBackToContacts }: Props) {
     threshold: 2,
     batch: 20, // navigator.userAgent.indexOf('Safari') > -1 ? 5 : 20,
     initialPaddingBottom: 10,
-    initialPaddingTop: iOS ? 100000 : 0,
+    forcePadding: iOS ? 100000 : 0,
     renderer: (id: string) => message(id, service.activePeer.value!), // , (mid: string) => scroll.pendingRecalculate.push(mid)),
     selectGroup: (id: string) => messageDayMap.get(id) || '0',
     renderGroup: historyDay,
@@ -184,9 +184,10 @@ export default function history({ onBackToContacts }: Props) {
     scroll.cfg.pivotBottom = newestReached ? true : undefined;
   });
 
-  useObservable(container, service.history, (data) => itemsSubject.next(
-    service.activePeer.value ? prepareIdsList(service.activePeer.value, data.ids) : [],
-  ));
+  useObservable(container, service.history, (data) => {
+    scroll.cfg.topReached = data.oldestReached;
+    itemsSubject.next(service.activePeer.value ? prepareIdsList(service.activePeer.value, data.ids) : []);
+  });
 
   return container;
 }

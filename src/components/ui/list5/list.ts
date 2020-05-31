@@ -18,6 +18,8 @@ type ListConfig = {
   groupPadding?: number,
   initialPaddingTop: number,
   initialPaddingBottom: number,
+  forcePadding: number,
+  topReached?: boolean,
 };
 
 type Props = Partial<ListConfig> & {
@@ -94,6 +96,8 @@ export class VirtualizedList {
     onTrace,
     initialPaddingBottom = 0,
     initialPaddingTop = 0,
+    forcePadding = 0,
+    topReached,
   }: Props) {
     this.wrapper = div`.list__wrapper`({ tabIndex: -1 });
     this.container = div`.list${className}${pivotBottom ? '-reversed' : ''}${Safari ? '-safari' : ''}`(this.wrapper);
@@ -110,6 +114,8 @@ export class VirtualizedList {
       initialPaddingBottom,
       onTrace,
       initialPaddingTop,
+      forcePadding,
+      topReached,
     };
 
     this.render = renderer;
@@ -130,10 +136,14 @@ export class VirtualizedList {
       // ios safari workaround
       if (this.scrollDeltaToAppend) {
         this.container.style.overflow = 'hidden';
-        this.container.scrollTop = this.scrollTop += this.scrollDeltaToAppend;
-        this.container.style.overflow = '';
-        this.scrollDeltaToAppend = 0;
-        this.unlock();
+
+        requestAnimationFrame(() => {
+          this.container.scrollTop = this.scrollTop = this.container.scrollTop += this.scrollDeltaToAppend;
+          this.container.style.overflow = '';
+          this.container.style.opacity = '';
+          this.scrollDeltaToAppend = 0;
+          this.unlock();
+        });
         return;
       }
 
@@ -289,7 +299,7 @@ export class VirtualizedList {
       for (let i = 0; i < appendCount; i += 1) this.mount(this.items[++this.lastRendered]);
 
       // set initial scroll position
-      if (this.cfg.pivotBottom) this.container.scrollTop = this.cfg.initialPaddingTop + 9999;
+      if (this.cfg.pivotBottom) this.container.scrollTop = this.cfg.forcePadding + 9999;
       else this.scrollTop = 0;
 
       // set initial values
@@ -356,8 +366,16 @@ export class VirtualizedList {
 
         if (newElementsHeight > 0) {
           // ios safari workaround
-          if (iOS) this.scrollDeltaToAppend = newElementsHeight;
-          else this.container.scrollTop = this.scrollTop += newElementsHeight;
+          if (iOS) {
+            this.wrapper.style.paddingTop = `${this.paddingTop += this.cfg.forcePadding}px`;
+            this.scrollDeltaToAppend = newElementsHeight + this.paddingTop;
+            this.container.style.opacity = '0';
+          } else this.container.scrollTop = this.scrollTop += newElementsHeight;
+        // ios safari workaround
+        } else if (iOS) {
+          if (this.firstRendered === 0 && this.cfg.topReached) {
+            this.wrapper.style.paddingTop = `${this.paddingTop = this.cfg.initialPaddingTop}px`;
+          }
         }
 
         animationFrameStart().then(() => {
@@ -701,7 +719,7 @@ export class VirtualizedList {
     // unmount all elements
     for (let i = this.firstRendered; i <= this.lastRendered; i++) this.unmount(this.items[i]);
     this.wrapper.style.paddingBottom = `${this.paddingBottom = this.cfg.initialPaddingBottom}px`;
-    this.wrapper.style.paddingTop = `${this.paddingTop = this.cfg.initialPaddingTop}px`;
+    this.wrapper.style.paddingTop = `${this.paddingTop = this.cfg.initialPaddingTop + this.cfg.forcePadding}px`;
     this.firstRendered = -1;
     this.lastRendered = -2;
     this.positions = {};
@@ -809,7 +827,7 @@ export class VirtualizedList {
   clear() {
     unmountChildren(this.wrapper);
 
-    this.wrapper.style.paddingTop = `${this.paddingTop = this.cfg.initialPaddingTop}px`;
+    this.wrapper.style.paddingTop = `${this.paddingTop = this.cfg.initialPaddingTop + this.cfg.forcePadding}px`;
     this.wrapper.style.paddingBottom = `${this.paddingBottom = this.cfg.initialPaddingBottom}px`;
     this.elements = {};
     this.groups = {};
