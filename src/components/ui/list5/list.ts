@@ -123,7 +123,7 @@ export class VirtualizedList {
     this.selectGroup = selectGroup;
 
     if (initialPaddingBottom) this.wrapper.style.paddingBottom = `${this.paddingBottom = initialPaddingBottom}px`;
-    if (initialPaddingTop) this.wrapper.style.paddingTop = `${this.paddingTop = initialPaddingTop}px`;
+    if (initialPaddingTop) this.wrapper.style.paddingTop = `${this.paddingTop = initialPaddingTop + this.cfg.forcePadding}px`;
 
     // listen items changed
     useMaybeObservable(this.container, items, (next) => {
