@@ -6,7 +6,7 @@ import { el, mount, unmountChildren } from 'core/dom';
 import { text, fragment } from 'core/html';
 import { useObservable, useWhileMounted } from 'core/hooks';
 import { auth as authService } from 'services';
-import { todoAssertHasValue } from 'helpers/other';
+import { todoAssertHasValue, pluralize } from 'helpers/other';
 import { areUserStatusesEqual } from 'helpers/api';
 import './peer_status.scss';
 
@@ -48,11 +48,11 @@ function formatLastSeenTime(date: number /* unix ms */) {
   }
   if (timeDiff < 60 * 60) {
     const minutes = Math.floor(timeDiff / 60);
-    return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+    return `${minutes} ${pluralize(minutes, 'minute', 'minutes')} ago`;
   }
   if (timeDiff < 24 * 60 * 60) {
     const hours = Math.floor(timeDiff / 60 / 60);
-    return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+    return `${hours} ${pluralize(hours, 'hour', 'hours')} ago`;
   }
   return formatDate(new Date(date));
 }

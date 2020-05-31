@@ -1,5 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
-import type { Photo } from 'mtproto-js';
+import { Photo } from 'mtproto-js';
 import { task } from 'client/context';
 import { getPhotoLocation } from 'helpers/photo';
 import { locationToURL } from 'helpers/files';
@@ -50,4 +50,33 @@ for (let i = 0; i < mockedPhotosKeys.length; i++) {
 export const MessageRegular = mockMessage({
   from_id: users[1].id,
   to_id: { _: 'peerUser', user_id: me.id },
+});
+
+export const MessagePoll = mockMessage({
+  from_id: users[1].id,
+  to_id: { _: 'peerUser', user_id: me.id },
+  media: {
+    _: 'messageMediaPoll',
+    poll: {
+      _: 'poll' as const,
+      id: '1',
+      question: 'Question',
+      answers: [
+        {
+          _: 'pollAnswer',
+          text: 'Option 1',
+          option: new ArrayBuffer(1),
+        },
+        {
+          _: 'pollAnswer',
+          text: 'Option 2',
+          option: new ArrayBuffer(1),
+        },
+      ],
+
+    },
+    results: {
+      _: 'pollResults',
+    },
+  },
 });
