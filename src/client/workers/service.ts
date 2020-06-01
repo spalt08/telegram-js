@@ -25,13 +25,15 @@ const dbkey = CLIENT_CONFIG.test ? 'metatest' : 'meta';
 const initNetwork = () => load(dbkey).then((meta: any) => {
   if (ctx.network) return;
 
-  ctx.network = new NetworkHandler({ ...CLIENT_CONFIG, meta, dc: meta.baseDC });
+  ctx.network = new NetworkHandler({ ...CLIENT_CONFIG, meta, dc: meta.baseDC, autoConnect: false });
 
   ctx.network.on('metaChanged', (newMeta) => save(dbkey, newMeta));
   ctx.network.on('metaChanged', (state) => notify('authorization_updated', { dc: state.baseDC, user: state.userID || 0 }));
   ctx.network.on('networkChanged', (state) => notify('network_updated', state));
   ctx.network.updates.on((update) => notify('update', update));
   ctx.network.updates.fetch();
+
+  for (let i = 1; i <= 5; i++) ctx.network.authorize(i);
 });
 
 const initCache = () => caches.open('files').then((cache) => ctx.cache = cache);
