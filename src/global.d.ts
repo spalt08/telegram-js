@@ -42,6 +42,11 @@ declare module '*.tgs' {
   export default src;
 }
 
+declare module '*.webp' {
+  const src: string;
+  export default src;
+}
+
 declare module '*.txt' {
   const src: string;
   export default src;
@@ -56,6 +61,7 @@ declare module '*?file' {
   const url: string;
   export default url;
 }
+
 
 declare module 'pako/lib/deflate' {
   export { deflate, Deflate, deflateRaw, gzip } from 'pako';
@@ -72,4 +78,12 @@ declare module 'code-points' {
 declare module 'lottie-web/build/player/lottie_canvas' {
   export { default } from 'lottie-web';
   export * from 'lottie-web';
+}
+
+declare module 'worker-loader!*' {
+  class WebpackWorker extends Worker {
+    constructor();
+  }
+
+  export default WebpackWorker;
 }

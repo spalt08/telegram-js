@@ -1,14 +1,28 @@
+/* eslint-disable no-restricted-globals */
 import { NotificationType, NotificationPayloadMap, ResponseType, ResponsePayloadMap } from 'client/types';
 
 /**
- * Broadcast Notification Fabric
+ * Broadcast Notification
  */
-export function createNotification(clients: Clients) {
-  return <K extends NotificationType>(type: K, payload: NotificationPayloadMap[K]) => {
-    clients.matchAll({ includeUncontrolled: true, type: 'window' }).then(
+export function notify<K extends NotificationType>(type: K, payload: NotificationPayloadMap[K]) {
+  (self as any as ServiceWorkerGlobalScope)
+    .clients
+    .matchAll({ includeUncontrolled: false, type: 'window' })
+    .then(
       (listeners) => listeners.forEach((client) => client.postMessage({ type, payload })),
     );
-  };
+}
+
+/**
+ * Send Worker Task
+ */
+export function workerTask<K extends NotificationType>(type: K, payload: NotificationPayloadMap[K], transferable?: Transferable[]) {
+  (self as any as ServiceWorkerGlobalScope)
+    .clients
+    .matchAll({ includeUncontrolled: false, type: 'window' })
+    .then(
+      (listeners) => listeners.length > 0 && listeners[0].postMessage({ type, payload, worker: true }, transferable),
+    );
 }
 
 /**

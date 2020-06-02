@@ -4,9 +4,9 @@ import { CLIENT_CONFIG } from 'const/api';
 import { typeToMime } from 'helpers/files';
 import { parseRange } from 'helpers/stream';
 import { Client as NetworkHandler, InputFileLocation, MethodDeclMap } from 'mtproto-js';
-import { createNotification, respond } from './extensions/context';
+import { notify, respond } from './extensions/context';
 import { load, save } from './extensions/db';
-import { fetchRequest } from './extensions/files';
+import { fetchRequest, respondDownload } from './extensions/files';
 import { fetchStreamRequest } from './extensions/stream';
 import { fetchCachedSize, fetchLocation, fetchSrippedSize, fetchTGS } from './extensions/utils';
 import { uploadFile } from './extensions/uploads';
@@ -17,7 +17,6 @@ type ExtendedWorkerScope = {
 };
 
 const ctx = self as any as ServiceWorkerGlobalScope & ExtendedWorkerScope;
-const notify = createNotification(ctx.clients);
 
 const { log } = console;
 
@@ -26,7 +25,7 @@ const dbkey = CLIENT_CONFIG.test ? 'metatest' : 'meta';
 const initNetwork = () => load(dbkey).then((meta: any) => {
   if (ctx.network) return;
 
-  ctx.network = new NetworkHandler({ ...CLIENT_CONFIG, meta, dc: meta.baseDC, autoConnect: false });
+  ctx.network = new NetworkHandler({ ...CLIENT_CONFIG, meta, dc: meta.baseDC, autoConnect: true });
 
   ctx.network.on('metaChanged', (newMeta) => save(dbkey, newMeta));
   ctx.network.on('metaChanged', (state) => notify('authorization_updated', { dc: state.baseDC, user: state.userID || 0 }));
@@ -130,6 +129,12 @@ function processWindowMessage(msg: WindowMessage, source: Client | MessagePort |
       break;
     }
 
+    case 'webp_loaded': {
+      const { url } = msg.payload;
+      ctx.cache.match(url).then((response) => response && respondDownload(url, response));
+      break;
+    }
+
     default:
   }
 }
@@ -173,6 +178,8 @@ ctx.onmessage = (event) => {
  * Fetch requests
  */
 ctx.addEventListener('fetch', (event: FetchEvent): void => {
+  console.log('fetch', ctx.cache, event.request.url);
+
   if (!ctx.cache) initCache();
   if (!ctx.network) initNetwork();
 

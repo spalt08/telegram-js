@@ -80,7 +80,7 @@ module.exports = (env, argv) => {
               loader: 'raw-loader',
             },
             {
-              test: /\.(svg|png|jpe?g|gif|woff|woff2|otf|ttf|eot|tgs)$/,
+              test: /\.(svg|png|jpe?g|gif|woff|woff2|otf|ttf|eot|tgs|webp)$/,
               loader: 'file-loader',
               options: {
                 name: 'assets/[contenthash].[ext]',

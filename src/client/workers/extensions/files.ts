@@ -1,14 +1,15 @@
+/* eslint-disable no-restricted-globals */
 /* eslint-disable no-param-reassign */
 import { DownloadOptions } from 'client/types';
 import { StickerMimeType } from 'const';
 import { InputFileLocation } from 'mtproto-js';
 import { inflate } from 'pako/lib/inflate';
 import { Safari } from 'helpers/browser';
-import { webp2png } from './webp';
+import { workerTask } from './context';
 
 // constants
 const DOWNLOAD_CHUNK_LIMIT = 1024 * 1024;
-const MAX_CONCURRENT_DOWNLOADS = 4;
+const MAX_CONCURRENT_DOWNLOADS = 2;
 
 export interface FilePartResolver {
   (location: InputFileLocation, offset: number, limit: number, options: DownloadOptions, ready: (data: ArrayBuffer, mime?: string) => void): void,
@@ -48,7 +49,9 @@ export function ungzipResponse(response: Response, mime: string = 'application/j
     ));
 }
 
-function finishDownload(info: FileInfo, response: Response, cache: Cache, get: FilePartResolver, progress: ProgressResolver) {
+function finishDownload(info: FileInfo, blob: Blob | Response, cache: Cache, get: FilePartResolver, progress: ProgressResolver) {
+  const response = blob instanceof Response ? blob : new Response(blob);
+
   if (fileEvents[info.url]) for (let i = 0; i < fileEvents[info.url].length; i++) fileEvents[info.url][i](response.clone());
   if (info.chunks.length <= 10) cache.put(info.url, response); // 10 mb cache limit
 
@@ -61,6 +64,18 @@ function finishDownload(info: FileInfo, response: Response, cache: Cache, get: F
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   processQueuedDownloads(get, cache, progress);
 }
+
+export function respondDownload(url: string, response: Response) {
+  const info = files.get(url);
+
+  if (!info) return;
+
+  if (fileEvents[info.url]) for (let i = 0; i < fileEvents[info.url].length; i++) fileEvents[info.url][i](response.clone());
+
+  delete fileEvents[info.url];
+  info.processing = false;
+}
+
 /**
  * Loop for getting file parts from network
  */
@@ -75,25 +90,28 @@ export function loopDownload(info: FileInfo, get: FilePartResolver, cache: Cache
     if (info.options.progress && info.options.size) progress(info.url, offset + ab.byteLength, info.options.size);
 
     if (ab.byteLength < limit || (info.options!.size && info.options!.size < offset + limit)) {
-      const response = new Response(new Blob(info.chunks, { type: type || info.options.mime_type }));
-
       // middlewares
       switch (info.options.mime_type) {
-        case StickerMimeType.TGS:
+        case StickerMimeType.TGS: {
+          const response = new Response(new Blob(info.chunks, { type: type || info.options.mime_type }));
           ungzipResponse(response)
             .then((json) => finishDownload(info, json, cache, get, progress));
           break;
+        }
 
-        // case StickerMimeType.WebP: {
-        //   if (Safari) {
-        //     webp2png(response)
-        //       .then((png) => finishDownload(info, png, cache, get, progress));
-        //     break;
-        //   }
-        // }
+        case StickerMimeType.WebP:
+          if (Safari) {
+            workerTask('webp', { url: info.url, data: ab });
+            info.chunks = [];
+            currentlyProcessing--;
+            break;
+          }
+
         // eslint-disable-next-line no-fallthrough
-        default:
+        default: {
+          const response = new Response(new Blob(info.chunks, { type: type || info.options.mime_type }));
           finishDownload(info, response, cache, get, progress);
+        }
       }
     } else {
       loopDownload(info, get, cache, progress);

@@ -27,7 +27,7 @@ export default function stickerRenderer(sticker: Document.document,
   const src = file(location, { dc_id: sticker.dc_id, size: sticker.size, mime_type: sticker.mime_type });
 
   // diplay thumbnail
-  if (sticker.thumbs && sticker.thumbs.length > 0) {
+  if (sticker.mime_type === StickerMimeType.TGS && sticker.thumbs && sticker.thumbs.length > 0) {
     const tsize = getSize(sticker.thumbs, 200, 200, 'cover');
 
     if (tsize) {

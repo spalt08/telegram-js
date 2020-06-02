@@ -1,8 +1,9 @@
-/* eslint-disable compat/compat */
+/* eslint-disable compat/compat, import/no-extraneous-dependencies, import/no-webpack-loader-syntax */
 import runtime from 'serviceworker-webpack-plugin/lib/runtime';
 import { SERVICE_WORKER_SCOPE } from 'const';
+import Worker from 'worker-loader!./workers/worker';
 import { ServiceRequestID, ServiceRequestCallback, WindowMessage, NotificationType, ServiceNotificationCallback, TaskPayloadMap,
-  RequestType, RequestPayloadMap, ServiceRequest, ServiceMessage } from './types';
+  RequestType, RequestPayloadMap, ServiceRequest, ServiceMessage, ServiceTask } from './types';
 
 // Request resolvers
 const requests: Record<ServiceRequestID, ServiceRequestCallback<any>> = {};
@@ -33,6 +34,15 @@ export function listenMessage<K extends NotificationType>(type: K, cb: ServiceNo
   listeners[type].push(cb);
 }
 
+let worker: Worker;
+function initWorker() {
+  worker = new Worker();
+  worker.addEventListener('message', (event) => {
+    const message = event.data as ServiceTask;
+    task(message.type, message.payload);
+  });
+}
+
 /**
  * Message resolver
  */
@@ -40,6 +50,13 @@ navigator.serviceWorker.addEventListener('message', (event) => {
   if (!event.data || !event.data.type) return;
 
   const data = event.data as ServiceMessage;
+
+  // proxy to worker
+  if ('worker' in data) {
+    if (!worker) initWorker();
+    worker.postMessage(data);
+    return;
+  }
 
   // notification
   if (data.id === undefined) {
