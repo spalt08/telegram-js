@@ -4,10 +4,11 @@ import { div } from 'core/html';
 import { unmountChildren, mount, listen } from 'core/dom';
 import { profileAvatar, profileTitle } from 'components/profile';
 import * as icons from 'components/icons';
-import { peerFullStatus, roundButton, typingIndicator, quote, ripple, contextMenu } from 'components/ui';
+import { peerFullStatus, roundButton, typingIndicator, ripple, contextMenu } from 'components/ui';
 import { pinnedMessageCache } from 'cache';
 import { peerToId } from 'helpers/api';
 import './header.scss';
+import messageQuote from 'components/message/quote';
 
 export default function header() {
   const container = div`.header.hidden`();
@@ -36,14 +37,14 @@ export default function header() {
 
     pinnedMessageCache.useItemBehaviorSubject(container, peerToId(peer)).subscribe((msg) => {
       unmountChildren(pinnedMessage);
-      if (msg?._ === 'message') {
+      if (msg) {
         mount(pinnedMessage, ripple({
           contentClass: 'header__pinned_ripple',
           onClick() {
             message.selectPeer(peer, msg.id);
           },
         }, [
-          quote('Pinned message', msg.message),
+          messageQuote(msg, 'Pinned message'),
         ]));
       }
     });
