@@ -259,7 +259,7 @@ export default class MessagesService {
       this.loadMessageReplyPromise = new Promise((resolve, reject) => {
         setTimeout(() => {
           const params: MessagesGetMessages = {
-            id: this.loadMessageReplyList!.map((m) => ({ _: 'inputMessageReplyTo', id: m.id })),
+            id: this.loadMessageReplyList.map((m) => ({ _: 'inputMessageReplyTo', id: m.id })),
           };
 
           client.call('messages.getMessages', params)
