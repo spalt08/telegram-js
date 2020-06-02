@@ -3,12 +3,13 @@ import { DownloadOptions, WindowMessage } from 'client/types';
 import { CLIENT_CONFIG } from 'const/api';
 import { typeToMime } from 'helpers/files';
 import { parseRange } from 'helpers/stream';
-import { Client as NetworkHandler, InputFileLocation } from 'mtproto-js';
+import { Client as NetworkHandler, InputFileLocation, MethodDeclMap } from 'mtproto-js';
 import { createNotification, respond } from './extensions/context';
 import { load, save } from './extensions/db';
 import { fetchRequest } from './extensions/files';
 import { fetchStreamRequest } from './extensions/stream';
 import { fetchCachedSize, fetchLocation, fetchSrippedSize, fetchTGS } from './extensions/utils';
+import { uploadFile } from './extensions/uploads';
 
 type ExtendedWorkerScope = {
   cache: Cache,
@@ -63,6 +64,28 @@ function getFilePartRequest(location: InputFileLocation, offset: number, limit: 
   });
 }
 
+/**
+ * Upload Part Request
+ */
+function uploadFilePartRequest(file_id: string, file_part: number, file_total_parts: number, bytes: ArrayBuffer, big: boolean = false,
+  ready: () => void) {
+  let payload;
+  let method: 'upload.saveFilePart' | 'upload.saveBigFilePart';
+
+  if (big) {
+    method = 'upload.saveBigFilePart';
+    payload = { file_id, file_part, file_total_parts, bytes } as MethodDeclMap['upload.saveBigFilePart']['req'];
+  } else {
+    method = 'upload.saveFilePart';
+    payload = { file_id, file_part, bytes } as MethodDeclMap['upload.saveFilePart']['req'];
+  }
+
+  ctx.network.call(method, payload, { thread: 2 }, (error, result) => {
+    if (error || !result) throw new Error(`Error while uploadig file: ${JSON.stringify(error)}`);
+    else ready();
+  });
+}
+
 function fileProgress(url: string, downloaded: number, total: number) {
   notify('file_progress', { url, downloaded, total });
 }
@@ -96,6 +119,12 @@ function processWindowMessage(msg: WindowMessage, source: Client | MessagePort |
     case 'switch_dc': {
       ctx.network.cfg.dc = msg.payload;
       notify('authorization_updated', { dc: msg.payload, user: ctx.network.dc.getUserID() || 0 });
+      break;
+    }
+
+    case 'upload': {
+      const { id, file } = msg.payload;
+      uploadFile(id, file, uploadFilePartRequest, notify);
       break;
     }
 
