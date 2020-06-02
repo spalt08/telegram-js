@@ -1,4 +1,4 @@
-// This file only keeps the schema of the application indexedDB database and a connection to it
+// Stores the low level API to deal with the database. Also stores the database schema.
 
 const META_STORE_NAME = 'meta';
 
@@ -6,7 +6,10 @@ const META_STORE_NAME = 'meta';
 const SCHEMA_VERSION = 1;
 
 function makeSchema(db: IDBDatabase) {
-  // to be continued...
+  db.createObjectStore('messages');
+  db.createObjectStore('users');
+  db.createObjectStore('chats');
+  db.createObjectStore('dialogs', { autoIncrement: true });
 }
 
 function actualizeSchema(db: IDBDatabase, oldVersion: number, _newVersion: number) {
@@ -58,4 +61,30 @@ export function getDatabase(): Promise<IDBDatabase> {
   }
 
   return databasePromise;
+}
+
+// Turns transaction into a promise that settles when the transaction ends
+export async function performTransaction<T>(
+  storeNames: string | string[],
+  mode: IDBTransactionMode,
+  action: (transaction: IDBTransaction) => Promise<T> | T,
+): Promise<T> {
+  const database = await getDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(storeNames, mode);
+    transaction.onerror = () => reject(transaction.error);
+
+    Promise.resolve()
+      .then(() => action(transaction))
+      .then(
+        (result) => {
+          transaction.oncomplete = () => resolve(result);
+        },
+        (error) => {
+          reject(error);
+          transaction.abort();
+        },
+      );
+  });
 }

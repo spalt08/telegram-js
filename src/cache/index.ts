@@ -13,6 +13,8 @@ import messageHistory from './fastStorages/indices/messageHistory';
 import sharedMediaIndex from './fastStorages/indices/sharedMediaIndex';
 import pollsIndex from './fastStorages/indices/pollsIndex';
 import { getDatabase } from './persistentStorages/database';
+import DictionaryStorage from './persistentStorages/dictionaryStorage';
+import ArrayStorage from './persistentStorages/arrayStorage';
 
 /**
  * User repo
@@ -122,6 +124,12 @@ messageCache.changes.subscribe(
 );
 
 export { getDatabase };
+
+// CollectionStorage isn't required at the moment and DictionaryStorage is a bit faster
+export const messagePersistentCache = new DictionaryStorage<string, Message>('messages');
+export const userPersistentCache = new DictionaryStorage<number, User>('users');
+export const chatPersistentCache = new DictionaryStorage<number, Chat>('chats');
+export const dialogPersistentCache = new ArrayStorage<Dialog>('dialogs');
 
 /**
  * Debug

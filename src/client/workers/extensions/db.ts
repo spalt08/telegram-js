@@ -1,26 +1,20 @@
-import { getDatabase } from 'cache';
+import { performTransaction } from 'cache/persistentStorages/database';
 
-export function load(key: string) {
-  return new Promise((resolve) => {
-    getDatabase().then((db) => {
-      const request = db
-        .transaction('meta', 'readonly')
-        .objectStore('meta')
-        .get(key);
+export async function load(key: string) {
+  const initial = { pfs: false, baseDC: 2, dcs: {} };
 
-      const initial = { pfs: false, baseDC: 2, dcs: {} };
-
+  try {
+    return await performTransaction('meta', 'readonly', (transaction) => new Promise((resolve) => {
+      const request = transaction.objectStore('meta').get(key);
       request.onsuccess = () => resolve(request.result || initial);
-      request.onerror = () => resolve(initial);
-    });
-  });
+    }));
+  } catch (error) {
+    return initial;
+  }
 }
 
 export function save(key: string, meta: any) {
-  getDatabase().then((db) => {
-    db
-      .transaction('meta', 'readwrite')
-      .objectStore('meta')
-      .put(meta, key);
+  return performTransaction('meta', 'readwrite', (transaction) => {
+    transaction.objectStore('meta').put(meta, key);
   });
 }
