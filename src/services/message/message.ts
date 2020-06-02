@@ -254,7 +254,7 @@ export default class MessagesService {
   loadMessageReplyList: Message[] = [];
 
   /** Load single message */
-  loadMessageReply = async (msg: Message.message): Promise<Message | undefined> => {
+  loadMessageReply = async (msg: Message.message) => {
     if (!this.loadMessageReplyPromise) {
       this.loadMessageReplyPromise = new Promise((resolve, reject) => {
         setTimeout(() => {
@@ -278,10 +278,7 @@ export default class MessagesService {
 
     if (messages._ !== 'messages.messagesNotModified' && messages.messages.length > 0) {
       messageCache.put(messages.messages);
-      return messages.messages.find((m) => m.id === msg.reply_to_msg_id);
     }
-
-    return undefined;
   };
 
   sendMessage = async (message: string) => {
