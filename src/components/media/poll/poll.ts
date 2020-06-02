@@ -57,7 +57,10 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
       try {
         await polls.sendVote(peer, message.id, optionsArray);
       } catch (e) {
-        console.error(e);
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.error(e);
+        }
       }
     }
     selectedOptions.clear();
@@ -69,7 +72,7 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
     publicVoters: pollData.public_voters,
     multipleChoice: pollData.multiple_choice,
     onSubmit: submitOptions,
-    onViewResults: () => { main.showPopup('pollResults', { peer, messageId: peerMessageToId(peer, message.id) }); },
+    onViewResults: () => { main.openSidebar('pollResults', { peer, messageId: message.id }); },
   });
 
   pollData.answers.forEach((answer) => {

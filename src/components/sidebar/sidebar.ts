@@ -1,15 +1,17 @@
-import { div } from 'core/html';
-import { mount, unmount, listen } from 'core/dom';
+import { listen, mount, unmount } from 'core/dom';
 import { useInterface } from 'core/hooks';
-import wrapper from './wrapper/wrapper';
-import dialogs from './dialogs/dialogs';
-import settings from './settings/settings';
-import newGroup from './new_group/new_group';
+import { div } from 'core/html';
+import { main } from 'services';
 import contacts from './contacts_list/contacts_list';
-import messageSearch from './message_search/message_search';
+import dialogs from './dialogs/dialogs';
 import info from './info/info';
+import messageSearch from './message_search/message_search';
+import newGroup from './new_group/new_group';
+import pollResults from './poll_results/poll_results';
+import settings from './settings/settings';
 import sharedMedia from './shared_media/shared_media';
 import './sidebar.scss';
+import wrapper from './wrapper/wrapper';
 
 const elements = {
   dialogs,
@@ -19,6 +21,7 @@ const elements = {
   info,
   messageSearch,
   sharedMedia,
+  pollResults,
 };
 
 type SidebarRendererMap = typeof elements;
@@ -68,7 +71,8 @@ export default function sidebar({ initial, className }: Props) {
       elements[state]({
         onNavigate: pushState,
         onBack: popState,
-      }),
+      },
+      main.rightSidebarCtx),
     );
 
     mount(container, element);

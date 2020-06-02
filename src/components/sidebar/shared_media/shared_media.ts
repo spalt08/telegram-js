@@ -1,16 +1,15 @@
-import { div, nothing } from 'core/html';
-import { heading, tabsPanel } from 'components/ui';
 import * as icons from 'components/icons';
-import { message } from 'services';
-import mediaPanel from '../panels/media';
+import { heading, tabsPanel } from 'components/ui';
+import { div, nothing } from 'core/html';
+import { Peer } from 'mtproto-js';
 import docsPanel from '../panels/documents';
 import linksPanel from '../panels/links';
+import mediaPanel from '../panels/media';
 import './shared_media.scss';
 
 type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
-export default function sharedMedia({ onBack }: SidebarComponentProps) {
-  const peer = message.activePeer.value;
+export default function sharedMedia({ onBack }: SidebarComponentProps, peer: Peer) {
   const container = div`.sharedMediaSidebar`(
     heading({
       title: 'Shared Media',

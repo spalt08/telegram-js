@@ -1,21 +1,19 @@
-import { div, nothing } from 'core/html';
-import { getInterface } from 'core/hooks';
-import { mount } from 'core/dom';
-import { heading, contextMenu, tabsPanel } from 'components/ui';
 import * as icons from 'components/icons';
-import { message } from 'services';
-import infoPanel from '../panels/info';
-import mediaPanel from '../panels/media';
+import { contextMenu, heading, tabsPanel } from 'components/ui';
+import { mount } from 'core/dom';
+import { getInterface } from 'core/hooks';
+import { div, nothing } from 'core/html';
+import { Peer } from 'mtproto-js';
 import docsPanel from '../panels/documents';
+import infoPanel from '../panels/info';
 import linksPanel from '../panels/links';
+import mediaPanel from '../panels/media';
 import './info.scss';
 
 type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
-export default function info({ onBack }: SidebarComponentProps) {
+export default function info({ onBack }: SidebarComponentProps, peer: Peer) {
   let container: HTMLElement;
-
-  const peer = message.activePeer.value;
 
   const moreContextMenu = contextMenu({
     className: 'infoSidebar__context-menu',

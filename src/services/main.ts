@@ -15,11 +15,13 @@ export default class MainService {
   /** Last Opened Popup */
   popup = new BehaviorSubject('');
 
+  /** Popup Context */
+  popupCtx: any = {};
+
   /** Right Sidebar Delegate */
   rightSidebarDelegate = new BehaviorSubject<SidebarState | undefined>(undefined);
 
-  /** Popup Context */
-  popupCtx: any = {};
+  rightSidebarCtx: any = {};
 
   constructor() {
     client.on('networkChanged', (state: string) => {
@@ -31,7 +33,6 @@ export default class MainService {
   showPopup(type: 'stickerSet', ctx: InputStickerSet): void;
   showPopup(type: 'photo', ctx: { rect: DOMRect, options: PhotoOptions, photo: Photo, peer: Peer, message: Message }): void;
   showPopup(type: 'video', ctx: { rect: DOMRect, video: Document.document, peer?: Peer, message?: Message }): void;
-  showPopup(type: 'pollResults', ctx: { peer: Peer, messageId: string }): void;
   showPopup(type: string, ctx?: any): void {
     this.popupCtx = ctx;
     this.popup.next(type);
@@ -42,7 +43,12 @@ export default class MainService {
     this.popup.next('');
   };
 
-  openSidebar(state: SidebarState) {
+  openSidebar(state: 'sharedMedia', ctx: Peer): void;
+  openSidebar(state: 'info', ctx: Peer): void;
+  openSidebar(state: 'messageSearch', ctx: Peer): void;
+  openSidebar(state: 'pollResults', ctx: { peer: Peer, messageId: number }): void;
+  openSidebar(state: SidebarState, ctx?: any): void {
+    this.rightSidebarCtx = ctx;
     this.rightSidebarDelegate.next(state);
   }
 }

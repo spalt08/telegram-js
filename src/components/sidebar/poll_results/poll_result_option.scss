@@ -1,0 +1,66 @@
+.pollResultOption {
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  background-color: rgba(0, 0, 0, 0.04);
+  margin-top: 8px;
+  padding: 8px;
+
+  &__text {
+    padding-right: 16px;
+  }
+
+  &__header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+  }
+
+  &__voters-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__voter {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+
+    & .avatar {
+      max-width: 30px;
+      max-height: 30px;
+    }
+  }
+
+  &__voter.-hidden {
+    display: none;
+  }
+
+  &__voter-name {
+    margin-left: 10px;
+  }
+
+  &__voter-placeholder {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+
+    & .avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 100%;
+      background-color: rgba(0, 0, 0, 0.08);
+    }
+
+    & .voter-name {
+      width: 30px;
+      height: 20px;
+      margin-left: 10px;
+      border-radius: 8px;
+      background-color: rgba(0, 0, 0, 0.08);
+    }
+  }
+}
+
+.pollResultOption.-hidden {
+  display: none;
+}
