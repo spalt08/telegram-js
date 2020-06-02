@@ -59,9 +59,11 @@ export function uploadFile(id: string, file: File, upload: UploadPartResolver, n
 
   notify('upload_progress', { id, uploaded: 0, total: file.size });
 
-  const reader = new FileReader();
+  let reader: FileReader | undefined = new FileReader();
   reader.readAsArrayBuffer(file);
   reader.onload = () => {
+    if (!reader) return;
+
     uploading[id] = {
       data: new Uint8Array(reader.result as ArrayBuffer),
       size: file.size,
