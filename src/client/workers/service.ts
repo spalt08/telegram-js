@@ -33,10 +33,10 @@ const initNetwork = () => load(dbkey).then((meta: any) => {
   ctx.network.updates.on((update) => notify('update', update));
   ctx.network.updates.fetch();
 
-  for (let i = 1; i <= 5; i++) ctx.network.authorize(i);
+  // for (let i = 1; i <= 5; i++) ctx.network.authorize(i);
 });
 
-const initCache = () => caches.open('files').then((cache) => ctx.cache = cache);
+const initCache = () => 'caches' in self && caches.open('files').then((cache) => ctx.cache = cache);
 
 /**
  * File Part Request
@@ -111,11 +111,10 @@ function processWindowMessage(msg: WindowMessage, source: Client | MessagePort |
 ctx.addEventListener('install', (event: ExtendableEvent) => {
   log('service worker is installing');
 
+  initCache();
+
   event.waitUntil(
-    Promise.all([
-      initNetwork(),
-      initCache(),
-    ]),
+    initNetwork(),
   );
 });
 
@@ -125,8 +124,8 @@ ctx.addEventListener('install', (event: ExtendableEvent) => {
 ctx.addEventListener('activate', (event) => {
   log('service worker activating', ctx);
 
-  if (!ctx.network) initNetwork();
   if (!ctx.cache) initCache();
+  if (!ctx.network) initNetwork();
 
   event.waitUntil(ctx.clients.claim());
 });
@@ -145,6 +144,9 @@ ctx.onmessage = (event) => {
  * Fetch requests
  */
 ctx.addEventListener('fetch', (event: FetchEvent): void => {
+  if (!ctx.cache) initCache();
+  if (!ctx.network) initNetwork();
+
   const [, url, scope] = /http[:s]+\/\/.*?(\/(.*?)\/.*$)/.exec(event.request.url) || [];
 
   switch (scope) {
