@@ -266,9 +266,8 @@ export default class MessagesService {
             .then((messages) => {
               this.loadMessageReplyPromise = undefined;
               this.loadMessageReplyList = [];
-              return messages;
+              resolve(messages);
             })
-            .then((messages) => resolve(messages))
             .catch(reject);
         });
       });
