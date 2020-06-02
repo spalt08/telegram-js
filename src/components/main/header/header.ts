@@ -1,7 +1,8 @@
 import { pinnedMessageCache } from 'cache';
 import * as icons from 'components/icons';
+import messageQuote from 'components/message/quote';
 import { profileAvatar, profileTitle } from 'components/profile';
-import { contextMenu, peerFullStatus, quote, ripple, roundButton, typingIndicator } from 'components/ui';
+import { contextMenu, peerFullStatus, ripple, roundButton, typingIndicator } from 'components/ui';
 import { listen, mount, unmountChildren } from 'core/dom';
 import { getInterface, useObservable } from 'core/hooks';
 import { div } from 'core/html';
@@ -36,14 +37,14 @@ export default function header() {
 
     pinnedMessageCache.useItemBehaviorSubject(container, peerToId(peer)).subscribe((msg) => {
       unmountChildren(pinnedMessage);
-      if (msg?._ === 'message') {
+      if (msg) {
         mount(pinnedMessage, ripple({
           contentClass: 'header__pinned_ripple',
           onClick() {
             message.selectPeer(peer, msg.id);
           },
         }, [
-          quote('Pinned message', msg.message),
+          messageQuote(msg, 'Pinned message'),
         ]));
       }
     });

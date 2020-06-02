@@ -3,6 +3,7 @@ import { useMaybeObservable } from 'core/hooks';
 import { div } from 'core/html';
 import { MaybeObservable } from 'core/types';
 import './list.scss';
+import { tgsFreeze, tgsUnFreeze } from '../tgs/tgs';
 
 type ListConfig = {
   batch: number,
@@ -770,6 +771,8 @@ export class VirtualizedList {
     if (!this.cfg.onTrace || this.isLocked) return;
     if (!this.viewport) this.viewport = this.container.getBoundingClientRect();
 
+    tgsFreeze();
+
     const prevTop = this.top;
     const prevBottom = this.bottom;
 
@@ -797,6 +800,9 @@ export class VirtualizedList {
     }
 
     if (this.cfg.onTrace && (this.top !== prevTop || this.bottom !== prevBottom)) this.cfg.onTrace(this.top, this.bottom);
+
+
+    tgsUnFreeze();
   }
 
   clear() {
@@ -817,8 +823,12 @@ export class VirtualizedList {
   }
 
   // Lock and unlock updates
-  lock() { this.isLocked = true; }
+  lock() {
+    tgsFreeze();
+    this.isLocked = true;
+  }
   unlock() {
+    tgsUnFreeze();
     this.isLocked = false;
 
     if (this.pendingItems.length > 0) {

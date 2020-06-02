@@ -7796,9 +7796,9 @@ lorem-ipsum@^2.0.3:
   dependencies:
     commander "^2.17.1"
 
-lottie-web@^5.5.9:
-  version "5.5.9"
-  resolved "https://registry.yarnpkg.com/lottie-web/-/lottie-web-5.5.9.tgz#f8775e8c36dfada428f9acea826ab674750419a8"
+lottie-web@^5.6.10:
+  version "5.6.10"
+  resolved "https://registry.yarnpkg.com/lottie-web/-/lottie-web-5.6.10.tgz#9c2959df12976f49637f563dcc96db2078010b4d"
 
 loud-rejection@^1.0.0:
   version "1.6.0"
@@ -11006,7 +11006,6 @@ serve-static@1.14.1:
 serviceworker-webpack-plugin@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/serviceworker-webpack-plugin/-/serviceworker-webpack-plugin-1.0.1.tgz#481863288487e92da01d49745336c72ef8a6136b"
-  integrity sha512-VgDEkZ3pA0HajsRaWtl5w6bLxAXx0Y+4dm7YeTcIxVmvC9YXvstex38HOBDuYETeDS5fUlBy/47gC0QYBrG0nw==
   dependencies:
     minimatch "^3.0.4"
 
@@ -12917,7 +12916,6 @@ worker-farm@^1.6.0, worker-farm@^1.7.0:
 worker-plugin@^4.0.3:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/worker-plugin/-/worker-plugin-4.0.3.tgz#7c42e600d5931ad154d3d5f187a32446df64db0f"
-  integrity sha512-7hFDYWiKcE3yHZvemsoM9lZis/PzurHAEX1ej8PLCu818Rt6QqUAiDdxHPCKZctzmhqzPpcFSgvMCiPbtooqAg==
   dependencies:
     loader-utils "^1.1.0"
 

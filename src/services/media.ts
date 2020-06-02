@@ -6,7 +6,7 @@ import { peerToInputPeer } from 'cache/accessors';
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToId } from 'helpers/api';
 import { getDocumentLocation, getAttributeAudio } from 'helpers/files';
-import { download } from 'client/media';
+import { stream } from 'client/media';
 import type MainService from './main';
 
 export const enum MediaPlaybackStatus {
@@ -234,29 +234,33 @@ export default class MediaService {
       this.currentAudioSource = el('source');
       this.currentAudio = el('audio', undefined, [this.currentAudioSource]);
     }
-    const location = getDocumentLocation(doc);
-    let state = this.getPlaybackState(doc);
+
+    const state = this.getPlaybackState(doc);
     if (state.value.status === MediaPlaybackStatus.NotStarted) {
-      this.getPlaybackState(doc).next({ ...state.value, downloadProgress: 0, status: MediaPlaybackStatus.Downloading });
+      state.next({ ...state.value, status: MediaPlaybackStatus.Playing });
     }
-    download(location, { size: doc.size }, (url) => {
-      this.play(doc, url, position);
-    }, (progress) => {
-      state = this.getPlaybackState(doc);
-      this.getPlaybackState(doc).next({ ...state.value, downloadProgress: progress / doc.size });
-    });
+
+    this.play(
+      doc,
+      stream(doc),
+      position,
+    );
+    // }, (progress) => {
+    //   state = this.getPlaybackState(doc);
+    //   this.getPlaybackState(doc).next({ ...state.value, downloadProgress: progress / doc.size });
+    // });
   }
 
   downloadAudio(doc: Document.document) {
-    const location = getDocumentLocation(doc);
-    let state = this.getPlaybackState(doc);
-    state.next({ downloadProgress: 0, playProgress: 0, status: MediaPlaybackStatus.Downloading });
-    download(location, { size: doc.size }, () => {
-      state.next({ downloadProgress: 1, playProgress: 0, status: MediaPlaybackStatus.Stopped });
-    }, (progress) => {
-      console.log(progress, doc.size);
-      state = this.getPlaybackState(doc);
-      this.getPlaybackState(doc).next({ ...state.value, downloadProgress: progress / doc.size });
-    });
+    // const location = getDocumentLocation(doc);
+    // let state = this.getPlaybackState(doc);
+    // state.next({ downloadProgress: 0, playProgress: 0, status: MediaPlaybackStatus.Downloading });
+    // download(location, { size: doc.size }, () => {
+    //   state.next({ downloadProgress: 1, playProgress: 0, status: MediaPlaybackStatus.Stopped });
+    // }, (progress) => {
+    //   console.log(progress, doc.size);
+    //   state = this.getPlaybackState(doc);
+    //   this.getPlaybackState(doc).next({ ...state.value, downloadProgress: progress / doc.size });
+    // });
   }
 }
