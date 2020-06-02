@@ -251,12 +251,11 @@ export default class MessagesService {
   }
 
   loadMessageReplyPromise?: Promise<MessagesMessages>;
-  loadMessageReplyList?: Message.message[];
+  loadMessageReplyList: Message[] = [];
 
   /** Load single message */
-  loadMessageReply = async (msg: Message.message): Promise<Message | null> => {
+  loadMessageReply = async (msg: Message.message): Promise<Message | undefined> => {
     if (!this.loadMessageReplyPromise) {
-      this.loadMessageReplyList = [msg];
       this.loadMessageReplyPromise = new Promise((resolve, reject) => {
         setTimeout(() => {
           const params: MessagesGetMessages = {
@@ -264,23 +263,26 @@ export default class MessagesService {
           };
 
           client.call('messages.getMessages', params)
+            .then((messages) => {
+              this.loadMessageReplyPromise = undefined;
+              this.loadMessageReplyList = [];
+              return messages;
+            })
             .then((messages) => resolve(messages))
             .catch(reject);
         });
       });
-    } else {
-      this.loadMessageReplyList!.push(msg);
     }
+    this.loadMessageReplyList.push(msg);
 
     const messages = await this.loadMessageReplyPromise;
-    delete this.loadMessageReplyPromise;
 
     if (messages._ !== 'messages.messagesNotModified' && messages.messages.length > 0) {
       messageCache.put(messages.messages);
-      return messages.messages.find((m: Message.message) => m.id === msg.reply_to_msg_id) as Message.message;
+      return messages.messages.find((m) => m.id === msg.reply_to_msg_id);
     }
 
-    return null;
+    return undefined;
   };
 
   sendMessage = async (message: string) => {
