@@ -1,7 +1,7 @@
-import { MessageEntity, Message } from 'mtproto-js';
-import { strong, text, code, pre, em, a, fragment, span } from 'core/html';
-import { mount } from 'core/dom';
 import { newWindowLinkAttributes } from 'const';
+import { mount } from 'core/dom';
+import { a, code, em, fragment, pre, span, strong, text } from 'core/html';
+import { Message, MessageEntity, PollResults } from 'mtproto-js';
 
 interface TreeNode {
   children: TreeNode[];
@@ -96,10 +96,10 @@ export function highlightLinks(message: string) {
     .filter((part) => part)
     .map((part) => {
       if (part.startsWith('@')
-      || part.startsWith('#')
-      || part.startsWith('t.me/')
-      || part.startsWith('https://t.me/')
-      || part.startsWith('https://tginfo.me/')) {
+        || part.startsWith('#')
+        || part.startsWith('t.me/')
+        || part.startsWith('https://t.me/')
+        || part.startsWith('https://tginfo.me/')) {
         return a({ ...newWindowLinkAttributes, href: '#' }, text(part));
       }
       return text(part);
@@ -108,12 +108,23 @@ export function highlightLinks(message: string) {
   return span(...parts);
 }
 
-export function formattedMessage(message: Message.message | string) {
-  if (typeof message === 'string') return highlightLinks(message);
+export function formattedMessage(message: Message.message | PollResults | string) {
+  if (typeof message === 'string') {
+    return highlightLinks(message);
+  }
 
-  const root = createTreeNode(message.message);
-  if (message.entities) {
-    message.entities.forEach((e) => applyEntity(root, e.offset, e.length, e));
+  let str;
+  let entities;
+  if (message._ === 'message') {
+    str = message.message;
+    entities = message.entities;
+  } else {
+    str = message.solution || '';
+    entities = message.solution_entities;
+  }
+  const root = createTreeNode(str);
+  if (entities) {
+    entities.forEach((e) => applyEntity(root, e.offset, e.length, e));
   }
   const frag = fragment();
   const nodeList: Node[] = [];

@@ -1,9 +1,13 @@
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import client from 'client/client';
+import { peerMessageToId } from 'helpers/api';
 import { Peer, Update } from 'mtproto-js';
+import { BehaviorSubject } from 'rxjs';
 
 export default class PollsService {
+  public readonly timeDiff = new BehaviorSubject<number>(0);
+
   constructor() {
     client.updates.on('updateMessagePoll', this.processUpdateMessagePoll);
     client.updates.on('updateMessagePollVote', this.processUpdateMessagePollVote);
@@ -13,14 +17,19 @@ export default class PollsService {
       changes.forEach(([changeType, message, id]) => {
         if (changeType === 'add') {
           if (message?._ === 'message' && message?.media?._ === 'messageMediaPoll') {
+            const now = Date.now();
             let timeout = 0;
             if (message.media.poll.close_period) {
-              timeout = message.media.poll.close_period * 1000 - (Date.now() - message.date * 1000);
+              timeout = message.media.poll.close_period * 1000 - (now - message.date * 1000);
             } else if (message.media.poll.close_date) {
               timeout = message.media.poll.close_date * 1000 - Date.now();
             }
             if (timeout > 0) {
-              this.schedulePollClose(id, timeout);
+              // there might be difference between server and client system time, so we should take it into account when creating a timer.
+              // todo: this hack won't work with persistent message cache.
+              const timeDiff = (now - message.date * 1000);
+              this.timeDiff.next(timeDiff);
+              this.schedulePollClose(message.id, message.to_id, timeout + timeDiff);
             }
           }
         }
@@ -45,25 +54,19 @@ export default class PollsService {
     }
   }
 
-  private schedulePollClose(messageId: string, timeout: number) {
+  private schedulePollClose(messageId: number, peer: Peer, timeout: number) {
     setTimeout(() => {
-      const latestMessage = messageCache.get(messageId);
+      const latestMessage = messageCache.get(peerMessageToId(peer, messageId));
       if (latestMessage?._ === 'message' && latestMessage?.media?._ === 'messageMediaPoll') {
         if (latestMessage.media.poll.closed) {
           return;
         }
-        const { media, media: { poll } } = latestMessage;
-        const closedPollMessage = {
-          ...latestMessage,
-          media: {
-            ...media,
-            poll: {
-              ...poll,
-              closed: true,
-            },
-          },
-        };
-        messageCache.change(messageId, closedPollMessage);
+        client.call('messages.getPollResults', { peer: peerToInputPeer(peer), msg_id: messageId })
+          .then((updates) => {
+            if (updates._ === 'updates') {
+              updates.updates.forEach((update: Update.updateMessagePoll) => this.processUpdateMessagePoll(update));
+            }
+          });
       }
     }, timeout);
   }

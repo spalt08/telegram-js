@@ -26,19 +26,23 @@
   }
 
   &__info {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
-  }
-
-  &__type {
-    color: var(--accent-color-inactive);
     font-size: 0.9rem;
+    color: var(--accent-color-inactive);
+
+    .pollCountdown, .pollSolution {
+      grid-row: 1;
+      grid-column: 3;
+    }
   }
 
   &__recent-voters {
     padding-left: 8px;
     display: flex;
     flex-direction: row-reverse;
+    justify-self: start;
   }
 
   & &__avatar-wrapper {

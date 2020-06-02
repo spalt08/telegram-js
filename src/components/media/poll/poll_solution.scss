@@ -1,0 +1,19 @@
+.pollSolution {
+  display: inline-flex;
+  transform: scale(0);
+  transform-origin: center;
+  transition: transform 0.3s;
+
+  &.-visible {
+    transform: scale(1);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  path {
+    fill: var(--accent-color);
+  }
+}

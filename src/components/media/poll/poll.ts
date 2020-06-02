@@ -1,18 +1,20 @@
 import { messageCache } from 'cache';
 import { profileAvatar } from 'components/profile';
-import { mount, unmountChildren } from 'core/dom';
-import { getInterface, useWhileMounted } from 'core/hooks';
-import { div, text } from 'core/html';
+import { mount, unmount, unmountChildren } from 'core/dom';
+import { getInterface } from 'core/hooks';
+import { div, nothing, text } from 'core/html';
 import { peerMessageToId, userIdToPeer } from 'helpers/api';
 import { Message, Peer, Poll, PollAnswerVoters, PollResults } from 'mtproto-js';
+import { BehaviorSubject } from 'rxjs';
 import { main, polls } from 'services';
 import './poll.scss';
+import pollCountdown from './poll_countdown';
 import pollFooter, { VoteButtonState } from './poll_footer';
-import pollOption, { PollOptionInterface } from './poll_option';
+import pollOption from './poll_option';
+import pollSolution from './poll_solution';
 
 
 const decoder = new TextDecoder();
-const encoder = new TextEncoder();
 
 function pollType(pollData: Poll) {
   if (pollData.closed) {
@@ -35,25 +37,27 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
   if (message.media?._ !== 'messageMediaPoll') {
     throw new Error('message media must be of type "messageMediaPoll"');
   }
+  const resultsSubject = new BehaviorSubject<PollResults>(message.media.results);
   const { media } = message;
   const { results } = media;
   const pollData = media.poll as Required<Poll.poll>;
-  const selectedOptions = new Set<string>();
+  const selectedOptions = new Set<ArrayBuffer>();
   const pollOptions: ReturnType<typeof pollOption>[] = [];
+  const countdownEl = pollData.close_date > 0 && !pollData.closed ? pollCountdown(message.date, pollData.close_date) : nothing;
+  const solutionEl = pollData.quiz ? pollSolution(resultsSubject) : nothing;
   const pollHeader = text(pollType(pollData));
-  const recentVoters = div`poll__recent-voters`(...buildRecentVotersList(results.recent_voters));
-  const options = new Map<string, PollOptionInterface>();
+  const recentVotersEl = div`poll__recent-voters`(...buildRecentVotersList(results.recent_voters));
   let answered = !!results.results && results.results.findIndex((r) => r.chosen) >= 0;
   const maxVoters = results.results ? Math.max(...results.results.map((r) => r.voters)) : 0;
 
   const submitOptions = async () => {
     if (!answered) {
       const optionsArray: ArrayBuffer[] = [];
-      selectedOptions.forEach((o) => optionsArray.push(encoder.encode(o).buffer));
+      selectedOptions.forEach((o) => optionsArray.push(o));
       try {
         await polls.sendVote(peer, message.id, optionsArray);
       } catch (e) {
-        console.log(e);
+        console.error(e);
       }
     }
     selectedOptions.clear();
@@ -83,22 +87,20 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
       voters,
       maxVoters,
       totalVoters: results.total_voters ?? 0,
-      clickCallback: (selected) => {
+      clickCallback: (selected, key) => {
         if (pollData.multiple_choice) {
-          const optKey = decoder.decode(answer.option);
           if (selected) {
-            selectedOptions.add(optKey);
+            selectedOptions.add(key);
           } else {
-            selectedOptions.delete(optKey);
+            selectedOptions.delete(key);
           }
           getInterface(voteFooterEl).updateState(answered ? VoteButtonState.ViewResults : VoteButtonState.Vote, selectedOptions.size > 0);
         } else {
-          selectedOptions.add(decoder.decode(answer.option));
+          selectedOptions.add(answer.option);
           submitOptions();
         }
       },
     });
-    options.set(optionKey, option);
     pollOptions.push(option);
   });
 
@@ -120,35 +122,42 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
       pollHeader.textContent = pollType(updatedPoll);
     }
     const voters = updatedResults.results ?? [];
-    unmountChildren(recentVoters);
+    unmountChildren(recentVotersEl);
     buildRecentVotersList(updatedResults.recent_voters).forEach((avatar) => {
-      mount(recentVoters, avatar);
+      mount(recentVotersEl, avatar);
     });
     const updateMaxVoters = Math.max(...voters.map((r) => r.voters));
     answered = voters.findIndex((r) => r.chosen) >= 0;
+    if (updatedPoll.closed) {
+      unmount(countdownEl);
+      resultsSubject.next(updatedResults);
+    }
     updateVoteButtonText(updatedPoll.closed, answered, updatedPoll.public_voters);
     updateVoters(updateTotalVoters);
-    voters.forEach((r) => {
-      const op = options.get(decoder.decode(r.option));
-      if (op) {
-        getInterface(op).updateOption({
-          voters: r,
-          answered,
-          closed: updatedPoll.closed,
-          maxVoters: updateMaxVoters,
-          totalVoters: updateTotalVoters,
-        });
-      }
+    const votersMap = new Map(voters.map((v) => [decoder.decode(v.option), v]));
+    pollOptions.forEach((option) => {
+      const optionInterface = getInterface(option);
+      const answerVoters = votersMap.get(decoder.decode(optionInterface.getKey()));
+      optionInterface.updateOption({
+        voters: answerVoters,
+        answered,
+        closed: updatedPoll.closed,
+        maxVoters: updateMaxVoters,
+        totalVoters: updateTotalVoters,
+      });
     });
   };
-
-  updatePollResults(pollData, results);
 
   info.classList.add('poll__message-info');
   const container = div`.poll`(
     div`.poll__body`(
       div`.poll__question`(text(pollData.question)),
-      div`poll__info`(div`poll__type`(pollHeader), recentVoters),
+      div`poll__info`(
+        div`poll__type`(pollHeader),
+        recentVotersEl,
+        countdownEl,
+        solutionEl,
+      ),
       div`.poll__options`(...pollOptions),
     ),
     div`.poll__footer`(
@@ -157,11 +166,11 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
     ),
   );
 
-  useWhileMounted(container, () => messageCache.watchItem(peerMessageToId(peer, message.id), (item) => {
-    if (item?._ === 'message' && item.media?._ === 'messageMediaPoll') {
-      updatePollResults(item.media.poll as Required<Poll>, item.media.results);
+  messageCache.useItemBehaviorSubject(container, peerMessageToId(peer, message.id)).subscribe((msg) => {
+    if (msg?._ === 'message' && msg.media?._ === 'messageMediaPoll') {
+      updatePollResults(msg.media.poll as Required<Poll>, msg.media.results);
     }
-  }));
+  });
 
   return container;
 }
