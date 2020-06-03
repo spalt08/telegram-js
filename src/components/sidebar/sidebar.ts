@@ -30,6 +30,7 @@ export type SidebarState = keyof SidebarRendererMap;
 type Props = {
   initial?: SidebarState,
   className?: string,
+  onTransitionStart?: (opening: boolean) => void,
 };
 
 export type SidebarComponentProps = {
@@ -40,13 +41,14 @@ export type SidebarComponentProps = {
 /**
  * Class For Managing Sidebar State
  */
-export default function sidebar({ initial, className }: Props) {
+export default function sidebar({ initial, className, onTransitionStart }: Props) {
   const container = div`.sidebar${className}`();
   const stack: HTMLElement[] = [];
 
   const popState = () => {
     // just close sidebar
     if (stack.length <= 1) {
+      if (onTransitionStart) onTransitionStart(false);
       container.classList.add('-hidden');
       return;
     }
@@ -78,6 +80,7 @@ export default function sidebar({ initial, className }: Props) {
     mount(container, element);
     stack.push(element);
 
+    if (container.classList.contains('-hidden') && onTransitionStart) onTransitionStart(true);
     container.classList.remove('-hidden');
   };
 

@@ -1,16 +1,16 @@
 /* eslint-disable no-restricted-globals */
 import { WindowMessage } from 'client/types';
 import { parseRange } from 'helpers/stream';
-import { respond, createNotification } from './extensions/context';
-import { fetchRequest } from './extensions/files';
+import { respond, notify } from './extensions/context';
+import { fetchRequest, respondDownload } from './extensions/files';
 import { callMock } from './mocks/call';
 import getFilePart, { fileMap } from './mocks/files';
 import { fetchStreamRequest } from './extensions/stream';
 import { fetchLocation, fetchTGS, fetchCachedSize, fetchSrippedSize } from './extensions/utils';
 
+require('./mocks/sticker');
 
 const ctx = self as any as ServiceWorkerGlobalScope;
-const notify = createNotification(ctx.clients);
 const cacheMock: Cache = { put: () => {} } as any;
 const { log } = console;
 
@@ -61,6 +61,12 @@ ctx.onmessage = (event) => {
     case 'url_map': {
       const { url, map } = msg.payload;
       fileMap[url] = map;
+      break;
+    }
+
+    case 'webp_loaded': {
+      const { url, blob } = msg.payload;
+      respondDownload(url, new Response(blob), cacheMock);
       break;
     }
 

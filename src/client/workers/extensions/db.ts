@@ -1,46 +1,21 @@
-// avoid redundant reopening
-let _db: IDBDatabase | undefined;
+import { runTransaction } from 'cache/persistentStorages/database';
+import { getValue } from 'helpers/indexedDb';
 
-export function open() {
-  return new Promise<IDBDatabase>((resolve) => {
-    if (_db) resolve(_db);
-    else {
-      const request = indexedDB.open('tgm', 1);
+export async function load(key: string) {
+  const initial = { pfs: false, baseDC: 2, dcs: {} };
 
-      // Create Schema
-      request.onupgradeneeded = (event: any) => {
-        _db = event.target.result as IDBDatabase;
-        _db.createObjectStore('meta');
-      };
-
-      request.onsuccess = (event: any) => {
-        resolve(_db = event.target.result as IDBDatabase);
-      };
-    }
-  });
-}
-
-export function load(key: string) {
-  return new Promise((resolve) => {
-    open().then((db) => {
-      const request = db
-        .transaction('meta', 'readwrite')
-        .objectStore('meta')
-        .get(key);
-
-      const initial = { pfs: false, baseDC: 2, dcs: {} };
-
-      request.onsuccess = (event: any) => resolve(event.target.result || initial);
-      request.onerror = () => resolve(initial);
+  try {
+    return await runTransaction('meta', 'readonly', async (transaction) => {
+      const value = await getValue(transaction.objectStore('meta'), key);
+      return value || initial;
     });
-  });
+  } catch (error) {
+    return initial;
+  }
 }
 
-export function save(key: string, meta: any) {
-  open().then((db) => {
-    db
-      .transaction('meta', 'readwrite')
-      .objectStore('meta')
-      .put(meta, key);
+export async function save(key: string, meta: any) {
+  return runTransaction('meta', 'readwrite', (transaction) => {
+    transaction.objectStore('meta').put(meta, key);
   });
 }

@@ -1,8 +1,11 @@
+/* eslint-disable no-restricted-globals */
 /* eslint-disable no-param-reassign */
 import { DownloadOptions } from 'client/types';
 import { StickerMimeType } from 'const';
 import { InputFileLocation } from 'mtproto-js';
 import { inflate } from 'pako/lib/inflate';
+import { isWebpSupported } from 'helpers/browser';
+import { workerTask } from './context';
 
 // constants
 const DOWNLOAD_CHUNK_LIMIT = 1024 * 1024;
@@ -33,7 +36,6 @@ const fileEvents: Record<FileURL, Array<(res: Response) => void>> = {};
 const fileQueue: FileURL[] = [];
 let currentlyProcessing = 0;
 
-
 export function ungzipResponse(response: Response, mime: string = 'application/json') {
   return response.arrayBuffer()
     .then((buffer) => new Response(
@@ -46,7 +48,9 @@ export function ungzipResponse(response: Response, mime: string = 'application/j
     ));
 }
 
-function finishDownload(info: FileInfo, response: Response, cache: Cache, get: FilePartResolver, progress: ProgressResolver) {
+function finishDownload(info: FileInfo, blob: Blob | Response, cache: Cache, get: FilePartResolver, progress: ProgressResolver) {
+  const response = blob instanceof Response ? blob : new Response(blob);
+
   if (fileEvents[info.url]) for (let i = 0; i < fileEvents[info.url].length; i++) fileEvents[info.url][i](response.clone());
   if (info.chunks.length <= 10) cache.put(info.url, response); // 10 mb cache limit
 
@@ -59,6 +63,19 @@ function finishDownload(info: FileInfo, response: Response, cache: Cache, get: F
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   processQueuedDownloads(get, cache, progress);
 }
+
+export function respondDownload(url: string, response: Response, cache: Cache) {
+  const info = files.get(url);
+
+  if (!info) return;
+
+  if (fileEvents[info.url]) for (let i = 0; i < fileEvents[info.url].length; i++) fileEvents[info.url][i](response.clone());
+  cache.put(info.url, response);
+
+  delete fileEvents[info.url];
+  info.processing = false;
+}
+
 /**
  * Loop for getting file parts from network
  */
@@ -73,17 +90,31 @@ export function loopDownload(info: FileInfo, get: FilePartResolver, cache: Cache
     if (info.options.progress && info.options.size) progress(info.url, offset + ab.byteLength, info.options.size);
 
     if (ab.byteLength < limit || (info.options!.size && info.options!.size < offset + limit)) {
-      const response = new Response(new Blob(info.chunks, { type: type || info.options.mime_type }));
-
       // middlewares
       switch (info.options.mime_type) {
-        case StickerMimeType.TGS:
+        case StickerMimeType.TGS: {
+          const response = new Response(new Blob(info.chunks, { type: type || info.options.mime_type }));
           ungzipResponse(response)
             .then((json) => finishDownload(info, json, cache, get, progress));
           break;
+        }
 
-        default:
+        case StickerMimeType.WebP:
+          if (!isWebpSupported) {
+            workerTask('webp', { url: info.url, data: ab });
+            info.chunks = [];
+            currentlyProcessing--;
+            // Pass Control to queued files
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define
+            processQueuedDownloads(get, cache, progress);
+            break;
+          }
+
+        // eslint-disable-next-line no-fallthrough
+        default: {
+          const response = new Response(new Blob(info.chunks, { type: type || info.options.mime_type }));
           finishDownload(info, response, cache, get, progress);
+        }
       }
     } else {
       loopDownload(info, get, cache, progress);
@@ -129,6 +160,8 @@ export function processQueuedDownloads(get: FilePartResolver, cache: Cache, prog
  * Download Queue
  */
 export function putDownloadQueue(url: string, get: FilePartResolver, cache: Cache, progress: ProgressResolver) {
+  if (fileQueue.indexOf(url) > -1) return;
+
   fileQueue.push(url);
   fileQueue.sort((left, right) => (files.get(right)!.options.priority || 0) - (files.get(left)!.options.priority || 0));
   processQueuedDownloads(get, cache, progress);
@@ -140,5 +173,5 @@ export function putDownloadQueue(url: string, get: FilePartResolver, cache: Cach
 export function fetchRequest(url: string, resolve: (res: Response) => void, get: FilePartResolver, cache: Cache, progress: ProgressResolver) {
   if (!fileEvents[url]) fileEvents[url] = [];
   fileEvents[url].push(resolve);
-  initDownload(url, get, cache, progress);
+  putDownloadQueue(url, get, cache, progress);
 }

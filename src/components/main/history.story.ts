@@ -12,7 +12,7 @@ const stories = storiesOf('Layout | History', module)
   .addDecorator(fullscreen)
   .addDecorator(withMountTrigger);
 
-const element = history();
+const element = history({ onBackToContacts: () => {} });
 
 stories.add('Overall', () => {
   const peerIds = peers.map(peerToId);

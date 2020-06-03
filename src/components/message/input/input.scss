@@ -1,7 +1,7 @@
 @import '~styles/variables.scss';
 
 .msginput {
-  padding: 0 20px;
+  padding: 0 var(--content-padding);
 
   &.hidden {
     display: none;
@@ -40,6 +40,10 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: flex-end;
+
+    @include respond-to(small) {
+      padding:  0px 8px;
+    }
   }
 
   &__bubble {

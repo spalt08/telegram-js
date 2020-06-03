@@ -6,6 +6,7 @@ import { locationToURL } from 'helpers/files';
 import { mockPhoto } from './photo';
 import { mockMessage } from './message';
 import { users, me } from './user';
+import { jobsSticker } from './sticker';
 
 /**
  * Photo Mocks
@@ -78,5 +79,14 @@ export const MessagePoll = mockMessage({
     results: {
       _: 'pollResults',
     },
+  },
+});
+
+export const MessageSticker = mockMessage({
+  from_id: users[1].id,
+  to_id: { _: 'peerUser', user_id: me.id },
+  media: {
+    _: 'messageMediaDocument',
+    document: jobsSticker,
   },
 });

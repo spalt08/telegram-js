@@ -12,8 +12,8 @@ import { orderBy } from './fastStorages/indices';
 import messageHistory from './fastStorages/indices/messageHistory';
 import sharedMediaIndex from './fastStorages/indices/sharedMediaIndex';
 import pollsIndex from './fastStorages/indices/pollsIndex';
-
-// todo: Save the main part of the cache to a persistent storage
+import { getDatabase } from './persistentStorages/database';
+import PersistentCache from './persistentCache';
 
 /**
  * User repo
@@ -122,12 +122,22 @@ messageCache.changes.subscribe(
   ),
 );
 
+export const persistentCache = new PersistentCache(
+  messageCache,
+  userCache,
+  chatCache,
+  dialogCache,
+);
+
 /**
  * Debug
  */
 if (process.env.NODE_ENV !== 'production') {
-  (window as any).mcache = messageCache;
-  (window as any).ccache = chatCache;
-  (window as any).dcache = dialogCache;
-  (window as any).ucache = userCache;
+  Object.assign(window, {
+    messageCache,
+    chatCache,
+    dialogCache,
+    userCache,
+    getDatabase,
+  });
 }

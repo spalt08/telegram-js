@@ -1,3 +1,4 @@
+@import '~styles/variables.scss';
 
 textarea.message-text {
   appearance: none;
@@ -14,6 +15,10 @@ textarea.message-text {
   line-height: 20PX;
   resize: none;
   overflow: hidden;
+
+  @include respond-to(small) {
+    max-width: calc(100% - 106px);
+  }
 
   &:active {
     outline: none;

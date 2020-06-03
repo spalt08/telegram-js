@@ -26,6 +26,10 @@ export interface TaskPayloadMap {
   'url_map': {
     url: string,
     map: string,
+  },
+  'webp_loaded': {
+    url: string,
+    blob: Blob,
   }
 }
 
@@ -87,6 +91,10 @@ export interface NotificationPayloadMap {
   'upload_ready': {
     id: string,
     inputFile: InputFile,
+  };
+  'webp': {
+    url: string,
+    data: ArrayBuffer,
   };
 }
 

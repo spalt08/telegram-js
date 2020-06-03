@@ -1,7 +1,7 @@
 import { div, img } from 'core/html';
 import { Document } from 'mtproto-js';
 import { mount, listen } from 'core/dom';
-import { getThumbnail, getSize, getPhotoLocation } from 'helpers/photo';
+import { getSize, getPhotoLocation } from 'helpers/photo';
 import { getDocumentLocation } from 'helpers/files';
 import { file } from 'client/media';
 import { tgs } from 'components/ui';
@@ -18,7 +18,7 @@ type StickerOptions = {
 
 export default function stickerRenderer(sticker: Document.document,
   { size = '200px', autoplay = true, playOnHover = false, onClick }: StickerOptions) {
-  let thumbnail: HTMLElement | undefined;
+  let thumbnail: HTMLImageElement | undefined;
   let animated: ReturnType<typeof tgs> | undefined;
 
   const container = div`.sticker`({ style: { width: size, height: size } });
@@ -27,15 +27,26 @@ export default function stickerRenderer(sticker: Document.document,
   const src = file(location, { dc_id: sticker.dc_id, size: sticker.size, mime_type: sticker.mime_type });
 
   // diplay thumbnail
-  if (sticker.thumbs && sticker.thumbs.length > 0) {
+  if (sticker.mime_type === StickerMimeType.TGS && sticker.thumbs && sticker.thumbs.length > 0) {
     const tsize = getSize(sticker.thumbs, 200, 200, 'cover');
 
     if (tsize) {
       const loc = getPhotoLocation(sticker, tsize.type);
-      thumbnail = img({ className: 'sticker__thumb', src: file(loc, {}), alt: 'Sticker Preview' });
+      const thumbSrc = file(loc, { mime_type: 'image/webp' });
+      thumbnail = img({ className: 'sticker__thumb', src: thumbSrc, alt: 'Sticker Preview' });
+
+      // const time = Date.now();
+
+      listen(thumbnail, 'error', (event) => {
+        console.log('error', event);
+        // if (!thumbnail || Date.now() - time < 30 * 1000) return;
+
+        // thumbnail.src = '';
+        // thumbnail.src = thumbSrc;
+      });
     } else {
-      const thumbSrc = getThumbnail(sticker.thumbs!);
-      if (thumbSrc) thumbnail = img({ className: 'sticker__thumb', src: getThumbnail(sticker.thumbs!), alt: 'Sticker Preview' });
+      // const thumbSrc = getThumbnail(sticker.thumbs!);
+      // if (thumbSrc) thumbnail = img({ className: 'sticker__thumb', src: getThumbnail(sticker.thumbs!), alt: 'Sticker Preview' });
     }
 
     if (thumbnail) mount(container, thumbnail);
