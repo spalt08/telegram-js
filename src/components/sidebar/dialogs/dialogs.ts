@@ -1,11 +1,10 @@
-
 import { status } from 'components/sidebar';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { VirtualizedList, sectionSpinner, roundButton, searchInput, contextMenu } from 'components/ui';
 import { div } from 'core/html';
 import { getInterface, useObservable } from 'core/hooks';
-import { animationFrameStart, mount, unmount, listen } from 'core/dom';
+import { animationFrameStart, mount, unmount } from 'core/dom';
 import * as icons from 'components/icons';
 import { globalSearch, dialog as service } from 'services';
 import dialog from '../dialog/dialog';
@@ -98,8 +97,6 @@ export default function dialogs({ onNavigate }: SidebarComponentProps) {
       searchResultLayer = undefined;
     }
   };
-
-  listen(searchInputEl, 'mouseenter', () => globalSearch.prepare());
 
   isSearchActive.pipe(distinctUntilChanged()).subscribe(async (isActive) => {
     await animationFrameStart();

@@ -25,6 +25,9 @@ export default class DialogsService {
 
   protected isComplete = false;
 
+  // The dialogs cache can be filled with the previus session dialogs. They aren't real and must be replaced on load.
+  protected areRealDialogsLoaded = false;
+
   protected readReporters: Record<string, DialogReadReporter> = {};
 
   constructor(private messageService: MessageService) {
@@ -139,7 +142,7 @@ export default class DialogsService {
   }
 
   async loadMoreDialogs() {
-    if (!this.isComplete) {
+    if (!this.isComplete && this.areRealDialogsLoaded) {
       const last = dialogCache.get(this.dialogs.value[this.dialogs.value.length - 1] as string);
       if (last) {
         const msg = messageCache.get(peerMessageToId(last.peer, last.top_message));
@@ -193,7 +196,12 @@ export default class DialogsService {
       userCache.put(data.users);
       chatCache.put(data.chats);
       messageCache.put(data.messages);
-      dialogCache.put(data.dialogs);
+      if (this.areRealDialogsLoaded) {
+        dialogCache.put(data.dialogs);
+      } else {
+        this.areRealDialogsLoaded = true;
+        dialogCache.replaceAll(data.dialogs);
+      }
       this.messageService.pushMessages(data.messages);
 
       if (dialogsToPreload) {

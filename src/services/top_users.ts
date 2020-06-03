@@ -3,14 +3,16 @@ import { BehaviorSubject } from 'rxjs';
 import { first } from 'rxjs/operators';
 import { ContactsTopPeers, Peer, TopPeer } from 'mtproto-js';
 import client from 'client/client';
-import { chatCache, userCache } from 'cache';
+import { chatCache, persistentCache, userCache } from 'cache';
 import { arePeersSame } from 'helpers/api';
 import MessagesService from './message/message';
 
 const RATING_E_DECAY = 2419200; // todo: Load it from the server config: https://core.telegram.org/method/help.getConfig
 
 const maxLoadCount = 15;
+const startLoadDelay = 1000;
 const activePeerChangeReactionDelay = 700; // Delayed to not overload the hard peer change process
+const updateInterval = 24 * 60 * 60 * 1000;
 
 export interface LoadedTopPeers {
   items: TopPeer[],
@@ -85,12 +87,24 @@ async function loadTopUsers(): Promise<TopPeersState> {
 export default class TopUsersService {
   readonly isUpdating = new BehaviorSubject(false);
 
-  // todo: Keep in a persistent storage because this API endpoint emits a FLOOD WAIT error quickly. Update every 24 hours.
-  // todo: Load after a few seconds after application start if the cache is empty
   readonly topUsers = new BehaviorSubject<TopPeersState>('unknown');
 
   constructor(messagesService: MessagesService) {
     messagesService.activePeer.subscribe(this.handleActivePeer);
+
+    persistentCache.isRestored
+      .pipe(first((isRestored) => isRestored))
+      .subscribe(() => {
+        if (persistentCache.topUsers) {
+          this.topUsers.next(persistentCache.topUsers);
+          setTimeout(() => this.scheduleUpdate(), startLoadDelay);
+        } else {
+          setTimeout(() => this.updateIfRequired(), startLoadDelay);
+        }
+        this.topUsers.subscribe((topUsers) => {
+          persistentCache.topUsers = typeof topUsers === 'object' ? topUsers : undefined;
+        });
+      });
   }
 
   async update() {
@@ -111,7 +125,7 @@ export default class TopUsersService {
   }
 
   async updateIfRequired() {
-    if (this.topUsers.value === 'unknown') {
+    if (persistentCache.isRestored.value && this.topUsers.value === 'unknown') {
       await this.update();
     }
   }
@@ -136,4 +150,11 @@ export default class TopUsersService {
       }
     }, activePeerChangeReactionDelay);
   };
+
+  protected scheduleUpdate() {
+    const topUsers = this.topUsers.value;
+    if (typeof topUsers === 'object') {
+      setTimeout(() => this.update(), topUsers.fetchedAt + updateInterval - Date.now());
+    }
+  }
 }

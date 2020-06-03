@@ -1,19 +1,17 @@
 import { BehaviorSubject, combineLatest, Subscription } from 'rxjs';
-import { first, map } from 'rxjs/operators';
+import { first } from 'rxjs/operators';
 import debounceWithQueue from 'helpers/debounceWithQueue';
 import { arePeersSame, messageToDialogPeer, peerMessageToId, peerToId } from 'helpers/api';
 import client from 'client/client';
 import { ContactsFound, Message, MessagesMessages, Peer } from 'mtproto-js';
-import { chatCache, dialogCache, messageCache, userCache } from 'cache';
+import { chatCache, messageCache, persistentCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
 import TopUsersService from './top_users';
-import DialogsService from './dialog/dialog';
 
 const loadMessagesChunkLength = 20;
 const contactsSearchMaxCount = 10;
 const searchRequestDebounce = 250;
 const maxRecentPeersCount = 20;
-const maxRecentPeersFromDialogsCount = 6;
 
 export type SearchRequest = string;
 
@@ -140,25 +138,13 @@ export default class GlobalSearch {
 
   protected sourceSubscriptions: Subscription[] = [];
 
-  protected isPrepared = false;
-
-  constructor(protected topUsers: TopUsersService, dialogs?: DialogsService) {
-    if (dialogs) {
-      // todo: Keep the recent peers in a persistent storage instead of getting from the dialogs
-      this.addRecentPeersFromDialogs(dialogs);
-    }
-  }
-
-  /**
-   * A temporary hack. Call it when you thing the user will start searching (even with empty search) soon. It's optional.
-   *
-   * @todo Remove in favour of the top users long term caching
-   */
-  prepare() {
-    if (!this.isPrepared) {
-      this.isPrepared = true;
-      this.topUsers.updateIfRequired();
-    }
+  constructor(protected topUsers: TopUsersService) {
+    persistentCache.isRestored
+      .pipe(first((isRestored) => isRestored))
+      .subscribe(() => {
+        this.addOldRecentPeers(persistentCache.searchRecentPeers || []);
+        this.recentPeers.subscribe((peers) => persistentCache.searchRecentPeers = peers);
+      });
   }
 
   search(request: SearchRequest) {
@@ -310,25 +296,7 @@ export default class GlobalSearch {
     this.sourceSubscriptions.splice(0);
   }
 
-  protected addRecentPeersFromDialogs(dialogs: DialogsService) {
-    dialogs.dialogs
-      .pipe(
-        map((dialogIds) => dialogIds.reduce<Peer[]>((peers, dialogId) => {
-          if (peers.length >= maxRecentPeersFromDialogsCount) {
-            return peers;
-          }
-          const dialog = dialogCache.get(dialogId);
-          if (dialog?._ === 'dialog') {
-            peers.push(dialog.peer);
-          }
-          return peers;
-        }, [])),
-        first((peers) => peers.length > 0),
-      )
-      .subscribe((peers) => this.addOldRecentPeers(peers));
-  }
-
-  protected addOldRecentPeers(peers: Peer[]) {
+  protected addOldRecentPeers(peers: readonly Peer[]) {
     const existingPeers = new Set<string>();
     const newRecentPeers = [...this.recentPeers.value];
 
