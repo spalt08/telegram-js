@@ -49,6 +49,11 @@ $break-widescreen: 1680px;
   &::-webkit-scrollbar {
     width: 4px;
     height: 4px;
+
+    @include respond-to(small) {
+      width: 1PX;
+      height: 1px;
+    }
   }
 }
 

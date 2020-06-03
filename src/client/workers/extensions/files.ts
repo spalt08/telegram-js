@@ -4,7 +4,7 @@ import { DownloadOptions } from 'client/types';
 import { StickerMimeType } from 'const';
 import { InputFileLocation } from 'mtproto-js';
 import { inflate } from 'pako/lib/inflate';
-import { Safari } from 'helpers/browser';
+import { isWebpSupported } from 'helpers/browser';
 import { workerTask } from './context';
 
 // constants
@@ -100,7 +100,7 @@ export function loopDownload(info: FileInfo, get: FilePartResolver, cache: Cache
         }
 
         case StickerMimeType.WebP:
-          if (Safari) {
+          if (!isWebpSupported) {
             workerTask('webp', { url: info.url, data: ab });
             info.chunks = [];
             currentlyProcessing--;

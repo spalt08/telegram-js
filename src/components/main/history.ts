@@ -12,7 +12,11 @@ import * as icons from 'components/icons';
 import messageInput from 'components/message/input/input';
 import { Peer } from 'mtproto-js';
 import { compareSamePeerMessageIds, peerMessageToId, peerToId } from 'helpers/api';
+<<<<<<< HEAD
 import { iOS } from 'helpers/browser';
+=======
+import { isiOS } from 'helpers/browser';
+>>>>>>> c71c54e9e90da3e552fabbda4764b481890712f0
 import { messageCache, dialogCache, chatCache, messageDayMap } from 'cache';
 import header from './header/header';
 import historyDay from './history_day/history_day';
@@ -98,7 +102,7 @@ export default function history({ onBackToContacts }: Props) {
     threshold: 2,
     batch: 20, // navigator.userAgent.indexOf('Safari') > -1 ? 5 : 20,
     initialPaddingBottom: 10,
-    forcePadding: iOS ? 100000 : 0,
+    forcePadding: isiOS ? 100000 : 0,
     renderer: (id: string) => message(id, service.activePeer.value!), // , (mid: string) => scroll.pendingRecalculate.push(mid)),
     selectGroup: (id: string) => messageDayMap.get(id) || '0',
     renderGroup: historyDay,

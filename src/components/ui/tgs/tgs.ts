@@ -97,20 +97,25 @@ export default function tgs({ src, className, autoplay = true, loop = false, pla
 
   const playAnimation = () => {
     if (!shouldPlay || !isVisible) return;
-    // console.log('playAnimation');
+
     if (animationData && !animation) loadAnimation();
     if (shouldPlay && animation && animation.isPaused) animation.play();
   };
 
   useOnMount(container, () => {
-    if (isRequested) return;
+    if (isRequested || animationData) return;
 
     isRequested = true;
+
     fetch(src)
       .then((res) => res.json())
       .then((data: any) => {
         animationData = data;
+        isRequested = false;
         if (isVisible) playAnimation();
+      })
+      .catch(() => {
+        isRequested = false;
       });
   });
 
@@ -129,7 +134,7 @@ export default function tgs({ src, className, autoplay = true, loop = false, pla
   watchVisibility(container, (_isVisible) => {
     isVisible = _isVisible;
 
-    if (isVisible && isRequested) playAnimation();
+    if (isVisible && animationData) playAnimation();
     else if (!isVisible && animation && !animation.isPaused) animation.pause();
   });
 
