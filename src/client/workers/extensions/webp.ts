@@ -1,7 +1,7 @@
 import { WebPDecoder } from 'vendor/libwebp-0.2.0';
 import { encode } from 'fast-png';
 
-export function webp2png(file: ArrayBuffer): Response {
+export function webp2png(file: ArrayBuffer): Blob {
   const data = new Uint8Array(file);
   const decoder = new WebPDecoder();
   const config = decoder.WebPDecoderConfig;
@@ -32,8 +32,8 @@ export function webp2png(file: ArrayBuffer): Response {
     });
 
     const blob = new Blob([pngData], { type: 'image/png' });
-    return new Response(blob);
+    return blob;
   }
 
-  return new Response(file);
+  return new Blob([file], { type: 'image/webp' });
 }

@@ -96,6 +96,7 @@ export default function tgs({ src, className, autoplay = true, loop = false, pla
   };
 
   const playAnimation = () => {
+    if (!shouldPlay || !isVisible) return;
     // console.log('playAnimation');
     if (animationData && !animation) loadAnimation();
     if (shouldPlay && animation && animation.isPaused) animation.play();
@@ -121,7 +122,7 @@ export default function tgs({ src, className, autoplay = true, loop = false, pla
   });
 
   if (playOnHover) {
-    listen(container, 'mouseenter', () => animation && animation.isPaused && animation.play());
+    listen(container, 'mouseenter', () => playAnimation());
     listen(container, 'mouseleave', () => animation && !animation.isPaused && animation.pause());
   }
 

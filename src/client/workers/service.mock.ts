@@ -65,10 +65,8 @@ ctx.onmessage = (event) => {
     }
 
     case 'webp_loaded': {
-      const { url } = msg.payload;
-      caches.open('files')
-        .then((cache) => cache.match(url))
-        .then((response) => response && respondDownload(url, response));
+      const { url, blob } = msg.payload;
+      respondDownload(url, new Response(blob), cacheMock);
       break;
     }
 

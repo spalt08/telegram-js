@@ -9,7 +9,7 @@ import { workerTask } from './context';
 
 // constants
 const DOWNLOAD_CHUNK_LIMIT = 1024 * 1024;
-const MAX_CONCURRENT_DOWNLOADS = 2;
+const MAX_CONCURRENT_DOWNLOADS = 4;
 
 export interface FilePartResolver {
   (location: InputFileLocation, offset: number, limit: number, options: DownloadOptions, ready: (data: ArrayBuffer, mime?: string) => void): void,
@@ -35,7 +35,6 @@ const files = new Map<FileURL, FileInfo>();
 const fileEvents: Record<FileURL, Array<(res: Response) => void>> = {};
 const fileQueue: FileURL[] = [];
 let currentlyProcessing = 0;
-
 
 export function ungzipResponse(response: Response, mime: string = 'application/json') {
   return response.arrayBuffer()
@@ -65,12 +64,13 @@ function finishDownload(info: FileInfo, blob: Blob | Response, cache: Cache, get
   processQueuedDownloads(get, cache, progress);
 }
 
-export function respondDownload(url: string, response: Response) {
+export function respondDownload(url: string, response: Response, cache: Cache) {
   const info = files.get(url);
 
   if (!info) return;
 
   if (fileEvents[info.url]) for (let i = 0; i < fileEvents[info.url].length; i++) fileEvents[info.url][i](response.clone());
+  cache.put(info.url, response);
 
   delete fileEvents[info.url];
   info.processing = false;
@@ -104,6 +104,9 @@ export function loopDownload(info: FileInfo, get: FilePartResolver, cache: Cache
             workerTask('webp', { url: info.url, data: ab });
             info.chunks = [];
             currentlyProcessing--;
+            // Pass Control to queued files
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define
+            processQueuedDownloads(get, cache, progress);
             break;
           }
 
@@ -157,6 +160,8 @@ export function processQueuedDownloads(get: FilePartResolver, cache: Cache, prog
  * Download Queue
  */
 export function putDownloadQueue(url: string, get: FilePartResolver, cache: Cache, progress: ProgressResolver) {
+  if (fileQueue.indexOf(url) > -1) return;
+
   fileQueue.push(url);
   fileQueue.sort((left, right) => (files.get(right)!.options.priority || 0) - (files.get(left)!.options.priority || 0));
   processQueuedDownloads(get, cache, progress);
@@ -168,5 +173,5 @@ export function putDownloadQueue(url: string, get: FilePartResolver, cache: Cach
 export function fetchRequest(url: string, resolve: (res: Response) => void, get: FilePartResolver, cache: Cache, progress: ProgressResolver) {
   if (!fileEvents[url]) fileEvents[url] = [];
   fileEvents[url].push(resolve);
-  initDownload(url, get, cache, progress);
+  putDownloadQueue(url, get, cache, progress);
 }

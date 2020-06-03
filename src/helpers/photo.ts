@@ -80,14 +80,14 @@ export function getOrientation(sizes: PhotoSize[]): PhotoOrinetation {
   return 'landscape';
 }
 
-export function getSize(sizes: PhotoSize[], width?: number, height?: number, fit?: PhotoFitMode): PhotoSize.photoSize | null {
+export function getSize(sizes: PhotoSize[], width?: number, height?: number, fit?: PhotoFitMode): PhotoSize.photoSize | PhotoSize.photoCachedSize | null {
   let diff: number | undefined;
-  let closest: PhotoSize.photoSize | undefined;
+  let closest: PhotoSize.photoSize | PhotoSize.photoCachedSize | undefined;
 
   for (let i = 0; i < sizes.length; i += 1) {
     const size = sizes[i];
 
-    if (size._ === 'photoSize') {
+    if (size._ === 'photoSize' || size._ === 'photoCachedSize') {
       const isLandscape = size.w > size.h;
 
       let max = isLandscape ? width : height;

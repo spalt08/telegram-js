@@ -29,6 +29,7 @@ export interface TaskPayloadMap {
   },
   'webp_loaded': {
     url: string,
+    blob: Blob,
   }
 }
 

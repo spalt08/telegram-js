@@ -36,7 +36,10 @@ const initNetwork = () => load(dbkey).then((meta: any) => {
   // for (let i = 1; i <= 5; i++) ctx.network.authorize(i);
 });
 
-const initCache = () => 'caches' in self && caches.open('files').then((cache) => ctx.cache = cache);
+const initCache = () => new Promise((resolve) => {
+  if (ctx.cache) resolve(ctx.cache);
+  else if ('caches' in self) caches.open('files').then((cache) => resolve(ctx.cache = cache));
+});
 
 /**
  * File Part Request
@@ -130,8 +133,8 @@ function processWindowMessage(msg: WindowMessage, source: Client | MessagePort |
     }
 
     case 'webp_loaded': {
-      const { url } = msg.payload;
-      ctx.cache.match(url).then((response) => response && respondDownload(url, response));
+      const { url, blob } = msg.payload;
+      respondDownload(url, new Response(blob), ctx.cache);
       break;
     }
 
@@ -174,57 +177,70 @@ ctx.onmessage = (event) => {
   else processWindowMessage(event.data as WindowMessage, event.source);
 };
 
+function timeout(delay: number): Promise<Response> {
+  return new Promise(((resolve) => {
+    setTimeout(() => {
+      resolve(new Response('', {
+        status: 408,
+        statusText: 'Request timed out.',
+      }));
+    }, delay);
+  }));
+}
+
 /**
  * Fetch requests
  */
 ctx.addEventListener('fetch', (event: FetchEvent): void => {
-  console.log('fetch', ctx.cache, event.request.url);
-
-  if (!ctx.cache) initCache();
   if (!ctx.network) initNetwork();
 
-  const [, url, scope] = /http[:s]+\/\/.*?(\/(.*?)\/.*$)/.exec(event.request.url) || [];
+  initCache().then(() => {
+    const [, url, scope] = /http[:s]+\/\/.*?(\/(.*?)\/.*$)/.exec(event.request.url) || [];
 
-  switch (scope) {
-    case 'documents':
-    case 'photos':
-    case 'profiles':
-      event.respondWith(
-        ctx.cache.match(url).then((cached) => {
-          if (cached) return cached;
+    switch (scope) {
+      case 'documents':
+      case 'photos':
+      case 'profiles':
+        event.respondWith(
+          ctx.cache.match(url).then((cached) => {
+            if (cached) return cached;
 
-          return new Promise((resolve) => {
-            fetchRequest(url, resolve, getFilePartRequest, ctx.cache, fileProgress);
-          });
-        }),
-      );
-      break;
+            return Promise.race([
+              timeout(59 * 1000), // safari fix
+              new Promise<Response>((resolve) => {
+                fetchRequest(url, resolve, getFilePartRequest, ctx.cache, fileProgress);
+              }),
+            ]);
+          }),
+        );
+        break;
 
-    case 'stream': {
-      const [offset, end] = parseRange(event.request.headers.get('Range') || '');
+      case 'stream': {
+        const [offset, end] = parseRange(event.request.headers.get('Range') || '');
 
-      log('stream', url, offset, end);
+        log('stream', url, offset, end);
 
-      event.respondWith(new Promise((resolve) => {
-        fetchStreamRequest(url, offset, end, resolve, getFilePartRequest);
-      }));
-      break;
+        event.respondWith(new Promise((resolve) => {
+          fetchStreamRequest(url, offset, end, resolve, getFilePartRequest);
+        }));
+        break;
+      }
+
+      case 'cached': {
+        const [, bytes] = /\/cached\/(.*?).svg/.exec(url) || [];
+        event.respondWith(fetchCachedSize(bytes));
+        break;
+      }
+
+      case 'stripped': {
+        const [, bytes] = /\/stripped\/(.*?).svg/.exec(url) || [];
+        event.respondWith(fetchSrippedSize(bytes));
+        break;
+      }
+
+      default:
+        if (url && url.endsWith('.tgs')) event.respondWith(fetchTGS(url));
+        else event.respondWith(fetch(event.request.url));
     }
-
-    case 'cached': {
-      const [, bytes] = /\/cached\/(.*?).svg/.exec(url) || [];
-      event.respondWith(fetchCachedSize(bytes));
-      break;
-    }
-
-    case 'stripped': {
-      const [, bytes] = /\/stripped\/(.*?).svg/.exec(url) || [];
-      event.respondWith(fetchSrippedSize(bytes));
-      break;
-    }
-
-    default:
-      if (url && url.endsWith('.tgs')) event.respondWith(fetchTGS(url));
-      else event.respondWith(fetch(event.request.url));
-  }
+  });
 });

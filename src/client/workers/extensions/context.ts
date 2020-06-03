@@ -21,7 +21,7 @@ export function workerTask<K extends NotificationType>(type: K, payload: Notific
     .clients
     .matchAll({ includeUncontrolled: false, type: 'window' })
     .then(
-      (listeners) => listeners.length > 0 && listeners[0].postMessage({ type, payload, worker: true }, transferable),
+      (listeners) => listeners.length > 0 && listeners[listeners.length - 1].postMessage({ type, payload, worker: true }, transferable),
     );
 }
 
