@@ -49,7 +49,7 @@ function autosaveStrategy(save: () => Promise<void> | void) {
 }
 
 // todo: Clear on log out / sign out / exit
-export default class FastRestartCache {
+export default class PersistentCache {
   readonly isRestored = new BehaviorSubject(false);
 
   // Just write here when you want to save the cache

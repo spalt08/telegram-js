@@ -13,7 +13,7 @@ import messageHistory from './fastStorages/indices/messageHistory';
 import sharedMediaIndex from './fastStorages/indices/sharedMediaIndex';
 import pollsIndex from './fastStorages/indices/pollsIndex';
 import { getDatabase } from './persistentStorages/database';
-import FastRestartCache from './fastRestartCache';
+import PersistentCache from './persistentCache';
 
 /**
  * User repo
@@ -122,7 +122,7 @@ messageCache.changes.subscribe(
   ),
 );
 
-export const persistentCache = new FastRestartCache(
+export const persistentCache = new PersistentCache(
   messageCache,
   userCache,
   chatCache,
