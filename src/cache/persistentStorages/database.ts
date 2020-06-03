@@ -1,9 +1,11 @@
+import { promisifyTransaction } from 'helpers/indexedDb';
+
 // Stores the low level API to deal with the database. Also stores the database schema.
 
 const META_STORE_NAME = 'meta';
 
 // Increment it when you change the schema below
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 
 function makeSchema(db: IDBDatabase) {
   db.createObjectStore('messages');
@@ -63,28 +65,11 @@ export function getDatabase(): Promise<IDBDatabase> {
   return databasePromise;
 }
 
-// Turns transaction into a promise that settles when the transaction ends
-export async function performTransaction<T>(
+export async function runTransaction<T>(
   storeNames: string | string[],
   mode: IDBTransactionMode,
   action: (transaction: IDBTransaction) => Promise<T> | T,
 ): Promise<T> {
   const database = await getDatabase();
-
-  return new Promise((resolve, reject) => {
-    const transaction = database.transaction(storeNames, mode);
-    transaction.onerror = () => reject(transaction.error);
-
-    Promise.resolve()
-      .then(() => action(transaction))
-      .then(
-        (result) => {
-          transaction.oncomplete = () => resolve(result);
-        },
-        (error) => {
-          reject(error);
-          transaction.abort();
-        },
-      );
-  });
+  return promisifyTransaction(database.transaction(storeNames, mode), action);
 }

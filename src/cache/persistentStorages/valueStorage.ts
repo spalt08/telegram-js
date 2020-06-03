@@ -1,4 +1,4 @@
-import { performTransaction } from './database';
+import { runTransaction } from './database';
 
 export default class ValueStorage<T> {
   constructor(
@@ -9,7 +9,7 @@ export default class ValueStorage<T> {
   public get(): Promise<T | undefined> {
     const { storeName } = this;
 
-    return performTransaction(storeName, 'readonly', (transaction) => new Promise((resolve) => {
+    return runTransaction(storeName, 'readonly', (transaction) => new Promise((resolve) => {
       const store = transaction.objectStore(storeName);
       const request = store.get(this.key);
       request.onsuccess = () => resolve(request.result);
@@ -19,7 +19,7 @@ export default class ValueStorage<T> {
   public set(value: T): Promise<void> {
     const { storeName } = this;
 
-    return performTransaction(storeName, 'readwrite', (transaction) => {
+    return runTransaction(storeName, 'readwrite', (transaction) => {
       transaction.objectStore(storeName).put(value, this.key);
     });
   }
@@ -27,7 +27,7 @@ export default class ValueStorage<T> {
   public remove(): Promise<void> {
     const { storeName } = this;
 
-    return performTransaction(storeName, 'readwrite', (transaction) => {
+    return runTransaction(storeName, 'readwrite', (transaction) => {
       transaction.objectStore(storeName).delete(this.key);
     });
   }

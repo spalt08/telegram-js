@@ -7,16 +7,14 @@ export type GetId<TItem, TId extends keyof any> = (item: Readonly<TItem>) => TId
 
 export type IndexFactory<TItem, TId extends keyof any, TIndex> = (collection: Collection<TItem, any, TId>) => TIndex;
 
-export type IndicesFactories<TItem, TId extends keyof any> = Record<keyof any, IndexFactory<TItem, TId, any>>;
-
-export type IndicesFromFactories<T extends IndicesFactories<any, any>> = {
-  [K in keyof T]: T[K] extends IndexFactory<any, any, infer TIndex> ? TIndex : never;
+export type IndicesFactories<TIndices extends Record<any, any>, TItem, TId extends keyof any> = {
+  [K in keyof TIndices]: IndexFactory<TItem, TId, TIndices[K]>;
 };
 
-export interface Options<TItem, TIndices, TId extends keyof any> {
+export interface Options<TItem, TIndices extends Record<any, any>, TId extends keyof any> {
   getId: GetId<TItem, TId>;
   itemMerger?: ItemMerger<TItem>;
-  indices?: TIndices;
+  indices?: IndicesFactories<TIndices, TItem, TId>;
   data?: Readonly<TItem>[];
 }
 
@@ -29,12 +27,12 @@ export function makeGetIdFromProp<
   return (item) => item[prop];
 }
 
-export default class Collection<TItem, TIndices extends IndicesFactories<any, any>, TId extends keyof any = keyof any> {
+export default class Collection<TItem, TIndices extends Record<any, any>, TId extends keyof any = keyof any> {
   public getId: GetId<TItem, TId>;
 
   public readonly changes: Observable<ChangeEvent<TItem, TId>[]>;
 
-  public readonly indices: IndicesFromFactories<TIndices>;
+  public readonly indices: TIndices;
 
   protected readonly storage: Dictionary<TId, TItem>;
 
@@ -51,7 +49,7 @@ export default class Collection<TItem, TIndices extends IndicesFactories<any, an
         ([action, key, item]) => [action, item, key],
       ),
     ));
-    this.indices = mapObject(indices, (indexFactory) => indexFactory(this)) as IndicesFromFactories<TIndices>;
+    this.indices = mapObject<keyof TIndices, IndicesFactories<TIndices, TItem, TId>, TIndices>(indices, (indexFactory) => indexFactory(this));
     this.put(data);
   }
 

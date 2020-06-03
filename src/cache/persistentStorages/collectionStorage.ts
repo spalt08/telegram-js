@@ -10,11 +10,11 @@ function getItemsRecord<TId extends keyof any, TItem>(items: TItem[], getId: Get
 }
 
 export default class CollectionStorage<TItem, TId extends (keyof any) & IDBValidKey> {
-  protected dictionary: DictionaryStorage<TId, TItem>;
+  private dictionary: DictionaryStorage<TId, TItem>;
 
   constructor(
     storeName: string, // IndexedDB store name. Don't forget to add it to the schema.
-    protected getId: GetId<TItem, TId>,
+    private getId: GetId<TItem, TId>,
   ) {
     this.dictionary = new DictionaryStorage(storeName);
   }

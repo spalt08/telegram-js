@@ -1,4 +1,4 @@
-import { performTransaction } from './database';
+import { runTransaction } from './database';
 
 function putMany(store: IDBObjectStore, items: Record<keyof any, any>) {
   Object.keys(items).forEach((key) => {
@@ -8,7 +8,7 @@ function putMany(store: IDBObjectStore, items: Record<keyof any, any>) {
 
 export default class DictionaryStorage<TKey extends (keyof any) & IDBValidKey, TItem> {
   constructor(
-    protected storeName: string, // IndexedDB store name. Don't forget to add it to the schema.
+    private storeName: string, // IndexedDB store name. Don't forget to add it to the schema.
   ) {}
 
   // Use `each` when possible to prevent creating an excess object in the memory
@@ -24,7 +24,7 @@ export default class DictionaryStorage<TKey extends (keyof any) & IDBValidKey, T
   public each(callback: (key: TKey, item: TItem) => false | void): Promise<void> {
     const { storeName } = this;
 
-    return performTransaction(storeName, 'readonly', (transaction) => new Promise((resolve, reject) => {
+    return runTransaction(storeName, 'readonly', (transaction) => new Promise((resolve, reject) => {
       const store = transaction.objectStore(storeName);
       const request = store.openCursor();
 
@@ -46,7 +46,7 @@ export default class DictionaryStorage<TKey extends (keyof any) & IDBValidKey, T
   public putMany(items: Record<TKey, TItem>): Promise<void> {
     const { storeName } = this;
 
-    return performTransaction(storeName, 'readwrite', (transaction) => {
+    return runTransaction(storeName, 'readwrite', (transaction) => {
       putMany(transaction.objectStore(storeName), items);
     });
   }
@@ -54,7 +54,7 @@ export default class DictionaryStorage<TKey extends (keyof any) & IDBValidKey, T
   public replaceAll(items: Record<TKey, TItem>): Promise<void> {
     const { storeName } = this;
 
-    return performTransaction(storeName, 'readwrite', (transaction) => {
+    return runTransaction(storeName, 'readwrite', (transaction) => {
       const store = transaction.objectStore(storeName);
       store.clear();
       putMany(store, items);
