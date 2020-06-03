@@ -1,6 +1,6 @@
 import { chatCache, messageCache, userCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
-import client from 'client/client';
+import client, { fetchUpdates } from 'client/client';
 import { Peer, Update } from 'mtproto-js';
 
 export default class PollsService {
@@ -29,19 +29,16 @@ export default class PollsService {
   }
 
   public async sendVote(peer: Peer, messageId: number, options: ArrayBuffer[]) {
-    const updates = await client.call('messages.sendVote', {
-      peer: peerToInputPeer(peer),
-      msg_id: messageId,
-      options,
-    });
-    if (updates._ === 'updates') {
-      userCache.put(updates.users);
-      chatCache.put(updates.chats);
-      updates.updates.forEach((update: Update) => {
-        if (update._ === 'updateMessagePoll') {
-          this.processUpdateMessagePoll(update);
-        }
+    try {
+      const updates = await client.call('messages.sendVote', {
+        peer: peerToInputPeer(peer),
+        msg_id: messageId,
+        options,
       });
+
+      fetchUpdates(updates);
+    } catch (e) {
+      console.warn('Faied to send vote', e);
     }
   }
 

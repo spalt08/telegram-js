@@ -1,8 +1,10 @@
 import { dialogCache, messageCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
-import client from 'client/client';
-import { arePeersSame, dialogPeerToDialogId, getDialogLastReadMessageId, getUserMessageId, peerMessageToId, shortChatMessageToMessage, shortMessageToMessage } from 'helpers/api';
-import { Dialog, InputMedia, Message, MessagesGetMessages, MessagesMessages, MessagesSendMedia, MethodDeclMap, Peer, Updates } from 'mtproto-js';
+import client, { fetchUpdates } from 'client/client';
+import { arePeersSame, dialogPeerToDialogId, getDialogLastReadMessageId, getUserMessageId, peerMessageToId, shortChatMessageToMessage,
+  shortMessageToMessage } from 'helpers/api';
+import { Dialog, InputMedia, Message, MessagesGetMessages, MessagesMessages, MessagesSendMedia, MethodDeclMap, Peer, Updates,
+  Update } from 'mtproto-js';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { first } from 'rxjs/operators';
 import makeMessageChunk, { MessageChunkService, MessageHistoryChunk } from './message_chunk';
@@ -38,33 +40,59 @@ export default class MessagesService {
   readonly replyToMessageID = new BehaviorSubject('');
 
   constructor() {
-    client.updates.on('updateNewMessage', (update) => {
+    client.updates.on('updateNewMessage', (update: Update.updateNewMessage) => {
       this.pushMessages([update.message]);
     });
 
-    client.updates.on('updateShortMessage', (update) => {
+    client.updates.on('updateShortMessage', (update: Updates.updateShortMessage) => {
       const message = shortMessageToMessage(client.getUserID(), update);
       this.pushMessages([message]);
     });
 
-    client.updates.on('updateShortChatMessage', (update) => {
+    client.updates.on('updateShortChatMessage', (update: Updates.updateShortChatMessage) => {
       const message = shortChatMessageToMessage(update);
       this.pushMessages([message]);
     });
 
-    client.updates.on('updateNewChannelMessage', (update) => {
+    client.updates.on('updateNewChannelMessage', (update: Update.updateNewChannelMessage) => {
       this.pushMessages([update.message]);
     });
 
-    client.updates.on('updateDeleteMessages', (update) => {
+    client.updates.on('updateDeleteMessages', (update: Update.updateDeleteMessages) => {
       update.messages.forEach((messageId: number) => messageCache.remove(getUserMessageId(messageId)));
     });
 
-    client.updates.on('updateDeleteChannelMessages', (update) => {
+    client.updates.on('updateDeleteChannelMessages', (update: Update.updateDeleteChannelMessages) => {
       // console.log('updateDeleteChannelMessages', update);
       update.messages.forEach((messageId: number) => messageCache.remove(
         peerMessageToId({ _: 'peerChannel', channel_id: update.channel_id }, messageId),
       ));
+    });
+
+    client.updates.on('updateMessageID', ({ id, random_id }: Update.updateMessageID) => {
+      const msg = this.pendingMessages[random_id];
+      if (!msg) return;
+
+      msg.id = id;
+      messageCache.indices.history.putNewestMessages([msg]);
+      delete this.pendingMessages[random_id];
+    });
+
+    client.updates.on('updateShortSentMessage', (update: Updates.updateShortSentMessage) => {
+      const pending = Object.keys(this.pendingMessages);
+
+      if (pending.length >= 0) {
+        const randId = pending[0];
+        const msg = this.pendingMessages[randId];
+
+        msg.id = update.id;
+        msg.date = update.date;
+        msg.entities = update.entities;
+        msg.media = update.media;
+
+        messageCache.indices.history.putNewestMessages([msg]);
+        delete this.pendingMessages[randId];
+      }
     });
   }
 
@@ -312,32 +340,12 @@ export default class MessagesService {
       message,
     };
 
-    let result: Updates | undefined;
     try {
-      result = await client.call('messages.sendMessage', params);
+      const updates = await client.call('messages.sendMessage', params);
+      fetchUpdates(updates);
     } catch (err) {
-      console.log(err);
+      console.warn('Failed to send message', err);
       // todo handling errors
-    }
-
-    console.log('send', result);
-
-    if (result?._ === 'updateShortSentMessage') {
-      this.pendingMessages[randId].id = result.id;
-      this.pendingMessages[randId].date = result.date;
-      this.pendingMessages[randId].entities = result.entities;
-
-      messageCache.indices.history.putNewestMessages([this.pendingMessages[randId]]);
-      delete this.pendingMessages[randId];
-    }
-
-    if (result?._ === 'updates') {
-      for (let i = 0; i < result.updates.length; i++) {
-        const update = result.updates[i];
-        if (update._ === 'updateNewMessage') {
-          messageCache.indices.history.putNewestMessages([update.message]);
-        }
-      }
     }
   };
 
@@ -353,9 +361,11 @@ export default class MessagesService {
     };
 
     try {
-      await client.call('messages.sendMedia', params);
+      const updates = await client.call('messages.sendMedia', params);
+      fetchUpdates(updates);
       // console.log('After sending', err, result);
     } catch (err) {
+      console.warn('Failed to send message', err);
       // todo handling errors
     }
   };
