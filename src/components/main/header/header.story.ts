@@ -2,6 +2,7 @@
 import { storiesOf } from '@storybook/html';
 import { withMountTrigger, withChatLayout, centered, withKnobWidth, withKnobPeer } from 'storybook/decorators';
 import { withKnobs } from '@storybook/addon-knobs';
+import { action } from '@storybook/addon-actions';
 import header from './header';
 
 const stories = storiesOf('Layout | History', module)
@@ -12,4 +13,4 @@ const stories = storiesOf('Layout | History', module)
   .addDecorator(withMountTrigger)
   .addDecorator(withChatLayout);
 
-stories.add('Header', () => header());
+stories.add('Header', () => header({ onBackToContacts: action('back') }));

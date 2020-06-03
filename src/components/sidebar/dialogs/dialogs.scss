@@ -18,7 +18,7 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    padding: 0 20px;
+    padding: 0 var(--content-padding);
     position: relative;
 
     &_button {
@@ -87,20 +87,20 @@
   &__button-menu {
     position: absolute;
     top: 60px;
-    left: 14px;
+    left: calc(var(--content-padding) - 6px);
   }
 
   &__new-message-menu {
     position: absolute;
-    bottom: 80px;
-    right: 20px;
+    bottom: calc(var(--content-padding) + 60px);
+    right: var(--content-padding);
     transform-origin: bottom right;
   }
 
   &__write {
     position: absolute;
-    right: 14px;
-    bottom: 14px;
+    right: var(--content-padding);
+    bottom: var(--content-padding);
     width: 60px;
     height: 60px;
     display: flex;
@@ -112,14 +112,18 @@
     cursor: pointer;
     border: 6px solid #FFFFFF;
     transition: .3s cubic-bezier(0.42, 0, 0.49, 1.34);
-    transform: translate(0, 75px);
+    transform: translate(6px, 81px);
 
     & path {
       fill: #FFFFFF;
     }
+
+    @include respond-to(small) {
+      transform: translate(6px, 6px);
+    }
   }
 
   &:hover &__write {
-    transform: translate(0, 0);
+    transform: translate(6px, 6px);
   }
 }

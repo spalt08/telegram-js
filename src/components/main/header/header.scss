@@ -1,8 +1,10 @@
+@import '~styles/variables.scss';
+
 .header {
   background: #FFFFFF;
   height: 60px;
   border-bottom: 1px solid #EDEEF0;
-  padding: 5px 11px 5px 20px;
+  padding: 5px var(--content-padding) 5px var(--content-padding);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -14,10 +16,11 @@
   }
 
   &__profile {
-    flex-grow: 1;
+    flex: 2;
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
+    overflow: hidden;
 
     & .avatar {
       width: 46px;
@@ -32,17 +35,23 @@
     flex-direction: column;
     align-items: flex-start;
     justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
   }
 
   &__title {
     font-weight: 500;
     font-size: 15px;
+    width: 100%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
   }
 
   &__pinned {
     $ripple-padding: 7px 7px;
 
-    flex-grow: 0;
+    flex: 1 0;
     min-width: 0; // To let it shrink when there is little space
     max-width: (250px + nth($ripple-padding, 2));
 
@@ -61,6 +70,7 @@
   &__actions {
     flex: none;
     display: flex;
+    margin-right: -9px;
   }
 
   &__typing-indicator {
@@ -81,5 +91,25 @@
     position: absolute;
     right: 14px;
     top: 62px;
+  }
+
+  &__back {
+    flex: none;
+    margin: 0 8px 0 -9px;
+    display: none;
+  }
+
+  @include respond-to(small) {
+    &__back {
+      display: flex;
+    }
+
+    &__search {
+      display: none;
+    }
+
+    &__profile {
+      max-width: calc(100% - 96px);
+    }
   }
 }

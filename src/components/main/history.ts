@@ -12,10 +12,15 @@ import * as icons from 'components/icons';
 import messageInput from 'components/message/input/input';
 import { Peer } from 'mtproto-js';
 import { compareSamePeerMessageIds, peerMessageToId, peerToId } from 'helpers/api';
+import { isiOS } from 'helpers/browser';
 import { messageCache, dialogCache, chatCache, messageDayMap } from 'cache';
 import header from './header/header';
 import historyDay from './history_day/history_day';
 import './history.scss';
+
+type Props = {
+  onBackToContacts: () => void,
+};
 
 function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
   const { length } = messageIds;
@@ -26,7 +31,7 @@ function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
   return reversed;
 }
 
-export default function history() {
+export default function history({ onBackToContacts }: Props) {
   const welcome = div`.history__welcome`(div`.history__welcome-text`(text('Select a chat to start messaging')));
   const container = div`.history`(welcome);
   const showDownButton = new BehaviorSubject(false);
@@ -93,6 +98,7 @@ export default function history() {
     threshold: 2,
     batch: 20, // navigator.userAgent.indexOf('Safari') > -1 ? 5 : 20,
     initialPaddingBottom: 10,
+    forcePadding: isiOS ? 100000 : 0,
     renderer: (id: string) => message(id, service.activePeer.value!), // , (mid: string) => scroll.pendingRecalculate.push(mid)),
     selectGroup: (id: string) => messageDayMap.get(id) || '0',
     renderGroup: historyDay,
@@ -121,7 +127,7 @@ export default function history() {
   }, icons.down());
 
   const messageInputEl = messageInput();
-  const headerEl = header();
+  const headerEl = header({ onBackToContacts });
   const historySection = div`.history__content`(scroll.container);
 
   mount(historySection, downButton);
@@ -178,9 +184,10 @@ export default function history() {
     scroll.cfg.pivotBottom = newestReached ? true : undefined;
   });
 
-  useObservable(container, service.history, (data) => itemsSubject.next(
-    service.activePeer.value ? prepareIdsList(service.activePeer.value, data.ids) : [],
-  ));
+  useObservable(container, service.history, (data) => {
+    scroll.cfg.topReached = data.oldestReached;
+    itemsSubject.next(service.activePeer.value ? prepareIdsList(service.activePeer.value, data.ids) : []);
+  });
 
   return container;
 }

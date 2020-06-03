@@ -23,6 +23,14 @@ $break-widescreen: 1680px;
     @media only screen and (max-width: $break-medium) and (min-width: $break-small + 1) { @content; }
   }
 
+  @if $media == small-medium {
+    @media only screen and (max-width: $break-medium) { @content; }
+  }
+
+  @if $media == desktop {
+    @media only screen and (min-width: $break-medium + 1) { @content; }
+  }
+
   @if $media == widescreen {
     @media only screen and (min-width: $break-widescreen) { @content; }
   }
@@ -41,6 +49,11 @@ $break-widescreen: 1680px;
   &::-webkit-scrollbar {
     width: 4px;
     height: 4px;
+
+    @include respond-to(small) {
+      width: 1PX;
+      height: 1px;
+    }
   }
 }
 
@@ -50,5 +63,23 @@ $break-widescreen: 1680px;
   &::-webkit-scrollbar {
     width: 0;
     height: 0;
+  }
+}
+
+:root {
+  --content-padding: 20px;
+  --content-message-padding: 11px;
+  --bubble-max-width: 75%;
+  --bubble-background: #FFFFFF;
+  --accent-color: #1da1f1;
+  --voice-message-bar: #1da1f1;
+  --voice-message-bar-transparent: rgba(112, 117, 121, 0.35);
+  --accent-color-inactive: #707579;
+  --animation-sidebar: .3s ease-in-out;
+
+  @include respond-to(small) {
+    --content-padding: 12px;
+    --content-message-padding: 3px;
+    --bubble-max-width: 80%;
   }
 }

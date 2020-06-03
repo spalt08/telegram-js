@@ -1,3 +1,5 @@
+/* eslint-disable no-lone-blocks */
+/* eslint-disable wrap-iife, func-names */
 import { a } from 'core/html';
 
 export type PhotoFitMode = 'contain' | 'cover';
