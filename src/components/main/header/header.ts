@@ -10,7 +10,11 @@ import { peerToId } from 'helpers/api';
 import './header.scss';
 import messageQuote from 'components/message/quote';
 
-export default function header() {
+type Props = {
+  onBackToContacts: () => void,
+};
+
+export default function header({ onBackToContacts }: Props) {
   const container = div`.header.hidden`();
 
   useObservable(container, message.activePeer, (peer) => {
@@ -20,6 +24,14 @@ export default function header() {
       container.classList.add('hidden');
       return;
     }
+
+    const backButton = div`.header__back`(
+      roundButton({
+        onClick: onBackToContacts,
+      }, icons.back()),
+    );
+
+    mount(container, backButton);
 
     const profile = div`.header__profile`(
       profileAvatar(peer, undefined, true),
@@ -62,6 +74,7 @@ export default function header() {
 
     const actions = div`.header__actions`(
       roundButton({
+        className: 'header__search',
         onClick: () => {
           main.openSidebar('messageSearch');
         },

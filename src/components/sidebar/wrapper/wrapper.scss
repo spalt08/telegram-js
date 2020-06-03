@@ -1,4 +1,4 @@
-$sidebarTransitionDuration: .3s ease-in-out;
+@import "~styles/variables.scss";
 
 .sidebarWrapper {
   position: absolute;
@@ -7,14 +7,14 @@ $sidebarTransitionDuration: .3s ease-in-out;
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.3);
-  transition: background-color $sidebarTransitionDuration;
-  animation: sidebarWrapperAppear $sidebarTransitionDuration;
+  transition: background-color var(--animation-sidebar);
+  animation: sidebarWrapperAppear var(--animation-sidebar);
 
   &__content {
     height: 100%;
     background-color: #FFFFFF;
-    transition: transform $sidebarTransitionDuration;
-    animation: sidebarWrapperContentAppear $sidebarTransitionDuration;
+    transition: transform var(--animation-sidebar);
+    animation: sidebarWrapperContentAppear var(--animation-sidebar);
   }
 
   &:first-child {

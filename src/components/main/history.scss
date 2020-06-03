@@ -1,3 +1,5 @@
+@import '~styles/variables.scss';
+
 .history {
   min-width: 0;
   min-height: 0;
@@ -8,8 +10,35 @@
   background-size: cover;
   background-position: center center;
   background-attachment: fixed;
+  flex: 1 50%;
+  overflow: hidden;
 
-  // performance tweak for right sidebar  
+  @include respond-to(small) {
+    flex: none;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    transform: translate3d(100%, 0, 0);
+
+    &.-visible {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @include respond-to(small-medium) {
+    transition: transform var(--animation-sidebar);
+    will-change: transform;
+
+    &.-visible.-popping {
+      transform: translate3d(-25%, 0, 0);
+    }
+  }
+
+  @include respond-to(desktop) {
+    will-change: width;
+  }
 
   &__list {
     display: flex;

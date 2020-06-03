@@ -2,15 +2,8 @@
 
 $messageSidePadding: 10PX;
 $messageBubblePadding: 7PX $messageSidePadding;
-$messageDistance: 4PX;
 
 .message {
-  --bubble-background: #FFFFFF;
-  --accent-color: #1da1f1;
-  --voice-message-bar: #1da1f1;
-  --voice-message-bar-transparent: rgba(112, 117, 121, 0.35);
-  --accent-color-inactive: #707579;
-
   width: 100%;
   background-color: rgba(0, 0, 0, 0);
   display: flex;
@@ -19,7 +12,7 @@ $messageDistance: 4PX;
   &__align {
     width: 100%;
     max-width: 740px;
-    padding: 0 20PX;
+    padding: 0 var(--content-message-padding);
     display: flex;
     justify-content: flex-start;
     align-items: flex-end;
@@ -38,7 +31,7 @@ $messageDistance: 4PX;
   }
 
   & .bubble2 {
-    max-width: 75%;
+    max-width: var(--bubble-max-width);
 
     /* size + 11PX padding */
     &.with-webpage { max-width: 451px; }
@@ -267,8 +260,17 @@ $messageDistance: 4PX;
     }
   }
 
-  &.chat &__align { padding-left: 49PX; }
-  &.chat.out &__align, &.chat.last &__align { padding-left: 20PX; }
+  &.chat &__align {
+    padding-left: 49px;
+    padding-left: calc(var(--content-padding) + 29px);
+  }
+  &.chat.out &__align, &.chat.last &__align {
+    padding-left: var(--content-message-padding);
+
+    @include respond-to(small) {
+      padding-left: var(--content-padding);
+    }
+  }
   &.chat &__align.with-reply-markup.rm-rows-1 &__profile { margin-bottom: 45px; }
   &.chat &__align.with-reply-markup.rm-rows-2 &__profile { margin-bottom: 85px; }
   &.chat &__align.with-reply-markup.rm-rows-3 &__profile { margin-bottom: 125px; }

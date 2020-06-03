@@ -4,9 +4,9 @@ import { CLIENT_CONFIG } from 'const/api';
 import { typeToMime } from 'helpers/files';
 import { parseRange } from 'helpers/stream';
 import { Client as NetworkHandler, InputFileLocation, MethodDeclMap } from 'mtproto-js';
-import { createNotification, respond } from './extensions/context';
+import { notify, respond } from './extensions/context';
 import { load, save } from './extensions/db';
-import { fetchRequest } from './extensions/files';
+import { fetchRequest, respondDownload } from './extensions/files';
 import { fetchStreamRequest } from './extensions/stream';
 import { fetchCachedSize, fetchLocation, fetchSrippedSize, fetchTGS } from './extensions/utils';
 import { uploadFile } from './extensions/uploads';
@@ -17,7 +17,6 @@ type ExtendedWorkerScope = {
 };
 
 const ctx = self as any as ServiceWorkerGlobalScope & ExtendedWorkerScope;
-const notify = createNotification(ctx.clients);
 
 const { log } = console;
 
@@ -26,16 +25,21 @@ const dbkey = CLIENT_CONFIG.test ? 'metatest' : 'meta';
 const initNetwork = () => load(dbkey).then((meta: any) => {
   if (ctx.network) return;
 
-  ctx.network = new NetworkHandler({ ...CLIENT_CONFIG, meta, dc: meta.baseDC });
+  ctx.network = new NetworkHandler({ ...CLIENT_CONFIG, meta, dc: meta.baseDC, autoConnect: true });
 
   ctx.network.on('metaChanged', (newMeta) => save(dbkey, newMeta));
   ctx.network.on('metaChanged', (state) => notify('authorization_updated', { dc: state.baseDC, user: state.userID || 0 }));
   ctx.network.on('networkChanged', (state) => notify('network_updated', state));
   ctx.network.updates.on((update) => notify('update', update));
   ctx.network.updates.fetch();
+
+  // for (let i = 1; i <= 5; i++) ctx.network.authorize(i);
 });
 
-const initCache = () => caches.open('files').then((cache) => ctx.cache = cache);
+const initCache = () => new Promise((resolve) => {
+  if (ctx.cache) resolve(ctx.cache);
+  else if ('caches' in self) caches.open('files').then((cache) => resolve(ctx.cache = cache));
+});
 
 /**
  * File Part Request
@@ -128,6 +132,12 @@ function processWindowMessage(msg: WindowMessage, source: Client | MessagePort |
       break;
     }
 
+    case 'webp_loaded': {
+      const { url, blob } = msg.payload;
+      respondDownload(url, new Response(blob), ctx.cache);
+      break;
+    }
+
     default:
   }
 }
@@ -138,11 +148,10 @@ function processWindowMessage(msg: WindowMessage, source: Client | MessagePort |
 ctx.addEventListener('install', (event: ExtendableEvent) => {
   log('service worker is installing');
 
+  initCache();
+
   event.waitUntil(
-    Promise.all([
-      initNetwork(),
-      initCache(),
-    ]),
+    initNetwork(),
   );
 });
 
@@ -152,8 +161,8 @@ ctx.addEventListener('install', (event: ExtendableEvent) => {
 ctx.addEventListener('activate', (event) => {
   log('service worker activating', ctx);
 
-  if (!ctx.network) initNetwork();
   if (!ctx.cache) initCache();
+  if (!ctx.network) initNetwork();
 
   event.waitUntil(ctx.clients.claim());
 });
@@ -168,52 +177,70 @@ ctx.onmessage = (event) => {
   else processWindowMessage(event.data as WindowMessage, event.source);
 };
 
+function timeout(delay: number): Promise<Response> {
+  return new Promise(((resolve) => {
+    setTimeout(() => {
+      resolve(new Response('', {
+        status: 408,
+        statusText: 'Request timed out.',
+      }));
+    }, delay);
+  }));
+}
+
 /**
  * Fetch requests
  */
 ctx.addEventListener('fetch', (event: FetchEvent): void => {
-  const [, url, scope] = /http[:s]+\/\/.*?(\/(.*?)\/.*$)/.exec(event.request.url) || [];
+  if (!ctx.network) initNetwork();
 
-  switch (scope) {
-    case 'documents':
-    case 'photos':
-    case 'profiles':
-      event.respondWith(
-        ctx.cache.match(url).then((cached) => {
-          if (cached) return cached;
+  initCache().then(() => {
+    const [, url, scope] = /http[:s]+\/\/.*?(\/(.*?)\/.*$)/.exec(event.request.url) || [];
 
-          return new Promise((resolve) => {
-            fetchRequest(url, resolve, getFilePartRequest, ctx.cache, fileProgress);
-          });
-        }),
-      );
-      break;
+    switch (scope) {
+      case 'documents':
+      case 'photos':
+      case 'profiles':
+        event.respondWith(
+          ctx.cache.match(url).then((cached) => {
+            if (cached) return cached;
 
-    case 'stream': {
-      const [offset, end] = parseRange(event.request.headers.get('Range') || '');
+            return Promise.race([
+              timeout(59 * 1000), // safari fix
+              new Promise<Response>((resolve) => {
+                fetchRequest(url, resolve, getFilePartRequest, ctx.cache, fileProgress);
+              }),
+            ]);
+          }),
+        );
+        break;
 
-      log('stream', url, offset, end);
+      case 'stream': {
+        const [offset, end] = parseRange(event.request.headers.get('Range') || '');
 
-      event.respondWith(new Promise((resolve) => {
-        fetchStreamRequest(url, offset, end, resolve, getFilePartRequest);
-      }));
-      break;
+        log('stream', url, offset, end);
+
+        event.respondWith(new Promise((resolve) => {
+          fetchStreamRequest(url, offset, end, resolve, getFilePartRequest);
+        }));
+        break;
+      }
+
+      case 'cached': {
+        const [, bytes] = /\/cached\/(.*?).svg/.exec(url) || [];
+        event.respondWith(fetchCachedSize(bytes));
+        break;
+      }
+
+      case 'stripped': {
+        const [, bytes] = /\/stripped\/(.*?).svg/.exec(url) || [];
+        event.respondWith(fetchSrippedSize(bytes));
+        break;
+      }
+
+      default:
+        if (url && url.endsWith('.tgs')) event.respondWith(fetchTGS(url));
+        else event.respondWith(fetch(event.request.url));
     }
-
-    case 'cached': {
-      const [, bytes] = /\/cached\/(.*?).svg/.exec(url) || [];
-      event.respondWith(fetchCachedSize(bytes));
-      break;
-    }
-
-    case 'stripped': {
-      const [, bytes] = /\/stripped\/(.*?).svg/.exec(url) || [];
-      event.respondWith(fetchSrippedSize(bytes));
-      break;
-    }
-
-    default:
-      if (url && url.endsWith('.tgs')) event.respondWith(fetchTGS(url));
-      else event.respondWith(fetch(event.request.url));
-  }
+  });
 });

@@ -12,13 +12,17 @@ $sidebar-max: 400px;
   height: 100%;
   position: relative;
   overflow: hidden;
-  transition: .2s ease-out;
 
   & > * {
     flex: none;
     width: $sidebar-width;
     max-width: $sidebar-max;
     min-width: $sidebar-min;
+
+    @include respond-to(small) {
+      width: 100%;
+      max-width: 100%;
+    }
   }
 
   &.-left {
@@ -27,6 +31,14 @@ $sidebar-max: 400px;
     @include respond-to(small) {
       width: 100%;
       max-width: 100%;
+      will-change: transform;
+      transition: transform var(--animation-sidebar);
+      transform: translate3d(0, 0, 0);
+      position: relative;
+
+      &.-popping {
+        transform: translate3d(-25%, 0, 0);
+      }
     }
   }
 
@@ -36,11 +48,12 @@ $sidebar-max: 400px;
     // performance tweak
     will-change: width;
     z-index: 0;
-    transition: translate3d(0, 0, 0);
-
+    transition: .2s ease-out;
 
     @include respond-to(medium) {
-      position: absolute;
+      transition: transform var(--animation-sidebar);
+      transform: translate3d(0, 0, 0);
+      position: fixed;
       width: 75vw;
       min-width: calc(100vw - #{$sidebar-max});
       max-width: calc(100vw - #{$sidebar-min});
@@ -55,23 +68,48 @@ $sidebar-max: 400px;
         max-width: calc(100vw - #{$sidebar-min});
       }
     }
+
+    @include respond-to(small) {
+      transition: transform var(--animation-sidebar);
+      transform: translate3d(0, 0, 0);
+      position: fixed;
+      width: 100%;
+      max-width: 100%;
+      right: 0;
+      top: 0;
+      height: 100%;
+      border-left: none;
+      transform: translate3d(0, 0, 0);
+
+      & > * {
+        width: 100%;
+        max-width: 100%;
+      }
+    }
   }
 
   &.-popping-state .sidebarWrapper {
     &:last-child {
       background-color: rgba(0, 0, 0, 0);
     }
+
     &:nth-last-child(2) .sidebarWrapper__content {
       transform: translate(0, 0);
     }
+
     & .sidebarWrapper__content {
       transform: translate(100%, 0);
     }
   }
 
   &.-hidden {
-    width: 0;
-    min-width: 0;
+    transform: translate3d(100%, 0, 0);
+
+    @include respond-to(desktop) {
+      transform: none;
+      width: 0;
+      min-width: 0;
+    }
   }
 
   & .sidebarHeading {
