@@ -1,6 +1,7 @@
 .poll {
   user-select: none;
   font-size: 1rem;
+  overflow: hidden;
 
   &__body {
     padding: 7PX 10PX 0 10PX;

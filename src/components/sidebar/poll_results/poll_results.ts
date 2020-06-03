@@ -1,9 +1,12 @@
-import { messageCache } from 'cache';
+import { messageCache, userCache } from 'cache';
+import { peerToInputPeer } from 'cache/accessors';
+import client from 'client/client';
 import * as icons from 'components/icons';
 import { heading } from 'components/ui';
+import { getInterface } from 'core/hooks';
 import { div, text } from 'core/html';
 import { peerMessageToId } from 'helpers/api';
-import { Peer } from 'mtproto-js';
+import { MessageUserVote, Peer } from 'mtproto-js';
 import './poll_results.scss';
 import pollResultOption from './poll_result_option';
 
@@ -24,11 +27,6 @@ export default function pollResults({ onBack }: SidebarComponentProps, context: 
     decoder.decode(answer.option),
     pollResultOption(answer.option, answer.text, poll.quiz ?? false),
   ]));
-  const content = div`.popup__content.pollResultsPopup`(
-    div`pollResultsPopup__question`(text(poll.question)),
-    div`pollResultsPopup__options`(...options.values()),
-  );
-
   const rootEl = div`.pollResults`(
     heading({
       title: 'Results',
@@ -36,8 +34,54 @@ export default function pollResults({ onBack }: SidebarComponentProps, context: 
         { icon: icons.close, position: 'left', onClick: () => onBack && onBack() },
       ],
     }),
-    content,
+    div`.pollResults__content`(
+      div`.pollResults__question`(text(poll.question)),
+      div`.pollResults__options`(...options.values()),
+    ),
   );
+
+  const updateVote = (vote: MessageUserVote, selectedOption?: string) => {
+    const votedOptions = new Set<string>();
+    switch (vote._) {
+      case 'messageUserVote':
+        votedOptions.add(decoder.decode(vote.option));
+        break;
+      case 'messageUserVoteMultiple':
+        vote.options.forEach((option) => votedOptions.add(decoder.decode(option)));
+        break;
+      case 'messageUserVoteInputOption':
+        votedOptions.add(selectedOption!);
+        break;
+      default:
+    }
+    options.forEach((option, key) => {
+      if (!selectedOption || key === selectedOption) {
+        const voted = votedOptions.has(key);
+        getInterface(option).setVoter(vote.user_id, voted);
+      }
+    });
+  };
+
+  // todo: fetch all votes. Now we only get first 50 voters per answer.
+  async function loadData() {
+    for (let index = 0; index < poll.answers.length; index++) {
+      const answer = poll.answers[index];
+      const request = {
+        peer: peerToInputPeer(context.peer),
+        id: message!.id,
+        // limit: 50,
+        option: answer.option,
+      };
+      // eslint-disable-next-line no-await-in-loop
+      const pollVotes = await client.call('messages.getPollVotes', request);
+      userCache.put(pollVotes.users);
+      pollVotes.votes.forEach((vote) => {
+        updateVote(vote, decoder.decode(answer.option));
+      });
+    }
+  }
+
+  loadData();
 
   return rootEl;
 }

@@ -7,6 +7,7 @@ import { peerMessageToId, userIdToPeer } from 'helpers/api';
 import { Message, Peer, Poll, PollAnswerVoters, PollResults } from 'mtproto-js';
 import { BehaviorSubject } from 'rxjs';
 import { main, polls } from 'services';
+import fireworksControl from './fireworks/fireworks_control';
 import './poll.scss';
 import pollCountdown from './poll_countdown';
 import pollFooter, { VoteButtonState } from './poll_footer';
@@ -49,6 +50,7 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
   const recentVotersEl = div`poll__recent-voters`(...buildRecentVotersList(results.recent_voters));
   let answered = !!results.results && results.results.findIndex((r) => r.chosen) >= 0;
   const maxVoters = results.results ? Math.max(...results.results.map((r) => r.voters)) : 0;
+  const fireworks = fireworksControl();
 
   const submitOptions = async () => {
     if (!answered) {
@@ -131,6 +133,10 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
     });
     const updateMaxVoters = Math.max(...voters.map((r) => r.voters));
     answered = voters.findIndex((r) => r.chosen) >= 0;
+    const correct = voters.some((r) => r.chosen && r.correct);
+    if (correct) {
+      getInterface(fireworks).start();
+    }
     if (updatedPoll.closed) {
       unmount(countdownEl);
       resultsSubject.next(updatedResults);
@@ -167,6 +173,7 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
       voteFooterEl,
       info,
     ),
+    fireworks,
   );
 
   messageCache.useItemBehaviorSubject(container, peerMessageToId(peer, message.id)).subscribe((msg) => {

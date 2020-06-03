@@ -1,0 +1,10 @@
+.fireworksControl {
+  z-index: 2;
+  position: absolute;
+  margin-left: 8px;
+  left: 0;
+  top: 0;
+  width: calc(100% - 8px);
+  height: 100%;
+  pointer-events: none;
+}

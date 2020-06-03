@@ -1,8 +1,9 @@
+@import '~styles/variables.scss';
+
 .pollResultOption {
   display: flex;
   flex-direction: column;
-  border-radius: 10px;
-  background-color: rgba(0, 0, 0, 0.04);
+  border-top: 1px solid #EDEEF0;
   margin-top: 8px;
   padding: 8px;
 
