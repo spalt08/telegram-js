@@ -1,4 +1,4 @@
-import { InputCheckPasswordSRP, MethodDeclMap, UpdateDeclMap } from 'mtproto-js';
+import { InputCheckPasswordSRP, MethodDeclMap, UpdateDeclMap, Update, Updates } from 'mtproto-js';
 import { EventResolver, APICallHeaders, APICallParams } from './types';
 import { task, request, listenMessage } from './context';
 
@@ -50,10 +50,57 @@ function emit(type: string, data: any) {
   }
 }
 
+export function fetchUpdates(updateMsg: Updates | Update) {
+  switch (updateMsg._) {
+    // Ref: https://core.telegram.org/constructor/updateShort
+    case 'updateShort':
+      emit(updateMsg.update._, updateMsg.update);
+      break;
+
+    // Ref: https://core.telegram.org/type/Updates
+    case 'updateShortMessage':
+    case 'updateShortSentMessage':
+    case 'updateShortChatMessage':
+      emit(updateMsg._, updateMsg);
+      break;
+
+    // Ref: https://core.telegram.org/constructor/updates
+    case 'updatesCombined':
+    case 'updates':
+      // process users
+      if (updateMsg.users) {
+        for (let i = 0; i < updateMsg.users.length; i += 1) {
+          emit('user', updateMsg.users[i]);
+        }
+      }
+
+      // process chats
+      if (updateMsg.chats) {
+        for (let i = 0; i < updateMsg.chats.length; i += 1) {
+          emit('chat', updateMsg.chats[i]);
+        }
+      }
+
+      // process updates
+      if (updateMsg.updates) {
+        for (let i = 0; i < updateMsg.updates.length; i += 1) {
+          emit(updateMsg.updates[i]._, updateMsg.updates[i]);
+        }
+      }
+      break;
+
+      // todo: handle updatesTooLong
+      // Ref: https://core.telegram.org/api/updates#recovering-gaps
+
+    default:
+      console.warn('unknown update', updateMsg._, updateMsg);
+  }
+}
+
 /**
  * Listen worker incoming messages
  */
-listenMessage('update', (update) => emit(update._, update));
+listenMessage('update', (msg) => fetchUpdates(msg));
 listenMessage('network_updated', (status) => emit('networkChanged', status));
 listenMessage('authorization_updated', (state) => localStorage.setItem('auth', JSON.stringify(state)));
 

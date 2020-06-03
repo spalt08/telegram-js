@@ -12,12 +12,8 @@ import * as icons from 'components/icons';
 import messageInput from 'components/message/input/input';
 import { Peer } from 'mtproto-js';
 import { compareSamePeerMessageIds, peerMessageToId, peerToId } from 'helpers/api';
-<<<<<<< HEAD
-import { iOS } from 'helpers/browser';
-=======
 import { isiOS } from 'helpers/browser';
->>>>>>> c71c54e9e90da3e552fabbda4764b481890712f0
-import { messageCache, dialogCache, chatCache, messageDayMap } from 'cache';
+import { messageCache, dialogCache, chatCache } from 'cache';
 import header from './header/header';
 import historyDay from './history_day/history_day';
 import './history.scss';
@@ -26,12 +22,26 @@ type Props = {
   onBackToContacts: () => void,
 };
 
+/**
+ * Message Dates
+ */
+const timezoneOffset = new Date().getTimezoneOffset() * 60;
+const messageDayMap = new Map<string, string>();
+
 function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
   const { length } = messageIds;
   const reversed = new Array(length);
+
   for (let i = 0; i < length; i += 1) {
-    reversed[length - i - 1] = peerMessageToId(peer, messageIds[i]);
+    const id = peerMessageToId(peer, messageIds[i]);
+    const msg = messageCache.get(id);
+
+    if (msg && msg._ !== 'messageEmpty') {
+      messageDayMap.set(id, Math.ceil((msg.date - timezoneOffset) / (3600 * 24)).toString());
+      reversed[length - i - 1] = id;
+    }
   }
+
   return reversed;
 }
 

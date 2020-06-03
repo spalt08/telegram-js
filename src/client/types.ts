@@ -75,7 +75,7 @@ export type WindowMessage = ServiceRequest | (ServiceTask & { id?: undefined });
  * Worker incoming notifications with task progress or result
  */
 export interface NotificationPayloadMap {
-  'update': Updates | Update | User | Chat;
+  'update': Updates | Update;
   'authorization_updated': { dc: number, user: number };
   'network_updated': TransportState;
   'file_progress': {
