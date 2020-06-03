@@ -93,7 +93,7 @@ export function fetchUpdates(updateMsg: Updates | Update) {
       // Ref: https://core.telegram.org/api/updates#recovering-gaps
 
     default:
-      console.warn('unknown update', updateMsg._, updateMsg);
+      emit(updateMsg._, updateMsg);
   }
 }
 

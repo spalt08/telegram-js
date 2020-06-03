@@ -159,6 +159,8 @@ export default function history({ onBackToContacts }: Props) {
 
   useObservable(container, service.activePeer, (next) => {
     if (next) {
+      messageDayMap.clear();
+
       if (welcome.parentElement) unmount(welcome);
       if (!headerEl.parentElement) mount(container, headerEl);
       if (!historySection.parentElement) mount(container, historySection);
