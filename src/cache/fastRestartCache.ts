@@ -1,5 +1,5 @@
-import { ReplaySubject } from 'rxjs';
-import { Chat, Dialog, Message, Peer, User } from 'mtproto-js';
+import { BehaviorSubject } from 'rxjs';
+import { Chat, Dialog, Message, Peer, TopPeer, User } from 'mtproto-js';
 import { addValues, getAllEntries, getAllValues, putValuesEntries } from 'helpers/indexedDb';
 import { peerMessageToId } from 'helpers/api';
 import { animationFrameStart } from 'core/dom';
@@ -7,7 +7,17 @@ import { runTransaction } from './persistentStorages/database';
 import Collection from './fastStorages/collection';
 
 const dialogsToStoreCount = 50;
-const autosaveInterval = 30000;
+const autosaveInterval = 10000;
+
+interface MiscData {
+  searchRecentPeers: readonly Peer[],
+  topUsers: {
+    items: TopPeer[],
+    fetchedAt: number, // unix ms
+  },
+}
+
+type MiscDataEntry = { [K in keyof MiscData]: [K, MiscData[K]] }[keyof MiscData];
 
 function autosaveStrategy(save: () => Promise<void> | void) {
   let isSaving = false;
@@ -38,9 +48,16 @@ function autosaveStrategy(save: () => Promise<void> | void) {
   setTimeout(handleTimeout, autosaveInterval);
 }
 
+// todo: Clear on log out / sign out / exit
 export default class FastRestartCache {
-  // Fires once when the cache is restored. Fires when subscribed after the cache is restored.
-  readonly restoredEmitter = new ReplaySubject<void>(1);
+  readonly isRestored = new BehaviorSubject(false);
+
+  // Just write here when you want to save the cache
+  public searchRecentPeers?: readonly Peer[];
+  public topUsers?: {
+    items: TopPeer[],
+    fetchedAt: number, // unix ms
+  };
 
   constructor(
     private messageCache: Collection<Message, {}, string>,
@@ -68,12 +85,14 @@ export default class FastRestartCache {
         users,
         chats,
         dialogs,
-      ] = await runTransaction(['messages', 'users', 'chats', 'dialogs'], 'readonly', (transaction) => (
+        misc,
+      ] = await runTransaction(['messages', 'users', 'chats', 'dialogs', 'misc'], 'readonly', (transaction) => (
         Promise.all([
           getAllEntries<string, Message>(transaction.objectStore('messages')),
           getAllEntries<number, User>(transaction.objectStore('users')),
           getAllEntries<number, Chat>(transaction.objectStore('chats')),
           getAllValues<Dialog>(transaction.objectStore('dialogs')),
+          getAllEntries(transaction.objectStore('misc')) as Promise<MiscDataEntry[]>,
         ])
       ));
 
@@ -101,15 +120,27 @@ export default class FastRestartCache {
       if (dialogCache.count() === 0) {
         dialogCache.replaceAll(dialogs);
       }
+
+      misc.forEach((entry) => {
+        switch (entry[0]) {
+          case 'searchRecentPeers':
+            [, this.searchRecentPeers] = entry;
+            break;
+          case 'topUsers':
+            [, this.topUsers] = entry;
+            break;
+          default:
+        }
+      });
     } finally {
-      this.restoredEmitter.next();
+      this.isRestored.next(true);
     }
   }
 
   private async backupCache() {
-    const { dialogs, messages, users, chats } = this.collectDataToCache();
+    const { dialogs, messages, users, chats, misc } = this.collectDataToCache();
 
-    await runTransaction(['messages', 'users', 'chats', 'dialogs'], 'readwrite', (transaction) => {
+    await runTransaction(['messages', 'users', 'chats', 'dialogs', 'misc'], 'readwrite', (transaction) => {
       const messageStore = transaction.objectStore('messages');
       messageStore.clear();
       putValuesEntries(messageStore, messages);
@@ -125,6 +156,10 @@ export default class FastRestartCache {
       const dialogStore = transaction.objectStore('dialogs');
       dialogStore.clear();
       addValues(dialogStore, dialogs);
+
+      const miscStore = transaction.objectStore('misc');
+      miscStore.clear();
+      putValuesEntries(miscStore, misc);
     });
   }
 
@@ -133,6 +168,7 @@ export default class FastRestartCache {
     const messages: Array<[string, Message]> = [];
     const users: Array<[number, User]> = [];
     const chats: Array<[number, Chat]> = [];
+    const misc: MiscDataEntry[] = [];
 
     dialogs.forEach((dialog) => {
       if (dialog._ === 'dialog') {
@@ -143,7 +179,17 @@ export default class FastRestartCache {
       }
     });
 
-    return { dialogs, messages, users, chats };
+    if (this.searchRecentPeers) {
+      misc.push(['searchRecentPeers', this.searchRecentPeers]);
+      this.searchRecentPeers.forEach((peer) => this.collectPeerModels(peer, users, chats));
+    }
+
+    if (this.topUsers) {
+      misc.push(['topUsers', this.topUsers]);
+      this.topUsers.items.forEach(({ peer }) => this.collectPeerModels(peer, users, chats));
+    }
+
+    return { dialogs, messages, users, chats, misc };
   }
 
   private collectPeerModels(peer: Peer, users: Array<[number, User]>, chats: Array<[number, Chat]>) {

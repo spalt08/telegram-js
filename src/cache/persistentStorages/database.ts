@@ -1,17 +1,18 @@
 import { promisifyTransaction } from 'helpers/indexedDb';
 
-// Stores the low level API to deal with the database. Also stores the database schema.
+// Stores the low level API to deal with the application database. Also stores the database schema.
 
 const META_STORE_NAME = 'meta';
 
 // Increment it when you change the schema below
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 4;
 
 function makeSchema(db: IDBDatabase) {
   db.createObjectStore('messages');
   db.createObjectStore('users');
   db.createObjectStore('chats');
   db.createObjectStore('dialogs', { autoIncrement: true });
+  db.createObjectStore('misc'); // All other not listable data, e.g. top peers, recent search peers, etc
 }
 
 function actualizeSchema(db: IDBDatabase, oldVersion: number, _newVersion: number) {
