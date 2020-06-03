@@ -45,7 +45,7 @@ function messageText(msg: Message.message, info: Node) {
 // message renderer
 const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info: Node } => {
   const out = msg.out ?? false;
-  const info = messageInfo({ className: 'message__info', status: 'read' }, msg);
+  const info = nothing; // messageInfo({ className: 'message__info', status: 'read' }, msg);
   const hasReply = !!msg.reply_to_msg_id;
   const hasMessage = !!msg.message;
   const reply = hasReply ? messageReply(msg.reply_to_msg_id!, peer, msg) : nothing;
@@ -57,7 +57,7 @@ const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info:
   }
 
   // regular message
-  if (!msg.media || msg.media._ === 'messageMediaEmpty') {
+  if (true) { // !msg.media || msg.media._ === 'messageMediaEmpty') {
     // Display only emoji
     if (msg.message.length <= 6 && isEmoji(msg.message)) {
       return {
@@ -378,7 +378,7 @@ export default function message(id: string, peer: Peer, onUpdateHeight?: (id: st
     updateLayout();
   };
 
-  useOnMount(container, () => update(true));
+  // useOnMount(container, () => update(true));
 
   return useInterface(container, {
     from: () => cached && cached._ !== 'messageEmpty' ? cached.from_id : 0,

@@ -1,4 +1,4 @@
-// CSS API variables: --accent-color
+@import '~styles/variables.scss';
 
 .quote {
   display: flex;
@@ -12,7 +12,7 @@
     align-self: stretch;
     width: 2px;
     border-radius: 1px;
-    background: var(--accent-color, #4EA4F5);
+    background: $accent-color;
     margin-right: 7px;
   }
 
@@ -22,7 +22,7 @@
   }
 
   &__title {
-    color: var(--accent-color, #4EA4F5);;
+    color: $accent-color;
     font-size: 14px;
     font-weight: 500;
     white-space: nowrap;

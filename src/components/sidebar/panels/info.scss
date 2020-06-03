@@ -3,10 +3,10 @@
   flex-direction: column;
   overflow-y: hidden;
 
-  &__avatar {
+  & .avatar {
     width: 120px;
     height: 120px;
-    --initials-font-size: 40px;
+    font-size: 40px;
   }
 
   &__name {

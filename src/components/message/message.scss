@@ -12,7 +12,7 @@ $messageBubblePadding: 7PX $messageSidePadding;
   &__align {
     width: 100%;
     max-width: 740px;
-    padding: 0 var(--content-message-padding);
+    padding: 0 $content-message-padding;
     display: flex;
     justify-content: flex-start;
     align-items: flex-end;
@@ -23,7 +23,7 @@ $messageBubblePadding: 7PX $messageSidePadding;
     height: 34PX;
     margin-right: -5PX;
     margin-bottom: 3PX;
-    --initials-font-size: 13PX;
+    font-size: 13PX;
   }
 
   & .photo {
@@ -31,7 +31,7 @@ $messageBubblePadding: 7PX $messageSidePadding;
   }
 
   & .bubble2 {
-    max-width: var(--bubble-max-width);
+    max-width: $bubble-max-width;
 
     /* size + 11PX padding */
     &.with-webpage { max-width: 451px; }
@@ -208,7 +208,7 @@ $messageBubblePadding: 7PX $messageSidePadding;
   &__title {
     font-size: 14px;
     font-weight: 500;
-    color: var(--accent-color);
+    color: $accent-color;
     line-height: 1.2;
     display: none;
     padding: 7px $messageSidePadding 0;
@@ -251,7 +251,7 @@ $messageBubblePadding: 7PX $messageSidePadding;
 
     &__text {
       & code, & pre {
-        color: var(--accent-color);
+        color: $accent-color;
       }
     }
 
@@ -262,25 +262,18 @@ $messageBubblePadding: 7PX $messageSidePadding;
 
   &.chat &__align {
     padding-left: 49px;
-    padding-left: calc(var(--content-padding) + 29px);
+    padding-left: $content-padding + 29px;
   }
+
   &.chat.out &__align, &.chat.last &__align {
-    padding-left: var(--content-message-padding);
+    padding-left: $content-message-padding;
 
     @include respond-to(small) {
-      padding-left: var(--content-padding);
+      padding-left: $content-padding;
     }
   }
   &.chat &__align.with-reply-markup.rm-rows-1 &__profile { margin-bottom: 45px; }
   &.chat &__align.with-reply-markup.rm-rows-2 &__profile { margin-bottom: 85px; }
   &.chat &__align.with-reply-markup.rm-rows-3 &__profile { margin-bottom: 125px; }
   &.chat &__align.with-reply-markup.rm-rows-4 &__profile { margin-bottom: 165px; }
-
-  &.out {
-    --bubble-background: #eeffde;
-    --accent-color: #4fae4f;
-    --accent-color-inactive: #4fae4f;
-    --voice-message-bar: rgb(79, 174, 79);
-    --voice-message-bar-transparent: rgba(79, 174, 79, 0.5);
-  }
 }

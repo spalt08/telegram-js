@@ -22,7 +22,8 @@
     border-right-width: 18PX;
     border-bottom-width: 19PX;
     border-color: transparent;
-    border-image: url(./images/bubble_in-central.png) 32 36 38 50 fill;
+    border-image: url(./images/bubble_in-central.png) 32 36 38 50 fill; 
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
     padding-left: 7PX;
   }
 
