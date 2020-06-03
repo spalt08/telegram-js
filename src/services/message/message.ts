@@ -1,21 +1,12 @@
-import { BehaviorSubject, Subject } from 'rxjs';
-import { first } from 'rxjs/operators';
-import client from 'client/client';
-import { Message, Peer, MessagesGetMessages, MessagesSendMedia, InputMedia, Updates, Dialog, MethodDeclMap } from 'mtproto-js';
 import { dialogCache, messageCache } from 'cache';
 import { peerToInputPeer } from 'cache/accessors';
-import {
-  getUserMessageId,
-  peerMessageToId,
-  shortMessageToMessage,
-  shortChatMessageToMessage,
-  dialogPeerToDialogId,
-  getDialogLastReadMessageId,
-  arePeersSame,
-} from 'helpers/api';
-import { todoAssertHasValue } from 'helpers/other';
-import { Direction } from './types';
+import client from 'client/client';
+import { arePeersSame, dialogPeerToDialogId, getDialogLastReadMessageId, getUserMessageId, peerMessageToId, shortChatMessageToMessage, shortMessageToMessage } from 'helpers/api';
+import { Dialog, InputMedia, Message, MessagesGetMessages, MessagesMessages, MessagesSendMedia, MethodDeclMap, Peer, Updates } from 'mtproto-js';
+import { BehaviorSubject, Subject } from 'rxjs';
+import { first } from 'rxjs/operators';
 import makeMessageChunk, { MessageChunkService, MessageHistoryChunk } from './message_chunk';
+import { Direction } from './types';
 
 const emptyHistory: MessageHistoryChunk = { ids: [] };
 
@@ -259,22 +250,35 @@ export default class MessagesService {
     }
   }
 
-  /** Load single message */
-  loadMessageReply = async (msg: Message.message): Promise<Message | null> => {
-    const params: MessagesGetMessages = {
-      id: [
-        { _: 'inputMessageReplyTo', id: msg.id },
-        { _: 'inputMessageID', id: todoAssertHasValue(msg.reply_to_msg_id) },
-      ],
-    };
+  loadMessageReplyPromise?: Promise<MessagesMessages>;
+  loadMessageReplyList: Message[] = [];
 
-    const messages = await client.call('messages.getMessages', params);
+  /** Load single message */
+  loadMessageReply = async (msg: Message.message) => {
+    if (!this.loadMessageReplyPromise) {
+      this.loadMessageReplyPromise = new Promise((resolve, reject) => {
+        setTimeout(() => {
+          const params: MessagesGetMessages = {
+            id: this.loadMessageReplyList.map((m) => ({ _: 'inputMessageReplyTo', id: m.id })),
+          };
+
+          client.call('messages.getMessages', params)
+            .then((messages) => {
+              this.loadMessageReplyPromise = undefined;
+              this.loadMessageReplyList = [];
+              resolve(messages);
+            })
+            .catch(reject);
+        });
+      });
+    }
+    this.loadMessageReplyList.push(msg);
+
+    const messages = await this.loadMessageReplyPromise;
+
     if (messages._ !== 'messages.messagesNotModified' && messages.messages.length > 0) {
       messageCache.put(messages.messages);
-      return messages.messages[0];
     }
-
-    return null;
   };
 
   sendMessage = async (message: string) => {

@@ -13,8 +13,11 @@ export function arrayToMap<K extends keyof any, T extends { [key in K]: keyof an
   return map;
 }
 
-export function mapObject<T, P, K extends keyof any>(object: Record<K, T>, map: (value: T) => P): Record<K, P> {
-  const newObject = {} as Record<K, P>;
+export function mapObject<K extends keyof any, T extends Record<K, any>, P extends Record<K, any>>(
+  object: T,
+  map: ({ [key in K]: (value: T[key]) => P[key] })[K],
+): P {
+  const newObject = {} as P;
   (Object.keys(object) as K[]).forEach((key) => {
     newObject[key] = map(object[key]);
   });
