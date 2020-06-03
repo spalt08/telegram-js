@@ -89,6 +89,7 @@ strong {
 
     @include respond-to(small) {
       width: 1PX;
+      height: 1px;
     }
 
     /* Track */

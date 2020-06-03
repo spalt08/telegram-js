@@ -1,3 +1,5 @@
+/* eslint-disable no-lone-blocks */
+/* eslint-disable wrap-iife, func-names */
 import { a } from 'core/html';
 
 export type PhotoFitMode = 'contain' | 'cover';
@@ -50,31 +52,6 @@ export function formatNumber(n: number) {
   base = abbrev.indexOf(suffix) + 1;
   return suffix ? round(n / (1000 ** base), 1) + suffix : `${n}`;
 }
-
-// safari polyfill
-if (!window.queueMicrotask) {
-  window.queueMicrotask = (cb: () => void) => cb();
-}
-
-function isIOS() {
-  if (/iPad|iPhone|iPod/.test(navigator.platform)) {
-    return true;
-  }
-  // eslint-disable-next-line compat/compat
-  return (navigator.maxTouchPoints && navigator.maxTouchPoints > 2) && /MacIntel/.test(navigator.platform);
-}
-
-function isChrome() {
-  return navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
-}
-
-function isSafari() {
-  return !isChrome() && navigator.userAgent.toLowerCase().indexOf('safari') > -1;
-}
-
-export const Safari = isSafari();
-export const iOS = isIOS();
-export const Chrome = isChrome();
 
 export function pluralize(n: number, single: string, multiple: string) {
   return Math.abs(n) !== 1 ? multiple : single;

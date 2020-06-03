@@ -2,7 +2,7 @@ import { animationFrameStart, listen, listenOnce, mount, unmount, unmountChildre
 import { useMaybeObservable } from 'core/hooks';
 import { div } from 'core/html';
 import { MaybeObservable } from 'core/types';
-import { Safari, iOS } from 'helpers/other';
+import { isSafari, isiOS } from 'helpers/browser';
 import './list.scss';
 import { tgsFreeze, tgsUnFreeze } from '../tgs/tgs';
 
@@ -100,7 +100,7 @@ export class VirtualizedList {
     topReached,
   }: Props) {
     this.wrapper = div`.list__wrapper`({ tabIndex: -1 });
-    this.container = div`.list${className}${pivotBottom ? '-reversed' : ''}${Safari ? '-safari' : ''}`(this.wrapper);
+    this.container = div`.list${className}${pivotBottom ? '-reversed' : ''}${isSafari ? '-safari' : ''}`(this.wrapper);
 
     this.cfg = {
       batch,
@@ -366,13 +366,13 @@ export class VirtualizedList {
 
         if (newElementsHeight > 0) {
           // ios safari workaround
-          if (iOS) {
+          if (isiOS) {
             this.wrapper.style.paddingTop = `${this.paddingTop += this.cfg.forcePadding}px`;
             this.scrollDeltaToAppend = newElementsHeight + this.paddingTop;
             this.container.style.opacity = '0';
           } else this.container.scrollTop = this.scrollTop += newElementsHeight;
         // ios safari workaround
-        } else if (iOS) {
+        } else if (isiOS) {
           if (this.firstRendered === 0 && this.cfg.topReached) {
             this.wrapper.style.paddingTop = `${this.paddingTop = this.cfg.initialPaddingTop}px`;
           }
@@ -383,7 +383,7 @@ export class VirtualizedList {
           this.scrollTop = this.container.scrollTop;
           if (newElementsHeight > 0) this.onAddedHeight(newElementsHeight, 'top');
 
-          if (!iOS || newElementsHeight === 0) {
+          if (!isiOS || newElementsHeight === 0) {
             this.unlock();
             this.onScrollUp();
           }
