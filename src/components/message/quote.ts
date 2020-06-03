@@ -14,7 +14,8 @@ export default function messageQuote(message: Message.message | Message.messageS
       preview = div`.quote__img`(photoRenderer(message.media.photo, { fit: 'cover', width: 32, height: 32 }));
     }
 
-    if (message.media._ === 'messageMediaDocument' && message.media.document && message.media.document._ === 'document') {
+    if (message.media._ === 'messageMediaDocument' && message.media.document && message.media.document._ === 'document'
+      && message.media.document.thumbs) {
       preview = div`.quote__img`(photoRenderer(message.media.document, { fit: 'cover', width: 32, height: 32 }));
     }
   }
