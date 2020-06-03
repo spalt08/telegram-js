@@ -108,20 +108,6 @@ export const pinnedMessageCache = new Collection<Message.message, {}, string>({
   getId: (msg: Message.message) => peerToId(msg.to_id),
 });
 
-
-/**
- * Message Dates
- */
-const timezoneOffset = new Date().getTimezoneOffset() * 60;
-export const messageDayMap = new Map<string, string>();
-
-messageCache.changes.subscribe(
-  (events) => events.map(
-    ([action, message, key]) => action !== 'remove' && message._ !== 'messageEmpty'
-    && messageDayMap.set(key, Math.ceil((message.date - timezoneOffset) / (3600 * 24)).toString()),
-  ),
-);
-
 export const persistentCache = new PersistentCache(
   messageCache,
   userCache,
