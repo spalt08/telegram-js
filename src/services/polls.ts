@@ -14,7 +14,7 @@ export default class PollsService {
 
     // Telegram doesn't send poll update when poll is closed by timeout. Thus we have to setup a timer which triggers poll close.
     messageCache.changes.subscribe((changes) => {
-      changes.forEach(([changeType, message, id]) => {
+      changes.forEach(([changeType, message]) => {
         if (changeType === 'add') {
           if (message?._ === 'message' && message?.media?._ === 'messageMediaPoll') {
             const now = Date.now();

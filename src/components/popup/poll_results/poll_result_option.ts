@@ -3,7 +3,6 @@ import { mount, unmount, unmountChildren } from 'core/dom';
 import { useInterface } from 'core/hooks';
 import { div, text } from 'core/html';
 import { userIdToPeer } from 'helpers/api';
-import { pluralize } from 'helpers/other';
 import './poll_result_option.scss';
 
 export default function pollResultOption(option: ArrayBuffer, optionText: string, quiz: boolean) {
@@ -19,7 +18,7 @@ export default function pollResultOption(option: ArrayBuffer, optionText: string
         container.classList.add('-hidden');
       }
       optionTextEl.textContent = `${optionText} \u2014 ${Math.round((voters / totalVoters) * 100)}%`;
-      votersCountEl.textContent = `${voters} ${quiz ? pluralize(voters, 'answer', 'answers') : pluralize(voters, 'vote', 'votes')}`;
+      votersCountEl.textContent = `${voters} ${quiz ? 'answered' : 'voted'}`;
       unmountChildren(votersListEl);
       for (let i = 0; i < voters; i++) {
         const titleWidth = 100 + Math.round(Math.random() * 100);
