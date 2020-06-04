@@ -1,7 +1,7 @@
 import { div, nothing, text } from 'core/html';
 import { Message, Peer, Document } from 'mtproto-js';
 import { listen, mount } from 'core/dom';
-import { getInterface, hasInterface, useListenWhileMounted } from 'core/hooks';
+import { getInterface, hasInterface, useListenWhileMounted, useOutsideEvent } from 'core/hooks';
 import { close } from 'components/icons';
 import { profileAvatar, profileTitle } from 'components/profile';
 import { datetime } from 'components/ui';
@@ -168,15 +168,7 @@ export default function videoPopup({ rect, video, peer, message }: Props) {
     }
   });
 
-  useListenWhileMounted(element, window, 'click', (event: MouseEvent) => {
-    if (!appeared) return;
-
-    const erect = element.getBoundingClientRect();
-
-    if (event.pageX < erect.left || event.pageX > erect.left + rect.width || event.pageY < rect.top || event.pageY > erect.top + erect.height) {
-      remove();
-    }
-  });
+  // useOutsideEvent(element, 'click', remove);
 
   return element;
 }

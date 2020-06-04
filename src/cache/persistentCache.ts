@@ -88,11 +88,11 @@ export default class PersistentCache {
         misc,
       ] = await runTransaction(['messages', 'users', 'chats', 'dialogs', 'misc'], 'readonly', (transaction) => (
         Promise.all([
-          getAllEntries<string, Message>(transaction.objectStore('messages')),
-          getAllEntries<number, User>(transaction.objectStore('users')),
-          getAllEntries<number, Chat>(transaction.objectStore('chats')),
+          getAllEntries<[string, Message]>(transaction.objectStore('messages')),
+          getAllEntries<[number, User]>(transaction.objectStore('users')),
+          getAllEntries<[number, Chat]>(transaction.objectStore('chats')),
           getAllValues<Dialog>(transaction.objectStore('dialogs')),
-          getAllEntries(transaction.objectStore('misc')) as Promise<MiscDataEntry[]>,
+          getAllEntries<MiscDataEntry>(transaction.objectStore('misc')),
         ])
       ));
 
@@ -170,14 +170,7 @@ export default class PersistentCache {
     const chats: Array<[number, Chat]> = [];
     const misc: MiscDataEntry[] = [];
 
-    dialogs.forEach((dialog) => {
-      if (dialog._ === 'dialog') {
-        const topMessageId = peerMessageToId(dialog.peer, dialog.top_message);
-        const topMessage = this.messageCache.get(topMessageId);
-        if (topMessage) messages.push([topMessageId, topMessage]);
-        this.collectPeerModels(dialog.peer, users, chats);
-      }
-    });
+    dialogs.forEach((dialog) => this.collectDialogModels(dialog, messages, users, chats));
 
     if (this.searchRecentPeers) {
       misc.push(['searchRecentPeers', this.searchRecentPeers]);
@@ -190,6 +183,23 @@ export default class PersistentCache {
     }
 
     return { dialogs, messages, users, chats, misc };
+  }
+
+  private collectDialogModels(dialog: Dialog, messages: Array<[string, Message]>, users: Array<[number, User]>, chats: Array<[number, Chat]>) {
+    if (dialog._ === 'dialog') {
+      this.collectPeerModels(dialog.peer, users, chats);
+
+      const topMessageId = peerMessageToId(dialog.peer, dialog.top_message);
+      const topMessage = this.messageCache.get(topMessageId);
+
+      if (topMessage) {
+        messages.push([topMessageId, topMessage]);
+        if (dialog.peer._ !== 'peerUser' && topMessage._ !== 'messageEmpty' && topMessage.from_id) {
+          const user = this.userCache.get(topMessage.from_id);
+          if (user) users.push([topMessage.from_id, user]);
+        }
+      }
+    }
   }
 
   private collectPeerModels(peer: Peer, users: Array<[number, User]>, chats: Array<[number, Chat]>) {
