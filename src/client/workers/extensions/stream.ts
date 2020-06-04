@@ -3,6 +3,7 @@ import { InputFileLocation } from 'mtproto-js';
 import { alignOffset, alignLimit } from 'helpers/stream';
 import { DownloadOptions } from 'client/types';
 import type { FilePartResolver } from './files';
+import { isSafari } from 'helpers/browser';
 
 const STREAM_CHUNK_UPPER_LIMIT = 1024 * 1024;
 
@@ -53,16 +54,22 @@ export function fetchStreamRequest(url: StreamURL, offset: number, end: number, 
   }
 
   const limit = end && end < STREAM_CHUNK_UPPER_LIMIT ? alignLimit(end - offset + 1) : STREAM_CHUNK_UPPER_LIMIT;
-  offset = alignOffset(offset, limit);
+  const alignedOffset = alignOffset(offset, limit);
 
-  get(info.location, offset, limit, info.options, (ab, type) => {
+  get(info.location, alignedOffset, limit, info.options, (ab, type) => {
     const headers: Record<string, string> = {
       'Accept-Ranges': 'bytes',
-      'Content-Range': `bytes ${offset}-${offset + ab.byteLength - 1}/${info.options.size! || '*'}`,
+      'Content-Range': `bytes ${alignedOffset}-${alignedOffset + ab.byteLength - 1}/${info.options.size! || '*'}`,
       'Content-Length': `${ab.byteLength}`,
     };
 
     if (type) headers['Content-Type'] = type;
+
+    if (isSafari) {
+      ab = ab.slice(offset - alignedOffset, end - alignedOffset + 1);
+      headers['Content-Range'] = `bytes ${offset}-${offset + ab.byteLength - 1}/${info.options.size! || '*'}`;
+      headers['Content-Length'] = `${ab.byteLength}`;
+    }
 
     resolve(new Response(ab, {
       status: 206,
