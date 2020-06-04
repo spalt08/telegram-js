@@ -117,7 +117,7 @@ export default class Fireworks {
       }
     }
     if (this.particles.length) {
-      window.requestAnimationFrame(() => this.draw());
+      requestAnimationFrame(() => this.draw());
     } else {
       this.started = false;
       this.context.clearRect(0, 0, this.getMeasuredWidth(), this.getMeasuredHeight());
