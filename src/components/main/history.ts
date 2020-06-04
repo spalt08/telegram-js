@@ -1,4 +1,5 @@
 import binarySearch from 'binary-search';
+import { Peer } from 'mtproto-js';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { button, div, text } from 'core/html';
@@ -6,12 +7,12 @@ import { mount, unmount, animationFrameStart } from 'core/dom';
 import { useObservable } from 'core/hooks';
 import { message as service, dialog as dialogService } from 'services';
 import { Direction as MessageDirection } from 'services/message/types';
-import message from 'components/message/message';
+import message, { MessageSibling } from 'components/message/message';
 import { sectionSpinner, VirtualizedList } from 'components/ui';
 import * as icons from 'components/icons';
 import messageInput from 'components/message/input/input';
-import { Peer } from 'mtproto-js';
 import { compareSamePeerMessageIds, peerMessageToId, peerToId } from 'helpers/api';
+import { getDayOffset } from 'helpers/message';
 import { isiOS } from 'helpers/browser';
 import { messageCache, dialogCache, chatCache } from 'cache';
 import header from './header/header';
@@ -23,22 +24,35 @@ type Props = {
 };
 
 /**
- * Message Dates
+ * Message Helpers
  */
-const timezoneOffset = new Date().getTimezoneOffset() * 60;
 const messageDayMap = new Map<string, string>();
+const messageSiblingsMap = new Map<string, [MessageSibling, MessageSibling]>();
 
 function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
   const { length } = messageIds;
   const reversed = new Array(length);
+
+  let prevSibling: MessageSibling;
 
   for (let i = 0; i < length; i += 1) {
     const id = peerMessageToId(peer, messageIds[i]);
     const msg = messageCache.get(id);
 
     if (msg && msg._ !== 'messageEmpty') {
-      messageDayMap.set(id, Math.ceil((msg.date - timezoneOffset) / (3600 * 24)).toString());
       reversed[length - i - 1] = id;
+
+      const item = {
+        id,
+        day: getDayOffset(msg),
+        from: msg.from_id,
+      };
+
+      messageDayMap.set(id, getDayOffset(msg));
+      messageSiblingsMap.set(id, [prevSibling, undefined]);
+      if (prevSibling) messageSiblingsMap.get(prevSibling.id)![1] = item;
+
+      prevSibling = item;
     }
   }
 
@@ -113,7 +127,7 @@ export default function history({ onBackToContacts }: Props) {
     batch: 20, // navigator.userAgent.indexOf('Safari') > -1 ? 5 : 20,
     initialPaddingBottom: 10,
     forcePadding: isiOS ? 100000 : 0,
-    renderer: (id: string) => message(id, service.activePeer.value!), // , (mid: string) => scroll.pendingRecalculate.push(mid)),
+    renderer: (id: string) => message(id, messageSiblingsMap.get(id) || [undefined, undefined]),
     selectGroup: (id: string) => messageDayMap.get(id) || '0',
     renderGroup: historyDay,
     groupPadding: 34,
@@ -160,6 +174,7 @@ export default function history({ onBackToContacts }: Props) {
   useObservable(container, service.activePeer, (next) => {
     if (next) {
       messageDayMap.clear();
+      messageSiblingsMap.clear();
 
       if (welcome.parentElement) unmount(welcome);
       if (!headerEl.parentElement) mount(container, headerEl);

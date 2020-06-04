@@ -88,12 +88,14 @@ export function getDocumentLocation(document: Document.document, size: string = 
   };
 }
 
-export function getAttribute(document: Document.document, name: 'documentAttributeAnimated'): DocumentAttribute.documentAttributeAnimated | null;
-export function getAttribute(document: Document.document, name: 'documentAttributeFilename'): DocumentAttribute.documentAttributeFilename | null;
-export function getAttribute(document: Document.document, name: 'documentAttributeSticker'): DocumentAttribute.documentAttributeSticker | null;
-export function getAttribute(document: Document.document, name: 'documentAttributeVideo'): DocumentAttribute.documentAttributeVideo | null;
-export function getAttribute(document: Document.document, name: 'documentAttributeAudio'): DocumentAttribute.documentAttributeAudio | null;
-export function getAttribute(document: Document.document, name: string): DocumentAttribute | null {
+export function getAttribute(document: Document, name: 'documentAttributeAnimated'): DocumentAttribute.documentAttributeAnimated | null;
+export function getAttribute(document: Document, name: 'documentAttributeFilename'): DocumentAttribute.documentAttributeFilename | null;
+export function getAttribute(document: Document, name: 'documentAttributeSticker'): DocumentAttribute.documentAttributeSticker | null;
+export function getAttribute(document: Document, name: 'documentAttributeVideo'): DocumentAttribute.documentAttributeVideo | null;
+export function getAttribute(document: Document, name: 'documentAttributeAudio'): DocumentAttribute.documentAttributeAudio | null;
+export function getAttribute(document: Document, name: string): DocumentAttribute | null {
+  if (document._ === 'documentEmpty') return null;
+
   for (let i = 0; i < document.attributes.length; i += 1) {
     const attr = document.attributes[i];
     if (attr._ === name) return attr;
@@ -102,23 +104,23 @@ export function getAttribute(document: Document.document, name: string): Documen
   return null;
 }
 
-export function getAttributeSticker(document: Document.document) {
+export function getAttributeSticker(document: Document) {
   return getAttribute(document, 'documentAttributeSticker');
 }
 
-export function getAttributeVideo(document: Document.document) {
+export function getAttributeVideo(document: Document) {
   return getAttribute(document, 'documentAttributeVideo');
 }
 
-export function getAttributeAudio(document: Document.document) {
+export function getAttributeAudio(document: Document) {
   return getAttribute(document, 'documentAttributeAudio');
 }
 
-export function getAttributeFilename(document: Document.document) {
+export function getAttributeFilename(document: Document) {
   return getAttribute(document, 'documentAttributeFilename');
 }
 
-export function getAttributeAnimated(document: Document.document) {
+export function getAttributeAnimated(document: Document) {
   return getAttribute(document, 'documentAttributeAnimated');
 }
 

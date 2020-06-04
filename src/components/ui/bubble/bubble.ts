@@ -1,41 +1,39 @@
+/* eslint-disable prefer-template */
 import { div } from 'core/html';
-import { useInterface, WithInterfaceHook } from 'core/hooks';
-
 import './bubble.scss';
 
 interface Props {
   className?: string,
   out?: boolean;
   masked?: boolean;
-  onlyMedia?: boolean;
+  media?: boolean;
+  isFirst?: boolean;
+  isLast?: boolean;
+}
+
+export function bubbleClassName(className: string, out: boolean, media: boolean, first: boolean, last: boolean) {
+  if (className) return className;
+
+  return (
+    'bubble'
+  + (media ? '-media' : '')
+  + (out ? '-out' : '')
+  + (first ? '-first' : '')
+  + (last ? '-last' : '')
+  );
 }
 
 export default function bubble({
   className = '',
   out = false,
-  masked = false,
-  onlyMedia = false,
+  media = false,
+  isFirst = false,
+  isLast = false,
 }: Props, ...children: Node[]) {
-  const shadow = div`.bubble__shadow`();
-  const background = div`.bubble__background`();
-  const content = div`.bubble__content`(...children);
-
-  const layers = onlyMedia ? [shadow, content] : [shadow, background, content];
-
-  const element = div`.bubble${className}${masked ? '-masked' : ''}`(...layers);
-
-  if (out) {
-    element.classList.add('-out');
-  }
-
-  const updateBorders = (first: boolean, last: boolean) => {
-    element.classList.toggle('-first', first);
-    element.classList.toggle('-last', last);
-  };
-
-  return useInterface(element, {
-    updateBorders,
-  });
+  return (
+    div({ className: bubbleClassName(className, out, media, isFirst, isLast) },
+      div`.bubble__background`(),
+      div`.bubble__content`(...children),
+    )
+  );
 }
-
-export type BubbleInterface = ReturnType<typeof bubble> extends WithInterfaceHook<infer I> ? I : never;
