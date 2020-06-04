@@ -1,7 +1,8 @@
 @import '~styles/variables.scss';
 
 .msginput {
-  padding: 0 var(--content-padding);
+  padding: 0;
+  // padding: 0 var(--content-padding);
 
   &.hidden {
     display: none;
@@ -14,7 +15,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    position: relative;
+    position: absolute;
+    top: 1PX;
 
     svg {
       width: 24px;
@@ -26,9 +28,21 @@
       transition: fill .3s ease;
     }
 
-    &:hover svg path, &.active svg path  {
+    &:hover svg path, &.active svg path {
       fill: #50a2e8;
     }
+  }
+
+  &__emoji {
+    left: 0;
+  }
+
+  &__attach {
+    right: 0;
+  }
+
+  &.-recording &__attach {
+    display: none;
   }
 
   &__container {
@@ -42,7 +56,7 @@
     align-items: flex-end;
 
     @include respond-to(small) {
-      padding:  0px 8px;
+      padding: 8px;
     }
   }
 
@@ -67,11 +81,23 @@
     width: 100%;
     min-height: 54px;
     z-index: 1;
-    display: flex;
-    justify-content: flex-start;
-    align-items: flex-end;
+    // display: flex;
+    padding-left: 54px;
+    padding-right: 54px;
+    // justify-content: flex-start;
+    // align-items: flex-end;
     outline: none;
     position: relative;
+    box-sizing: border-box;
+    transition: padding-right .2s ease-out;
+
+    textarea.message-text {
+      margin: 18px 0 14px;
+    }
+  }
+
+  &.-recording &__bubble-content {
+    padding-right: 0;
   }
 
   &__btn {
@@ -88,7 +114,7 @@
     box-shadow: 0px 1px 2px 0px rgba(16, 35, 47, 0.15);
     margin-left: 8px;
     cursor: pointer;
-    
+
     svg path {
       fill: #4EA4F5;
     }
@@ -118,7 +144,7 @@
       &:hover path { fill: #4EA4F5; }
     }
 
-    & .quote { 
+    & .quote {
       max-width: 300px;
     }
 

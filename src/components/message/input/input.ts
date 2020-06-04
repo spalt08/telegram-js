@@ -22,7 +22,26 @@ export default function messageInput() {
   const btn = recordSendButton({
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     onMessage: () => message.sendMessage(textarea.value),
-    onAudio: () => console.log('audio no implemented'),
+    onAudio: (file, { mimeType, duration }) => {
+      message.sendMediaMessage({
+        _: 'inputMediaUploadedDocument',
+        file,
+        mime_type: mimeType,
+        attributes: [{
+          _: 'documentAttributeAudio',
+          voice: true,
+          duration,
+        }],
+      });
+    },
+    onStartRecording: () => {
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      container.classList.add('-recording');
+    },
+    onFinishRecording: () => {
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      container.classList.remove('-recording');
+    },
   });
 
   const btnI = getInterface(btn);

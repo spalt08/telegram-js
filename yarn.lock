@@ -2491,6 +2491,11 @@ atob@^2.1.1:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.2.tgz#6d9517eb9e030d2436666651e86bd9f6f13533c9"
 
+audio-recorder-polyfill@0.3.6:
+  version "0.3.6"
+  resolved "https://registry.yarnpkg.com/audio-recorder-polyfill/-/audio-recorder-polyfill-0.3.6.tgz#8d866541efe41d65d56e1093ee0240f571f427be"
+  integrity sha512-yPFXIQMKfIsHTCiNt8Vm4e0UQbnJxeOaVUStEEkV1satYcxaG02ZNite8lpVMCAXJoNnxF2GHVGfIgukPXvtAw==
+
 author-regex@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/author-regex/-/author-regex-1.0.0.tgz#d08885be6b9bbf9439fe087c76287245f0a81450"
@@ -7820,9 +7825,10 @@ lorem-ipsum@^2.0.3:
   dependencies:
     commander "^2.17.1"
 
-lottie-web@^5.6.10:
+lottie-web@^5.5.9:
   version "5.6.10"
   resolved "https://registry.yarnpkg.com/lottie-web/-/lottie-web-5.6.10.tgz#9c2959df12976f49637f563dcc96db2078010b4d"
+  integrity sha512-ucTzaiBJOMm56/K7Wqjajyh7qXlonHKB3+b5fHvhSiz+jOrXt6QDNKAinI3qdw/zvvYHKzXvFMy5SgOXbOJ5ng==
 
 loud-rejection@^1.0.0:
   version "1.6.0"
