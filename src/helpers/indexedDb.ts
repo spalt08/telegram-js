@@ -14,22 +14,20 @@ export function promisifyTransaction<T>(
 
   return Promise.resolve()
     .then(() => actionMaybePromise)
-    .then((result) => {
+    .then((result) => new Promise((resolve, reject) => {
       if (isTransactionComplete) {
         if (transaction.error) {
-          throw transaction.error;
+          reject(transaction.error);
         } else {
-          return result;
+          resolve(result);
         }
-      }
-
-      return new Promise((resolve, reject) => {
+      } else {
         // eslint-disable-next-line no-param-reassign
         transaction.oncomplete = () => resolve(result);
         // eslint-disable-next-line no-param-reassign
         transaction.onerror = () => reject(transaction.error);
-      });
-    });
+      }
+    }));
 }
 
 export function getValue(store: IDBObjectStore, key: IDBValidKey) {

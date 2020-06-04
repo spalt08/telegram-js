@@ -1,11 +1,12 @@
 import binarySearch from 'binary-search';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, combineLatest } from 'rxjs';
 import { first } from 'rxjs/operators';
 import { ContactsTopPeers, Peer, TopPeer } from 'mtproto-js';
 import client from 'client/client';
 import { chatCache, persistentCache, userCache } from 'cache';
 import { arePeersSame } from 'helpers/api';
 import MessagesService from './message/message';
+import AuthService, { AuthStage } from './auth';
 
 const RATING_E_DECAY = 2419200; // todo: Load it from the server config: https://core.telegram.org/method/help.getConfig
 
@@ -92,11 +93,11 @@ export default class TopUsersService {
 
   protected autoUpdateTimer = 0;
 
-  constructor(messagesService: MessagesService) {
+  constructor(messagesService: MessagesService, authService: AuthService) {
     messagesService.activePeer.subscribe(this.handleActivePeer);
 
-    persistentCache.isRestored
-      .pipe(first((isRestored) => isRestored))
+    combineLatest([persistentCache.isRestored, authService.state])
+      .pipe(first(([isRestored, authState]) => isRestored && authState === AuthStage.Authorized))
       .subscribe(() => {
         if (this.topUsers.value === 'unknown') {
           if (persistentCache.topUsers) {
