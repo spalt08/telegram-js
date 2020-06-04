@@ -88,11 +88,11 @@ export default class PersistentCache {
         misc,
       ] = await runTransaction(['messages', 'users', 'chats', 'dialogs', 'misc'], 'readonly', (transaction) => (
         Promise.all([
-          getAllEntries<string, Message>(transaction.objectStore('messages')),
-          getAllEntries<number, User>(transaction.objectStore('users')),
-          getAllEntries<number, Chat>(transaction.objectStore('chats')),
+          getAllEntries<[string, Message]>(transaction.objectStore('messages')),
+          getAllEntries<[number, User]>(transaction.objectStore('users')),
+          getAllEntries<[number, Chat]>(transaction.objectStore('chats')),
           getAllValues<Dialog>(transaction.objectStore('dialogs')),
-          getAllEntries(transaction.objectStore('misc')) as Promise<MiscDataEntry[]>,
+          getAllEntries<MiscDataEntry>(transaction.objectStore('misc')),
         ])
       ));
 
