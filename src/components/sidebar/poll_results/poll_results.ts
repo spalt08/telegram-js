@@ -6,7 +6,7 @@ import { heading } from 'components/ui';
 import { getInterface } from 'core/hooks';
 import { div, text } from 'core/html';
 import { peerMessageToId } from 'helpers/api';
-import { MessageUserVote, Peer } from 'mtproto-js';
+import { MessageUserVote, Peer, Poll } from 'mtproto-js';
 import './poll_results.scss';
 import pollResultOption from './poll_result_option';
 
@@ -21,11 +21,11 @@ export default function pollResults({ onBack }: SidebarComponentProps, context: 
     throw new Error('message media must be of type "messageMediaPoll"');
   }
 
-  const { poll } = message.media;
+  const poll = message.media.poll as Required<Poll>;
 
   const options = new Map(poll.answers.map((answer) => [
     decoder.decode(answer.option),
-    pollResultOption(answer.option, answer.text, poll.quiz ?? false),
+    pollResultOption(answer.text, poll.quiz),
   ]));
   const rootEl = div`.pollResults`(
     heading({
@@ -69,7 +69,7 @@ export default function pollResults({ onBack }: SidebarComponentProps, context: 
       const request = {
         peer: peerToInputPeer(context.peer),
         id: message!.id,
-        // limit: 50,
+        limit: 50,
         option: answer.option,
       };
       // eslint-disable-next-line no-await-in-loop

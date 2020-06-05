@@ -4,4 +4,10 @@
   display: flex;
   flex-direction: column;
   overflow-y: scroll;
+
+  &__question {
+    font-weight: 500;
+    font-size: 1.3rem;
+    padding: 16px 25px 16px 25px;
+  }
 }

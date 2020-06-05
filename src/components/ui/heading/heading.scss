@@ -5,6 +5,7 @@
   align-items: center;
   height: 60px;
   padding: 0 0 0 20px;
+  flex-shrink: 0;
 
   & h3 {
     flex: 1 50%;

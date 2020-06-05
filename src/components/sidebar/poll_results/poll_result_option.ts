@@ -5,7 +5,7 @@ import { div, text } from 'core/html';
 import { userIdToPeer } from 'helpers/api';
 import './poll_result_option.scss';
 
-export default function pollResultOption(option: ArrayBuffer, optionText: string, quiz: boolean) {
+export default function pollResultOption(optionText: string, quiz: boolean) {
   const optionTextEl = div`.pollResultOption__text`(text(optionText));
   const votersCountEl = text('');
   const votersListEl = div`.pollResultOption__voters-list`();

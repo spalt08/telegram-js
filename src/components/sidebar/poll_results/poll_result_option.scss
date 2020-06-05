@@ -4,16 +4,17 @@
   display: flex;
   flex-direction: column;
   border-top: 1px solid #EDEEF0;
-  margin-top: 8px;
-  padding: 8px;
 
   &__text {
     padding-right: 16px;
+    font-weight: 500;
+    padding: 16px 25px 16px 25px;
   }
 
   &__header {
     display: grid;
     grid-template-columns: 1fr auto;
+    color: #707579;
   }
 
   &__voters-list {
