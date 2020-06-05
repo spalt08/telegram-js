@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import { Message } from 'mtproto-js';
 import { div, text } from 'core/html';
 import photoPreview from 'components/media/photo/preview';
@@ -11,6 +12,7 @@ import documentFile from 'components/media/document/file';
 import poll from 'components/media/poll/poll';
 import webpagePreview from 'components/media/webpage/preview';
 import videoPreview from 'components/media/video/preview';
+import { isEmoji } from 'helpers/message';
 
 export function messageMediaImmutable(msg: Message.message): HTMLElement | undefined {
   if (!msg.media) return undefined;
@@ -139,14 +141,14 @@ export function messageMediaLower(msg: Message.message): Node | undefined {
   }
 }
 
-export function enhanceClassName(msg: Message.message): string {
-  if (!msg.media || msg.media._ === 'messageMediaEmpty') return '';
-
-  if (msg.media._ === 'messageMediaDocument') {
-    const { document } = msg.media;
-
-    if (document && document._ === 'document' && getAttributeSticker(document)) return 'message__sticker';
+export function enhanceClassName(msg: Message.message, textEl: HTMLElement | undefined): string {
+  // Display only emoji
+  if (msg.message.length <= 6 && isEmoji(msg.message) && (!msg.media || msg.media._ === 'messageMediaEmpty')) {
+    if (textEl) textEl.className = `message__emoji-text${msg.message.length / 2}`;
+    return `message__emoji${msg.out ? '-out' : ''}`;
   }
+
+  if (textEl && textEl.className.indexOf('message__emoji-text') === 0) textEl.className = 'message__text';
 
   return '';
 }

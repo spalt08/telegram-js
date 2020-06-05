@@ -239,7 +239,6 @@ $messageBubblePadding: 7PX $messageSidePadding;
   flex-direction: row-reverse;
   justify-content: flex-end;
 
-
   & > .message__reply {
     max-width: 400px;
     margin-bottom: 10px;
@@ -256,6 +255,41 @@ $messageBubblePadding: 7PX $messageSidePadding;
   }
 }
 
+.message__emoji, .message__emoji-out {
+  box-sizing: content-box;
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  position: relative;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  margin: 0 9px;
+  padding-bottom: 20px;
+
+  & > .bubble__content > .message__reply {
+    max-width: 400px;
+    margin-bottom: 10px;
+    background: #FFFFFF;
+    border-radius: 10px;
+    padding-top: 5px;
+  }
+
+  & > .bubble__content > .message__title {
+    display: none;
+  }
+
+}
+
+.message__emoji-text3 { font-size: 50px; line-height: 60px; }
+.message__emoji-text2 { font-size: 60px; line-height: 70px; }
+.message__emoji-text1 { font-size: 80px; line-height: 90px; }
+
+.message__emoji-out {
+  & > .bubble__content > .message__reply {
+    background: #EEFFDE;
+  }
+}
+
 /**
   Complex Styles
 */
@@ -264,6 +298,9 @@ $messageBubblePadding: 7PX $messageSidePadding;
   width: 320px;
 }
 
+.message__emoji-text3,
+.message__emoji-text2,
+.message__emoji-text1,
 .message__sticker,
 .message__sticker-out,
 .bubble-media,

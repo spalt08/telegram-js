@@ -6,7 +6,7 @@ import { bubble, formattedMessage, datetime, bubbleClassName } from 'components/
 import { mount, unmountChildren, unmount } from 'core/dom';
 import { div, nothing, text } from 'core/html';
 import { useObservable } from 'core/hooks';
-import { isEmoji, getDayOffset, getMessageTooltipTitle } from 'helpers/message';
+import { getDayOffset, getMessageTooltipTitle } from 'helpers/message';
 import { formatNumber } from 'helpers/other';
 import { Message, Peer } from 'mtproto-js';
 import './message.scss';
@@ -19,18 +19,6 @@ export type MessageSibling = undefined | {
   day: string;
   from?: number;
 };
-
-// // Display only emoji
-// if (msg.message.length <= 6 && isEmoji(msg.message)) {
-//   return {
-//     message: div`.as-emoji.only-sticker`(
-//       reply,
-//       div`.message__emoji${`e${msg.message.length / 2}`}`(text(msg.message)),
-//       info,
-//     ),
-//     info,
-//   };
-// }
 
 function isLastMessage(msg: Message.message, siblings: [MessageSibling, MessageSibling]) {
   const nextSibling = siblings[0];
@@ -90,7 +78,7 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
   let content: HTMLElement | undefined = messageMediaImmutable(msg);
 
   if (!content) {
-    content = bubble({ media: masked, out: msg.out, isFirst, isLast, className: enhanceClassName(msg), setRef: (el) => bubbleContent = el },
+    content = bubble({ media: masked, out: msg.out, isFirst, isLast, className: enhanceClassName(msg, textEl), setRef: (el) => bubbleContent = el },
       title || nothing,
       reply || nothing,
       mediaUpper || nothing,
@@ -144,7 +132,7 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
     // update className
     if (bubbleContent && content) {
       content.className = bubbleClassName(
-        enhanceClassName(msg),
+        enhanceClassName(msg, textEl),
         msg.out || false,
         hasMediaToMask(msg),
         isFirstNow,
@@ -212,6 +200,17 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
       mediaLower = messageMediaLower(next);
 
       if (mediaLower && bubbleContent) mount(bubbleContent, mediaLower);
+    }
+
+    // update className
+    if (bubbleContent && content) {
+      content.className = bubbleClassName(
+        enhanceClassName(next, textEl),
+        msg.out || false,
+        hasMediaToMask(msg),
+        isFirst,
+        isLast,
+      );
     }
 
     msg = next;
