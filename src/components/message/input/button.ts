@@ -1,15 +1,119 @@
 import AudioRecorder from 'audio-recorder-polyfill';
+import mpegEncoder from 'audio-recorder-polyfill/mpeg-encoder'
 import { div, text } from 'core/html';
 import * as icons from 'components/icons';
 import './button.scss';
 import { useInterface } from 'core/hooks';
 import { listen, mount, unmount } from 'core/dom';
-import { upload } from 'client/media';
 
 type Props = {
   onMessage: () => void,
-  onAudio: (file, meta) => void,
+  onAudio: () => void,
 };
+
+// audio/wav don't can be voice :(
+AudioRecorder.encoder = mpegEncoder;
+AudioRecorder.prototype.mimeType = 'audio/mpeg';
+
+function prepareWaveform(waveform) {
+  const bytes = new Uint8Array(63);
+
+  const step = Math.floor(waveform.length / 63);
+
+  bytes.forEach((_value, i) => {
+    bytes[i] = waveform[i * step];
+  });
+
+  return bytes.buffer;
+}
+
+async function startStream() {
+  // eslint-disable-next-line compat/compat
+  const stream = await navigator.mediaDevices.getUserMedia({
+    audio: true,
+  });
+
+  const finishStream = () => {
+    stream.getTracks().forEach((track) => {
+      track.stop();
+    });
+  };
+
+  return {
+    stream,
+    finishStream,
+  };
+}
+
+function startAnalyze(stream, handler) {
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+
+  const context = new AudioContext();
+  const source = context.createMediaStreamSource(stream);
+  const analyser = context.createAnalyser();
+  analyser.fftSize = 2048;
+  const bufferLength = analyser.frequencyBinCount;
+  const dataArray = new Uint8Array(bufferLength);
+  source.connect(analyser);
+  let isDestroyed = false;
+
+  function tick(time: number) {
+    if (isDestroyed) {
+      return;
+    }
+
+    analyser.getByteTimeDomainData(dataArray);
+    handler(Math.max(...dataArray), time);
+    requestAnimationFrame(tick);
+  }
+
+  requestAnimationFrame(tick);
+
+  return () => {
+    isDestroyed = true;
+  };
+}
+
+async function startRecord(handler) {
+  const chunks = [];
+  const waveform = [];
+  const startedAt = Date.now();
+
+  const {
+    stream,
+    finishStream,
+  } = await startStream();
+
+  const finishAnalyze = startAnalyze(stream, (volume, time) => {
+    console.log(`${volume} / ${time}`);
+
+    waveform.push((volume - 128) * 2);
+    handler(volume, time);
+  });
+
+  const audioRecorder = new AudioRecorder(stream);
+  audioRecorder.start();
+
+  audioRecorder.addEventListener('dataavailable', (event) => {
+    chunks.push(event.data);
+  });
+
+  return () => new Promise((resolve, reject) => {
+    audioRecorder.stop();
+    finishAnalyze();
+    finishStream();
+
+    setTimeout(() => {
+      resolve({
+        blob: new Blob(chunks, {
+          type: audioRecorder.mimeType,
+        }),
+        duration: Math.round((Date.now() - startedAt) / 1000),
+        waveform: prepareWaveform(waveform),
+      });
+    }, 4);
+  });
+}
 
 export default function recordSendButton({
   onMessage,
@@ -37,68 +141,72 @@ export default function recordSendButton({
   let recordingAllowed = true;
   let startTime = 0;
 
-  let needSend = false;
-  let recorder = null;
-  let duration = 0;
+  let finishRecord = () => {};
 
   const updateTimer = (time: number) => {
-    if (!isRecording) return;
     if (!startTime) startTime = time;
 
     const delta = time - startTime;
-    duration = Math.floor((delta / 1000) % 60);
 
     const milisecs = `0${Math.floor(((delta % 1000) / 1000) * 60)}`.slice(-2);
-    const secs = `0${duration}`.slice(-2);
+    const secs = `0${Math.floor((delta / 1000) % 60)}`.slice(-2);
     const mins = `0${Math.floor(delta / 60000)}`.slice(-2);
 
     recordProgressText.textContent = `${mins}:${secs},${milisecs}`;
-
-    requestAnimationFrame(updateTimer);
   };
 
-  listen(button, 'click', () => {
+  listen(button, 'click', async () => {
     if (!recordingAllowed) {
       onMessage();
       return;
     }
 
     if (!isRecording) {
+      isRecording = true;
+      unmount(toolTip);
+      button.classList.remove('-record');
+      container.classList.add('-recording');
+      // requestAnimationFrame(updateTimer);
+      onStartRecording();
+      finishRecord = await startRecord((volume, time) => {
+        updateTimer(time);
+      });
+
       // eslint-disable-next-line compat/compat
-      navigator.mediaDevices.getUserMedia({ audio: true })
-        .then((stream) => {
-          isRecording = true;
-          unmount(toolTip);
-          button.classList.remove('-record');
-          container.classList.add('-recording');
-          requestAnimationFrame(updateTimer);
-          onStartRecording();
+      // navigator.mediaDevices.getUserMedia({ audio: true })
+      //   .then((stream) => {
+      //     isRecording = true;
+      //     unmount(toolTip);
+      //     button.classList.remove('-record');
+      //     container.classList.add('-recording');
+      //     // requestAnimationFrame(updateTimer);
+      //     onStartRecording();
 
-          recorder = new AudioRecorder(stream);
+      //     recorder = new AudioRecorder(stream);
 
-          recorder.addEventListener('dataavailable', (event) => {
-            if (!needSend) {
-              return;
-            }
+      //     recorder.addEventListener('dataavailable', (event) => {
+      //       if (!needSend) {
+      //         return;
+      //       }
 
-            needSend = false;
+      //       needSend = false;
 
-            upload(event.data, (result) => {
-              onAudio(result, {
-                mimeType: event.data.type,
-                duration,
-              });
-            });
-          });
+      //       upload(event.data, (result) => {
+      //         onAudio(result, {
+      //           mimeType: event.data.type,
+      //           duration,
+      //         });
+      //       });
+      //     });
 
-          recorder.start();
-        })
-        .catch(() => mount(container, toolTip));
+      //     recorder.start();
+      //   })
+      //   .catch(() => mount(container, toolTip));
 
       return;
     }
 
-    needSend = true;
+    // needSend = true;
 
     isRecording = false;
     startTime = 0;
@@ -108,8 +216,10 @@ export default function recordSendButton({
     container.classList.remove('-recording');
     onFinishRecording();
 
-    recorder.stop();
-    recorder.stream.getTracks().forEach((track) => track.stop());
+    const result = await finishRecord();
+
+    console.log(`result:`, result);
+    onAudio(result);
   });
 
   listen(container, 'transitionend', () => {
@@ -119,7 +229,7 @@ export default function recordSendButton({
     mount(container, recordProgress, cancelButton);
   });
 
-  listen(cancelButton, 'click', () => {
+  listen(cancelButton, 'click', async () => {
     isRecording = false;
     startTime = 0;
     unmount(recordProgress);
@@ -128,8 +238,7 @@ export default function recordSendButton({
     container.classList.remove('-recording');
     onFinishRecording();
 
-    recorder.stop();
-    recorder.stream.getTracks().forEach((track) => track.stop());
+    await finishRecord();
   });
 
   return useInterface(container, {

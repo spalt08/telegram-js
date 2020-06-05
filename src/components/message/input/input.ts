@@ -7,6 +7,7 @@ import { Document } from 'mtproto-js';
 import { bubble, contextMenu, quote } from 'components/ui';
 import { documentToInputMedia } from 'helpers/message';
 import { messageCache } from 'cache';
+import { upload } from 'client/media';
 import { messageToSenderPeer } from 'cache/accessors';
 import { profileTitle } from 'components/profile';
 import photoRenderer from 'components/media/photo/photo';
@@ -22,16 +23,19 @@ export default function messageInput() {
   const btn = recordSendButton({
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     onMessage: () => message.sendMessage(textarea.value),
-    onAudio: (file, { mimeType, duration }) => {
-      message.sendMediaMessage({
-        _: 'inputMediaUploadedDocument',
-        file,
-        mime_type: mimeType,
-        attributes: [{
-          _: 'documentAttributeAudio',
-          voice: true,
-          duration,
-        }],
+    onAudio: ({ blob, duration, waveform }) => {
+      upload(blob, (file) => {
+        message.sendMediaMessage({
+          _: 'inputMediaUploadedDocument',
+          file,
+          mime_type: blob.type,
+          attributes: [{
+            _: 'documentAttributeAudio',
+            voice: true,
+            duration,
+            waveform,
+          }],
+        });
       });
     },
     onStartRecording: () => {

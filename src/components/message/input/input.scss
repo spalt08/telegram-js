@@ -16,7 +16,7 @@
     justify-content: center;
     align-items: center;
     position: absolute;
-    top: 1PX;
+    bottom: 2PX;
 
     svg {
       width: 24px;
@@ -39,10 +39,6 @@
 
   &__attach {
     right: 0;
-  }
-
-  &.-recording &__attach {
-    display: none;
   }
 
   &__container {
@@ -81,11 +77,8 @@
     width: 100%;
     min-height: 54px;
     z-index: 1;
-    // display: flex;
     padding-left: 54px;
     padding-right: 54px;
-    // justify-content: flex-start;
-    // align-items: flex-end;
     outline: none;
     position: relative;
     box-sizing: border-box;
@@ -94,10 +87,6 @@
     textarea.message-text {
       margin: 18px 0 14px;
     }
-  }
-
-  &.-recording &__bubble-content {
-    padding-right: 0;
   }
 
   &__btn {
@@ -151,6 +140,20 @@
     &.hidden {
       opacity: 0;
       height: 0;
+    }
+  }
+
+  &.-recording & {
+    &__attach {
+      display: none;
+    }
+
+    &__bubble-content {
+      padding-right: 0;
+
+      textarea.message-text {
+        pointer-events: none;
+      }
     }
   }
 }
