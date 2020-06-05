@@ -75,6 +75,7 @@ $messageBubblePadding: 7PX $messageSidePadding;
     clear: both;
     content: '';
     display: block;
+    height: 0;
   }
 
   & > a {

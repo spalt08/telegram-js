@@ -2,15 +2,15 @@ import { messageCache } from 'cache';
 import { messageToSenderPeer, peerToColorCode } from 'cache/accessors';
 import { profileAvatar, profileTitle } from 'components/profile';
 import { bubble, formattedMessage, datetime, bubbleClassName } from 'components/ui';
+import { mount, unmountChildren, unmount } from 'core/dom';
 import { div, nothing, text } from 'core/html';
 import { isEmoji, getDayOffset, getMessageTooltipTitle } from 'helpers/message';
 import { formatNumber } from 'helpers/other';
-import { Message } from 'mtproto-js';
+import { Message, Peer } from 'mtproto-js';
 import './message.scss';
 import messageReply from './reply';
 import messageSerivce from './service';
-import { messageMediaUpper, messageMediaLower, enhanceClassName, hasMediaToMask, messageMediaImmutable } from './message_media';
-import { mount } from 'core/dom';
+import { messageMediaUpper, messageMediaLower, enhanceClassName, hasMediaToMask, messageMediaImmutable, hasMediaChanged } from './message_media';
 
 export type MessageSibling = undefined | {
   id: string;
@@ -47,20 +47,21 @@ function messageTitle(peer: Peer) {
 }
 
 export default function message(id: string, siblings: [MessageSibling, MessageSibling]) {
-  const msg = messageCache.get(id);
+  const cached = messageCache.get(id);
 
-  if (!msg) return div();
+  if (!cached) return div();
 
-  switch (msg._) {
+  switch (cached._) {
     case 'messageEmpty':
       return div();
 
     case 'messageService':
-      return messageSerivce(msg);
+      return messageSerivce(cached);
 
     default:
   }
 
+  let msg = cached;
   const senderPeer = messageToSenderPeer(msg);
   const isChat = msg.to_id._ !== 'peerUser';
   const isLast = isLastMessage(msg, siblings);
@@ -73,6 +74,7 @@ export default function message(id: string, siblings: [MessageSibling, MessageSi
   let textEl = msg.message ? div`.message__text${msg.out ? '.message__text-out' : ''}`(formattedMessage(msg)) : undefined;
   let mediaUpper = messageMediaUpper(msg);
   let mediaLower = messageMediaLower(msg);
+  let bubbleContent: HTMLDivElement | undefined;
 
   const edited = text(msg.edit_date && !msg.edit_hide ? 'edited ' : '');
   const info: HTMLDivElement = div({ className: msg.out ? 'message__info-out' : 'message__info' },
@@ -85,7 +87,7 @@ export default function message(id: string, siblings: [MessageSibling, MessageSi
   let content = messageMediaImmutable(msg);
 
   if (!content) {
-    content = bubble({ media: masked, out: msg.out, isFirst, isLast, className: enhanceClassName(msg) },
+    content = bubble({ media: masked, out: msg.out, isFirst, isLast, className: enhanceClassName(msg), setRef: (el) => bubbleContent = el },
       title || nothing,
       reply || nothing,
       mediaUpper || nothing,
@@ -107,6 +109,57 @@ export default function message(id: string, siblings: [MessageSibling, MessageSi
   info.title = getMessageTooltipTitle(msg);
   if (textEl && !mediaLower) mount(textEl, info);
   else mount(content, info);
+
+  /**
+   * Update Strategy
+   */
+  messageCache.useItemBehaviorSubject(container, id).subscribe((next: Message.message) => {
+    if (!next) return;
+
+    // message text
+    if (next.message !== msg.message) {
+      if (next.message && !textEl) textEl = div`.message__text${msg.out ? '.message__text-out' : ''}`();
+      else if (textEl) unmountChildren(textEl);
+
+      if (next.message && textEl) mount(textEl, formattedMessage(next));
+      else if (textEl) {
+        unmount(textEl);
+        textEl = undefined;
+      }
+
+      if (textEl && bubbleContent && !textEl.parentElement) mount(bubbleContent, textEl, mediaLower);
+
+      // remount info badge if necessary
+      if (textEl && !mediaLower && info.parentElement !== textEl) mount(textEl, info);
+      else if (content && info.parentElement !== content) mount(content, info);
+    }
+
+    // message edited
+    if (next.edit_date !== msg.edit_date) {
+      if (next.edit_hide) edited.textContent = '';
+      else edited.textContent = 'edited, ';
+
+      info.title = getMessageTooltipTitle(next);
+    }
+
+    if (hasMediaChanged(msg, next)) {
+      // upper media remount
+      if (mediaUpper) unmount(mediaUpper);
+
+      mediaUpper = messageMediaUpper(next);
+
+      if (mediaUpper && bubbleContent) mount(bubbleContent, mediaUpper, textEl);
+
+      // lower media remount
+      if (mediaLower) unmount(mediaLower);
+
+      mediaLower = messageMediaLower(next);
+
+      if (mediaLower && bubbleContent) mount(bubbleContent, mediaLower);
+    }
+
+    msg = next;
+  });
 
   return container;
 }

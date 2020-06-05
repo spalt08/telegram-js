@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable prefer-template */
 import { div } from 'core/html';
 import './bubble.scss';
@@ -9,6 +10,7 @@ interface Props {
   media?: boolean;
   isFirst?: boolean;
   isLast?: boolean;
+  setRef?: (el: HTMLDivElement) => void,
 }
 
 export function bubbleClassName(className: string, out: boolean, media: boolean, first: boolean, last: boolean) {
@@ -29,11 +31,16 @@ export default function bubble({
   media = false,
   isFirst = false,
   isLast = false,
+  setRef,
 }: Props, ...children: Node[]) {
+  const content = div`.bubble__content`(...children);
+
+  if (setRef) setRef(content);
+
   return (
     div({ className: bubbleClassName(className, out, media, isFirst, isLast) },
       div`.bubble__background`(),
-      div`.bubble__content`(...children),
+      content,
     )
   );
 }

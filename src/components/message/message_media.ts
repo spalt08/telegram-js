@@ -159,3 +159,18 @@ export function hasMediaToMask(msg: Message.message): boolean {
 
   return false;
 }
+
+export function hasMediaChanged(left: Message.message, right: Message.message): boolean {
+  const from = left.media;
+  const next = right.media;
+
+  // media added or removed
+  if ((!from && next) || (!next && from)) return true;
+  if (!from || !next) return false;
+
+  // media type changed
+  if (from._ !== next._) return true;
+
+  // todo: media type hasn't changed
+  return false;
+}
