@@ -58,6 +58,9 @@ export default class AuthService {
   /** Received code type */
   codeType: string = '';
 
+  /** Received code length */
+  codeLength: number = -1;
+
   profilePhoto?: File;
 
   userID: number = 0;
@@ -131,6 +134,12 @@ export default class AuthService {
     if (result?._ === 'auth.sentCode') {
       this.phoneHash = result.phone_code_hash;
       this.codeType = result.type._;
+
+      // The auth.sentCodeTypeFlashCall has no length
+      if ('length' in result.type) {
+        this.codeLength = result.type.length;
+      }
+
       this.state.next(AuthStage.Code);
     }
   }

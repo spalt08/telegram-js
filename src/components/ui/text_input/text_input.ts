@@ -16,6 +16,7 @@ export type Props = {
   ref?: (ref: HTMLInputElement) => void,
   error?: Observable<string | undefined>,
   disabled?: MaybeObservable<boolean>,
+  maxLength?: number,
   onChange?(value: string): void;
   onFocus?(value?: string): void;
   onBlur?(value?: string): void;
@@ -37,12 +38,19 @@ export default function textInput({
   inputClassName = '',
   error,
   disabled,
+  maxLength,
   onChange,
   onFocus,
   onBlur,
 }: Props) {
   const labelText = new BehaviorSubject(label);
-  const inputEl = input`${inputClassName}`({ type, name, autocomplete, disabled });
+  const inputEl = input`${inputClassName}`({
+    type,
+    name,
+    autocomplete,
+    disabled,
+    maxLength,
+  });
   const labelEl = div`.input__label`(text(labelText));
   const element = div`.input ${className}`(inputEl, labelEl);
 

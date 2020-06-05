@@ -1,11 +1,12 @@
 import binarySearch from 'binary-search';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, combineLatest } from 'rxjs';
 import { first } from 'rxjs/operators';
 import { ContactsTopPeers, Peer, TopPeer } from 'mtproto-js';
 import client from 'client/client';
 import { chatCache, persistentCache, userCache } from 'cache';
 import { arePeersSame } from 'helpers/api';
 import MessagesService from './message/message';
+import AuthService, { AuthStage } from './auth';
 
 const RATING_E_DECAY = 2419200; // todo: Load it from the server config: https://core.telegram.org/method/help.getConfig
 
@@ -13,6 +14,7 @@ const maxLoadCount = 15;
 const startLoadDelay = 1000;
 const activePeerChangeReactionDelay = 700; // Delayed to not overload the hard peer change process
 const updateInterval = 24 * 60 * 60 * 1000;
+const autoCheckInterval = 5 * 60 * 1000;
 
 export interface LoadedTopPeers {
   items: TopPeer[],
@@ -89,17 +91,19 @@ export default class TopUsersService {
 
   readonly topUsers = new BehaviorSubject<TopPeersState>('unknown');
 
-  constructor(messagesService: MessagesService) {
+  protected autoUpdateTimer = 0;
+
+  constructor(messagesService: MessagesService, authService: AuthService) {
     messagesService.activePeer.subscribe(this.handleActivePeer);
 
-    persistentCache.isRestored
-      .pipe(first((isRestored) => isRestored))
+    combineLatest([persistentCache.isRestored, authService.state])
+      .pipe(first(([isRestored, authState]) => isRestored && authState === AuthStage.Authorized))
       .subscribe(() => {
-        if (persistentCache.topUsers) {
-          this.topUsers.next(persistentCache.topUsers);
-          setTimeout(() => this.scheduleUpdate(), startLoadDelay);
-        } else {
-          setTimeout(() => this.updateIfRequired(), startLoadDelay);
+        if (this.topUsers.value === 'unknown') {
+          if (persistentCache.topUsers) {
+            this.topUsers.next(persistentCache.topUsers);
+          }
+          this.resetAutoUpdateTimer(startLoadDelay);
         }
         this.topUsers.subscribe((topUsers) => {
           persistentCache.topUsers = typeof topUsers === 'object' ? topUsers : undefined;
@@ -121,12 +125,26 @@ export default class TopUsersService {
       }
     } finally {
       this.isUpdating.next(false);
+      this.resetAutoUpdateTimer();
     }
   }
 
   async updateIfRequired() {
-    if (persistentCache.isRestored.value && this.topUsers.value === 'unknown') {
-      await this.update();
+    if (!persistentCache.isRestored.value) {
+      return;
+    }
+
+    try {
+      const topUsers = this.topUsers.value;
+
+      if (
+        topUsers === 'unknown'
+        || (typeof topUsers === 'object' && Date.now() >= topUsers.fetchedAt + updateInterval)
+      ) {
+        await this.update();
+      }
+    } finally {
+      this.resetAutoUpdateTimer();
     }
   }
 
@@ -151,10 +169,11 @@ export default class TopUsersService {
     }, activePeerChangeReactionDelay);
   };
 
-  protected scheduleUpdate() {
-    const topUsers = this.topUsers.value;
-    if (typeof topUsers === 'object') {
-      setTimeout(() => this.update(), topUsers.fetchedAt + updateInterval - Date.now());
-    }
+  protected resetAutoUpdateTimer(time = autoCheckInterval) {
+    clearTimeout(this.autoUpdateTimer);
+    this.autoUpdateTimer = (setTimeout as typeof window.setTimeout)(
+      () => this.updateIfRequired(),
+      time,
+    );
   }
 }

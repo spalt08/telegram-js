@@ -14,22 +14,20 @@ export function promisifyTransaction<T>(
 
   return Promise.resolve()
     .then(() => actionMaybePromise)
-    .then((result) => {
+    .then((result) => new Promise((resolve, reject) => {
       if (isTransactionComplete) {
         if (transaction.error) {
-          throw transaction.error;
+          reject(transaction.error);
         } else {
-          return result;
+          resolve(result);
         }
-      }
-
-      return new Promise((resolve, reject) => {
+      } else {
         // eslint-disable-next-line no-param-reassign
         transaction.oncomplete = () => resolve(result);
         // eslint-disable-next-line no-param-reassign
         transaction.onerror = () => reject(transaction.error);
-      });
-    });
+      }
+    }));
 }
 
 export function getValue(store: IDBObjectStore, key: IDBValidKey) {
@@ -62,10 +60,10 @@ export function eachEntry<TKey extends IDBValidKey, TValue>(
 }
 
 // Use `eachEntry` when possible to prevent creating an excess object in the memory
-export async function getAllEntries<TKey extends IDBValidKey, TValue>(store: IDBObjectStore): Promise<Array<[TKey, TValue]>> {
-  const result: Array<[TKey, TValue]> = [];
-  await eachEntry<TKey, TValue>(store, (key, value) => {
-    result.push([key, value]);
+export async function getAllEntries<T extends [IDBValidKey, any]>(store: IDBObjectStore): Promise<T[]> {
+  const result: T[] = [];
+  await eachEntry<T[0], T[1]>(store, (key, value) => {
+    result.push([key, value] as T);
   });
   return result;
 }
