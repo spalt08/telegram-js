@@ -28,7 +28,7 @@ function literalsToClassname(strings: string[], ...values: unknown[]) {
     classname += `${values[i]} `;
   }
 
-  return classname;
+  return classname.slice(0, -1);
 }
 
 /**

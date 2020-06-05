@@ -13,7 +13,7 @@ $sidebar-max: 400px;
   position: relative;
   overflow: hidden;
 
-  & > * {
+  & > .sidebarWrapper {
     flex: none;
     width: $sidebar-width;
     max-width: $sidebar-max;
@@ -62,7 +62,7 @@ $sidebar-max: 400px;
       height: 100%;
       border-left: none;
 
-      & > * {
+      & > .sidebarWrapper {
         width: 75vw;
         min-width: calc(100vw - #{$sidebar-max});
         max-width: calc(100vw - #{$sidebar-min});
@@ -81,7 +81,7 @@ $sidebar-max: 400px;
       border-left: none;
       transform: translate3d(0, 0, 0);
 
-      & > * {
+      & > .sidebarWrapper {
         width: 100%;
         max-width: 100%;
       }

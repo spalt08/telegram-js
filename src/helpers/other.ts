@@ -12,6 +12,7 @@ export type PhotoOptions = {
   minHeight?: number,
   thumb?: boolean | string,
   showLoader?: boolean,
+  className?: string,
 };
 
 export function downloadByUrl(filename: string, href: string) {

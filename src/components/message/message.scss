@@ -21,7 +21,7 @@ $messageBubblePadding: 7PX $messageSidePadding;
 .message-last {
   @include messageDefault();
 
-  & .message__align {
+  & > .message__align {
     padding-bottom: 4px;
   }
 }
@@ -29,13 +29,13 @@ $messageBubblePadding: 7PX $messageSidePadding;
 .message-chat {
   @include messageDefault();  
 
-  & .message__align { padding-left: $content-message-padding + 28px; }
+  & >.message__align { padding-left: $content-message-padding + 28px; }
 }
 
 .message-chat-last {
   @include messageDefault();
 
-  & .message__align {
+  & > .message__align {
     padding-left: $content-message-padding;
     padding-bottom: 4px;
   }
@@ -44,7 +44,7 @@ $messageBubblePadding: 7PX $messageSidePadding;
 .message-out {
   @include messageDefault();
 
-  & .message__align { justify-content: flex-end; }
+  & > .message__align { justify-content: flex-end; }
 }
 
 .message__align {
@@ -55,7 +55,7 @@ $messageBubblePadding: 7PX $messageSidePadding;
   justify-content: flex-start;
   align-items: flex-end;
 
-  & .avatar {
+  & > .avatar {
     width: 33PX;
     height: 33PX;
     margin-right: -5PX;
@@ -71,31 +71,41 @@ $messageBubblePadding: 7PX $messageSidePadding;
   white-space: pre-wrap;
   overflow-wrap: break-word;
 
-  & a {
+  &::after {
+    clear: both;
+    content: '';
+    display: block;
+  }
+
+  & > a {
     color: #50A2E9;
     text-decoration: none;
   }
 
-  & code {
+  &-out > a {
+    color: #4FAE4E;
+  }
+
+  & > code {
     color: #4E7391;
   }
 
-  & pre {
+  & > pre {
     display: inline;
     white-space: pre-wrap;
     margin: 0;
   }
 
-  & pre {
+  & > pre {
     color: #4e7391;
   }
+}
 
-  & .fallback {
-    font-size: 14px;
-    font-style: italic;
-    color: #707579;
-    line-height: 180%;
-  }
+.message__fallback {
+  font-size: 14px;
+  font-style: italic;
+  color: #707579;
+  line-height: 180%;
 }
 
 .message__title {
@@ -103,8 +113,7 @@ $messageBubblePadding: 7PX $messageSidePadding;
   font-weight: 500;
   color: $accent-color;
   line-height: 1.2;
-  padding: 7px $messageSidePadding 0;
-  margin-bottom: -3px;
+  padding: 7px $messageSidePadding 4px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -120,10 +129,10 @@ $messageBubblePadding: 7PX $messageSidePadding;
   position: absolute;
   right: 6px;
   bottom: 2px;
-  height: 20px;
+  height: 20PX;
   white-space: pre;
   font-size: 12px;
-  line-height: 20px;
+  line-height: 20PX;
   user-select: none;
   display: inline-flex;
 }   
@@ -141,6 +150,7 @@ $messageBubblePadding: 7PX $messageSidePadding;
   background-repeat: no-repeat;
   background-size: 15PX auto;
   background-position: right center;
+  right: 16px;
 
   &.-unreaded {
     background-image: url(~assets/statuses/unread@2x.png);
@@ -167,7 +177,8 @@ $messageBubblePadding: 7PX $messageSidePadding;
   padding: $messageSidePadding / 2;
   border-radius: 6px;
   min-width: 0;
-  margin-bottom: -10px;
+  min-height: 42px;
+  box-sizing: content-box;
 
   &_ripple {
     padding: $messageSidePadding / 2;
@@ -181,39 +192,79 @@ $messageBubblePadding: 7PX $messageSidePadding;
   }
 }
 
-//   &__reply {
-//     $ripplePadding: 5PX 5PX;
+.message__photo-out {
+  &:last-child {
+    margin-right: -9px;
+  }
+}
 
+.message__photo {
+  &:last-child {
+    margin-left: -9px;
+  }
+}
 
-//     &_ripple {
-//       cursor: pointer;
-//       border-radius: 5px;
-//       margin: #{- nth($ripplePadding, 1)} #{- nth($ripplePadding, 2)};
-//       transition: background-color .2s ease;
+.message__attachment, .message__attachment-out {
+  padding: $messageBubblePadding;
+  max-width: 100%;
+}
 
-//       &:hover {
-//         background: rgba(#707579, 0.08);
-//       }
+.message__attachment-out .document-file__size {
+  color: #4FAE4E;
+}
 
-//     }
+.message__webpage, .message__webpage-out {
+  padding: $messageBubblePadding;
+  padding-top: 0;
+}
 
-//     .message.out & {
-//       &_ripple_content:hover {
-//         background: rgba(#000, 0.08);
-//       }
-//     }
-//   }
+.message__webpage-out {
+  &.webpage-preview::before {
+    background: #4FAE4E;
+  }
 
-.message__sticker {
+  & .webpage-preview__header {
+    color: #4FAE4E;
+  }
+}
+
+.message__sticker, .message__sticker-out {
+  margin: 0 9PX;
+  box-sizing: content-box;
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
   position: relative;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
 
-  & .message__reply {
+
+  & > .message__reply {
     max-width: 400px;
     margin-bottom: 10px;
+    background: #FFFFFF;
+    border-radius: 10px;
   }
 };
 
+.message__sticker-out {
+  flex-direction: row;
+
+  & > .message__reply {
+    background: #EEFFDE;
+  }
+}
+
+/**
+  Complex Styles
+*/
+
+.message__photo + .message__text, .message__photo-out + .message__text {
+  width: 320px;
+}
+
 .message__sticker,
+.message__sticker-out,
 .bubble-media,
 .bubble-media-first,
 .bubble-media-last,
@@ -226,7 +277,7 @@ $messageBubblePadding: 7PX $messageSidePadding;
     position: absolute;
     right: 5px;
     bottom: 6px;
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba(0, 0, 0, 0.4);
     border-radius: 10px;
     transform: none;
     padding: 0 5px;
@@ -244,13 +295,49 @@ $messageBubblePadding: 7PX $messageSidePadding;
   }
 }
 
-.message__text > .message__info, .message__text > .message__info-out {
+.bubble-media-out,
+.bubble-media-out-first,
+.bubble-media-out-last,
+.bubble-media-out-first-last {
+  & > .message__info-out {
+    right: 12px;
+  }
+}
+
+.message__text > .message__info,
+.message__text > .message__info-out {
   align-items: flex-end;
   float: right;
   transform: translate(4px, 5px);
   position: relative;
   bottom: 0;
   right: 0;
+  margin-left: 6px;
+}
+
+.message__title + .message__text,
+.message__reply + .message__text,
+.message__attachment + .message__text {
+  padding-top: 0;
+}
+
+.message__title + .message__reply {
+  padding-top: 0;
+}
+
+.message-out .quote {
+  &::before {
+    background: #4FAE4E;
+  }
+
+  &__title {
+    color: #4FAE4E;
+  }
+}
+
+.message__reply + .message__attachment,
+.message__title + .message__attachment {
+  padding-top: 0;
 }
 
 //   color: #A0AAB3;

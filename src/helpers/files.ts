@@ -168,7 +168,7 @@ export function useVideoArrtibuteSize(container: HTMLElement, attr: DocumentAttr
   }
 }
 
-export function usePhotoSize(container: HTMLElement, size: PhotoSize.photoSize, options: PhotoOptions) {
+export function usePhotoSize(container: HTMLElement, size: PhotoSize.photoSize | PhotoSize.photoCachedSize, options: PhotoOptions) {
   const dim = size.w / size.h;
   const orientation = size.w >= size.h ? 'landscape' : 'portrait';
 

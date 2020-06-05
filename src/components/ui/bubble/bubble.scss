@@ -3,16 +3,10 @@
 @mixin bubbleDefault {
   position: relative;
   max-width: $bubble-max-width;
+}
 
-  & .bubble__content {
-    z-index: 1;
-    position: relative;
-    min-height: 36PX;
-    min-width: 44PX;
-    padding: 0PX 2PX 3PX 9PX;
-  }
-  
-  & .bubble__background {
+@mixin bubbleBorderImage {
+  & > .bubble__background {
     position: absolute;
     z-index: 0;
     top: 0;
@@ -27,72 +21,89 @@
     border-color: transparent;
     border-image: url(./images/bubble_in-central.png) 32 36 38 50 fill;
     padding-left: 7PX;
+    @content;
   }
 }
 
-@mixin bubbleWithBorderImage {
-  @include bubbleDefault();
-  & .bubble__background { @content; }
+@mixin bubbleContent {
+  & > .bubble__content {
+    z-index: 1;
+    position: relative;
+    min-height: 36PX;
+    min-width: 44PX;
+    padding: 0PX 2PX 3PX 9PX;
+    @content;
+  }
 }
 
-@mixin bubbleOut {
+@mixin bubbleOutBorderImage {
   @include bubbleDefault();
-  & .bubble__content { padding: 0PX 9PX 3PX 2PX; }
-  & .bubble__background {
+  @include bubbleContent() {
+    padding: 0PX 9PX 3PX 2PX;
+  }
+  @include bubbleBorderImage() {
     border-left-width: 18PX;
     border-right-width: 25PX;
     @content;
   }
 }
 
+@mixin bubbleInBorderImage {
+  @include bubbleDefault();
+  @include bubbleContent();
+  @include bubbleBorderImage() {
+    @content;
+  }
+}
+
 @mixin bubbleMask {
-  & .bubble__content {
+  & > .bubble__content {
     @content;
   }
 }
 
 .bubble, .bubble-media {
-  @include bubbleDefault();
+  @include bubbleInBorderImage();
 }
 
 .bubble-first, .bubble-media-first {
-  @include bubbleWithBorderImage() {
+  @include bubbleInBorderImage() {
     border-image: url(./images/bubble_in-first.png) 32 36 38 50 fill;
   }
 }
 
 .bubble-last, .bubble-media-last {
-  @include bubbleWithBorderImage() {
+  @include bubbleInBorderImage() {
     border-image: url(./images/bubble_in-last.png) 32 36 38 50 fill;
   }
 }
 
 .bubble-first-last, .bubble-media-first-last {
-  @include bubbleWithBorderImage() {
+  @include bubbleInBorderImage() {
     border-image: url(./images/bubble_in-first-last.png) 32 36 38 50 fill;
   }
 }
 
 .bubble-out, .bubble-media-out {
-  @include bubbleOut() {
+  @include bubbleOutBorderImage() {
     border-image: url(./images/bubble_out-central.png) 32 50 38 36 fill;
   }
 }
 
 .bubble-out-first, .bubble-media-out-first {
-  @include bubbleOut() {
+  @include bubbleOutBorderImage() {
     border-image: url(./images/bubble_out-first.png) 32 50 38 36 fill;
   }
 }
 
 .bubble-out-last, .bubble-media-out-last {
-  @include bubbleOut() {
+  @include bubbleOutBorderImage() {
     border-image: url(./images/bubble_out-last.png) 32 50 38 36 fill;
   }
 }
 
 .bubble-out-first-last, .bubble-media-out-first-last {
-  @include bubbleOut() {
+  @include bubbleOutBorderImage() {
     border-image: url(./images/bubble_out-first-last.png) 32 50 38 36 fill;
   }
 }

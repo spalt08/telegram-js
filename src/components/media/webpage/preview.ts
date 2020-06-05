@@ -4,7 +4,7 @@ import photo from 'components/media/photo/photo';
 import './preview.scss';
 import { mount } from 'core/dom';
 
-export default function webpagePreview(webpage: WebPage) {
+export default function webpagePreview(webpage: WebPage, className?: string) {
   if (webpage._ === 'webPageEmpty') return nothing;
   if (webpage._ === 'webPagePending') return nothing;
   if (webpage._ === 'webPageNotModified') return nothing;
@@ -42,7 +42,7 @@ export default function webpagePreview(webpage: WebPage) {
     }
   }
 
-  return div`.webpage-preview ${`webtype-${webpage.type}`}`(
+  return div`.webpage-preview${`webtype-${webpage.type}`}${className}`(
     content,
   );
 }

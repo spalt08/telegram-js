@@ -9,7 +9,7 @@ import { Message } from 'mtproto-js';
 import './message.scss';
 import messageReply from './reply';
 import messageSerivce from './service';
-import { messageMediaUpper, messageMediaLower, enhanceClassName, hasMediaToMask } from './message_media';
+import { messageMediaUpper, messageMediaLower, enhanceClassName, hasMediaToMask, messageMediaImmutable } from './message_media';
 import { mount } from 'core/dom';
 
 export type MessageSibling = undefined | {
@@ -42,6 +42,10 @@ function isFirstMessage(msg: Message.message, siblings: [MessageSibling, Message
   return prevSibling.day !== getDayOffset(msg) || prevSibling.from !== msg.from_id;
 }
 
+function messageTitle(peer: Peer) {
+  return div`.message__title${`color-${peerToColorCode(peer)}`}`(profileTitle(peer));
+}
+
 export default function message(id: string, siblings: [MessageSibling, MessageSibling]) {
   const msg = messageCache.get(id);
 
@@ -63,14 +67,12 @@ export default function message(id: string, siblings: [MessageSibling, MessageSi
   const isFirst = isFirstMessage(msg, siblings);
   const masked = hasMediaToMask(msg);
 
-  let wrapper;
-  let avatar;
-  let content;
-  let reply;
-  let title;
-  let textEl;
-  let mediaUpper;
-  let mediaLower;
+  let avatar = (isChat && !msg.out && isLast) ? profileAvatar(senderPeer) : undefined;
+  let reply = msg.reply_to_msg_id ? messageReply(msg.reply_to_msg_id, msg) : undefined;
+  let title = (isChat && isFirst && !msg.out && !masked) ? messageTitle(senderPeer) : undefined;
+  let textEl = msg.message ? div`.message__text${msg.out ? '.message__text-out' : ''}`(formattedMessage(msg)) : undefined;
+  let mediaUpper = messageMediaUpper(msg);
+  let mediaLower = messageMediaLower(msg);
 
   const edited = text(msg.edit_date && !msg.edit_hide ? 'edited ' : '');
   const info: HTMLDivElement = div({ className: msg.out ? 'message__info-out' : 'message__info' },
@@ -80,25 +82,30 @@ export default function message(id: string, siblings: [MessageSibling, MessageSi
     datetime({ timestamp: msg.date, date: false }),
   );
 
+  let content = messageMediaImmutable(msg);
+
+  if (!content) {
+    content = bubble({ media: masked, out: msg.out, isFirst, isLast, className: enhanceClassName(msg) },
+      title || nothing,
+      reply || nothing,
+      mediaUpper || nothing,
+      textEl || nothing,
+      mediaLower || nothing,
+    );
+  } else if (reply) {
+    mount(content, reply, content.firstChild || undefined);
+  }
+
   const container = div(
     { className: msg.out ? 'message-out' : `message${isChat ? '-chat' : ''}${isLast ? '-last' : ''}` },
-
-    wrapper = div`.message__align`(
-      avatar = (isChat && !msg.out && isLast) ? profileAvatar(senderPeer) : nothing,
-      content = bubble({ media: masked, out: msg.out, isFirst, isLast, className: enhanceClassName(msg) },
-        title = (isChat && isFirst && !msg.out && !masked)
-          ? div`.message__title${`color-${peerToColorCode(senderPeer)}`}`(profileTitle(senderPeer))
-          : nothing,
-        reply = msg.reply_to_msg_id ? messageReply(msg.reply_to_msg_id, msg) : nothing,
-        mediaUpper = messageMediaUpper(msg),
-        textEl = msg.message ? div`.message__text`(formattedMessage(msg)) : nothing,
-        mediaLower = messageMediaLower(msg),
-      ),
+    div`.message__align`(
+      avatar || nothing,
+      content,
     ),
   );
 
   info.title = getMessageTooltipTitle(msg);
-  if (textEl.textContent) mount(textEl, info);
+  if (textEl && !mediaLower) mount(textEl, info);
   else mount(content, info);
 
   return container;
