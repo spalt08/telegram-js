@@ -12,7 +12,7 @@ import poll from 'components/media/poll/poll';
 import webpagePreview from 'components/media/webpage/preview';
 import videoPreview from 'components/media/video/preview';
 
-export function messageMediaImmutable(msg: Message.message): Node | undefined {
+export function messageMediaImmutable(msg: Message.message): HTMLElement | undefined {
   if (!msg.media) return undefined;
 
   switch (msg.media._) {

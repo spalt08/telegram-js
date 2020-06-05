@@ -27,7 +27,7 @@ type Props = {
  * Message Helpers
  */
 const messageDayMap = new Map<string, string>();
-const messageSiblingsMap = new Map<string, [MessageSibling, MessageSibling]>();
+const messageSiblingsMap = new Map<string, BehaviorSubject<[MessageSibling, MessageSibling]>>();
 
 function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
   const { length } = messageIds;
@@ -48,9 +48,21 @@ function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
         from: msg.from_id,
       };
 
+
+      const siblings = messageSiblingsMap.get(id) || new BehaviorSubject([prevSibling, undefined]);
+      if ((siblings.value[0] ? siblings.value[0].id : undefined) !== (prevSibling ? prevSibling.id : undefined)) {
+        siblings.next([prevSibling, siblings.value[1]]);
+      }
+
+      messageSiblingsMap.set(id, siblings);
       messageDayMap.set(id, getDayOffset(msg));
-      messageSiblingsMap.set(id, [prevSibling, undefined]);
-      if (prevSibling) messageSiblingsMap.get(prevSibling.id)![1] = item;
+
+      if (prevSibling) {
+        const prevSiblings = messageSiblingsMap.get(prevSibling.id);
+        if (prevSiblings && (prevSiblings.value[1] ? prevSiblings.value[1].id : undefined) !== item.id) {
+          prevSiblings.next([prevSiblings.value[0], item]);
+        }
+      }
 
       prevSibling = item;
     }

@@ -1,9 +1,11 @@
 import { messageCache } from 'cache';
+import { BehaviorSubject } from 'rxjs';
 import { messageToSenderPeer, peerToColorCode } from 'cache/accessors';
 import { profileAvatar, profileTitle } from 'components/profile';
 import { bubble, formattedMessage, datetime, bubbleClassName } from 'components/ui';
 import { mount, unmountChildren, unmount } from 'core/dom';
 import { div, nothing, text } from 'core/html';
+import { useObservable } from 'core/hooks';
 import { isEmoji, getDayOffset, getMessageTooltipTitle } from 'helpers/message';
 import { formatNumber } from 'helpers/other';
 import { Message, Peer } from 'mtproto-js';
@@ -46,7 +48,7 @@ function messageTitle(peer: Peer) {
   return div`.message__title${`color-${peerToColorCode(peer)}`}`(profileTitle(peer));
 }
 
-export default function message(id: string, siblings: [MessageSibling, MessageSibling]) {
+export default function message(id: string, siblings: BehaviorSubject<[MessageSibling, MessageSibling]>) {
   const cached = messageCache.get(id);
 
   if (!cached) return div();
@@ -64,10 +66,11 @@ export default function message(id: string, siblings: [MessageSibling, MessageSi
   let msg = cached;
   const senderPeer = messageToSenderPeer(msg);
   const isChat = msg.to_id._ !== 'peerUser';
-  const isLast = isLastMessage(msg, siblings);
-  const isFirst = isFirstMessage(msg, siblings);
+  let isLast = isLastMessage(msg, siblings.value);
+  let isFirst = isFirstMessage(msg, siblings.value);
   const masked = hasMediaToMask(msg);
 
+  let wrapper: HTMLDivElement;
   let avatar = (isChat && !msg.out && isLast) ? profileAvatar(senderPeer) : undefined;
   let reply = msg.reply_to_msg_id ? messageReply(msg.reply_to_msg_id, msg) : undefined;
   let title = (isChat && isFirst && !msg.out && !masked) ? messageTitle(senderPeer) : undefined;
@@ -84,7 +87,7 @@ export default function message(id: string, siblings: [MessageSibling, MessageSi
     datetime({ timestamp: msg.date, date: false }),
   );
 
-  let content = messageMediaImmutable(msg);
+  let content: HTMLElement | undefined = messageMediaImmutable(msg);
 
   if (!content) {
     content = bubble({ media: masked, out: msg.out, isFirst, isLast, className: enhanceClassName(msg), setRef: (el) => bubbleContent = el },
@@ -100,7 +103,7 @@ export default function message(id: string, siblings: [MessageSibling, MessageSi
 
   const container = div(
     { className: msg.out ? 'message-out' : `message${isChat ? '-chat' : ''}${isLast ? '-last' : ''}` },
-    div`.message__align`(
+    wrapper = div`.message__align`(
       avatar || nothing,
       content,
     ),
@@ -111,7 +114,50 @@ export default function message(id: string, siblings: [MessageSibling, MessageSi
   else mount(content, info);
 
   /**
-   * Update Strategy
+   * Position was updated inside scroll
+   */
+  useObservable(container, siblings, (next) => {
+    const isLastNow = isLastMessage(msg, next);
+    const isFirstNow = isFirstMessage(msg, next);
+
+    // no changes
+    if (isLastNow === isLast && isFirstNow === isFirst) return;
+
+    // display or remove avatar
+    if (isChat && !msg.out && isLast) {
+      if (!avatar || !avatar.parentElement) mount(wrapper, avatar = profileAvatar(senderPeer), content);
+    } else if (avatar) {
+      unmount(avatar);
+      avatar = undefined;
+    }
+
+    // display or remove title
+    if (isChat && isFirst && !msg.out && !masked) {
+      if ((!title || !title.parentElement) && bubbleContent) {
+        mount(bubbleContent, title = messageTitle(senderPeer), reply || mediaUpper || textEl || mediaLower);
+      }
+    } else if (title) {
+      unmount(title);
+      title = undefined;
+    }
+
+    // update className
+    if (bubbleContent && content) {
+      content.className = bubbleClassName(
+        enhanceClassName(msg),
+        msg.out || false,
+        hasMediaToMask(msg),
+        isFirstNow,
+        isLastNow,
+      );
+    }
+
+    isFirst = isFirstNow;
+    isLast = isLastNow;
+  });
+
+  /**
+   * Update Contents Strategy
    */
   messageCache.useItemBehaviorSubject(container, id).subscribe((next: Message.message) => {
     if (!next) return;
@@ -132,6 +178,16 @@ export default function message(id: string, siblings: [MessageSibling, MessageSi
       // remount info badge if necessary
       if (textEl && !mediaLower && info.parentElement !== textEl) mount(textEl, info);
       else if (content && info.parentElement !== content) mount(content, info);
+    }
+
+    // message reply
+    if (next.reply_to_msg_id !== msg.reply_to_msg_id) {
+      if (reply) unmount(reply);
+
+      if (next.reply_to_msg_id) reply = messageReply(next.reply_to_msg_id, next);
+      else reply = undefined;
+
+      if (reply && bubbleContent) mount(bubbleContent, reply, mediaUpper || textEl || mediaLower);
     }
 
     // message edited
