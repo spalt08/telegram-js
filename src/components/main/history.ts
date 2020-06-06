@@ -28,12 +28,15 @@ type Props = {
  */
 const messageDayMap = new Map<string, string>();
 const messageSiblingsMap = new Map<string, BehaviorSubject<[MessageSibling, MessageSibling]>>();
+let lastUnreadMessage: string | undefined;
 
 function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
   const { length } = messageIds;
   const reversed = new Array(length);
+  const dialog = dialogCache.get(peerToId(peer));
 
   let prevSibling: MessageSibling;
+  let unreadMessageToBeMarked: string | undefined;
 
   for (let i = 0; i < length; i += 1) {
     const id = peerMessageToId(peer, messageIds[i]);
@@ -42,12 +45,17 @@ function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
     if (msg && msg._ !== 'messageEmpty') {
       reversed[length - i - 1] = id;
 
+      if (dialog && dialog._ === 'dialog' && !lastUnreadMessage) {
+        if (msg._ === 'message' && !msg.out && msg.id > dialog.read_inbox_max_id) {
+          unreadMessageToBeMarked = id;
+        }
+      }
+
       const item = {
         id,
         day: getDayOffset(msg),
         from: msg.from_id,
       };
-
 
       const siblings = messageSiblingsMap.get(id) || new BehaviorSubject([prevSibling, undefined]);
       if ((siblings.value[0] ? siblings.value[0].id : undefined) !== (prevSibling ? prevSibling.id : undefined)) {
@@ -67,6 +75,8 @@ function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
       prevSibling = item;
     }
   }
+
+  if (unreadMessageToBeMarked) lastUnreadMessage = unreadMessageToBeMarked;
 
   return reversed;
 }
@@ -139,7 +149,7 @@ export default function history({ onBackToContacts }: Props) {
     batch: 20, // navigator.userAgent.indexOf('Safari') > -1 ? 5 : 20,
     initialPaddingBottom: 10,
     forcePadding: isiOS ? 100000 : 0,
-    renderer: (id: string) => message(id, messageSiblingsMap.get(id) || [undefined, undefined]),
+    renderer: (id: string) => message(id, messageSiblingsMap.get(id)!, id === lastUnreadMessage),
     selectGroup: (id: string) => messageDayMap.get(id) || '0',
     renderGroup: historyDay,
     groupPadding: 34,
@@ -187,6 +197,7 @@ export default function history({ onBackToContacts }: Props) {
     if (next) {
       messageDayMap.clear();
       messageSiblingsMap.clear();
+      lastUnreadMessage = undefined;
 
       if (welcome.parentElement) unmount(welcome);
       if (!headerEl.parentElement) mount(container, headerEl);

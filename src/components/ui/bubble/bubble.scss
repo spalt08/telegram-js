@@ -58,6 +58,8 @@
 
 @mixin bubbleMask {
   & > .bubble__content {
+    max-width: 320px;
+    box-sizing: content-box;
     @content;
   }
 }

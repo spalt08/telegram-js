@@ -43,7 +43,6 @@ function onUpdate(type: keyof UpdateDeclMap, cb: EventResolver) {
  * Emit event
  */
 function emit(type: string, data: any) {
-  console.log(type, data);
   if (!listeners[type]) listeners[type] = [];
 
   for (let i = 0; i < listeners[type].length; i++) {

@@ -7,7 +7,8 @@ $messageBubblePadding: 7PX $messageSidePadding;
   width: 100%;
   background-color: rgba(0, 0, 0, 0);
   display: flex;
-  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 
   &.-focused {
     background-color: rgba(0, 132, 255, 0.3);
@@ -193,15 +194,13 @@ $messageBubblePadding: 7PX $messageSidePadding;
   }
 }
 
-.message__photo-out {
-  &:last-child {
+.bubble-media-last,
+.bubble-media-first-last,
+.bubble-media-out-last,
+.bubble-media-out-first-last {
+  & > .bubble__content > .message__photo:last-child,
+  & > .bubble__content > .message__photo-out:last-child {
     margin-right: -9px;
-  }
-}
-
-.message__photo {
-  &:last-child {
-    margin-left: -9px;
   }
 }
 
@@ -255,6 +254,12 @@ $messageBubblePadding: 7PX $messageSidePadding;
   }
 }
 
+.message__video-round, .message__video-round-out {
+  margin: 0 9PX;
+  margin-bottom: 3px;
+  position: relative;
+}
+
 .message__emoji, .message__emoji-out {
   box-sizing: content-box;
   display: flex;
@@ -290,6 +295,16 @@ $messageBubblePadding: 7PX $messageSidePadding;
   }
 }
 
+.message__unread-mark {
+  width: 100%;
+  background-color: #f4f4f4;
+  text-align: center;
+  line-height: 24px;
+  color: #9a9a9a;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
 /**
   Complex Styles
 */
@@ -297,7 +312,8 @@ $messageBubblePadding: 7PX $messageSidePadding;
 .message__photo + .message__text, .message__photo-out + .message__text {
   width: 320px;
 }
-
+.message__video-round,
+.message__video-round-out,
 .message__emoji-text3,
 .message__emoji-text2,
 .message__emoji-text1,

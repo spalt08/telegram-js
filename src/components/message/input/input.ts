@@ -74,7 +74,7 @@ export default function messageInput() {
 
   const container = div`.msginput`(
     inner = div`.msginput__container`(
-      bubble({ className: 'msginput__bubble -first -last' },
+      bubble({ className: 'msginput__bubble bubble-first-last' },
         quoteContainer,
         div`.msginput__bubble-content`(
           emojiIcon,

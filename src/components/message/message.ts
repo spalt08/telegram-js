@@ -36,7 +36,7 @@ function messageTitle(peer: Peer) {
   return div`.message__title${`color-${peerToColorCode(peer)}`}`(profileTitle(peer));
 }
 
-export default function message(id: string, siblings: BehaviorSubject<[MessageSibling, MessageSibling]>) {
+export default function message(id: string, siblings: BehaviorSubject<[MessageSibling, MessageSibling]>, unreadMark?: boolean) {
   const cached = messageCache.get(id);
 
   if (!cached) return div();
@@ -91,6 +91,7 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
 
   const container = div(
     { className: msg.out ? 'message-out' : `message${isChat ? '-chat' : ''}${isLast ? '-last' : ''}` },
+    unreadMark ? div`.message__unread-mark`(text('Unread Messages')) : nothing,
     wrapper = div`.message__align`(
       avatar || nothing,
       content,

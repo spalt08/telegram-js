@@ -37,6 +37,19 @@ export function messageMediaImmutable(msg: Message.message): HTMLElement | undef
         );
       }
 
+      // round video
+      const videoAttr = getAttributeVideo(document);
+      if (videoAttr && videoAttr.round_message) {
+        return div({ className: msg.out ? 'message__video-round-out' : 'message__video-round' },
+          videoRenderer(document, {
+            fit: 'contain',
+            width: 200,
+            height: 200,
+            className: 'video__round',
+          }, undefined, true),
+        );
+      }
+
       return undefined;
     }
 
@@ -86,7 +99,7 @@ export function messageMediaUpper(msg: Message.message): Node | undefined {
       }
 
       const videoAttr = getAttributeVideo(document);
-      if (videoAttr) {
+      if (videoAttr && !videoAttr.round_message) {
         return videoPreview(document, {
           fit: 'contain',
           width: 320,
