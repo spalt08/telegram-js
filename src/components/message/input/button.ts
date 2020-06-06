@@ -1,19 +1,14 @@
-import AudioRecorder from 'audio-recorder-polyfill';
-import mpegEncoder from 'audio-recorder-polyfill/mpeg-encoder'
 import { div, text } from 'core/html';
 import * as icons from 'components/icons';
-import './button.scss';
 import { useInterface } from 'core/hooks';
 import { listen, mount, unmount } from 'core/dom';
+import loadAudioRecorder from '../../../lazy-modules/audio-recoder';
+import './button.scss';
 
 type Props = {
   onMessage: () => void,
   onAudio: () => void,
 };
-
-// audio/wav don't can be voice :(
-AudioRecorder.encoder = mpegEncoder;
-AudioRecorder.prototype.mimeType = 'audio/mpeg';
 
 function prepareWaveform(waveform) {
   const bytes = new Uint8Array(63);
@@ -90,6 +85,8 @@ async function startRecord(handler) {
     waveform.push((volume - 128) * 2);
     handler(volume, time);
   });
+
+  const AudioRecorder = await loadAudioRecorder();
 
   const audioRecorder = new AudioRecorder(stream);
   audioRecorder.start();
@@ -169,6 +166,8 @@ export default function recordSendButton({
       // requestAnimationFrame(updateTimer);
       onStartRecording();
       finishRecord = await startRecord((volume, time) => {
+        // button.style.boxShadow = `0 0 0 ${volume / 2}px rgba(0,0,0,.15)`;
+
         updateTimer(time);
       });
 
@@ -218,7 +217,6 @@ export default function recordSendButton({
 
     const result = await finishRecord();
 
-    console.log(`result:`, result);
     onAudio(result);
   });
 
