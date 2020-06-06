@@ -72,15 +72,12 @@ function startAnalyze(stream, handler) {
 async function startRecord(handler) {
   const chunks = [];
   const waveform = [];
-  const startedAt = Date.now();
+  const recordStartTime = Date.now();
 
-  const {
-    stream,
-    finishStream,
-  } = await startStream();
+  const { stream, finishStream } = await startStream();
 
   const finishAnalyze = startAnalyze(stream, (volume, time) => {
-    console.log(`${volume} / ${time}`);
+    // console.log(`${volume} / ${Math.floor(time)}`);
 
     waveform.push((volume - 128) * 2);
     handler(volume, time);
@@ -91,25 +88,31 @@ async function startRecord(handler) {
   const audioRecorder = new AudioRecorder(stream);
   audioRecorder.start();
 
+  let handleData = () => {};
+
   audioRecorder.addEventListener('dataavailable', (event) => {
     chunks.push(event.data);
+
+    handleData();
   });
 
-  return () => new Promise((resolve, reject) => {
-    audioRecorder.stop();
-    finishAnalyze();
-    finishStream();
+  return () => {
+    return new Promise((resolve, reject) => {
+      handleData = () => {
+        resolve({
+          blob: new Blob(chunks, {
+            type: 'audio/mpeg',
+          }),
+          duration: Math.round((Date.now() - recordStartTime) / 1000),
+          waveform: prepareWaveform(waveform),
+        });
+      };
 
-    setTimeout(() => {
-      resolve({
-        blob: new Blob(chunks, {
-          type: audioRecorder.mimeType,
-        }),
-        duration: Math.round((Date.now() - startedAt) / 1000),
-        waveform: prepareWaveform(waveform),
-      });
-    }, 4);
-  });
+      audioRecorder.stop();
+      finishAnalyze();
+      finishStream();
+    });
+  };
 }
 
 export default function recordSendButton({
@@ -126,9 +129,9 @@ export default function recordSendButton({
 
   const recordProgressText = text('');
   const recordProgress = div`.msgRecordSend__progress`(recordProgressText);
-  const toolTip = div`.msgRecordSend__tooltip`(text(
-    'Please allow access to the microphone',
-  ));
+  const toolTip = div`.msgRecordSend__tooltip`(
+    text('Please allow access to the microphone'),
+  );
 
   const button = div`.msgRecordSend__button.-record`(recordIcon, sendIcon);
   const cancelButton = div`.msgRecordSend__button.-cancel`(cancelIcon);
@@ -221,7 +224,13 @@ export default function recordSendButton({
   });
 
   listen(container, 'transitionend', () => {
-    if (!container.classList.contains('-recording') || cancelButton.parentElement) return;
+    if (!container.classList.contains('-recording')) {
+      return;
+    }
+
+    if (cancelButton.parentElement) {
+      return;
+    }
 
     mount(container, cancelButton, button);
     mount(container, recordProgress, cancelButton);
