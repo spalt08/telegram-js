@@ -162,53 +162,23 @@ export default function recordSendButton({
     }
 
     if (!isRecording) {
-      isRecording = true;
-      unmount(toolTip);
-      button.classList.remove('-record');
-      container.classList.add('-recording');
-      // requestAnimationFrame(updateTimer);
-      onStartRecording();
-      finishRecord = await startRecord((volume, time) => {
-        // button.style.boxShadow = `0 0 0 ${volume / 2}px rgba(0,0,0,.15)`;
+      try {
+        finishRecord = await startRecord((volume, time) => {
+          // button.style.boxShadow = `0 0 0 ${volume / 2}px rgba(0,0,0,.15)`;
 
-        updateTimer(time);
-      });
-
-      // eslint-disable-next-line compat/compat
-      // navigator.mediaDevices.getUserMedia({ audio: true })
-      //   .then((stream) => {
-      //     isRecording = true;
-      //     unmount(toolTip);
-      //     button.classList.remove('-record');
-      //     container.classList.add('-recording');
-      //     // requestAnimationFrame(updateTimer);
-      //     onStartRecording();
-
-      //     recorder = new AudioRecorder(stream);
-
-      //     recorder.addEventListener('dataavailable', (event) => {
-      //       if (!needSend) {
-      //         return;
-      //       }
-
-      //       needSend = false;
-
-      //       upload(event.data, (result) => {
-      //         onAudio(result, {
-      //           mimeType: event.data.type,
-      //           duration,
-      //         });
-      //       });
-      //     });
-
-      //     recorder.start();
-      //   })
-      //   .catch(() => mount(container, toolTip));
-
+          updateTimer(time);
+        });
+        isRecording = true;
+        unmount(toolTip);
+        button.classList.remove('-record');
+        container.classList.add('-recording');
+        onStartRecording();
+      } catch (error) {
+        // error.name === 'NotAllowedError'
+        mount(container, toolTip);
+      }
       return;
     }
-
-    // needSend = true;
 
     isRecording = false;
     startTime = 0;
