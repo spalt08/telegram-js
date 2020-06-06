@@ -1,10 +1,8 @@
 import { dialogCache, messageCache } from 'cache';
-import { peerToInputPeer } from 'cache/accessors';
+import { peerToInputChannel, peerToInputPeer } from 'cache/accessors';
 import client, { fetchUpdates } from 'client/client';
-import { arePeersSame, dialogPeerToDialogId, getDialogLastReadMessageId, getUserMessageId, peerMessageToId, shortChatMessageToMessage,
-  shortMessageToMessage } from 'helpers/api';
-import { Dialog, InputMedia, Message, MessagesGetMessages, MessagesMessages, MessagesSendMedia, MethodDeclMap, Peer, Updates,
-  Update } from 'mtproto-js';
+import { arePeersSame, dialogPeerToDialogId, getDialogLastReadMessageId, getUserMessageId, peerMessageToId, shortChatMessageToMessage, shortMessageToMessage } from 'helpers/api';
+import { ChannelsGetMessages, Dialog, InputMedia, Message, MessagesGetMessages, MessagesMessages, MessagesSendMedia, MethodDeclMap, Peer, Update, Updates } from 'mtproto-js';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { first } from 'rxjs/operators';
 import makeMessageChunk, { MessageChunkService, MessageHistoryChunk } from './message_chunk';
@@ -294,17 +292,32 @@ export default class MessagesService {
     if (!this.loadMessageReplyPromise) {
       this.loadMessageReplyPromise = new Promise((resolve, reject) => {
         setTimeout(() => {
-          const params: MessagesGetMessages = {
-            id: this.loadMessageReplyList.map((m) => ({ _: 'inputMessageReplyTo', id: m.id })),
-          };
+          if (msg.to_id._ === 'peerChannel') {
+            const params: ChannelsGetMessages = {
+              channel: peerToInputChannel(msg.to_id),
+              id: this.loadMessageReplyList.map((m) => ({ _: 'inputMessageReplyTo', id: m.id })),
+            };
 
-          client.call('messages.getMessages', params)
-            .then((messages) => {
-              this.loadMessageReplyPromise = undefined;
-              this.loadMessageReplyList = [];
-              resolve(messages);
-            })
-            .catch(reject);
+            client.call('channels.getMessages', params)
+              .then((messages) => {
+                this.loadMessageReplyPromise = undefined;
+                this.loadMessageReplyList = [];
+                resolve(messages);
+              })
+              .catch(reject);
+          } else {
+            const params: MessagesGetMessages = {
+              id: this.loadMessageReplyList.map((m) => ({ _: 'inputMessageReplyTo', id: m.id })),
+            };
+
+            client.call('messages.getMessages', params)
+              .then((messages) => {
+                this.loadMessageReplyPromise = undefined;
+                this.loadMessageReplyList = [];
+                resolve(messages);
+              })
+              .catch(reject);
+          }
         });
       });
     }

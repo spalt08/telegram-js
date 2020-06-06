@@ -2,9 +2,9 @@ import { animationFrameStart, listen, listenOnce, mount, unmount, unmountChildre
 import { useMaybeObservable } from 'core/hooks';
 import { div } from 'core/html';
 import { MaybeObservable } from 'core/types';
-import { isSafari, isiOS } from 'helpers/browser';
-import './list.scss';
+import { isiOS, isSafari } from 'helpers/browser';
 import { tgsFreeze, tgsUnFreeze } from '../tgs/tgs';
+import './list.scss';
 
 type ListConfig = {
   batch: number,
@@ -677,7 +677,7 @@ export class VirtualizedList {
 
     if (this.items.indexOf(item) === this.lastRendered) scrollValue = this.scrollHeight - this.viewport.height + 1;
 
-    return Math.floor(scrollValue);
+    return Math.ceil(scrollValue);
   }
 
   scrollTo(item: string) {
