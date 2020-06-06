@@ -48,6 +48,7 @@
     z-index: 1;
     background: transparent;
     font-size: 15PX;
+    box-sizing: border-box;
 
     &:disabled {
       color: #5c5c5c;
