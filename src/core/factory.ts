@@ -15,12 +15,12 @@ function literalsToClassname(strings: string[], ...values: unknown[]) {
     nextI = strings[0].indexOf('.', i);
     if (nextI === -1) {
       if (classname.length > 0) classname += ' ';
-      classname += `${strings[0].slice(i)}`;
+      classname += strings[0].slice(i);
       break;
     }
     if (nextI !== i) {
       if (classname.length > 0) classname += ' ';
-      classname += `${strings[0].slice(i, nextI)}`;
+      classname += strings[0].slice(i, nextI);
     }
     i = nextI + 1;
   }
@@ -28,7 +28,7 @@ function literalsToClassname(strings: string[], ...values: unknown[]) {
   // Add the extra classes
   for (i = 0; i < values.length; ++i) {
     if (classname.length > 0) classname += ' ';
-    classname += `${values[i]}`;
+    classname += values[i];
   }
 
   return classname;
