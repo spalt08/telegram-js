@@ -73,9 +73,11 @@
     padding: 9px var(--content-padding);
 
     svg {
-      width: 32px;
-      height: 32px;
-      fill: #707579;
+      margin: 4px;
+
+      path {
+        fill: #707579;
+      }
     }
 
     &-text {
