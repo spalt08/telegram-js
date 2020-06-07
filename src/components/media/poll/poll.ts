@@ -40,7 +40,7 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
   const selectedOptions = new Set<string>();
   const pollOptions: ReturnType<typeof pollOption>[] = [];
   const pollHeader = text(pollType(pollData));
-  const recentVoters = new BehaviorSubject(results.recent_voters);
+  const recentVoters = new BehaviorSubject<readonly number[] | undefined>(results.recent_voters);
   const options = new Map<string, PollOptionInterface>();
   let answered = !!results.results && results.results.findIndex((r) => r.chosen) >= 0;
   const maxVoters = results.results ? Math.max(...results.results.map((r) => r.voters)) : 0;
