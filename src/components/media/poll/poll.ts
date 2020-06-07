@@ -48,9 +48,10 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
   const solutionEl = pollData.quiz ? pollSolution(resultsSubject) : nothing;
   const pollHeader = text(pollType(pollData));
   const recentVotersEl = div`poll__recent-voters`(...buildRecentVotersList(results.recent_voters));
-  let answered = !!results.results && results.results.findIndex((r) => r.chosen) >= 0;
   const maxVoters = results.results ? Math.max(...results.results.map((r) => r.voters)) : 0;
   const fireworks = fireworksControl();
+  let answered = !!results.results && results.results.findIndex((r) => r.chosen) >= 0;
+  let firstTimeRendered = true;
 
   const submitOptions = async () => {
     if (!answered) {
@@ -134,7 +135,7 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
     const updateMaxVoters = Math.max(...voters.map((r) => r.voters));
     answered = voters.findIndex((r) => r.chosen) >= 0;
     const correct = voters.some((r) => r.chosen && r.correct);
-    if (correct) {
+    if (correct && !firstTimeRendered) {
       getInterface(fireworks).start();
     }
     if (updatedPoll.closed) {
@@ -155,6 +156,7 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
         totalVoters: updateTotalVoters,
       });
     });
+    firstTimeRendered = false;
   };
 
   info.classList.add('poll__message-info');
