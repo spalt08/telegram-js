@@ -1,11 +1,13 @@
 import { messageCache } from 'cache';
 import { profileAvatar } from 'components/profile';
-import { mount, unmount, unmountChildren } from 'core/dom';
+import { simpleList } from 'components/ui';
+import { unmount } from 'core/dom';
 import { getInterface } from 'core/hooks';
 import { div, nothing, text } from 'core/html';
 import { peerMessageToId, userIdToPeer } from 'helpers/api';
 import { Message, Peer, Poll, PollAnswerVoters, PollResults } from 'mtproto-js';
 import { BehaviorSubject } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { main, polls } from 'services';
 import fireworksControl from './fireworks/fireworks_control';
 import './poll.scss';
@@ -27,11 +29,8 @@ function pollType(pollData: Poll) {
   return pollData.public_voters ? 'Poll' : 'Anonymous Poll';
 }
 
-function buildRecentVotersList(userIds?: number[]) {
-  if (userIds) {
-    return userIds.map((userId) => div`.poll__avatar-wrapper`(profileAvatar(userIdToPeer(userId)))).reverse();
-  }
-  return [];
+function buildRecentVoter(userId: number) {
+  return div`.poll__avatar-wrapper`(profileAvatar(userIdToPeer(userId)));
 }
 
 export default function poll(peer: Peer, message: Message.message, info: HTMLElement) {
@@ -47,7 +46,7 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
   const countdownEl = pollData.close_date > 0 && !pollData.closed ? pollCountdown(message.date, pollData.close_date) : nothing;
   const solutionEl = pollData.quiz ? pollSolution(resultsSubject) : nothing;
   const pollHeader = text(pollType(pollData));
-  const recentVotersEl = div`poll__recent-voters`(...buildRecentVotersList(results.recent_voters));
+  const recentVoters = new BehaviorSubject<readonly number[] | undefined>(results.recent_voters);
   const maxVoters = results.results ? Math.max(...results.results.map((r) => r.voters)) : 0;
   const fireworks = fireworksControl();
   let answered = !!results.results && results.results.findIndex((r) => r.chosen) >= 0;
@@ -128,10 +127,7 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
       pollHeader.textContent = pollType(updatedPoll);
     }
     const voters = updatedResults.results ?? [];
-    unmountChildren(recentVotersEl);
-    buildRecentVotersList(updatedResults.recent_voters).forEach((avatar) => {
-      mount(recentVotersEl, avatar);
-    });
+    recentVoters.next(updatedResults.recent_voters);
     const updateMaxVoters = Math.max(...voters.map((r) => r.voters));
     answered = voters.findIndex((r) => r.chosen) >= 0;
     const correct = voters.some((r) => r.chosen && r.correct);
@@ -165,7 +161,13 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
       div`.poll__question`(text(pollData.question)),
       div`poll__info`(
         div`poll__type`(pollHeader),
-        recentVotersEl,
+        simpleList({
+          items: recentVoters.pipe(map((userIds) => userIds ? [...userIds].reverse() : [])),
+          render: buildRecentVoter,
+          props: {
+            className: 'poll__recent-voters',
+          },
+        }),
         countdownEl,
         solutionEl,
       ),

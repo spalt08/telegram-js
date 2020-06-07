@@ -27,3 +27,4 @@ export { MessageInfoInterface, default as messageInfo } from './message_info/mes
 export { default as roundButton } from './round_button/round_button';
 export { default as heading } from './heading/heading';
 export { default as contextMenu, ContextMenuOption } from './context_menu/context_menu';
+export { default as simpleList } from './simple_list';
