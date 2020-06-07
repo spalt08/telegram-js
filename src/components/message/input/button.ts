@@ -5,12 +5,24 @@ import { listen, mount, unmount } from 'core/dom';
 import loadAudioRecorder from '../../../lazy-modules/audio-recoder';
 import './button.scss';
 
-type Props = {
-  onMessage: () => void,
-  onAudio: () => void,
+type Waveform = number[];
+
+type RecordResult = {
+  blob: Blob,
+  duration: number,
+  waveform: Uint8Array,
 };
 
-function prepareWaveform(waveform) {
+type Props = {
+  onMessage: () => void,
+  onAudio: (result: RecordResult) => void,
+  onStartRecording: () => void,
+  onFinishRecording: () => void,
+};
+
+type Handler = (volume: number, time: number) => void;
+
+function prepareWaveform(waveform: Waveform) {
   const bytes = new Uint8Array(63);
 
   const step = Math.floor(waveform.length / 63);
@@ -40,7 +52,7 @@ async function startStream() {
   };
 }
 
-function startAnalyze(stream, handler) {
+function startAnalyze(stream: MediaStream, handler: Handler) {
   const AudioContext = window.AudioContext || window.webkitAudioContext;
 
   const context = new AudioContext();
@@ -69,9 +81,9 @@ function startAnalyze(stream, handler) {
   };
 }
 
-async function startRecord(handler) {
-  const chunks = [];
-  const waveform = [];
+async function startRecord(handler: Handler) {
+  const chunks: Blob[] = [];
+  const waveform: Waveform = [];
   const recordStartTime = Date.now();
 
   const { stream, finishStream } = await startStream();
