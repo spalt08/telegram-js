@@ -1,6 +1,8 @@
+import { BehaviorSubject } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { messageCache } from 'cache';
 import { profileAvatar } from 'components/profile';
-import { mount, unmountChildren } from 'core/dom';
+import { simpleList } from 'components/ui';
 import { getInterface, useWhileMounted } from 'core/hooks';
 import { div, text } from 'core/html';
 import { peerMessageToId, userIdToPeer } from 'helpers/api';
@@ -24,11 +26,8 @@ function pollType(pollData: Poll) {
   return pollData.public_voters ? 'Poll' : 'Anonymous Poll';
 }
 
-function buildRecentVotersList(userIds?: number[]) {
-  if (userIds) {
-    return userIds.map((userId) => div`.poll__avatar-wrapper`(profileAvatar(userIdToPeer(userId)))).reverse();
-  }
-  return [];
+function buildRecentVoter(userId: number) {
+  return div`.poll__avatar-wrapper`(profileAvatar(userIdToPeer(userId)));
 }
 
 export default function poll(peer: Peer, message: Message.message, info: HTMLElement) {
@@ -41,7 +40,7 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
   const selectedOptions = new Set<string>();
   const pollOptions: ReturnType<typeof pollOption>[] = [];
   const pollHeader = text(pollType(pollData));
-  const recentVoters = div`poll__recent-voters`(...buildRecentVotersList(results.recent_voters));
+  const recentVoters = new BehaviorSubject(results.recent_voters);
   const options = new Map<string, PollOptionInterface>();
   let answered = !!results.results && results.results.findIndex((r) => r.chosen) >= 0;
   const maxVoters = results.results ? Math.max(...results.results.map((r) => r.voters)) : 0;
@@ -120,10 +119,7 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
       pollHeader.textContent = pollType(updatedPoll);
     }
     const voters = updatedResults.results ?? [];
-    unmountChildren(recentVoters);
-    buildRecentVotersList(updatedResults.recent_voters).forEach((avatar) => {
-      mount(recentVoters, avatar);
-    });
+    recentVoters.next(updatedResults.recent_voters);
     const updateMaxVoters = Math.max(...voters.map((r) => r.voters));
     answered = voters.findIndex((r) => r.chosen) >= 0;
     updateVoteButtonText(updatedPoll.closed, answered, updatedPoll.public_voters);
@@ -148,7 +144,16 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
   const container = div`.poll`(
     div`.poll__body`(
       div`.poll__question`(text(pollData.question)),
-      div`poll__info`(div`poll__type`(pollHeader), recentVoters),
+      div`poll__info`(
+        div`poll__type`(pollHeader),
+        simpleList({
+          items: recentVoters.pipe(map((userIds) => userIds ? [...userIds].reverse() : [])),
+          render: buildRecentVoter,
+          props: {
+            className: 'poll__recent-voters',
+          },
+        }),
+      ),
       div`.poll__options`(...pollOptions),
     ),
     div`.poll__footer`(
