@@ -3,14 +3,13 @@
   display: flex;
   flex: none;
   width: 60PX;
-  transition: .2s ease-out;
+  transition: width .2s ease-out;
   will-change: width;
   justify-content: flex-end;
   z-index: 1;
 
   &.-recording {
     width: 120PX;
-    transition: .2s ease-out;
   }
 
   &__button {
