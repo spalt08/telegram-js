@@ -8,7 +8,7 @@
 
   &__header {
     flex: none;
-    height: 48px;
+    height: 44px;
     display: flex;
     border-bottom: 1px solid #dedfe2;
     width: 100%;
@@ -34,26 +34,38 @@
     cursor: pointer;
     transition: all $transition-duration;
 
-    > div {
+    &_content {
       display: flex;
       align-items: center;
       text-align: center;
       position: relative;
       font-weight: 500;
-      font-size: 16px;
+      font-size: 14px;
 
       &::after {
         content: '';
         position: absolute;
         bottom: 0;
-        left: -2px;
-        right: -2px;
-        height: 4px;
+        left: -12px;
+        right: -12px;
+        height: 3px;
         background: #4EA4F5;
         border-radius: 2px 2px 0 0;
         opacity: 0;
         transition: opacity $transition-duration ease-out;
       }
+    }
+
+    &_badge {
+      min-width: 20px;
+      height: 20px;
+      border-radius: 10px;
+      line-height: 21px;
+      text-align: center;
+      padding: 0 3px;
+      background: #4EA4F5;
+      color: #fff;
+      margin: -5px 0 -5px 5px;
     }
 
     &:hover {
@@ -62,10 +74,9 @@
 
     &.-active {
       color: #4EA4F5;
-
-      > div::after {
-        opacity: 1;
-      }
+    }
+    &.-active > &_content::after {
+      opacity: 1;
     }
   }
 
