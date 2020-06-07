@@ -12,8 +12,7 @@
   &__head {
     width: 100%;
     flex: none;
-    height: 60px;
-    min-height: 60px;
+    height: $main-header-height;
     display: flex;
     flex-direction: row;
     justify-content: space-between;

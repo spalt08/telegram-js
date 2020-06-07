@@ -1,12 +1,12 @@
+import * as icons from 'components/icons';
 import { status } from 'components/sidebar';
+import { contextMenu, roundButton, searchInput, sectionSpinner, VirtualizedList } from 'components/ui';
+import { animationFrameStart, mount, unmount } from 'core/dom';
+import { getInterface, useObservable } from 'core/hooks';
+import { div } from 'core/html';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
-import { VirtualizedList, sectionSpinner, roundButton, searchInput, contextMenu } from 'components/ui';
-import { div } from 'core/html';
-import { getInterface, useObservable } from 'core/hooks';
-import { animationFrameStart, mount, unmount } from 'core/dom';
-import * as icons from 'components/icons';
-import { globalSearch, dialog as service } from 'services';
+import { dialog as service, globalSearch } from 'services';
 import dialog from '../dialog/dialog';
 import globalSearchResult from '../global_search_result/global_search_result';
 import './dialogs.scss';
@@ -29,7 +29,7 @@ export default function dialogs({ onNavigate }: SidebarComponentProps) {
   let spinner: Node | undefined;
 
   const searchInputEl = searchInput({
-    placeholder: 'Search',
+    placeholder: 'Telegram Search',
     className: 'dialogs__head_search',
     isLoading: combineLatest([globalSearch.isSearching, isSearchActive]).pipe(map(([isSearching, isActive]) => isSearching && isActive)),
     onFocus(value) {

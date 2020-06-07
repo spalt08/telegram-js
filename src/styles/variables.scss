@@ -14,6 +14,7 @@ $break-small: 720px;
 $break-medium: 1024px;
 $break-widescreen: 1680px;
 $common-border-color: #DADCE0;
+$main-header-height: 56px;
 
 @mixin respond-to($media) {
   @if $media == small {

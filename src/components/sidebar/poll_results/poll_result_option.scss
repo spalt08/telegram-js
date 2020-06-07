@@ -3,22 +3,22 @@
 .pollResultOption {
   display: flex;
   flex-direction: column;
-  border-top: 1px solid $common-border-color;
-
-  &__text {
-  }
 
   &__percent {
     padding-left: 16px;
   }
 
   &__header {
-    padding: 16px 25px 16px 25px;
+    border-top: 1px solid $common-border-color;
+    background-color: white;
+    padding: 16px 18px 9px 14px;
     display: grid;
     grid-template-columns: 1fr auto;
     color: #707579;
     font-weight: 500;
     font-size: 0.95rem;
+    position: sticky;
+    top: 0;
   }
 
   &__voters-list {
@@ -42,13 +42,14 @@
   }
 
   &__voter-name {
-    padding-left: var(--content-padding);
+    padding-left: 28px;
   }
 
   &__voter-placeholder {
     display: flex;
     align-items: center;
     margin-top: 10px;
+    padding-left: var(--content-padding);
 
     & .avatar {
       width: 32px;
@@ -60,7 +61,7 @@
     & .voter-name {
       width: 30px;
       height: 20px;
-      padding-left: var(--content-padding);
+      margin-left: 20px;
       border-radius: 8px;
       background-color: rgba(0, 0, 0, 0.08);
     }

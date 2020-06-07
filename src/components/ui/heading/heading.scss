@@ -1,10 +1,12 @@
+@import '~styles/variables.scss';
+
 .sidebarHeading {
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 56px;
-  padding: 0 0 0 17.5px;
+  height: $main-header-height;
+  padding: 0 0 0 12px;
   flex-shrink: 0;
 
   & h3 {
