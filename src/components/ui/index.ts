@@ -17,7 +17,7 @@ export { default as searchInput } from './search_input/search_input';
 export { makeTextMatchHighlighter, makeTextMatchHighlightComponent, telegramSearchWordSeparator } from './highlight_text_match';
 export { default as quote } from './quote/quote';
 export { default as typingIndicator } from './typing_indicator/typing_indicator';
-export { default as tabsPanel } from './tabs/tabs';
+export { default as tabsPanel, TabItem } from './tabs/tabs';
 export { default as virtualScrollBar } from './virtual_scroll_bar/virtual_scroll_bar';
 export { default as waveform } from './waveform/waveform';
 export { default as audioSeekbar } from './audio_seekbar/audio_seekbar';
