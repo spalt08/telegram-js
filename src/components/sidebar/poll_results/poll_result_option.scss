@@ -35,35 +35,51 @@
       width: 32px;
       height: 32px;
     }
-  }
 
-  &__voter.-hidden {
-    display: none;
-  }
-
-  &__voter-name {
-    padding-left: 28px;
-  }
-
-  &__voter-placeholder {
-    display: flex;
-    align-items: center;
-    margin-top: 10px;
-    padding-left: var(--content-padding);
-
-    & .avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 100%;
-      background-color: rgba(0, 0, 0, 0.08);
+    &.-hidden {
+      display: none;
     }
 
-    & .voter-name {
-      width: 30px;
-      height: 20px;
-      margin-left: 20px;
-      border-radius: 8px;
-      background-color: rgba(0, 0, 0, 0.08);
+    &-name {
+      padding-left: 28px;
+    }
+
+    &-placeholder {
+      display: flex;
+      align-items: center;
+      padding: 9px var(--content-padding);
+
+      & .avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 100%;
+        background-color: rgba(0, 0, 0, 0.08);
+      }
+
+      & .voter-name {
+        width: 30px;
+        height: 20px;
+        margin-left: 20px;
+        border-radius: 8px;
+        background-color: rgba(0, 0, 0, 0.08);
+      }
+    }
+  }
+
+  &__load-more {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 9px var(--content-padding);
+
+    svg {
+      width: 32px;
+      height: 32px;
+      fill: #707579;
+    }
+
+    &-text {
+      padding-left: 28px;
     }
   }
 }

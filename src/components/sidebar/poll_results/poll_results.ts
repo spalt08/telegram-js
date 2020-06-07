@@ -1,13 +1,11 @@
-import { messageCache, userCache } from 'cache';
-import { peerToInputPeer } from 'cache/accessors';
-import client from 'client/client';
+import { messageCache } from 'cache';
 import * as icons from 'components/icons';
 import { heading } from 'components/ui';
 import { getInterface } from 'core/hooks';
 import { div, text } from 'core/html';
 import { messageToId, peerMessageToId } from 'helpers/api';
 import { isPollMessage } from 'helpers/message';
-import { Message, MessageUserVote, Peer, Poll } from 'mtproto-js';
+import { Message, Peer, Poll } from 'mtproto-js';
 import './poll_results.scss';
 import pollResultOption from './poll_result_option';
 
@@ -25,7 +23,7 @@ export default function pollResults({ onBack }: SidebarComponentProps, context: 
   const poll = message.media.poll as Required<Poll>;
   const optionsMap = new Map(poll.answers.map((answer) => {
     const optionKey = decoder.decode(answer.option);
-    return [ optionKey, pollResultOption(context.peer, message, answer.option) ];
+    return [optionKey, pollResultOption(message, answer.option)];
   }));
   const rootEl = div`.pollResults`(
     heading({
@@ -46,7 +44,7 @@ export default function pollResults({ onBack }: SidebarComponentProps, context: 
       msg.media.results.results.forEach((pollResult) => {
         const option = optionsMap.get(decoder.decode(pollResult.option));
         if (option) {
-          getInterface(option).setVoters(pollResult.voters, totalVoters);
+          getInterface(option).updateVotersCount(pollResult.voters, totalVoters);
         }
       });
     }
@@ -55,48 +53,6 @@ export default function pollResults({ onBack }: SidebarComponentProps, context: 
   messageCache.useItemBehaviorSubject(rootEl, messageToId(message)).subscribe((msg) => {
     updateOptions(msg);
   });
-  
-  const updateVote = (vote: MessageUserVote, selectedOption?: string) => {
-    const votedOptions = new Set<string>();
-    switch (vote._) {
-      case 'messageUserVote':
-        votedOptions.add(decoder.decode(vote.option));
-        break;
-      case 'messageUserVoteMultiple':
-        vote.options.forEach((option) => votedOptions.add(decoder.decode(option)));
-        break;
-      case 'messageUserVoteInputOption':
-        votedOptions.add(selectedOption!);
-        break;
-      default:
-    }
-    optionsMap.forEach((option, key) => {
-      if (!selectedOption || key === selectedOption) {
-        const voted = votedOptions.has(key);
-        getInterface(option).setVoter(vote.user_id, voted);
-      }
-    });
-  };
-
-  async function loadData() {
-    for (let index = 0; index < poll.answers.length; index++) {
-      const answer = poll.answers[index];
-      const request = {
-        peer: peerToInputPeer(context.peer),
-        id: message!.id,
-        limit: 4,
-        option: answer.option,
-      };
-      // eslint-disable-next-line no-await-in-loop
-      const pollVotes = await client.call('messages.getPollVotes', request);
-      console.error(pollVotes);
-      userCache.put(pollVotes.users);
-      pollVotes.votes.forEach((vote) => {
-        updateVote(vote, decoder.decode(answer.option));
-      });
-    }
-  }
-  // optionsMap.forEach((option) => option.loadData());
 
   return rootEl;
 }
