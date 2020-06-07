@@ -80,7 +80,7 @@ function tabHeader(
   return useInterface(container, { setTitle, setBadge });
 }
 
-export default function tabsPanel({ className = '', headerAlign = 'center', hideHeader }: Props, tabs: TabItem[]) {
+export default function tabsPanel({ className = '', headerAlign = 'center', hideHeader }: Props, tabs: MaybeObservable<TabItem[]>) {
   let tabsMeta: Record<string, TabMeta> = {};
   const selected = new BehaviorSubject<string | undefined>(undefined);
   let isLocked = false;
