@@ -47,7 +47,7 @@ export default function contactsRow({ peers, className = '', clickMiddleware }: 
 
   return simpleList({
     items: peers,
-    itemToKey: peerToId,
+    getItemKey: peerToId,
     render: (peer) => contact(peer, makePeerClickHandler(peer)),
     props: {
       className: `contactsRow ${className}`,
