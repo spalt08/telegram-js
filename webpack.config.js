@@ -129,6 +129,7 @@ module.exports = (env, argv) => {
       filename: '[name].[hash].js',
       chunkFilename: '[name].[hash].js',
       publicPath: './',
+      globalObject: 'this',
     },
 
     devServer: {

@@ -52,7 +52,7 @@ export default function stickerRenderer(sticker: Document.document,
       // if (thumbSrc) thumbnail = img({ className: 'sticker__thumb', src: getThumbnail(sticker.thumbs!), alt: 'Sticker Preview' });
     }
 
-    if (thumbnail) mount(container, thumbnail);
+    // if (thumbnail) mount(container, thumbnail);
   }
 
   const removeThumb = () => {
@@ -61,7 +61,16 @@ export default function stickerRenderer(sticker: Document.document,
 
   switch (sticker.mime_type) {
     case StickerMimeType.TGS:
-      animated = tgs({ src, className: `sticker__tgs${thumbnail ? ' animated' : ''}`, autoplay, loop: true, playOnHover, onLoad: removeThumb });
+      animated = tgs({
+        src,
+        className: `sticker__tgs${thumbnail ? ' animated' : ''}`,
+        autoplay,
+        loop: true,
+        playOnHover,
+        onLoad: removeThumb,
+        width: sizeInt,
+        height: sizeInt,
+      });
       mount(container, animated);
       break;
 
