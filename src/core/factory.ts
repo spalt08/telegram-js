@@ -14,21 +14,24 @@ function literalsToClassname(strings: string[], ...values: unknown[]) {
   for (;;) {
     nextI = strings[0].indexOf('.', i);
     if (nextI === -1) {
-      classname += `${strings[0].slice(i)} `;
+      if (classname.length > 0) classname += ' ';
+      classname += `${strings[0].slice(i)}`;
       break;
     }
     if (nextI !== i) {
-      classname += `${strings[0].slice(i, nextI)} `;
+      if (classname.length > 0) classname += ' ';
+      classname += `${strings[0].slice(i, nextI)}`;
     }
     i = nextI + 1;
   }
 
   // Add the extra classes
   for (i = 0; i < values.length; ++i) {
-    classname += `${values[i]} `;
+    if (classname.length > 0) classname += ' ';
+    classname += `${values[i]}`;
   }
 
-  return classname.slice(0, -1);
+  return classname;
 }
 
 /**
