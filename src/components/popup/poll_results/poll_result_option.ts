@@ -3,7 +3,6 @@ import { mount, unmount, unmountChildren } from 'core/dom';
 import { useInterface } from 'core/hooks';
 import { div, text } from 'core/html';
 import { userIdToPeer } from 'helpers/api';
-import './poll_result_option.scss';
 
 export default function pollResultOption(option: ArrayBuffer, optionText: string, quiz: boolean) {
   const optionTextEl = div`.pollResultOption__text`(text(optionText));

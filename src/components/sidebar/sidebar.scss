@@ -26,8 +26,6 @@ $sidebar-max: 400px;
   }
 
   &.-left {
-    border-right: 1px solid $common-border-color;
-
     @include respond-to(small) {
       width: 100%;
       max-width: 100%;
@@ -43,9 +41,10 @@ $sidebar-max: 400px;
   }
 
   &.-right {
-    border-left: 1px solid $common-border-color;
-
-    // performance tweak
+    @include respond-to(widescreen) {
+      border-right: 1px solid $common-border-color;
+    }
+      // performance tweak
     will-change: width;
     z-index: 0;
     transition: .2s ease-out;
@@ -104,6 +103,7 @@ $sidebar-max: 400px;
 
   &.-hidden {
     transform: translate3d(100%, 0, 0);
+    border-right: none;
 
     @include respond-to(desktop) {
       transform: none;

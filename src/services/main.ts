@@ -1,7 +1,7 @@
 import client from 'client/client';
 import { PhotoOptions } from 'helpers/other';
 import { Document, InputStickerSet, Message, Peer, Photo } from 'mtproto-js';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 type SidebarState = import('components/sidebar/sidebar').SidebarState;
 
@@ -20,7 +20,6 @@ export default class MainService {
 
   /** Right Sidebar Delegate */
   rightSidebarDelegate = new BehaviorSubject<SidebarState | undefined>(undefined);
-  fireworksOnFire = new Subject<any>();
 
   rightSidebarCtx: any = {};
 

@@ -1,19 +1,18 @@
 import binarySearch from 'binary-search';
 import { chatCache, dialogCache, messageCache } from 'cache';
 import * as icons from 'components/icons';
-import fireworksControl from 'components/media/poll/fireworks/fireworks_control';
 import messageInput from 'components/message/input/input';
 import message from 'components/message/message';
 import { sectionSpinner, VirtualizedList } from 'components/ui';
 import { animationFrameStart, mount, unmount } from 'core/dom';
-import { getInterface, useObservable } from 'core/hooks';
+import { useObservable } from 'core/hooks';
 import { button, div, text } from 'core/html';
 import { compareSamePeerMessageIds, peerMessageToId, peerToId } from 'helpers/api';
 import { isiOS } from 'helpers/browser';
 import { Peer } from 'mtproto-js';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
-import { dialog as dialogService, main, message as service } from 'services';
+import { dialog as dialogService, message as service } from 'services';
 import { Direction as MessageDirection } from 'services/message/types';
 import header from './header/header';
 import './history.scss';
@@ -48,14 +47,9 @@ function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
 
 export default function history({ onBackToContacts }: Props) {
   const welcome = div`.history__welcome`(div`.history__welcome-text`(text('Select a chat to start messaging')));
-  const fireworks = fireworksControl();
 
-  const container = div`.history`(welcome, fireworks);
+  const container = div`.history`(welcome);
   const showDownButton = new BehaviorSubject(false);
-
-  useObservable(container, main.fireworksOnFire, () => {
-    getInterface(fireworks).start();
-  });
 
   let spinner: Node | undefined;
   let scroll: VirtualizedList;

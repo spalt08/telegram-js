@@ -29,7 +29,7 @@
   &__voter {
     display: flex;
     align-items: center;
-    margin: 9px 20px;
+    padding: 9px var(--content-padding);
 
     & .avatar {
       width: 32px;
@@ -42,7 +42,7 @@
   }
 
   &__voter-name {
-    margin-left: 20px;
+    padding-left: var(--content-padding);
   }
 
   &__voter-placeholder {
@@ -60,7 +60,7 @@
     & .voter-name {
       width: 30px;
       height: 20px;
-      margin-left: 20px;
+      padding-left: var(--content-padding);
       border-radius: 8px;
       background-color: rgba(0, 0, 0, 0.08);
     }
