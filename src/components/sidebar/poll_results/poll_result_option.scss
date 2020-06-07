@@ -3,18 +3,22 @@
 .pollResultOption {
   display: flex;
   flex-direction: column;
-  border-top: 1px solid #EDEEF0;
+  border-top: 1px solid $common-border-color;
 
   &__text {
-    padding-right: 16px;
-    font-weight: 500;
-    padding: 16px 25px 16px 25px;
+  }
+
+  &__percent {
+    padding-left: 16px;
   }
 
   &__header {
+    padding: 16px 25px 16px 25px;
     display: grid;
     grid-template-columns: 1fr auto;
     color: #707579;
+    font-weight: 500;
+    font-size: 0.95rem;
   }
 
   &__voters-list {
@@ -25,11 +29,11 @@
   &__voter {
     display: flex;
     align-items: center;
-    margin-top: 10px;
+    margin: 9px 20px;
 
     & .avatar {
-      max-width: 30px;
-      max-height: 30px;
+      width: 32px;
+      height: 32px;
     }
   }
 
@@ -38,7 +42,7 @@
   }
 
   &__voter-name {
-    margin-left: 10px;
+    margin-left: 20px;
   }
 
   &__voter-placeholder {
@@ -47,8 +51,8 @@
     margin-top: 10px;
 
     & .avatar {
-      width: 30px;
-      height: 30px;
+      width: 32px;
+      height: 32px;
       border-radius: 100%;
       background-color: rgba(0, 0, 0, 0.08);
     }
@@ -56,7 +60,7 @@
     & .voter-name {
       width: 30px;
       height: 20px;
-      margin-left: 10px;
+      margin-left: 20px;
       border-radius: 8px;
       background-color: rgba(0, 0, 0, 0.08);
     }

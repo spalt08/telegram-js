@@ -7,18 +7,18 @@ import './poll_result_option.scss';
 
 export default function pollResultOption(optionText: string, quiz: boolean) {
   const optionTextEl = div`.pollResultOption__text`(text(optionText));
-  const votersCountEl = text('');
+  const percentEl = div`.pollResultOption__percent`();
   const votersListEl = div`.pollResultOption__voters-list`();
   const voterPlaceholders: Element[] = [];
   const voterIdToElementMap = new Map<number, HTMLElement>();
-  const container = div`.pollResultOption`(div`.pollResultOption__header`(optionTextEl, votersCountEl), votersListEl);
+  const container = div`.pollResultOption`(div`.pollResultOption__header`(optionTextEl, percentEl), votersListEl);
   return useInterface(container, {
     setVoters: (voters: number, totalVoters: number) => {
       if (voters === 0) {
         container.classList.add('-hidden');
       }
-      optionTextEl.textContent = `${optionText} \u2014 ${Math.round((voters / totalVoters) * 100)}%`;
-      votersCountEl.textContent = `${voters} ${quiz ? 'answered' : 'voted'}`;
+      optionTextEl.textContent = `${optionText}`;
+      percentEl.textContent = `${Math.round((voters / totalVoters) * 100)}%`;
       unmountChildren(votersListEl);
       for (let i = 0; i < voters; i++) {
         const titleWidth = 100 + Math.round(Math.random() * 100);

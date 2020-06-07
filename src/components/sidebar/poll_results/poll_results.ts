@@ -5,8 +5,8 @@ import * as icons from 'components/icons';
 import { heading } from 'components/ui';
 import { getInterface } from 'core/hooks';
 import { div, text } from 'core/html';
-import { peerMessageToId } from 'helpers/api';
-import { MessageUserVote, Peer, Poll } from 'mtproto-js';
+import { messageToId, peerMessageToId } from 'helpers/api';
+import { Message, MessageUserVote, Peer, Poll } from 'mtproto-js';
 import './poll_results.scss';
 import pollResultOption from './poll_result_option';
 
@@ -22,11 +22,10 @@ export default function pollResults({ onBack }: SidebarComponentProps, context: 
   }
 
   const poll = message.media.poll as Required<Poll>;
-
-  const options = new Map(poll.answers.map((answer) => [
-    decoder.decode(answer.option),
-    pollResultOption(answer.text, poll.quiz),
-  ]));
+  const optionsMap = new Map(poll.answers.map((answer) => {
+    const optionKey = decoder.decode(answer.option);
+    return [ optionKey, pollResultOption(answer.text, poll.quiz) ];
+  }));
   const rootEl = div`.pollResults`(
     heading({
       title: 'Results',
@@ -36,10 +35,26 @@ export default function pollResults({ onBack }: SidebarComponentProps, context: 
     }),
     div`.pollResults__content`(
       div`.pollResults__question`(text(poll.question)),
-      div`.pollResults__options`(...options.values()),
+      div`.pollResults__options`(...optionsMap.values()),
     ),
   );
 
+  const updateOptions = (msg?: Message) => {
+    if (msg?._ === 'message' && msg.media?._ === 'messageMediaPoll' && msg.media.results.results) {
+      const totalVoters = msg.media.results.total_voters ?? 0;
+      msg.media.results.results.forEach((pollResult) => {
+        const option = optionsMap.get(decoder.decode(pollResult.option));
+        if (option) {
+          getInterface(option).setVoters(pollResult.voters, totalVoters);
+        }
+      });
+    }
+  };
+
+  messageCache.useItemBehaviorSubject(rootEl, messageToId(message)).subscribe((msg) => {
+    updateOptions(msg);
+  });
+  
   const updateVote = (vote: MessageUserVote, selectedOption?: string) => {
     const votedOptions = new Set<string>();
     switch (vote._) {
@@ -54,7 +69,7 @@ export default function pollResults({ onBack }: SidebarComponentProps, context: 
         break;
       default:
     }
-    options.forEach((option, key) => {
+    optionsMap.forEach((option, key) => {
       if (!selectedOption || key === selectedOption) {
         const voted = votedOptions.has(key);
         getInterface(option).setVoter(vote.user_id, voted);

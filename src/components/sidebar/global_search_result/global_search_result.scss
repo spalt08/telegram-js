@@ -1,3 +1,5 @@
+@import '~styles/variables.scss';
+
 .globalSearchResult {
   &__list {
     width: 100%;
@@ -20,7 +22,7 @@
         content: '';
         display: block;
         height: 0;
-        border-top: solid 1px #EDEEF0;
+        border-top: solid 1px $common-border-color;
       }
 
       > div {

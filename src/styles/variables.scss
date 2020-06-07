@@ -13,6 +13,7 @@ $user-bg-colors: (
 $break-small: 720px;
 $break-medium: 1024px;
 $break-widescreen: 1680px;
+$common-border-color: #DADCE0;
 
 @mixin respond-to($media) {
   @if $media == small {

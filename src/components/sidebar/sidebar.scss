@@ -26,7 +26,7 @@ $sidebar-max: 400px;
   }
 
   &.-left {
-    border-right: 1px solid #EDEEF0;
+    border-right: 1px solid $common-border-color;
 
     @include respond-to(small) {
       width: 100%;
@@ -43,7 +43,7 @@ $sidebar-max: 400px;
   }
 
   &.-right {
-    border-left: 1px solid #EDEEF0;
+    border-left: 1px solid $common-border-color;
 
     // performance tweak
     will-change: width;

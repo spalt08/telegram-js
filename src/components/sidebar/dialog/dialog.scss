@@ -15,7 +15,7 @@
       &::before {
         content: '';
         display: block;
-        border-top: 1px solid #EDEEF0;
+        border-top: 1px solid $common-border-color;
         margin-bottom: 6px;
       }
     }

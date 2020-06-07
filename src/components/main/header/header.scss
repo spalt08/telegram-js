@@ -3,7 +3,7 @@
 .header {
   background: #FFFFFF;
   height: 60px;
-  border-bottom: 1px solid #EDEEF0;
+  border-bottom: 1px solid $common-border-color;
   padding: 5px var(--content-padding) 5px var(--content-padding);
   display: flex;
   justify-content: space-between;
