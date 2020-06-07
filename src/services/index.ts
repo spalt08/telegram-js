@@ -10,6 +10,7 @@ import UserTyping from './user_typing';
 import UserService from './user';
 import TopUsersService from './top_users';
 import PollsService from './polls';
+import FilterService from './filter';
 
 export { AuthStage } from './auth';
 
@@ -25,3 +26,4 @@ export const messageSearch = new MessageSearchService();
 export const topUsers = new TopUsersService(message, auth);
 export const globalSearch = new GlobalSearchService(topUsers);
 export const polls = new PollsService();
+export const filter = new FilterService(auth);

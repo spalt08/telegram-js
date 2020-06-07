@@ -1,5 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
-import { Chat, Dialog, Message, Peer, TopPeer, User } from 'mtproto-js';
+import { Chat, Dialog, DialogFilter, Message, Peer, TopPeer, User } from 'mtproto-js';
 import { addValues, getAllEntries, getAllValues, putValuesEntries } from 'helpers/indexedDb';
 import { peerMessageToId } from 'helpers/api';
 import { animationFrameStart } from 'core/dom';
@@ -15,6 +15,7 @@ interface MiscData {
     items: TopPeer[],
     fetchedAt: number, // unix ms
   },
+  filters: readonly Readonly<DialogFilter>[],
 }
 
 type MiscDataEntry = { [K in keyof MiscData]: [K, MiscData[K]] }[keyof MiscData];
@@ -58,6 +59,7 @@ export default class PersistentCache {
     items: TopPeer[],
     fetchedAt: number, // unix ms
   };
+  public filters?: readonly Readonly<DialogFilter>[];
 
   constructor(
     private messageCache: Collection<Message, {}, string>,
@@ -129,6 +131,9 @@ export default class PersistentCache {
           case 'topUsers':
             [, this.topUsers] = entry;
             break;
+          case 'filters':
+            [, this.filters] = entry;
+            break;
           default:
         }
       });
@@ -180,6 +185,10 @@ export default class PersistentCache {
     if (this.topUsers) {
       misc.push(['topUsers', this.topUsers]);
       this.topUsers.items.forEach(({ peer }) => this.collectPeerModels(peer, users, chats));
+    }
+
+    if (this.filters) {
+      misc.push(['filters', this.filters]);
     }
 
     return { dialogs, messages, users, chats, misc };
