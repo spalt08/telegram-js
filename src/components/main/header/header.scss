@@ -3,13 +3,14 @@
 .header {
   background: #FFFFFF;
   height: 60px;
-  border-bottom: 1px solid $common-border-color;
   padding: 5px var(--content-padding) 5px var(--content-padding);
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-direction: row;
   position: relative;
+  box-shadow: 0px 0px 3px 0px #828282;
+  z-index: 2;
 
   &.hidden {
     display: none;
