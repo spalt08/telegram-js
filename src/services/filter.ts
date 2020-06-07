@@ -38,7 +38,7 @@ const filtersMock: DialogFilter[] = [
 ];
 
 function loadFilters() {
-  return client.call('messages.getDialogFilters', {}).then(() => filtersMock);
+  return client.call('messages.getDialogFilters', {});
 }
 
 /**
