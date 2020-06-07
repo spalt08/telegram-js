@@ -47,6 +47,9 @@ function loadFilters() {
 export default class FilterService {
   readonly isLoading = new BehaviorSubject(false);
 
+  /**
+   * A.k.a. folders
+   */
   readonly filters = new BehaviorSubject<readonly Readonly<DialogFilter>[]>([]);
 
   #areRealFiltersLoaded = false;
