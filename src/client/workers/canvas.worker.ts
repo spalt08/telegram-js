@@ -39,6 +39,8 @@ function processWorkerTask(message: any, complete: () => void) {
             }
             console.log('render', (Date.now() - time) / 1000);
 
+            animation.destroy();
+
             const bytes = encodeAPNG(frames, size, size, delays);
             console.log('render + encode', (Date.now() - time) / 1000);
 
