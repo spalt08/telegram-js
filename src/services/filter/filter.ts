@@ -3,7 +3,7 @@ import { first } from 'rxjs/operators';
 import client from 'client/client';
 import { DialogFilter } from 'mtproto-js';
 import { persistentCache } from 'cache';
-import AuthService, { AuthStage } from './auth';
+import AuthService, { AuthStage } from '../auth';
 
 const startLoadDelay = 500;
 
@@ -42,7 +42,7 @@ function loadFilters() {
 }
 
 /**
- * Watches dialog filters
+ * Watches dialog filters and folders
  */
 export default class FilterService {
   readonly isLoading = new BehaviorSubject(false);

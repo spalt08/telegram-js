@@ -54,8 +54,6 @@ export default function dialogs({ className }: Props = {}) {
     map(([dialogsList, isLoading]) => dialogsList.length === 0 && isLoading),
   );
 
-  let spinner: Node | undefined;
-
   const element = div(
     { className },
     status({ className: 'dialogs__status' }),
@@ -68,6 +66,8 @@ export default function dialogs({ className }: Props = {}) {
       filterService.filters.pipe(map(filtersToTabs)),
     ),
   );
+
+  let spinner: Node | undefined;
 
   useObservable(element, showSpinnerObservable, (show) => {
     if (show && !spinner) {

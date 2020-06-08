@@ -1,4 +1,4 @@
-import { Dialog, Peer, Message, Updates, UserStatus } from 'mtproto-js';
+import { Dialog, Peer, Message, Updates, UserStatus, InputPeer, InputDialogPeer } from 'mtproto-js';
 import { ARCHIVE_FOLDER_ID, ROOT_FOLDER_ID } from 'const/api';
 import client from 'client/client';
 import { todoAssertHasValue } from './other';
@@ -152,4 +152,28 @@ export function areUserStatusesEqual(status1: UserStatus | undefined, status2: U
 
 export function isSelf(peer: Peer) {
   return peer._ === 'peerUser' && peer.user_id === client.getUserID();
+}
+
+export function inputPeerToPeer(peer: InputPeer): Peer | null {
+  switch (peer._) {
+    case 'inputPeerChat':
+      return { _: 'peerChat', chat_id: peer.chat_id };
+    case 'inputPeerUser':
+    case 'inputPeerUserFromMessage':
+      return { _: 'peerUser', user_id: peer.user_id };
+    case 'inputPeerChannel':
+    case 'inputPeerChannelFromMessage':
+      return { _: 'peerChannel', channel_id: peer.channel_id };
+    case 'inputPeerSelf':
+      return { _: 'peerUser', user_id: client.getUserID() };
+    default:
+      return null;
+  }
+}
+
+export function inputPeerToInputDialogPeer(inputPeer: InputPeer): InputDialogPeer.inputDialogPeer {
+  return {
+    _: 'inputDialogPeer',
+    peer: inputPeer,
+  };
 }

@@ -1,7 +1,13 @@
 import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { userCache, chatCache, messageCache, dialogCache } from 'cache';
-import { dialogPeerToDialogId, peerMessageToId, peerToId } from 'helpers/api';
+import {
+  dialogPeerToDialogId,
+  inputPeerToInputDialogPeer,
+  inputPeerToPeer,
+  peerMessageToId,
+  peerToId,
+} from 'helpers/api';
 import {
   Peer,
   InputDialogPeer,
@@ -9,8 +15,9 @@ import {
   MessagesGetDialogs,
   MessagesDialogs,
   MessagesPeerDialogs,
+  InputPeer,
 } from 'mtproto-js';
-import { peerToInputDialogPeer } from 'cache/accessors';
+import { peerToInputPeer } from 'cache/accessors';
 
 import MessageService from '../message/message';
 import makeDialogReadReporter, { DialogReadReporter } from './dialog_read_reporter';
@@ -23,12 +30,18 @@ export default class DialogsService {
 
   readonly loading = new BehaviorSubject(false);
 
+  /** The date of the top message of the last dialog that was loaded sequentially */
+  protected lastLoadedDate: number | undefined;
+
   protected isComplete = false;
 
   // The dialogs cache can be filled with the previus session dialogs. They aren't real and must be replaced on load.
   protected areRealDialogsLoaded = false;
 
   protected readReporters: Record<string, DialogReadReporter> = {};
+
+  /** Ids of peers of dialogs that are requested by peer and being loaded now. Used to now load same dialogs simultaneously. */
+  protected loadingPeers = new Set<string>();
 
   constructor(private messageService: MessageService) {
     dialogCache.indices.order.changes.subscribe(() => {
@@ -163,6 +176,21 @@ export default class DialogsService {
     this.readReporters[dialogId].reportRead(messageId);
   }
 
+  loadMissingDialogs(inputPeers: InputPeer[]) {
+    const dialogsToLoad: InputDialogPeer[] = [];
+
+    inputPeers.forEach((inputPeer) => {
+      const peer = inputPeerToPeer(inputPeer);
+      if (peer) {
+        if (!dialogCache.has(dialogPeerToDialogId(peer))) {
+          dialogsToLoad.push(inputPeerToInputDialogPeer(inputPeer));
+        }
+      }
+    });
+
+    this.loadInputPeerDialogs(dialogsToLoad);
+  }
+
   protected async doUpdateDialogs(offsetDate = 0) {
     const chunk = 30;
     const payload: MessagesGetDialogs = {
@@ -228,7 +256,7 @@ export default class DialogsService {
 
     peers.forEach((peer) => {
       try {
-        inputPeers.push(peerToInputDialogPeer(peer));
+        inputPeers.push(inputPeerToInputDialogPeer(peerToInputPeer(peer)));
       } catch (error) {
         // It's not a destiny to chat with this peer
       }
@@ -238,22 +266,43 @@ export default class DialogsService {
   }
 
   protected async loadInputPeerDialogs(peers: InputDialogPeer[]) {
-    const request = { peers };
-    let data: MessagesPeerDialogs.messagesPeerDialogs;
-    try {
-      data = await client.call('messages.getPeerDialogs', request);
-    } catch (err) {
-      if (process.env.NODE_ENV !== 'production') {
-        // eslint-disable-next-line no-console
-        console.error('Failed to load peer dialogs', { request, err });
-      }
+    if (!peers.length) {
       return;
     }
-    userCache.put(data.users);
-    chatCache.put(data.chats);
-    messageCache.put(data.messages);
-    dialogCache.put(data.dialogs);
-    this.messageService.pushMessages(data.messages);
+
+    const loadingPeerIds: string[] = [];
+
+    try {
+      peers.forEach((inputPeer) => {
+        if (inputPeer._ === 'inputDialogPeer') {
+          const peer = inputPeerToPeer(inputPeer.peer);
+          if (peer) {
+            const peerId = peerToId(peer);
+            loadingPeerIds.push(peerId);
+            this.loadingPeers.add(peerId);
+          }
+        }
+      });
+
+      const request = { peers };
+      let data: MessagesPeerDialogs.messagesPeerDialogs;
+      try {
+        data = await client.call('messages.getPeerDialogs', request);
+      } catch (err) {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.error('Failed to load peer dialogs', { request, err });
+        }
+        return;
+      }
+      userCache.put(data.users);
+      chatCache.put(data.chats);
+      messageCache.put(data.messages);
+      dialogCache.put(data.dialogs);
+      this.messageService.pushMessages(data.messages);
+    } finally {
+      loadingPeerIds.forEach((peerId) => this.loadingPeers.delete(peerId));
+    }
   }
 
   protected async preloadMessages(_dialogs: Dialog[]) {

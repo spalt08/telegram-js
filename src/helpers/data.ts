@@ -38,7 +38,7 @@ export function modulo(dividend: number, divider: number): number {
  */
 export function mergeOrderedArrays<T>(
   destination: T[],
-  source: Readonly<T[]>,
+  source: readonly T[],
   compare: (a: T, b: T) => number,
 ): boolean {
   if (!source.length) {
@@ -82,6 +82,19 @@ export function mergeOrderedArrays<T>(
 
   destination.splice(startIndex, endIndex - startIndex, ...intersection);
   return true;
+}
+
+export function insertIntoOrderedArray<T>(
+  array: T[],
+  item: T,
+  compare: (arrayItem: T, item: T) => number, // See Array.prototype.sort
+  scanFromIndex?: number, // Inclusive
+  scanToIndex?: number, // Inclusive
+): number {
+  const rawIndex = binarySearch(array, item, compare, scanFromIndex, scanToIndex);
+  const index = rawIndex >= 0 ? (rawIndex + 1) : (-rawIndex - 1);
+  array.splice(index, 0, item);
+  return index;
 }
 
 // From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#Escaping

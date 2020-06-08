@@ -10,7 +10,7 @@ import UserTyping from './user_typing';
 import UserService from './user';
 import TopUsersService from './top_users';
 import PollsService from './polls';
-import FilterService from './filter';
+import FilterService from './filter/filter';
 
 export { AuthStage } from './auth';
 

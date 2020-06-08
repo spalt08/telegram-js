@@ -11,6 +11,7 @@ import Collection, { GetId, makeGetIdFromProp } from './fastStorages/collection'
 import { orderBy } from './fastStorages/indices';
 import messageHistory from './fastStorages/indices/messageHistory';
 import sharedMediaIndex from './fastStorages/indices/sharedMediaIndex';
+import addOrder from './fastStorages/indices/addOrder';
 import pollsIndex from './fastStorages/indices/pollsIndex';
 import { getDatabase } from './persistentStorages/database';
 import PersistentCache from './persistentCache';
@@ -93,6 +94,7 @@ export const dialogCache = new Collection({
         return true;
       },
     ),
+    addOrder,
   },
 });
 
