@@ -1,5 +1,5 @@
-export * from './dom';
 export { default as countries } from './country';
+export * from './dom';
 export const SERVICE_WORKER_SCOPE = '/';
 
 export enum StickerMimeType {
@@ -7,4 +7,4 @@ export enum StickerMimeType {
   WebP = 'image/webp',
 }
 
-export const STICKER_CACHED_SIZE = 100;
+export const STICKER_CACHED_SIZE = 200;
