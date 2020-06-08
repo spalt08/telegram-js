@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import { InputFileLocation } from 'mtproto-js';
 import { DownloadOptions } from 'client/types';
-import { fetchFileLocation, FilePartResolver, ungzipResponse, ProgressResolver } from './files';
+import { fetchFileLocation, FilePartResolver, ProgressResolver, ungzip } from './files';
 import { fetchStreamLocation } from './stream';
 
 /**
@@ -25,7 +25,7 @@ export function fetchLocation(url: string, location: InputFileLocation, options:
  * Load and ungzip .tgs
  */
 export function fetchTGS(url: string): Promise<Response> {
-  return fetch(url).then(ungzipResponse);
+  return fetch(url).then((response) => response.arrayBuffer()).then((ab) => ungzip([ab]));
 }
 
 function h2s(hex: string) {

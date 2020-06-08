@@ -66,7 +66,7 @@ export type SVGRendererConfig = BaseRendererConfig & {
 
 export type CanvasRendererConfig = BaseRendererConfig & {
   clearCanvas?: boolean;
-  context?: CanvasRenderingContext2D;
+  context?: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
   progressiveLoad?: boolean;
   preserveAspectRatio?: string;
 };
@@ -92,7 +92,7 @@ export type AnimationConfigWithData = AnimationConfig & {
   animationData?: any;
 };
 
-type LottiePlayer = {
+export type LottiePlayer = {
   play(name?: string): void;
   stop(name?: string): void;
   setSpeed(speed: number, name?: string): void;

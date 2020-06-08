@@ -1,97 +1,71 @@
-import { div, img } from 'core/html';
+import { img } from 'core/html';
 import { Document } from 'mtproto-js';
-import { mount, listen } from 'core/dom';
-import { getSize, getPhotoLocation } from 'helpers/photo';
+import { BehaviorSubject } from 'rxjs';
+import { listen } from 'core/dom';
 import { getDocumentLocation } from 'helpers/files';
 import { file } from 'client/media';
-import { tgs } from 'components/ui';
-import { useInterface, getInterface, useOnMount } from 'core/hooks';
+import { getCanvasWorker, listenMessage } from 'client/context';
 import { StickerMimeType } from 'const';
 import './sticker.scss';
+import { useObservable } from 'core/hooks';
 
 type StickerOptions = {
   className?: string,
-  size: string,
-  autoplay: boolean,
-  playOnHover?: boolean,
   onClick?: (sticker: Document) => void,
 };
 
-export default function stickerRenderer(sticker: Document.document,
-  { size = '200px', autoplay = true, playOnHover = false, onClick, className = '' }: StickerOptions) {
-  let thumbnail: HTMLImageElement | undefined;
-  let animated: ReturnType<typeof tgs> | undefined;
+const readySubject = new Map<string, BehaviorSubject<boolean>>();
+function loadSticker(id: string, src: string) {
+  let subject = readySubject.get(src);
+  if (subject) return subject;
 
-  const container = div`.sticker${className}`({ style: { width: size, height: size } });
+  readySubject.set(src, subject = new BehaviorSubject(false));
 
+  if ('OffscreenCanvas' in window) {
+    getCanvasWorker().postMessage({ type: 'cache_sticker', id, src, pixelRatio: window.devicePixelRatio });
+  }
+  return subject;
+}
+
+listenMessage('sticker_cached', ({ src }) => {
+  console.log('ready');
+  const subject = readySubject.get(src);
+  if (subject) subject.next(true);
+});
+
+export default function stickerRenderer(sticker: Document.document, { onClick, className = '' }: StickerOptions) {
+  const image = img`.sticker${className}`();
   const location = getDocumentLocation(sticker, '');
   const src = file(location, { dc_id: sticker.dc_id, size: sticker.size, mime_type: sticker.mime_type });
 
-  const sizeInt = parseInt(size, 10);
-
-  // diplay thumbnail
-  if (sticker.mime_type === StickerMimeType.TGS && sticker.thumbs && sticker.thumbs.length > 0) {
-    const tsize = getSize(sticker.thumbs, sizeInt, sizeInt, 'cover');
-
-    if (tsize) {
-      const loc = getPhotoLocation(sticker, tsize.type);
-      const thumbSrc = file(loc, { mime_type: 'image/webp' });
-      thumbnail = img({ className: 'sticker__thumb', src: thumbSrc, alt: 'Sticker Preview' });
-
-      // const time = Date.now();
-
-      listen(thumbnail, 'error', (event) => {
-        console.log('error', event);
-        // if (!thumbnail || Date.now() - time < 30 * 1000) return;
-
-        // thumbnail.src = '';
-        // thumbnail.src = thumbSrc;
-      });
-    } else {
-      // const thumbSrc = getThumbnail(sticker.thumbs!);
-      // if (thumbSrc) thumbnail = img({ className: 'sticker__thumb', src: getThumbnail(sticker.thumbs!), alt: 'Sticker Preview' });
-    }
-
-    // if (thumbnail) mount(container, thumbnail);
-  }
-
-  const removeThumb = () => {
-    if (thumbnail) thumbnail.style.display = 'none';
-  };
-
   switch (sticker.mime_type) {
     case StickerMimeType.TGS:
-      animated = tgs({
-        src,
-        className: `sticker__tgs${thumbnail ? ' animated' : ''}`,
-        autoplay,
-        loop: true,
-        playOnHover,
-        onLoad: removeThumb,
-        width: sizeInt,
-        height: sizeInt,
+      image.src = `/stickers/${sticker.id}.png`;
+
+      // cache sticker
+      listen(image, 'error', () => {
+        image.style.opacity = '0';
+
+        useObservable(image, loadSticker(sticker.id, src), (ready) => {
+          if (ready) {
+            image.src = '';
+            image.src = `/stickers/${sticker.id}.png`;
+            image.style.opacity = '';
+          }
+        });
       });
-      mount(container, animated);
+
       break;
 
     case StickerMimeType.WebP: {
-      const image = img({ src, className: `sticker__image${thumbnail ? ' animated' : ''}` });
-      mount(container, image);
-      listen(image, 'load', removeThumb);
+      image.src = src;
       break;
     }
 
     default:
   }
 
-  useOnMount(container, () => {
-    if (thumbnail) thumbnail.style.display = '';
-  });
+  if (onClick) listen(image, 'click', () => onClick(sticker));
 
-  if (onClick) listen(container, 'click', () => onClick(sticker));
-
-  return useInterface(container, {
-    play() { if (animated) getInterface(animated).play(); },
-    pause() { if (animated) getInterface(animated).pause(); },
-  });
+  return image;
 }

@@ -1,22 +1,21 @@
 
 /* eslint-disable import/no-webpack-loader-syntax */
 import Worker from 'worker-loader!./lottie.worker';
-import loadLottie, { AnimationItem, LottiePlayer } from 'lazy-modules/lottie';
+import loadLottie from 'lazy-modules/lottie';
 import { canvas } from 'core/html';
-import { fetchAnimation } from './lottie';
+import { Animation, DEFAULT_FRAME_SIZE, loadAnimation, play, pause, destroy, handleFrame } from './lottie';
 
 type AnimationProps = {
   paused?: boolean,
   loop?: boolean,
   offscreen?: boolean,
-  width: number,
-  height: number,
   onLoad?: () => void,
 };
 
 /**
  * Worker for offscreen canvas rendering
  */
+let isRendering = false;
 let count = 0;
 let worker: Worker;
 function getWorker() {
@@ -37,7 +36,7 @@ export class TGSManager {
   src: string;
   state: AnimationProps;
   element: HTMLCanvasElement;
-  animation?: AnimationItem;
+  animation?: Animation;
   transfered?: boolean;
   destroyed?: boolean;
 
@@ -47,49 +46,41 @@ export class TGSManager {
     this.state = props;
     this.element = createElement();
 
-    this.element.width = props.width * window.devicePixelRatio;
-    this.element.height = props.height * window.devicePixelRatio;
+    this.element.width = DEFAULT_FRAME_SIZE * window.devicePixelRatio;
+    this.element.height = DEFAULT_FRAME_SIZE * window.devicePixelRatio;
   }
 
   load() {
     // pass control to worker thread
-    if (typeof this.element.transferControlToOffscreen === 'function' && this.state.offscreen) {
-      const context = this.element.transferControlToOffscreen();
+    // if (typeof this.element.transferControlToOffscreen === 'function' && this.state.offscreen) {
+    //   const context = this.element.transferControlToOffscreen();
 
-      getWorker().postMessage({
-        id: this.id,
-        type: 'init',
-        canvas: context,
-        src: this.src,
-        props: {
-          loop: this.state.loop,
-          paused: this.state.paused,
-        },
-      }, [context]);
+    //   getWorker().postMessage({
+    //     id: this.id,
+    //     type: 'init',
+    //     canvas: context,
+    //     src: this.src,
+    //     props: {
+    //       loop: this.state.loop,
+    //       paused: this.state.paused,
+    //     },
+    //   }, [context]);
 
-      this.transfered = true;
+    //   this.transfered = true;
 
-    // pass control to main thread
-    } else {
-      Promise.all([
-        loadLottie(),
-        fetchAnimation(this.src),
-      ]).then(([Lottie, animationData]: [LottiePlayer, any]) => {
-        if (this.destroyed) return;
+    // // pass control to main thread
+    // } else {
+    //   const context = this.element.getContext('2d');
+    //   if (!context) return;
 
-        this.animation = Lottie.loadAnimation({
-          container: this.element.parentElement!,
-          renderer: 'canvas',
-          loop: this.state.loop,
-          autoplay: !this.state.paused,
-          animationData,
-          rendererSettings: {
-            context: this.element.getContext('2d') || undefined,
-            clearCanvas: true,
-          },
-        });
-      });
-    }
+    //   loadLottie()
+    //     .then((player) => loadAnimation(player, context, this.id, this.src));
+
+    //   if (!isRendering) {
+    //     isRendering = true;
+    //     handleFrame();
+    //   }
+    // }
   }
 
   play() {
@@ -105,10 +96,11 @@ export class TGSManager {
     // load animation inside main thread
     } else if (!this.animation) {
       this.load();
+      play(this.id);
 
     // play animation inside main thread
     } else {
-      this.animation.play();
+      play(this.id);
     }
   }
 
@@ -124,7 +116,7 @@ export class TGSManager {
 
     // pause animation inside main thread
     } else if (this.animation) {
-      this.animation.pause();
+      pause(this.id);
     }
   }
 
@@ -142,7 +134,7 @@ export class TGSManager {
 
     // destroy animation inside main thread
     } else if (this.animation) {
-      this.animation.destroy();
+      destroy(this.id);
     }
   }
 

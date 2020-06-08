@@ -3,7 +3,7 @@
 import { DownloadOptions } from 'client/types';
 import { StickerMimeType } from 'const';
 import { InputFileLocation } from 'mtproto-js';
-import { inflate } from 'pako/lib/inflate';
+import { Inflate } from 'pako/lib/inflate';
 import { isWebpSupported } from 'helpers/browser';
 import { workerTask } from './context';
 
@@ -36,16 +36,19 @@ const fileEvents: Record<FileURL, Array<(res: Response) => void>> = {};
 const fileQueue: FileURL[] = [];
 let currentlyProcessing = 0;
 
-export function ungzipResponse(response: Response, mime: string = 'application/json') {
-  return response.arrayBuffer()
-    .then((buffer) => new Response(
-      inflate(new Uint8Array(buffer), { to: 'string' }),
-      {
-        headers: {
-          'Content-Type': mime,
-        },
+export function ungzip(chunks: ArrayBuffer[], mime: string = 'application/json') {
+  const inflate = new Inflate({ to: 'string' });
+
+  for (let i = 0; i < chunks.length; i++) inflate.push(chunks[i], i === chunks.length - 1);
+
+  return new Response(
+    inflate.result as string,
+    {
+      headers: {
+        'Content-Type': mime,
       },
-    ));
+    },
+  );
 }
 
 function finishDownload(info: FileInfo, blob: Blob | Response, cache: Cache, get: FilePartResolver, progress: ProgressResolver) {
@@ -93,9 +96,7 @@ export function loopDownload(info: FileInfo, get: FilePartResolver, cache: Cache
       // middlewares
       switch (info.options.mime_type) {
         case StickerMimeType.TGS: {
-          const response = new Response(new Blob(info.chunks, { type: type || info.options.mime_type }));
-          ungzipResponse(response)
-            .then((json) => finishDownload(info, json, cache, get, progress));
+          finishDownload(info, ungzip(info.chunks), cache, get, progress);
           break;
         }
 

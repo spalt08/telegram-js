@@ -58,6 +58,14 @@ function getFilePartRequest(location: InputFileLocation, offset: number, limit: 
       return;
     }
 
+    // wait
+    if (err && err.message && err.message.indexOf('FLOOD_WAIT_') > -1) {
+      console.log('waitng flood', err);
+      const wait = +err.message.replace('FLOOD_WAIT_', '') + 0.5;
+      setTimeout(() => getFilePartRequest(location, offset, limit, options, ready), wait * 1000);
+      return;
+    }
+
     // todo handling errors
     if (err || !result || result._ === 'upload.fileCdnRedirect') {
       throw new Error(`Error while downloading file: ${JSON.stringify(err)}`);
@@ -133,8 +141,8 @@ function processWindowMessage(msg: WindowMessage, source: Client | MessagePort |
     }
 
     case 'webp_loaded': {
-      const { url, blob } = msg.payload;
-      respondDownload(url, new Response(blob), ctx.cache);
+      const { url, bytes } = msg.payload;
+      respondDownload(url, new Response(bytes, { headers: { 'Content-Type': 'image/png' } }), ctx.cache);
       break;
     }
 
@@ -223,6 +231,15 @@ ctx.addEventListener('fetch', (event: FetchEvent): void => {
         event.respondWith(new Promise((resolve) => {
           fetchStreamRequest(url, offset, end, resolve, getFilePartRequest);
         }));
+        break;
+      }
+
+      case 'stickers': {
+        event.respondWith(
+          ctx.cache.match(url)
+            .then((cached) => cached || new Response('', { status: 404 })),
+        );
+
         break;
       }
 

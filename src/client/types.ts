@@ -29,7 +29,7 @@ export interface TaskPayloadMap {
   },
   'webp_loaded': {
     url: string,
-    blob: Blob,
+    bytes: Uint8Array,
   }
 }
 
@@ -96,6 +96,10 @@ export interface NotificationPayloadMap {
     url: string,
     data: ArrayBuffer,
   };
+  'sticker_cached': {
+    id: string,
+    src: string,
+  }
 }
 
 /**

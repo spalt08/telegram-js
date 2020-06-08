@@ -1,8 +1,7 @@
 import { WebPDecoder } from 'vendor/libwebp-0.2.0';
-import { encode } from 'fast-png';
 
-export function webp2png(file: ArrayBuffer): Blob {
-  const data = new Uint8Array(file);
+export function decodeWebP(source: ArrayBuffer) {
+  const data = new Uint8Array(source);
   const decoder = new WebPDecoder();
   const config = decoder.WebPDecoderConfig;
   const buffer = config.j || config.output;
@@ -22,18 +21,8 @@ export function webp2png(file: ArrayBuffer): Blob {
   }
 
   if (status === 0) {
-    const rgbaData = buffer.Jb;
-    const pngData = encode({
-      data: rgbaData,
-      width: buffer.width,
-      height: buffer.height,
-      channels: 4,
-      depth: 8,
-    });
-
-    const blob = new Blob([pngData], { type: 'image/png' });
-    return blob;
+    return { data: new Uint8Array(buffer.Jb).buffer, width: buffer.width as number, height: buffer.height as number };
   }
 
-  return new Blob([file], { type: 'image/webp' });
+  throw new Error('Unable to decode');
 }

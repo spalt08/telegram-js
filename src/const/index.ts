@@ -6,3 +6,5 @@ export enum StickerMimeType {
   TGS = 'application/x-tgsticker',
   WebP = 'image/webp',
 }
+
+export const STICKER_CACHED_SIZE = 200;

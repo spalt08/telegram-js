@@ -1,7 +1,7 @@
 import loadLottie from 'lazy-modules/lottie';
-import { div, canvas } from 'core/html';
+import { div } from 'core/html';
 import { useInterface, useOnUnmount } from 'core/hooks';
-import { watchVisibility, listen } from 'core/dom';
+import { watchVisibility } from 'core/dom';
 import { TGSManager } from './lottie.browser';
 import './tgs.scss';
 
@@ -25,13 +25,10 @@ export default function tgs({
   className,
   autoplay = true,
   loop = false,
-  playOnHover = false,
   offscreen = true,
-  width = 200,
-  height = 200,
   onLoad,
 }: Props) {
-  const animation = new TGSManager(src, { loop, offscreen, onLoad, width, height });
+  const animation = new TGSManager(src, { loop, offscreen, onLoad });
   const container = div({ className }, animation.element);
 
   useOnUnmount(container, () => {
@@ -42,11 +39,6 @@ export default function tgs({
     if (isVisible && autoplay) animation.play();
     else animation.pause();
   });
-
-  if (playOnHover) {
-    listen(container, 'mouseenter', () => animation.play());
-    listen(container, 'mouseleave', () => animation.pause());
-  }
 
   return useInterface(container, animation);
 }

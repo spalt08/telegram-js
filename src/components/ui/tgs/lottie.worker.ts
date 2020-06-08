@@ -1,93 +1,97 @@
 /* eslint-disable import/named, no-restricted-globals */
-import Lottie, { AnimationItem } from 'vendor/lottie-5.6.10';
-import { fetchAnimation } from './lottie';
+import Lottie from 'vendor/lottie-5.6.10';
+import UPNG from 'upng-js';
+import { play, pause, destroy, handleFrame, fetchAnimationData } from './lottie';
 
 const ctx = self as WorkerGlobalScope;
-const animations = new Map<string, AnimationItem>();
-const playingState = new Map<string, boolean>();
 
+const size = 400;
+const rendererCanvas = new OffscreenCanvas(size, size); // eslint-disable-line compat/compat
+const spriteCanvas = new OffscreenCanvas(size, size); // eslint-disable-line compat/compat
+const rendererContext = rendererCanvas.getContext('2d');
+const spriteContext = spriteCanvas.getContext('2d');
+
+let c = 0;
 ctx.addEventListener('message', (event: MessageEvent) => {
   const message = event.data;
-
   console.log(message);
 
   switch (message.type) {
     case 'init': {
-      const { id, canvas, src, props } = message;
+      const { id, canvas, src } = message;
 
-      if (animations.get(id)) return;
-
-      fetchAnimation(src)
-        .then((animationData) => {
-          canvas.width = 400;
-          canvas.height = 400;
-          const context = (canvas as OffscreenCanvas).getContext('2d');
-
-          if (!context) return;
+      // const context = (canvas as OffscreenCanvas).getContext('2d');
+      // if (!context) return;
+      c++;
+      if (c > 1) return;
+      // loadAnimation(Lottie, context, id, src, canvas.width);
+      fetchAnimationData(src)
+        .then((data) => {
+          if (!rendererContext) return;
+          if (!spriteContext) return;
 
           const animation = Lottie.loadAnimation({
             renderer: 'canvas',
-            loop: props.loop,
+            loop: false,
             autoplay: false,
-            animationData,
+            animationData: data,
             rendererSettings: {
-              context: canvas.getContext('2d'),
+              context: rendererContext,
               clearCanvas: true,
             },
           });
 
-          animations.set(id, animation);
+          console.log(animation.totalFrames);
 
-          if (playingState.get(id) !== true) return;
+          const countX = 10;
+          const countY = Math.ceil(animation.totalFrames / countX);
+          const time = Date.now();
+          // spriteCanvas.width = countX * size;
+          // spriteCanvas.height = countY * size;
+          // for (let i = 0; i < animation.totalFrames; i++) {
+          //   const imageData = rendererContext.getImageData(0, 0, size, size);
+          //   spriteContext.putImageData(imageData, (i % countX) * size, Math.floor(i / countX) * size);
+          // }
 
-          const frames = new Array<ImageData>(animation.totalFrames);
+          // spriteCanvas.convertToBlob({ quality: 0.95, type: 'image/png' })
+          //   .then((blob) => {
+          //     console.log((Date.now() - time) / 1000);
+          //     caches.open('files').then((cache) => cache.put(`/documents/sprite_${id}.png`, new Response(blob)));
+          //   });
 
-          for (let i = 0; i < animationData.op; i++) {
-            animation.goToAndStop(i, true);
-            frames[i] = context.getImageData(0, 0, canvas.width, canvas.height);
+          const frames = new Array(animation.totalFrames);
+          const milisecs = new Array(animation.totalFrames);
+          for (let i = 0; i < animation.totalFrames; i++) {
+            const imageData = rendererContext.getImageData(0, 0, size, size);
+            frames[i] = imageData.data.buffer;
+            milisecs[i] = 16;
+            if (i < animation.totalFrames - 1) animation.goToAndStop(i + 1, true);
           }
-
-          let frame = 0;
-          const drawFrame = () => {
-            context.putImageData(frames[frame], 0, 0);
-            frame++;
-            if (frame > animation.totalFrames - 1) frame = 0;
-            requestAnimationFrame(drawFrame);
-          };
-
-          requestAnimationFrame(drawFrame);
-          // if (playingState.get(id) === true) animation.play();
+          console.log((Date.now() - time) / 1000);
+          const apng = UPNG.encode(frames, size, size, 0, milisecs);
+          // const blob = new Blob(apng, { type: 'image/png' });
+          caches.open('files').then((cache) => cache.put(`/documents/apng_${id}.png`, new Response(apng, { headers: { 'Content-Type': 'image/png' } })));
         });
-
       break;
     }
 
     case 'play': {
-      playingState.set(message.id, true);
-
-      const animation = animations.get(message.id);
-      if (animation) animation.play();
+      play(message.id);
       break;
     }
 
     case 'pause': {
-      playingState.set(message.id, false);
-
-      const animation = animations.get(message.id);
-      if (animation) animation.pause();
+      pause(message.id);
       break;
     }
 
     case 'destory': {
-      const animation = animations.get(message.id);
-
-      if (animation) {
-        animation.destroy();
-        animations.delete(message.id);
-      }
+      destroy(message.id);
       break;
     }
 
     default:
   }
 });
+
+handleFrame();

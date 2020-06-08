@@ -1,9 +1,10 @@
 /* eslint-disable compat/compat, import/no-extraneous-dependencies, import/no-webpack-loader-syntax */
 import runtime from 'serviceworker-webpack-plugin/lib/runtime';
 import { SERVICE_WORKER_SCOPE } from 'const';
-import Worker from 'worker-loader!./workers/worker';
+import EncoderWorker from 'worker-loader!./workers/encoder.worker';
+import CanvasWorker from 'worker-loader!./workers/canvas.worker';
 import { ServiceRequestID, ServiceRequestCallback, WindowMessage, NotificationType, ServiceNotificationCallback, TaskPayloadMap,
-  RequestType, RequestPayloadMap, ServiceRequest, ServiceMessage, ServiceTask } from './types';
+  RequestType, RequestPayloadMap, ServiceRequest, ServiceMessage, ServiceTask, ServiceNotification } from './types';
 
 // Request resolvers
 const requests: Record<ServiceRequestID, ServiceRequestCallback<any>> = {};
@@ -34,14 +35,38 @@ export function listenMessage<K extends NotificationType>(type: K, cb: ServiceNo
   listeners[type].push(cb);
 }
 
-let worker: Worker;
-function initWorker() {
-  worker = new Worker();
-  worker.addEventListener('message', (event) => {
+/**
+ * Encoder Worker for Safari
+ */
+let encoderWorker: EncoderWorker;
+export function getEncoderWorker() {
+  if (encoderWorker) return encoderWorker;
+
+  encoderWorker = new EncoderWorker();
+  encoderWorker.addEventListener('message', (event) => {
     const message = event.data as ServiceTask;
     task(message.type, message.payload);
   });
+
+  return encoderWorker;
 }
+
+/**
+ * Offscreen Rendering for Chrome
+ */
+let canvasWorker: CanvasWorker;
+export function getCanvasWorker() {
+  if (canvasWorker) return canvasWorker;
+
+  canvasWorker = new CanvasWorker();
+  canvasWorker.addEventListener('message', (event) => {
+    const message = event.data as ServiceNotification;
+    for (let i = 0; i < listeners[message.type].length; i += 1) listeners[message.type][i](message.payload);
+  });
+
+  return canvasWorker;
+}
+
 
 /**
  * Message resolver
@@ -53,8 +78,7 @@ navigator.serviceWorker.addEventListener('message', (event) => {
 
   // proxy to worker
   if ('worker' in data) {
-    if (!worker) initWorker();
-    worker.postMessage(data);
+    getEncoderWorker().postMessage(data);
     return;
   }
 

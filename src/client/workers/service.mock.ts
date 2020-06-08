@@ -65,8 +65,8 @@ ctx.onmessage = (event) => {
     }
 
     case 'webp_loaded': {
-      const { url, blob } = msg.payload;
-      respondDownload(url, new Response(blob), cacheMock);
+      const { url, bytes } = msg.payload;
+      respondDownload(url, new Response(bytes), cacheMock);
       break;
     }
 

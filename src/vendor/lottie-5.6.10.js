@@ -5976,7 +5976,7 @@ SVGRenderer.prototype.configAnimation = function(animData){
 
 
 SVGRenderer.prototype.destroy = function () {
-    this.animationItem.wrapper.innerHTML = '';
+    // this.animationItem.wrapper.innerHTML = '';
     this.layerElement = null;
     this.globalData.defs = null;
     var i, len = this.layers ? this.layers.length : 0;
@@ -6347,9 +6347,9 @@ CanvasRenderer.prototype.updateContainerSize = function () {
 };
 
 CanvasRenderer.prototype.destroy = function () {
-    if(this.renderConfig.clearCanvas) {
-        this.animationItem.wrapper.innerHTML = '';
-    }
+    // if(this.renderConfig.clearCanvas) {
+    //     this.animationItem.wrapper.innerHTML = '';
+    // }
     var i, len = this.layers ? this.layers.length : 0;
     for (i = len - 1; i >= 0; i-=1) {
         if(this.elements[i]) {

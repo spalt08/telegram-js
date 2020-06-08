@@ -3,6 +3,7 @@
   height: 200px;
   position: relative;
   user-select: none;
+  object-fit: contain;
   cursor: pointer;
 
   &__thumb {
