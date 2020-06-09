@@ -7,4 +7,4 @@ export enum StickerMimeType {
   WebP = 'image/webp',
 }
 
-export const STICKER_CACHED_SIZE = 100;
+export const STICKER_CACHED_SIZE = 200;

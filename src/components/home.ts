@@ -8,6 +8,7 @@ import sidebar from 'components/sidebar/sidebar';
 import { withContextMenu } from 'components/global_context_menu';
 import history from './main/history';
 import './home.scss';
+import { handleStickerRendering } from './media/sticker/player';
 
 /**
  * Handler for route /
@@ -65,6 +66,8 @@ export default function home() {
   listen(rightSidebarFade, 'transitionend', () => {
     rightSidebarFade.style.display = '';
   });
+
+  handleStickerRendering();
 
   return withContextMenu(container);
 }
