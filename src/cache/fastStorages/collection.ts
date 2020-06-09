@@ -69,13 +69,13 @@ export default class Collection<TItem, TIndices extends Record<any, any>, TId ex
     return this.storage.count();
   }
 
-  public put(items: Readonly<TItem> | Readonly<TItem>[]) {
+  public put(items: Readonly<TItem> | readonly Readonly<TItem>[]) {
     if (Array.isArray(items)) {
       this.storage.batchChanges(() => {
         items.forEach((item) => this.storage.put(this.getId(item), item));
       });
     } else {
-      this.storage.put(this.getId(items), items);
+      this.storage.put(this.getId(items as Readonly<TItem>), items as Readonly<TItem>);
     }
   }
 

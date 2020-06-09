@@ -8,13 +8,15 @@ import {
 import { Chat, Dialog, Message, User, UserFull, ChatFull } from 'mtproto-js';
 import { considerMinItemMerger } from './fastStorages/dictionary';
 import Collection, { GetId, makeGetIdFromProp } from './fastStorages/collection';
-import { orderBy } from './fastStorages/indices';
+import orderBy from './fastStorages/indices/orderBy';
 import messageHistory from './fastStorages/indices/messageHistory';
 import sharedMediaIndex from './fastStorages/indices/sharedMediaIndex';
-import addOrder from './fastStorages/indices/addOrder';
+import listIndex from './fastStorages/indices/list';
 import pollsIndex from './fastStorages/indices/pollsIndex';
 import { getDatabase } from './persistentStorages/database';
 import PersistentCache from './persistentCache';
+// eslint-disable-next-line import/no-cycle
+import { compareDialogs } from './accessors';
 
 /**
  * User repo
@@ -67,6 +69,7 @@ export const messageCache = new Collection({
 export const dialogCache = new Collection({
   getId: dialogToId as GetId<Dialog, string>,
   indices: {
+    // todo: Remove
     order: orderBy<Dialog>(
       (dialog1, dialog2) => {
         // Pinned first
@@ -94,7 +97,14 @@ export const dialogCache = new Collection({
         return true;
       },
     ),
-    addOrder,
+
+    recentFirst: orderBy(compareDialogs),
+
+    /**
+     * Pinned in folders (a.k.a. All and Archive). Warning: may contain ids of dialogs that aren't in the cache.
+     * Debounce when you subscribe to the changes.
+     */
+    pinned: listIndex(true),
   },
 });
 

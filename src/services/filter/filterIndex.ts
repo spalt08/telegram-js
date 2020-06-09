@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
 import { DialogFilter } from 'mtproto-js';
-import { dialogPeerToDialogId, inputPeerToPeer } from 'helpers/api';
+import { peerToDialogId, inputPeerToPeer } from 'helpers/api';
 import { insertIntoOrderedArray } from 'helpers/data';
 import { dialogCache } from 'cache';
 import { compareDialogs, makeDialogMatchFilterChecker } from 'cache/accessors';
@@ -20,7 +20,7 @@ export default function makeFilterIndex(filter: Readonly<DialogFilter>, dialogSe
   filter.pinned_peers.map((inputPeer) => {
     const peer = inputPeerToPeer(inputPeer);
     if (peer) {
-      const peerId = dialogPeerToDialogId(peer);
+      const peerId = peerToDialogId(peer);
       ids.push([peerId, true]);
       pinned.add(peerId);
     }

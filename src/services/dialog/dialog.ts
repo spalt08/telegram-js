@@ -2,11 +2,14 @@ import { BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 import { userCache, chatCache, messageCache, dialogCache } from 'cache';
 import {
-  dialogPeerToDialogId,
+  peerToDialogId,
+  dialogToId,
   inputPeerToInputDialogPeer,
   inputPeerToPeer,
   peerMessageToId,
   peerToId,
+  dialogPeerToDialogId,
+  peerToDialogPeer,
 } from 'helpers/api';
 import {
   Peer,
@@ -15,9 +18,9 @@ import {
   MessagesGetDialogs,
   MessagesDialogs,
   MessagesPeerDialogs,
-  InputPeer,
+  InputPeer, DialogPeer,
 } from 'mtproto-js';
-import { peerToInputPeer } from 'cache/accessors';
+import { dialogPeerToInputDialogPeer } from 'cache/accessors';
 
 import MessageService from '../message/message';
 import makeDialogReadReporter, { DialogReadReporter } from './dialog_read_reporter';
@@ -26,21 +29,24 @@ import makeDialogReadReporter, { DialogReadReporter } from './dialog_read_report
  * Singleton service class for handling dialogs
  */
 export default class DialogsService {
+  // todo: Remove in favour of the filter service
   readonly dialogs = new BehaviorSubject(dialogCache.indices.order.getIds());
 
   readonly loading = new BehaviorSubject(false);
 
+  protected isComplete = false;
+
+  // The dialogs cache can be filled with the previous session dialogs. They aren't real and must be replaced on load.
+  protected areRealDialogsLoaded = false;
+
   /** The date of the top message of the last dialog that was loaded sequentially */
   protected lastLoadedDate: number | undefined;
 
-  protected isComplete = false;
-
-  // The dialogs cache can be filled with the previus session dialogs. They aren't real and must be replaced on load.
-  protected areRealDialogsLoaded = false;
-
   protected readReporters: Record<string, DialogReadReporter> = {};
 
-  /** Ids of peers of dialogs that are requested by peer and being loaded now. Used to now load same dialogs simultaneously. */
+  /**
+   * Ids of peers of dialogs that are requested by peer and being loaded now. Used to now load same dialogs simultaneously.
+   */
   protected loadingPeers = new Set<string>();
 
   constructor(private messageService: MessageService) {
@@ -68,7 +74,7 @@ export default class DialogsService {
     });
 
     messageCache.indices.history.newestMessages.subscribe(([peer, messageId]) => {
-      this.changeOrLoadDialog(peer, (dialog) => {
+      this.changeOrLoadDialog(peerToDialogPeer(peer), (dialog) => {
         if (dialog._ !== 'dialog' || dialog.top_message === messageId) {
           return undefined;
         }
@@ -107,7 +113,7 @@ export default class DialogsService {
 
     // incoming message were read (channel)
     client.updates.on('updateReadChannelInbox', (update) => {
-      this.changeOrLoadDialog({ _: 'peerChannel', channel_id: update.channel_id }, (dialog) => ({
+      this.changeOrLoadDialog(peerToDialogPeer({ _: 'peerChannel', channel_id: update.channel_id }), (dialog) => ({
         ...dialog,
         read_inbox_max_id: update.max_id,
         unread_count: update.still_unread_count,
@@ -116,7 +122,7 @@ export default class DialogsService {
 
     // outcoming message were read (channel)
     client.updates.on('updateReadChannelOutbox', (update) => {
-      this.changeOrLoadDialog({ _: 'peerChannel', channel_id: update.channel_id }, (dialog) => ({
+      this.changeOrLoadDialog(peerToDialogPeer({ _: 'peerChannel', channel_id: update.channel_id }), (dialog) => ({
         ...dialog,
         read_outbox_max_id: update.max_id,
       }));
@@ -137,6 +143,33 @@ export default class DialogsService {
           ...dialog,
           pinned: update.pinned,
         }));
+        if (update.pinned) {
+          dialogCache.indices.pinned.add('start', [peerToDialogId(update.peer.peer)]);
+        } else {
+          dialogCache.indices.pinned.remove([peerToDialogId(update.peer.peer)]);
+        }
+      }
+    });
+
+    client.updates.on('updatePinnedDialogs', (update) => {
+      if (update.order) {
+        this.loadPeerDialogs(update.order.filter((peer: DialogPeer) => !dialogCache.has(dialogPeerToDialogId(peer))));
+
+        dialogCache.batchChanges(() => {
+          const idsToPin = new Set<string>(update.order.map(dialogPeerToDialogId));
+          const idsToUnpin: string[] = [];
+          dialogCache.indices.pinned.eachId((id) => {
+            const dialog = dialogCache.get(id);
+            if (dialog?._ === 'dialog' && dialog.folder_id === update.folder_id) {
+              if (!idsToPin.has(id)) {
+                idsToUnpin.push(id);
+                dialogCache.put({ ...dialog, pinned: false });
+              }
+            }
+          });
+          dialogCache.indices.pinned.remove(idsToUnpin);
+          dialogCache.indices.pinned.add('start', [...idsToPin]);
+        });
       }
     });
   }
@@ -156,16 +189,13 @@ export default class DialogsService {
 
   async loadMoreDialogs() {
     if (!this.isComplete && this.areRealDialogsLoaded) {
-      const last = dialogCache.get(this.dialogs.value[this.dialogs.value.length - 1] as string);
-      if (last) {
-        const msg = messageCache.get(peerMessageToId(last.peer, last.top_message));
-        if (msg && msg._ !== 'messageEmpty') await this.updateDialogs(msg.date);
-      }
+      await this.updateDialogs(this.lastLoadedDate);
+      // this.dialogs.value isn't used because it may contain random old dialogs
     }
   }
 
   reportMessageRead(peer: Peer, messageId: number) {
-    const dialogId = dialogPeerToDialogId(peer);
+    const dialogId = peerToDialogId(peer);
     if (!dialogCache.has(dialogId)) {
       return;
     }
@@ -182,7 +212,7 @@ export default class DialogsService {
     inputPeers.forEach((inputPeer) => {
       const peer = inputPeerToPeer(inputPeer);
       if (peer) {
-        if (!dialogCache.has(dialogPeerToDialogId(peer))) {
+        if (!dialogCache.has(peerToDialogId(peer))) {
           dialogsToLoad.push(inputPeerToInputDialogPeer(inputPeer));
         }
       }
@@ -214,32 +244,54 @@ export default class DialogsService {
     }
 
     if (data && (data._ === 'messages.dialogs' || data._ === 'messages.dialogsSlice')) {
-      let dialogsToPreload: Dialog[] | undefined;
-      if (this.dialogs.value.length === 0) dialogsToPreload = data.dialogs.slice(0, 10);
-
-      if (data.dialogs.length < chunk - 10) { // -10 just in case
+      if (data.dialogs.length < chunk * 0.9) { // *0.9 just in case
         this.isComplete = true;
       }
 
       userCache.put(data.users);
       chatCache.put(data.chats);
       messageCache.put(data.messages);
-      if (this.areRealDialogsLoaded) {
-        dialogCache.put(data.dialogs);
-      } else {
-        this.areRealDialogsLoaded = true;
-        dialogCache.replaceAll(data.dialogs);
-      }
+      this.addSequentialDialogs(data.dialogs);
       this.messageService.pushMessages(data.messages);
-
-      if (dialogsToPreload) {
-        /* no await */this.preloadMessages(dialogsToPreload);
-      }
     }
   }
 
-  protected changeOrLoadDialog(peer: Peer, modify: (dialog: Dialog) => Dialog | null | undefined) {
-    const dialog = dialogCache.get(peerToId(peer));
+  protected addSequentialDialogs(dialogs: Dialog[]) {
+    // Determine dialogs to preload
+    let dialogsToPreload: Dialog[] | undefined;
+    if (!this.areRealDialogsLoaded) {
+      dialogsToPreload = dialogs.slice(0, 10);
+    }
+
+    // Actualize the oldest loaded dialog date
+    for (let i = dialogs.length - 1; i >= 0; --i) {
+      const msg = messageCache.get(peerMessageToId(dialogs[i].peer, dialogs[i].top_message));
+      if (msg && msg._ !== 'messageEmpty') {
+        this.lastLoadedDate = msg.date;
+        break;
+      }
+    }
+
+    // Don't remove all dialogs from cache because they can be used by filter pinned peers
+    dialogCache.put(dialogs);
+
+    // Actualize pinned dialogs
+    dialogCache.indices.pinned.add('end', dialogs.reduce((ids, dialog) => {
+      if (dialog.pinned) {
+        ids.push(dialogToId(dialog));
+      }
+      return ids;
+    }, [] as string[]));
+
+    this.areRealDialogsLoaded = true;
+
+    if (dialogsToPreload) {
+      /* no await */this.preloadMessages(dialogsToPreload);
+    }
+  }
+
+  protected changeOrLoadDialog(peer: DialogPeer, modify: (dialog: Dialog) => Dialog | null | undefined) {
+    const dialog = dialogCache.get(dialogPeerToDialogId(peer));
 
     if (dialog) {
       const newDialog = modify(dialog);
@@ -251,12 +303,12 @@ export default class DialogsService {
     }
   }
 
-  protected loadPeerDialogs(peers: Peer[]) {
+  protected loadPeerDialogs(peers: DialogPeer[]) {
     const inputPeers: InputDialogPeer[] = [];
 
     peers.forEach((peer) => {
       try {
-        inputPeers.push(inputPeerToInputDialogPeer(peerToInputPeer(peer)));
+        inputPeers.push(dialogPeerToInputDialogPeer(peer));
       } catch (error) {
         // It's not a destiny to chat with this peer
       }
@@ -266,11 +318,10 @@ export default class DialogsService {
   }
 
   protected async loadInputPeerDialogs(peers: InputDialogPeer[]) {
-    if (!peers.length) {
-      return;
-    }
-
     const loadingPeerIds: string[] = [];
+    const request = {
+      peers: [] as InputDialogPeer[],
+    };
 
     try {
       peers.forEach((inputPeer) => {
@@ -278,13 +329,18 @@ export default class DialogsService {
           const peer = inputPeerToPeer(inputPeer.peer);
           if (peer) {
             const peerId = peerToId(peer);
-            loadingPeerIds.push(peerId);
-            this.loadingPeers.add(peerId);
+            if (!this.loadingPeers.has(peerId)) { // Don't load the peer dialog if it's loading now
+              loadingPeerIds.push(peerId);
+              this.loadingPeers.add(peerId);
+            }
           }
         }
       });
 
-      const request = { peers };
+      if (!request.peers.length) {
+        return;
+      }
+
       let data: MessagesPeerDialogs.messagesPeerDialogs;
       try {
         data = await client.call('messages.getPeerDialogs', request);

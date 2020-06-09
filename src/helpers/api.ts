@@ -1,4 +1,4 @@
-import { Dialog, Peer, Message, Updates, UserStatus, InputPeer, InputDialogPeer } from 'mtproto-js';
+import { Dialog, Peer, Message, Updates, UserStatus, InputPeer, InputDialogPeer, DialogPeer } from 'mtproto-js';
 import { ARCHIVE_FOLDER_ID, ROOT_FOLDER_ID } from 'const/api';
 import client from 'client/client';
 import { todoAssertHasValue } from './other';
@@ -25,15 +25,22 @@ export function peerIdToPeer(id: string): Peer {
   throw TypeError('Unknown peer type');
 }
 
-export function dialogPeerToDialogId(peer: Peer) {
+export function peerToDialogId(peer: Peer) {
   return peerToId(peer);
+}
+
+export function dialogPeerToDialogId(dialogPeer: DialogPeer) {
+  if (dialogPeer._ === 'dialogPeerFolder') {
+    return `folder_${dialogPeer.folder_id}`;
+  }
+  return peerToDialogId(dialogPeer.peer);
 }
 
 export function dialogToId(dialog: Readonly<Dialog>): string {
   if (dialog._ === 'dialogFolder') {
     return `folder_${dialog.folder.id}`;
   }
-  return dialogPeerToDialogId(dialog.peer);
+  return peerToDialogId(dialog.peer);
 }
 
 // Use it to convert a user message id to the message cache key
@@ -175,5 +182,12 @@ export function inputPeerToInputDialogPeer(inputPeer: InputPeer): InputDialogPee
   return {
     _: 'inputDialogPeer',
     peer: inputPeer,
+  };
+}
+
+export function peerToDialogPeer(peer: Peer): DialogPeer {
+  return {
+    _: 'dialogPeer',
+    peer,
   };
 }

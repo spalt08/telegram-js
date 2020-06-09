@@ -2,7 +2,14 @@ import { Observable, of } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { chatCache, messageCache, userCache } from 'cache';
 import { getFirstLetters } from 'helpers/data';
-import { inputPeerToPeer, messageToDialogPeer, peerMessageToId, peerToId, userIdToPeer } from 'helpers/api';
+import {
+  inputPeerToInputDialogPeer,
+  inputPeerToPeer,
+  messageToDialogPeer,
+  peerMessageToId,
+  peerToId,
+  userIdToPeer,
+} from 'helpers/api';
 import { todoAssertHasValue } from 'helpers/other';
 import {
   InputPeer,
@@ -14,7 +21,7 @@ import {
   InputUser,
   InputChannel,
   DialogFilter,
-  Dialog,
+  Dialog, DialogPeer, InputDialogPeer,
 } from 'mtproto-js';
 import { ARCHIVE_FOLDER_ID } from '../const/api';
 
@@ -301,5 +308,15 @@ export function makeDialogMatchFilterChecker(filter: Readonly<DialogFilter>) {
       default:
     }
     return false;
+  };
+}
+
+export function dialogPeerToInputDialogPeer(dialogPeer: DialogPeer): InputDialogPeer {
+  if (dialogPeer._ === 'dialogPeer') {
+    return inputPeerToInputDialogPeer(peerToInputPeer(dialogPeer.peer));
+  }
+  return {
+    _: 'inputDialogPeerFolder',
+    folder_id: dialogPeer.folder_id,
   };
 }

@@ -35,7 +35,7 @@ export default class Dictionary<TKey extends keyof any, TItem> {
   protected data: Record<TKey, Readonly<TItem>>;
 
   protected changesBatch = new BatchActions((events: ChangeEvent<TItem, TKey>[]) => {
-    if (this.changes.observers.length > 0) {
+    if (events.length > 0 && this.changes.observers.length > 0) {
       this.changes.next(events);
     }
   });

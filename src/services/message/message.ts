@@ -1,7 +1,7 @@
 import { dialogCache, messageCache } from 'cache';
 import { peerToInputChannel, peerToInputPeer } from 'cache/accessors';
 import client, { fetchUpdates } from 'client/client';
-import { arePeersSame, dialogPeerToDialogId, getDialogLastReadMessageId, getUserMessageId, peerMessageToId, shortChatMessageToMessage, shortMessageToMessage } from 'helpers/api';
+import { arePeersSame, peerToDialogId, getDialogLastReadMessageId, getUserMessageId, peerMessageToId, shortChatMessageToMessage, shortMessageToMessage } from 'helpers/api';
 import { ChannelsGetMessages, Dialog, InputMedia, Message, MessagesGetMessages, MessagesMessages, MessagesSendMedia, MethodDeclMap, Peer, Update, Updates } from 'mtproto-js';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { first } from 'rxjs/operators';
@@ -230,7 +230,7 @@ export default class MessagesService {
     switch (target) {
       case 'none': return undefined;
       case 'firstUnread': {
-        const dialog = peer && dialogCache.get(dialogPeerToDialogId(peer)) as Dialog.dialog | undefined;
+        const dialog = peer && dialogCache.get(peerToDialogId(peer)) as Dialog.dialog | undefined;
         if (!dialog) {
           return Infinity;
         }
