@@ -3,49 +3,25 @@ import { first } from 'rxjs/operators';
 import client from 'client/client';
 import { DialogFilter } from 'mtproto-js';
 import { persistentCache } from 'cache';
+import { ARCHIVE_FOLDER_ID, ROOT_FOLDER_ID } from 'const/api';
 import AuthService, { AuthStage } from '../auth';
+import makeFolderIndex from './folderIndex';
 
 const startLoadDelay = 500;
-
-const filtersMock: DialogFilter[] = [
-  {
-    _: 'dialogFilter',
-    id: 234,
-    contacts: true,
-    title: 'Contacts',
-    pinned_peers: [],
-    include_peers: [],
-    exclude_peers: [],
-  },
-  {
-    _: 'dialogFilter',
-    id: 12,
-    bots: true,
-    title: 'Bots',
-    pinned_peers: [],
-    include_peers: [],
-    exclude_peers: [],
-  },
-  {
-    _: 'dialogFilter',
-    id: 666,
-    broadcasts: true,
-    title: 'Channels',
-    pinned_peers: [],
-    include_peers: [],
-    exclude_peers: [],
-  },
-];
 
 function loadFilters() {
   return client.call('messages.getDialogFilters', {});
 }
 
 /**
- * Watches dialog filters and folders
+ * Watches dialog folders and filters
  */
-export default class FilterService {
+export default class FolderService {
   readonly isLoading = new BehaviorSubject(false);
+
+  readonly allIndex = makeFolderIndex(ROOT_FOLDER_ID);
+
+  readonly archiveIndex = makeFolderIndex(ARCHIVE_FOLDER_ID);
 
   /**
    * A.k.a. folders

@@ -84,19 +84,6 @@ export function mergeOrderedArrays<T>(
   return true;
 }
 
-export function insertIntoOrderedArray<T>(
-  array: T[],
-  item: T,
-  compare: (arrayItem: T, item: T) => number, // See Array.prototype.sort
-  scanFromIndex?: number, // Inclusive
-  scanToIndex?: number, // Inclusive
-): number {
-  const rawIndex = binarySearch(array, item, compare, scanFromIndex, scanToIndex);
-  const index = rawIndex >= 0 ? (rawIndex + 1) : (-rawIndex - 1);
-  array.splice(index, 0, item);
-  return index;
-}
-
 // From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#Escaping
 export function escapeRegExp(string: string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -135,13 +122,36 @@ export function getFirstLetters(title: string) {
   return '';
 }
 
-export function areIteratorsEqual(it1: Iterator<any, any, undefined>, it2: Iterator<any, any, undefined>): boolean {
+export function areArraysEqual<T1, T2>(
+  arr1: readonly T1[],
+  arr2: readonly T2[],
+  areEqual: (value1: T1, value2: T2) => boolean = (v1, v2) => (v1 as any) === (v2 as any),
+): boolean {
+  if ((arr1 as any) === (arr2 as any)) {
+    return true;
+  }
+  if (arr1.length !== arr2.length) {
+    return false;
+  }
+  for (let i = 0; i < arr1.length; ++i) {
+    if (!areEqual(arr1[i], arr2[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+export function areIteratorsEqual<T1, T2>(
+  it1: Iterator<T1, any, undefined>,
+  it2: Iterator<T2, any, undefined>,
+  areEqual: (value1: T1, value2: T2) => boolean = (v1, v2) => (v1 as any) === (v2 as any),
+): boolean {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const result1 = it1.next();
     const result2 = it2.next();
 
-    if (result1.done !== result2.done || result1.value !== result2.value) {
+    if (result1.done !== result2.done || !areEqual(result1.value, result2.value)) {
       return false;
     }
 

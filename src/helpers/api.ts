@@ -189,3 +189,10 @@ export function peerToDialogPeer(peer: Peer): DialogPeer {
     peer,
   };
 }
+
+export function isDialogUnread(dialog: Dialog): boolean {
+  if (dialog._ === 'dialog') {
+    return dialog.unread_count > 0 || !!dialog.unread_mark;
+  }
+  return dialog.unread_muted_peers_count > 0 || dialog.unread_unmuted_peers_count > 0;
+}

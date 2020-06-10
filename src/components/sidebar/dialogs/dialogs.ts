@@ -1,10 +1,11 @@
-import { combineLatest } from 'rxjs';
+import { BehaviorSubject, combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { DialogFilter } from 'mtproto-js';
 import { useObservable } from 'core/hooks';
 import { status } from 'components/sidebar';
 import { VirtualizedList, sectionSpinner, TabItem, tabsPanel } from 'components/ui';
-import { dialog as dialogService, filter as filterService } from 'services';
+import { dialog as dialogService, folder as folderService } from 'services';
+import { ListItem } from 'services/folder/commonTypes';
 import { mount, unmount } from 'core/dom';
 import { div } from 'core/html';
 import dialog from '../dialog/dialog';
@@ -15,15 +16,17 @@ interface Props {
 }
 
 function makeDialogList() {
+  const dialogs = new BehaviorSubject<readonly ListItem[]>([]);
   const listEl = new VirtualizedList({
     className: 'dialogs__list',
-    items: dialogService.dialogs,
+    items: dialogs,
     threshold: 2,
     batch: 20,
     pivotBottom: false,
     renderer: dialog,
     onReachBottom: () => dialogService.loadMoreDialogs(),
   });
+  useObservable(listEl.container, folderService.allIndex.order, (order) => dialogs.next(order));
   return listEl.container;
 }
 
@@ -61,9 +64,9 @@ export default function dialogs({ className }: Props = {}) {
       {
         className: 'dialogs__tabs',
         headerAlign: 'stretch',
-        hideHeader: filterService.filters.pipe(map((filters) => filters.length === 0)),
+        hideHeader: folderService.filters.pipe(map((filters) => filters.length === 0)),
       },
-      filterService.filters.pipe(map(filtersToTabs)),
+      folderService.filters.pipe(map(filtersToTabs)),
     ),
   );
 

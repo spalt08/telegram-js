@@ -97,7 +97,7 @@ export default class DialogsService {
 
     // incoming message were read
     client.updates.on('updateReadHistoryInbox', (update) => {
-      this.changeOrLoadDialog(update.peer, (dialog) => ({
+      this.changeOrLoadDialog(peerToDialogPeer(update.peer), (dialog) => ({
         ...dialog,
         read_inbox_max_id: update.max_id,
         unread_count: update.still_unread_count,
@@ -106,7 +106,7 @@ export default class DialogsService {
 
     // outcoming message were read
     client.updates.on('updateReadHistoryOutbox', (update) => {
-      this.changeOrLoadDialog(update.peer, (dialog) => ({
+      this.changeOrLoadDialog(peerToDialogPeer(update.peer), (dialog) => ({
         ...dialog,
         read_outbox_max_id: update.max_id,
       }));
@@ -131,7 +131,7 @@ export default class DialogsService {
 
     client.updates.on('updateDialogUnreadMark', (update) => {
       if (update.peer._ === 'dialogPeer') {
-        this.changeOrLoadDialog(update.peer.peer, (dialog) => ({
+        this.changeOrLoadDialog(update.peer, (dialog) => ({
           ...dialog,
           unread_mark: update.unread,
         }));
@@ -140,7 +140,7 @@ export default class DialogsService {
 
     client.updates.on('updateDialogPinned', (update) => {
       if (update.peer._ === 'dialogPeer') {
-        this.changeOrLoadDialog(update.peer.peer, (dialog) => ({
+        this.changeOrLoadDialog(update.peer, (dialog) => ({
           ...dialog,
           pinned: update.pinned,
         }));
@@ -153,24 +153,20 @@ export default class DialogsService {
     });
 
     client.updates.on('updatePinnedDialogs', (update) => {
-      if (update.order) {
-        this.loadPeerDialogs(update.order.filter((peer: DialogPeer) => !dialogCache.has(dialogPeerToDialogId(peer))));
+      const { order, folder_id } = update;
+      if (order) {
+        this.loadPeerDialogs(order.filter((peer: DialogPeer) => !dialogCache.has(dialogPeerToDialogId(peer))));
 
         dialogCache.batchChanges(() => {
-          const idsToPin = new Set<string>(update.order.map(dialogPeerToDialogId));
+          const idsToPin = new Set<string>(order.map(dialogPeerToDialogId));
           const idsToUnpin: string[] = [];
-          idsToPin.forEach((id) => {
-            const dialog = dialogCache.get(id);
-            if (dialog) {
-              dialogCache.put({ ...dialog, pinned: true });
-            }
-          });
+          idsToPin.forEach((id) => dialogCache.change(id, { pinned: true }));
           dialogCache.indices.pinned.eachId((id) => {
             if (!idsToPin.has(id)) {
               idsToUnpin.push(id);
               const dialog = dialogCache.get(id);
-              if (dialog && isDialogInFolder(dialog, update.folder_id)) {
-                dialogCache.put({ ...dialog, pinned: false });
+              if (dialog && isDialogInFolder(dialog, folder_id)) {
+                dialogCache.change(id, { pinned: false });
               }
             }
           });
@@ -283,12 +279,14 @@ export default class DialogsService {
     dialogCache.put(dialogs);
 
     // Actualize pinned dialogs
-    dialogCache.indices.pinned.add('end', dialogs.reduce((ids, dialog) => {
-      if (dialog.pinned) {
-        ids.push(dialogToId(dialog));
-      }
-      return ids;
-    }, [] as string[]));
+    const toPin: string[] = [];
+    const toUnpin: string[] = [];
+    dialogs.forEach((dialog) => {
+      const id = dialogToId(dialog);
+      (dialog.pinned ? toPin : toUnpin).push(id);
+    });
+    dialogCache.indices.pinned.remove(toUnpin);
+    dialogCache.indices.pinned.add('end', toPin);
 
     this.areRealDialogsLoaded = true;
 

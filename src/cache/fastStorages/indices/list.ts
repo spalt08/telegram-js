@@ -33,12 +33,7 @@ export default function makeListIndex(allowMissingIds = false) {
     });
 
     return {
-      /**
-       * @deprecated For debug only
-       */
-      get list() {
-        return list;
-      },
+      changes,
 
       getIds(start?: number, end?: number) {
         if (start === undefined && end === undefined) {
@@ -60,6 +55,10 @@ export default function makeListIndex(allowMissingIds = false) {
         }
 
         return ids;
+      },
+
+      getIdsSet(): ReadonlySet<TId> {
+        return list;
       },
 
       eachId(callback: (id: TId) => void) {

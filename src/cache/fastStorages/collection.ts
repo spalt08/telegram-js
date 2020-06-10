@@ -65,6 +65,17 @@ export default class Collection<TItem, TIndices extends Record<any, any>, TId ex
     return Object.values(this.storage.getAll());
   }
 
+  public each(callback: (item: Readonly<TItem>) => void) {
+    const allDict = this.storage.getAll();
+    // eslint-disable-next-line no-restricted-syntax
+    for (const key in allDict) {
+      // eslint-disable-next-line no-prototype-builtins
+      if (allDict.hasOwnProperty(key)) {
+        callback(allDict[key]);
+      }
+    }
+  }
+
   public count() {
     return this.storage.count();
   }

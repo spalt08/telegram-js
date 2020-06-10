@@ -1,5 +1,6 @@
 import { Observable, of } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
+// eslint-disable-next-line import/no-cycle
 import { chatCache, messageCache, userCache } from 'cache';
 import { getFirstLetters } from 'helpers/data';
 import {

@@ -35,7 +35,7 @@ function on(type: string, cb: EventResolver) {
 /**
  * Subscribe update event
  */
-function onUpdate(type: keyof UpdateDeclMap, cb: EventResolver) {
+function onUpdate<T extends keyof UpdateDeclMap>(type: T, cb: (event: UpdateDeclMap[T]) => void) {
   on(type, cb);
 }
 
