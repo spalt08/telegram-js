@@ -18,7 +18,7 @@ type CacheRendererDescription = {
 };
 
 const cacheRenderers = new Map<string, CacheRendererDescription>();
-const cacheFrames = new Map<string, ImageData[]>();
+const cacheFrames = new Map<string, Uint8ClampedArray[]>();
 
 let cacheSticker: (id: string, src: string) => void;
 function onCanvasWorkerResponse(message: CanvasWorkerResponse) {
@@ -39,18 +39,16 @@ function onCanvasWorkerResponse(message: CanvasWorkerResponse) {
       let frames = cacheFrames.get(id);
       if (!frames) cacheFrames.set(id, frames = new Array(header.totalFrames));
 
-      frames[frame] = new ImageData(data, header.width, header.width);
+      frames[frame] = data;
       const renderer = cacheRenderers.get(id);
       if (renderer && !renderer.header) {
         renderer.header = header;
+      }
 
-        if (frame === 0 && !renderer.isCaching) {
-          // load other frames
-          for (let i = 1; i < header.totalFrames; i++) {
-            getCanvasWorker(onCanvasWorkerResponse)
-              .postMessage({ type: 'get_cached_frame', id, frame: i } as CanvasWorkerRequest);
-          }
-        }
+      if (renderer && !renderer.isCaching && frame < frames.length - 1 && !frames[frame + 1]) {
+        // load next frame
+        getCanvasWorker(onCanvasWorkerResponse)
+          .postMessage({ type: 'get_cached_frame', id, frame: frame + 1, width: header.width } as CanvasWorkerRequest);
       }
       break;
     }
@@ -77,7 +75,7 @@ export function useCacheRenderer(element: HTMLCanvasElement, sticker: Document.d
     if (!renderer) {
       cacheRenderers.set(id, renderer = { id, src, currentFrame: 0, currentFrameRaw: 0, contexts: [] });
       getCanvasWorker(onCanvasWorkerResponse)
-        .postMessage({ type: 'get_cached_frame', id, src, width: element.width, frame: 0 } as CanvasWorkerRequest);
+        .postMessage({ type: 'get_cached_frame', id, width: element.width, frame: 0 } as CanvasWorkerRequest);
     }
 
     renderer.contexts.push(context);
@@ -108,7 +106,7 @@ export function handleStickerRendering() {
 
     renderer.currentFrame = nextFrame;
     for (let i = 0; i < renderer.contexts.length; i++) {
-      renderer.contexts[i].putImageData(frames[nextFrame], 0, 0);
+      renderer.contexts[i].putImageData(new ImageData(frames[nextFrame], renderer.header.width, renderer.header.width), 0, 0);
     }
   });
 
