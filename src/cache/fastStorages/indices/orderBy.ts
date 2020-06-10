@@ -111,7 +111,7 @@ export default function orderBy<TItem>(compare: CompareFunction<TItem>, filter: 
         return orderCache[index];
       },
 
-      getIds(start?: number, end?: number): Readonly<TId[]> {
+      getIds(start?: number, end?: number): readonly TId[] {
         return start === undefined && end === undefined
           ? orderCache
           : orderCache.slice(start, end);

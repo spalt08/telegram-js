@@ -10,6 +10,7 @@ import {
   peerToId,
   dialogPeerToDialogId,
   peerToDialogPeer,
+  isDialogInFolder,
 } from 'helpers/api';
 import {
   Peer,
@@ -158,11 +159,17 @@ export default class DialogsService {
         dialogCache.batchChanges(() => {
           const idsToPin = new Set<string>(update.order.map(dialogPeerToDialogId));
           const idsToUnpin: string[] = [];
-          dialogCache.indices.pinned.eachId((id) => {
+          idsToPin.forEach((id) => {
             const dialog = dialogCache.get(id);
-            if (dialog?._ === 'dialog' && dialog.folder_id === update.folder_id) {
-              if (!idsToPin.has(id)) {
-                idsToUnpin.push(id);
+            if (dialog) {
+              dialogCache.put({ ...dialog, pinned: true });
+            }
+          });
+          dialogCache.indices.pinned.eachId((id) => {
+            if (!idsToPin.has(id)) {
+              idsToUnpin.push(id);
+              const dialog = dialogCache.get(id);
+              if (dialog && isDialogInFolder(dialog, update.folder_id)) {
                 dialogCache.put({ ...dialog, pinned: false });
               }
             }

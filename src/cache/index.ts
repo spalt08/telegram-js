@@ -1,10 +1,11 @@
 import {
   dialogToId,
-  isDialogInRootFolder,
+  isDialogInFolder,
   messageToId,
   peerMessageToId,
   peerToId,
 } from 'helpers/api';
+import { ROOT_FOLDER_ID } from 'const/api';
 import { Chat, Dialog, Message, User, UserFull, ChatFull } from 'mtproto-js';
 import { considerMinItemMerger } from './fastStorages/dictionary';
 import Collection, { GetId, makeGetIdFromProp } from './fastStorages/collection';
@@ -85,7 +86,7 @@ export const dialogCache = new Collection({
         if (dialog._ === 'dialogFolder') {
           return false;
         }
-        if (!isDialogInRootFolder(dialog)) {
+        if (!isDialogInFolder(dialog, ROOT_FOLDER_ID)) {
           return false;
         }
         if (dialog.peer._ === 'peerChat') {

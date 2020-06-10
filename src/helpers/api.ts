@@ -1,5 +1,4 @@
 import { Dialog, Peer, Message, Updates, UserStatus, InputPeer, InputDialogPeer, DialogPeer } from 'mtproto-js';
-import { ARCHIVE_FOLDER_ID, ROOT_FOLDER_ID } from 'const/api';
 import client from 'client/client';
 import { todoAssertHasValue } from './other';
 
@@ -123,12 +122,11 @@ export function shortChatMessageToMessage(message: Updates.updateShortChatMessag
   };
 }
 
-export function isDialogInRootFolder(dialog: Dialog) {
-  return dialog._ === 'dialogFolder' || dialog.folder_id === ROOT_FOLDER_ID || !dialog.folder_id;
-}
-
-export function isDialogArchived(dialog: Dialog) {
-  return dialog._ !== 'dialogFolder' && dialog.folder_id === ARCHIVE_FOLDER_ID;
+export function isDialogInFolder(dialog: Readonly<Dialog>, folderId: number | undefined): boolean {
+  if (!folderId) {
+    return dialog._ !== 'dialog' || !dialog.folder_id;
+  }
+  return dialog._ === 'dialog' && dialog.folder_id === folderId;
 }
 
 export function getDialogLastReadMessageId(dialog: Dialog.dialog) {

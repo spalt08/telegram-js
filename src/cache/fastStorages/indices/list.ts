@@ -33,8 +33,33 @@ export default function makeListIndex(allowMissingIds = false) {
     });
 
     return {
-      getIds() {
-        return Array.from(list.values());
+      /**
+       * @deprecated For debug only
+       */
+      get list() {
+        return list;
+      },
+
+      getIds(start?: number, end?: number) {
+        if (start === undefined && end === undefined) {
+          return [...list.values()];
+        }
+
+        const ids: TId[] = [];
+        let index = 0;
+
+        // eslint-disable-next-line no-restricted-syntax
+        for (const id of list.values()) {
+          if (start === undefined || index >= start) {
+            if (end !== undefined && index >= end) {
+              break;
+            }
+            ids.push(id);
+          }
+          ++index;
+        }
+
+        return ids;
       },
 
       eachId(callback: (id: TId) => void) {
@@ -89,5 +114,5 @@ export default function makeListIndex(allowMissingIds = false) {
         }
       },
     };
-  }
+  };
 }

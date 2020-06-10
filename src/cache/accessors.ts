@@ -297,7 +297,7 @@ export function makeDialogMatchFilterChecker(filter: Readonly<DialogFilter>) {
           if (filter.contacts && user.contact) {
             return true;
           }
-          if (filter.non_contacts && !user.contact) {
+          if (filter.non_contacts && !user.contact && !user.bot) {
             return true;
           }
           if (filter.bots && user.bot) {

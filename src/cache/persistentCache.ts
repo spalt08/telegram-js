@@ -1,12 +1,12 @@
 import { BehaviorSubject } from 'rxjs';
 import { Chat, Dialog, DialogFilter, Message, Peer, TopPeer, User } from 'mtproto-js';
 import { addValues, getAllEntries, getAllValues, putValuesEntries } from 'helpers/indexedDb';
-import { peerMessageToId } from 'helpers/api';
+import { dialogToId, inputPeerToPeer, peerMessageToId, peerToDialogId } from 'helpers/api';
 import { animationFrameStart } from 'core/dom';
 import { runTransaction } from './persistentStorages/database';
 import Collection from './fastStorages/collection';
 
-const dialogsToStoreCount = 50;
+const sequentialDialogsToStoreCount = 50;
 const autosaveInterval = 10000;
 
 interface MiscData {
@@ -65,7 +65,16 @@ export default class PersistentCache {
     private messageCache: Collection<Message, {}, string>,
     private userCache: Collection<User, {}, number>,
     private chatCache: Collection<Chat, {}, number>,
-    private dialogCache: Collection<Dialog, { order: { getItems(start: number, end: number): Dialog[] } }, keyof any>,
+    private dialogCache: Collection<Dialog, {
+      recentFirst: {
+        getLength(): number,
+        getIdAt(index: number): string,
+      },
+      pinned: {
+        eachId(callback: (id: string) => void): void,
+        add(to: 'end', ids: string[]): void,
+      },
+    }, keyof any>,
   ) {
     this.restoreCache()
       .catch((error) => {
@@ -118,10 +127,21 @@ export default class PersistentCache {
         });
       });
 
-      // Don't change the dialogs list if it already exists. It means that it's been loaded from API and contains more actual data.
-      if (dialogCache.count() === 0) {
-        dialogCache.replaceAll(dialogs);
-      }
+      dialogCache.batchChanges(() => {
+        const pinnedIds: string[] = [];
+
+        dialogs.forEach((dialog) => {
+          const id = dialogToId(dialog);
+          if (!dialogCache.has(id)) {
+            dialogCache.put(dialog);
+            if (dialog.pinned) {
+              pinnedIds.push(id);
+            }
+          }
+        });
+
+        this.dialogCache.indices.pinned.add('end', pinnedIds);
+      });
 
       misc.forEach((entry) => {
         switch (entry[0]) {
@@ -169,7 +189,7 @@ export default class PersistentCache {
   }
 
   private collectDataToCache() {
-    const dialogs = this.dialogCache.indices.order.getItems(0, dialogsToStoreCount);
+    const dialogs = this.collectDialogs(this.filters || []);
     const messages: Array<[string, Message]> = [];
     const users: Array<[number, User]> = [];
     const chats: Array<[number, Chat]> = [];
@@ -192,6 +212,50 @@ export default class PersistentCache {
     }
 
     return { dialogs, messages, users, chats, misc };
+  }
+
+  private collectDialogs(filters: readonly Readonly<DialogFilter>[]): Dialog[] {
+    const dialogs = new Map<string, Dialog>();
+    const { pinned, recentFirst } = this.dialogCache.indices;
+
+    // First add all dialogs pinned in folders
+    pinned.eachId((id) => {
+      if (dialogs.size < sequentialDialogsToStoreCount) {
+        const dialog = this.dialogCache.get(id);
+        if (dialog) {
+          dialogs.set(id, dialog);
+        }
+      }
+    });
+
+    // Then recent dialogs
+    for (
+      let i = 0, l = recentFirst.getLength();
+      i < l && dialogs.size < sequentialDialogsToStoreCount;
+      ++i
+    ) {
+      const id = recentFirst.getIdAt(i);
+      const dialog = this.dialogCache.get(id);
+      if (dialog) {
+        dialogs.set(id, dialog);
+      }
+    }
+
+    // And dialogs pinned in filter
+    filters.forEach((filter) => {
+      filter.pinned_peers.forEach((inputPeer) => {
+        const peer = inputPeerToPeer(inputPeer);
+        if (peer) {
+          const id = peerToDialogId(peer);
+          const dialog = this.dialogCache.get(id);
+          if (dialog) {
+            dialogs.set(id, dialog);
+          }
+        }
+      });
+    });
+
+    return [...dialogs.values()];
   }
 
   private collectDialogModels(dialog: Dialog, messages: Array<[string, Message]>, users: Array<[number, User]>, chats: Array<[number, Chat]>) {
