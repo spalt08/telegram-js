@@ -1,4 +1,4 @@
-type Header = {
+export type Header = {
   version: number,
   totalFrames: number,
   frameRate: number,

@@ -5,7 +5,7 @@ import { getDocumentLocation } from 'helpers/files';
 import { file } from 'client/media';
 import { StickerMimeType } from 'const';
 import './sticker.scss';
-import { loadSticker } from './player';
+import { useCacheRenderer } from './player';
 
 type StickerOptions = {
   className?: string,
@@ -34,13 +34,14 @@ export default function stickerRenderer(sticker: Document.document, { onClick, c
       //   });
       // });
 
-      const canvasEl = canvas`.sticker__canvas`({ width: 400, height: 400 });
-      const context = canvasEl.getContext('2d');
+      const canvasEl = canvas`.sticker__canvas`({ width: 140, height: 140 });
+      // const context = canvasEl.getContext('2d');
       const container = div`.sticker${className}`(canvasEl);
 
       if (onClick) listen(container, 'click', () => onClick(sticker));
 
-      if (context) loadSticker(sticker.id, src, context);
+      useCacheRenderer(canvasEl, sticker);
+      // if (context) loadSticker(sticker.id, src, context);
       return container;
 
       break;

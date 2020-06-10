@@ -1,119 +1,114 @@
 /* eslint-disable no-param-reassign */
-import { BehaviorSubject } from 'rxjs';
-import { decompress } from 'client/workers/extensions/compression';
-import { getCanvasWorker, listenMessage } from 'client/context';
+import { Document } from 'mtproto-js';
+import { getCanvasWorker } from 'client/context';
+import { CanvasWorkerRequest, CanvasWorkerResponse } from 'client/types';
+import { useOnMount, useOnUnmount } from 'core/hooks';
+import { getDocumentLocation } from 'helpers/files';
+import { file } from 'client/media';
+import { Header } from 'client/workers/extensions/compression';
 
-let _cache: Promise<Cache>;
-async function getCache(): Promise<Cache> {
-  if (!_cache) _cache = caches.open('animation');
-  return _cache;
-}
-
-type Animation = {
+type CacheRendererDescription = {
   id: string,
-  context: CanvasRenderingContext2D,
-  totalFrames: number,
-  frameRate: number,
+  src: string,
   currentFrame: number,
-  loaded: boolean,
-  frames?: ArrayBuffer[],
+  currentFrameRaw: number,
+  header?: Omit<Header, 'version'>,
+  contexts: CanvasRenderingContext2D[],
+  isCaching?: boolean,
 };
 
-let counter = 0;
-const animations = new Map<string, Animation>();
-const readySubject = new Map<string, BehaviorSubject<boolean>>();
+const cacheRenderers = new Map<string, CacheRendererDescription>();
+const cacheFrames = new Map<string, ImageData[]>();
 
-function cacheSticker(id: string, src: string) {
-  let subject = readySubject.get(id);
-  if (subject) return subject;
+let cacheSticker: (id: string, src: string) => void;
+function onCanvasWorkerResponse(message: CanvasWorkerResponse) {
+  switch (message.type) {
+    case 'cached_frame_missing': {
+      const renderer = cacheRenderers.get(message.id);
 
-  readySubject.set(id, subject = new BehaviorSubject(false));
+      if (renderer && !renderer.isCaching) {
+        renderer.isCaching = true;
+        cacheSticker(renderer.id, renderer.src);
+      }
+      break;
+    }
 
+    case 'cached_frame': {
+      const { id, frame, data, header } = message;
+
+      let frames = cacheFrames.get(id);
+      if (!frames) cacheFrames.set(id, frames = new Array(header.totalFrames));
+
+      frames[frame] = new ImageData(data, header.width, header.width);
+      const renderer = cacheRenderers.get(id);
+      if (renderer && !renderer.header) {
+        renderer.header = header;
+
+        if (frame === 0 && !renderer.isCaching) {
+          // load other frames
+          for (let i = 1; i < header.totalFrames; i++) {
+            getCanvasWorker(onCanvasWorkerResponse)
+              .postMessage({ type: 'get_cached_frame', id, frame: i } as CanvasWorkerRequest);
+          }
+        }
+      }
+      break;
+    }
+
+    default:
+  }
+}
+
+cacheSticker = (id: string, src: string) => {
   if ('OffscreenCanvas' in window) {
-    getCanvasWorker().postMessage({ type: 'cache_sticker', id, src, pixelRatio: window.devicePixelRatio });
+    getCanvasWorker(onCanvasWorkerResponse)
+      .postMessage({ type: 'cache_sticker', id, src, width: 140 } as CanvasWorkerRequest);
   }
+};
 
-  return subject;
+export function useCacheRenderer(element: HTMLCanvasElement, sticker: Document.document) {
+  const { id } = sticker;
+  const src = file(getDocumentLocation(sticker, ''), { size: sticker.size, dc_id: sticker.dc_id });
+  const context = element.getContext('2d');
+  if (!context) return;
+
+  useOnMount(element, () => {
+    let renderer = cacheRenderers.get(id);
+    if (!renderer) {
+      cacheRenderers.set(id, renderer = { id, src, currentFrame: 0, currentFrameRaw: 0, contexts: [] });
+      getCanvasWorker(onCanvasWorkerResponse)
+        .postMessage({ type: 'get_cached_frame', id, src, width: element.width, frame: 0 } as CanvasWorkerRequest);
+    }
+
+    renderer.contexts.push(context);
+  });
+
+  useOnUnmount(element, () => {
+    const renderer = cacheRenderers.get(id);
+    if (!renderer || renderer.contexts.length === 1) {
+      cacheRenderers.delete(id);
+      cacheFrames.delete(id);
+    } else {
+      const contextIndex = renderer.contexts.indexOf(context);
+      if (contextIndex > -1) renderer.contexts = renderer.contexts.slice(0, contextIndex).concat(renderer.contexts.slice(contextIndex + 1));
+    }
+  });
 }
 
-listenMessage('sticker_cached', ({ src }) => {
-  const subject = readySubject.get(src);
-  if (subject) {
-    subject.next(true);
-    subject.complete();
-  }
-});
-
-export function loadStickerFrames(animation: Animation) {
-  if (animation.loaded) return;
-
-  // getCache()
-  //   .then((cache) => cache.matchAll(`/frames/${animation.id}/`))
-  //   .then((response) => {
-
-  //     console.log('frames', `/frames/${animation.id}/`, response);
-  //     response.forEach((frame, index) => frame.arrayBuffer().then((raw) => animation.frames![index] = raw));
-  //     animation.loaded = true;
-  //   });
-
-  getCache()
-    .then((cache) => {
-      for (let i = 0; i < animation.totalFrames; i++) {
-        cache.match(`/frames/${animation.id}/${i}`)
-          .then((response) => response && response.arrayBuffer())
-          .then((raw) => animation.frames![i] = raw as ArrayBuffer);
-      }
-      animation.loaded = true;
-    });
-}
-
-export function loadSticker(id: string, src: string, context: CanvasRenderingContext2D): string {
-  const aid = (counter++).toString();
-  const animation: Animation = {
-    id,
-    context,
-    totalFrames: 0,
-    frameRate: 0,
-    loaded: false,
-    currentFrame: 0,
-  };
-
-  animations.set(aid, animation);
-
-  getCache()
-    .then((cache) => cache.match(`/frames/${id}/0`))
-    .then((firstFrame) => {
-      if (!firstFrame) cacheSticker(id, src).subscribe(() => loadStickerFrames(animation));
-      else {
-        firstFrame.arrayBuffer().then((raw) => {
-          const { rgba, header } = decompress(raw);
-          context.putImageData(new ImageData(rgba, header.width, header.width), 0, 0);
-
-          animation.totalFrames = header.totalFrames;
-          animation.frameRate = header.frameRate;
-          animation.frames = new Array(header.totalFrames);
-
-          loadStickerFrames(animation);
-        });
-      }
-    });
-
-  return aid;
-}
 
 export function handleStickerRendering() {
-  animations.forEach((animation) => {
-    if (animation.loaded && animation.frames) {
-      animation.currentFrame++;
-      if (animation.currentFrame >= animation.totalFrames) animation.currentFrame = 0;
+  cacheRenderers.forEach((renderer) => {
+    if (!renderer.header || renderer.contexts.length === 0) return;
 
-      if (animation.frames[animation.currentFrame]) {
-        const frame = decompress(animation.frames[animation.currentFrame]);
-        animation.context.putImageData(new ImageData(frame.rgba, frame.header.width, frame.header.width), 0, 0);
+    renderer.currentFrameRaw += (renderer.header.frameRate / 60);
+    const nextFrame = Math.floor(renderer.currentFrameRaw) % renderer.header.totalFrames;
 
-        if (!animation.totalFrames) animation.totalFrames = frame.header.totalFrames;
-        if (!animation.frameRate) animation.totalFrames = frame.header.frameRate;
-      }
+    const frames = cacheFrames.get(renderer.id);
+    if (!frames || !frames[nextFrame]) return;
+
+    renderer.currentFrame = nextFrame;
+    for (let i = 0; i < renderer.contexts.length; i++) {
+      renderer.contexts[i].putImageData(frames[nextFrame], 0, 0);
     }
   });
 

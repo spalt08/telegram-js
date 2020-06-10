@@ -4,7 +4,7 @@ import { SERVICE_WORKER_SCOPE } from 'const';
 import EncoderWorker from 'worker-loader!./workers/encoder.worker';
 import CanvasWorker from 'worker-loader!./workers/canvas.worker';
 import { ServiceRequestID, ServiceRequestCallback, WindowMessage, NotificationType, ServiceNotificationCallback, TaskPayloadMap,
-  RequestType, RequestPayloadMap, ServiceRequest, ServiceMessage, ServiceTask, ServiceNotification } from './types';
+  RequestType, RequestPayloadMap, ServiceRequest, ServiceMessage, ServiceTask, ServiceNotification, CanvasWorkerResponse } from './types';
 
 // Request resolvers
 const requests: Record<ServiceRequestID, ServiceRequestCallback<any>> = {};
@@ -55,18 +55,16 @@ export function getEncoderWorker() {
  * Offscreen Rendering for Chrome
  */
 let canvasWorker: CanvasWorker;
-export function getCanvasWorker() {
+export function getCanvasWorker(onMessage: (message: CanvasWorkerResponse) => void) {
   if (canvasWorker) return canvasWorker;
 
   canvasWorker = new CanvasWorker();
   canvasWorker.addEventListener('message', (event) => {
-    const message = event.data as ServiceNotification;
-    for (let i = 0; i < listeners[message.type].length; i += 1) listeners[message.type][i](message.payload);
+    onMessage(event.data as CanvasWorkerResponse);
   });
 
   return canvasWorker;
 }
-
 
 /**
  * Message resolver
