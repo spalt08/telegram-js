@@ -204,6 +204,13 @@ export function isDialogUnread(dialog: Dialog): boolean {
   return dialog.unread_muted_peers_count > 0 || dialog.unread_unmuted_peers_count > 0;
 }
 
+export function isDialogMuted(dialog: Dialog): boolean {
+  if (dialog._ !== 'dialog') {
+    return false;
+  }
+  return dialog.notify_settings && dialog.notify_settings.mute_until! > 0;
+}
+
 export function dialogIdToPeer(id: string): Peer | null {
   const dialogPeer = dialogIdToDialogPeer(id);
   if (dialogPeer._ === 'dialogPeer') {

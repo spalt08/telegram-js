@@ -8,7 +8,7 @@ import { dialogCache, messageCache } from 'cache';
 import { datetime, ripple } from 'components/ui';
 import { message } from 'services';
 import { pinnedchat } from 'components/icons';
-import { dialogIdToPeer, peerMessageToId, peerToId } from 'helpers/api';
+import { dialogIdToPeer, isDialogMuted, peerMessageToId, peerToId } from 'helpers/api';
 import { avatarWithStatus, profileTitle } from 'components/profile';
 import dialogMessage from './dialog_message';
 import './dialog.scss';
@@ -53,44 +53,41 @@ export default function dialogPreview(id: string, pinned: Observable<boolean> = 
       return;
     }
 
-    if (dialog.unread_count === 0) {
-      badge.textContent = '';
-      if (!badge.classList.contains('hidden')) badge.classList.add('hidden');
-    }
+    let badgeText: string | undefined;
+    let isBadgeMuted = false;
 
     if (dialog.unread_count > 0) {
-      badge.textContent = dialog.unread_count.toString();
-      if (badge.classList.contains('hidden')) badge.classList.remove('hidden');
+      badgeText = dialog.unread_count.toString();
     }
-
     if (dialog.unread_mark && dialog.unread_count === 0) {
-      badge.textContent = '';
-      if (badge.classList.contains('hidden')) badge.classList.remove('hidden');
+      badgeText = '';
     }
-
     if (dialog.unread_mentions_count > 0) {
-      badge.textContent = '@';
-      if (badge.classList.contains('hidden')) badge.classList.remove('hidden');
+      badgeText = '@';
+    }
+    if (isDialogMuted(dialog)) {
+      isBadgeMuted = true;
     }
 
-    if (dialog.notify_settings && dialog.notify_settings.mute_until! > 0) badge.classList.add('muted');
-    else badge.classList.remove('muted');
+    if (badgeText !== undefined) {
+      unmount(pin);
 
-    if (isPinned) {
-      if (badge.textContent === '' && !pin.parentElement) {
-        unmount(badge);
-        mount(preview, pin);
-      }
-
-      if (badge.textContent !== '' && pin.parentElement) {
-        unmount(pin);
+      badge.textContent = badgeText;
+      badge.classList.toggle('muted', isBadgeMuted);
+      if (!badge.parentNode) {
         mount(preview, badge);
       }
-
-      container.classList.add('-pinned');
+    } else if (isPinned) {
+      unmount(badge);
+      if (!pin.parentNode) {
+        mount(preview, pin);
+      }
     } else {
-      container.classList.remove('-pinned');
+      unmount(pin);
     }
+
+    container.classList.toggle('-pinned', isPinned);
+    badge.classList.toggle('hidden', badgeText === undefined);
 
     unmountChildren(topMessage);
     mount(topMessage, dialogMessage(dialog));
