@@ -16,6 +16,7 @@ export interface TabItem {
   key: string;
   title: MaybeObservable<string>;
   badge?: MaybeObservable<string>;
+  // Warning: the function isn't recalled when changed
   content: () => HTMLElement;
 }
 
