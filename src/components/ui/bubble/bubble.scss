@@ -1,212 +1,159 @@
-.bubble {
-  --bubble-background: #ffffff;
+@import '~styles/variables.scss';
+
+@mixin bubbleDefault {
   position: relative;
-  min-height: 30PX;
-  z-index: 0;
+  max-width: $bubble-max-width;
+}
 
-  &.-last.-masked &__content>* {
-    margin-left: 7PX;
-  }
-
-  &.-last.-masked &__content>.raw {
-    margin-left: 0;
-  }
-
-  &.-out.-last.-masked &__content>* {
-    margin-left: 0;
-    margin-right: 7PX;
-  }
-
-  &.-out.-last.-masked &__content>.raw {
-    margin-right: 0;
-  }
-
-  &__shadow {
-    display: block;
+@mixin bubbleBorderImage {
+  & > .bubble__background {
     position: absolute;
-    top: -10PX;
-    left: -10PX;
-    right: -10PX;
-    bottom: -10PX;
-    border-style: solid;
-    border-width: 25PX;
     z-index: 0;
-    border-image: url(./images/shadow_in-central.png) 49 49 49 49 fill;
-  }
-
-  & &__background {
-    position: absolute;
-    left: 0;
     top: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--bubble-background);
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-style: solid;
+    border-left-width: 25PX;
+    border-top-width: 16PX;
+    border-right-width: 18PX;
+    border-bottom-width: 19PX;
+    border-color: transparent;
+    border-image: url(./images/bubble_in-central.png) 32 36 38 50 fill;
+    padding-left: 7PX;
+    @content;
+  }
+}
+
+@mixin bubbleContent {
+  & > .bubble__content {
     z-index: 1;
-  }
-
-  & &__content {
     position: relative;
-    z-index: 2;
+    min-height: 36PX;
+    min-width: 44PX;
+    padding: 0PX 2PX 3PX 9PX;
+    @content;
   }
+}
 
-  & &__background,
-  & &__content {
-    border-radius: 6PX 12.5PX 12.5PX 6PX;
+@mixin bubbleOutBorderImage {
+  @include bubbleDefault();
+  @include bubbleContent() {
+    padding: 0PX 9PX 3PX 2PX;
   }
-
-  &.-first &__background,
-  &.-first &__content {
-    border-top-left-radius: 12.5PX;
+  @include bubbleBorderImage() {
+    border-left-width: 18PX;
+    border-right-width: 25PX;
+    @content;
   }
+}
 
-  &.-last &__background,
-  &.-last &__content {
-    border-bottom-left-radius: 0;
+@mixin bubbleInBorderImage {
+  @include bubbleDefault();
+  @include bubbleContent();
+  @include bubbleBorderImage() {
+    @content;
   }
+}
 
-  &.-last &__background::after {
-    position: absolute;
-    left: -7PX;
-    width: 7PX;
-    bottom: 0;
-    height: 17PX;
-    content: '';
-    background-image: url(./images/bubble_tail-in.png);
-    background-size: 100%;
+@mixin bubbleMask {
+  & > .bubble__content {
+    max-width: 320px;
+    box-sizing: content-box;
+    @content;
   }
+}
 
-  &.-out &__background,
-  &.-out &__content {
-    border-radius: 12.5PX 6PX 6PX 12.5PX;
+.bubble, .bubble-media {
+  @include bubbleInBorderImage();
+}
+
+.bubble-first, .bubble-media-first {
+  @include bubbleInBorderImage() {
+    border-image: url(./images/bubble_in-first.png) 32 36 38 50 fill;
   }
+}
 
-  &.-out.-first &__background,
-  &.-out.-first &__content {
-    border-top-right-radius: 12.5PX;
+.bubble-last, .bubble-media-last {
+  @include bubbleInBorderImage() {
+    border-image: url(./images/bubble_in-last.png) 32 36 38 50 fill;
   }
+}
 
-  &.-out.-last &__background,
-  &.-out.-last &__content {
-    border-bottom-right-radius: 0;
+.bubble-first-last, .bubble-media-first-last {
+  @include bubbleInBorderImage() {
+    border-image: url(./images/bubble_in-first-last.png) 32 36 38 50 fill;
   }
+}
 
-  &.-out.-last &__background::after {
-    background-image: url(./images/bubble_tail-out.png);
-    left: auto;
-    right: -7PX;
+.bubble-out, .bubble-media-out {
+  @include bubbleOutBorderImage() {
+    border-image: url(./images/bubble_out-central.png) 32 50 38 36 fill;
   }
+}
 
-  // masks
-  &:not(.-last) &__content,
-  &:not(.-masked) &__content {
-    overflow: hidden;
+.bubble-out-first, .bubble-media-out-first {
+  @include bubbleOutBorderImage() {
+    border-image: url(./images/bubble_out-first.png) 32 50 38 36 fill;
   }
+}
 
-  &.-last.-masked &__content {
-    margin-left: -7PX;
-    mask-border: url(./images/bubble_in-last.png) 30 30 30 43 / 15px 15px 15px 21px;
+.bubble-out-last, .bubble-media-out-last {
+  @include bubbleOutBorderImage() {
+    border-image: url(./images/bubble_out-last.png) 32 50 38 36 fill;
   }
+}
 
-  &.-first.-last.-masked &__content {
-    mask-border: url(./images/bubble_in-first-last.png) 30 30 30 43 / 15px 15px 15px 21px;
+.bubble-out-first-last, .bubble-media-out-first-last {
+  @include bubbleOutBorderImage() {
+    border-image: url(./images/bubble_out-first-last.png) 32 50 38 36 fill;
   }
+}
 
-  &.-out.-last.-masked &__content {
-    margin-left: 0;
-    margin-right: -7PX;
-    mask-border: url(./images/bubble_out-last.png) 30 43 30 30 / 15px 21px 15px 15px;
+.bubble-media {
+  @include bubbleMask() {
+    mask-border: url(./images/mask_in-central.png) 32 36 38 50 / 16PX 18PX 19PX 25PX stretch;
   }
+}
 
-  &.-out.-first.-last.-masked &__content {
-    mask-border: url(./images/bubble_out-first-last.png) 30 43 30 30 / 15px 21px 15px 15px;
+.bubble-media-first {
+  @include bubbleMask() {
+    mask-border: url(./images/mask_in-first.png) 32 36 38 50 / 16PX 18PX 19PX 25PX stretch;
   }
+}
 
-  // shadows
-  &.-first &__shadow {
-    border-image: url(./images/shadow_in-upper.png) 49 49 49 49 fill;
+.bubble-media-last {
+  @include bubbleMask() {
+    mask-border: url(./images/mask_in-last.png) 32 36 38 50 / 16PX 18PX 19PX 25PX stretch;
   }
+}
 
-  &.-last &__shadow {
-    border-image: url(./images/shadow_in-lower.png) 49 49 49 49 fill;
+.bubble-media-first-last {
+  @include bubbleMask() {
+    mask-border: url(./images/mask_in-first-last.png) 32 36 38 50 / 16PX 18PX 19PX 25PX stretch;
   }
+}
 
-  &.-first.-last &__shadow {
-    border-image: url(./images/shadow_in-whole.png) 49 49 49 49 fill;
+.bubble-media-out {
+  @include bubbleMask() {
+    mask-border: url(./images/mask_out-central.png) 32 50 38 36 / 16PX 25PX 19PX 18PX stretch;
   }
+}
 
-  &.-out &__shadow {
-    border-image: url(./images/shadow_out-central.png) 49 49 49 49 fill;
+.bubble-media-out-first {
+  @include bubbleMask() {
+    mask-border: url(./images/mask_out-first.png) 32 50 38 36 / 16PX 25PX 19PX 18PX stretch;
   }
+}
 
-  &.-out.-first &__shadow {
-    border-image: url(./images/shadow_out-upper.png) 49 49 49 49 fill;
+.bubble-media-out-last {
+  @include bubbleMask() {
+    mask-border: url(./images/mask_out-last.png) 32 50 38 36 / 16PX 25PX 19PX 18PX stretch;
   }
+}
 
-  &.-out.-last &__shadow {
-    border-image: url(./images/shadow_out-lower.png) 49 49 49 49 fill;
-  }
-
-  &.-out.-first.-last &__shadow {
-    border-image: url(./images/shadow_out-whole.png) 49 49 49 49 fill;
-  }
-
-  &.-out {
-    --bubble-background: #eeffde;
-    --accent-color: #4fae4f;
-    --accent-color-inactive: #4fae4f;
-    --voice-message-bar: rgb(79, 174, 79);
-    --voice-message-bar-transparent: rgba(79, 174, 79, 0.5);
-  }
-
-  // Fallback for browsers that don't support mask-border (e.g. Firefox)
-  @supports not(mask-border: url()) {
-    &.-last.-masked, &.-out.-last.-masked {
-      margin-left: 0;
-      margin-right: 0;
-    }
-
-    &.-last.-masked &__content, &.-out.-last.-masked &__content {
-      overflow: hidden;
-      margin-left: 0;
-      margin-right: 0;
-    }
-
-    &.-last.-masked &__content {
-      border-bottom-left-radius: 6PX;
-    }
-
-    &.-out.-last.-masked &__content {
-      border-bottom-left-radius: 12.5PX;
-      border-bottom-right-radius: 6PX;
-    }
-
-    &.-last.-masked &__background {
-      margin-left: 0;
-      margin-right: 0;
-      border-bottom-left-radius: 12.5px;
-      border-bottom-right-radius: 12.5px;
-      &::after { content:none; }
-    }
-
-    &.-last.-masked &__content>* {
-      margin-left: 0;
-      margin-right: 0;
-    }
-
-    &.-last.-masked &__shadow {
-      border-image: url(./images/shadow_in-central.png) 49 49 49 49 fill;
-    }
-  
-    &.-first.-last.-masked &__shadow {
-      border-image: url(./images/shadow_in-upper.png) 49 49 49 49 fill;
-    }
-  
-    &.-out.-last.-masked &__shadow {
-      border-image: url(./images/shadow_out-central.png) 49 49 49 49 fill;
-    }
-  
-    &.-out.-first.-last.-masked &__shadow {
-      border-image: url(./images/shadow_out-upper.png) 49 49 49 49 fill;
-    }
+.bubble-media-out-first-last {
+  @include bubbleMask() {
+    mask-border: url(./images/mask_out-first-last.png) 32 50 38 36 / 16PX 25PX 19PX 18PX stretch;
   }
 }

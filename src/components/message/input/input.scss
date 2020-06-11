@@ -1,7 +1,7 @@
 @import '~styles/variables.scss';
 
 .msginput {
-  padding: 0 var(--content-padding);
+  padding: 0 $content-padding;
 
   &.hidden {
     display: none;
@@ -48,12 +48,14 @@
 
   &__bubble {
     flex: 1 50%;
-    .bubble2__background {
+    max-width: none;
+
+    .bubble__background {
       transform: scale(-1, 1);
       width: calc(100% + 6PX);
     }
 
-    .bubble2__content {
+    .bubble__content {
       padding-left: 2PX;
       padding-right: 3PX;
     }

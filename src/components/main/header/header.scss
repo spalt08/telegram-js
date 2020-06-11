@@ -3,7 +3,8 @@
 .header {
   background: #FFFFFF;
   height: 60px;
-  padding: 5px var(--content-padding) 5px var(--content-padding);
+  border-bottom: 1px solid #EDEEF0;
+  padding: 5px $content-padding 5px $content-padding;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -26,7 +27,7 @@
     & .avatar {
       width: 46px;
       height: 46px;
-      --initials-font-size: 16px;
+      font-size: 16px;
     }
   }
 

@@ -18,7 +18,7 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    padding: 0 var(--content-padding);
+    padding: 0 $content-padding;
     position: relative;
 
     &_button {
@@ -87,20 +87,20 @@
   &__button-menu {
     position: absolute;
     top: 60px;
-    left: calc(var(--content-padding) - 6px);
+    left: $content-padding - 6px;
   }
 
   &__new-message-menu {
     position: absolute;
-    bottom: calc(var(--content-padding) + 60px);
-    right: var(--content-padding);
+    bottom: $content-padding + 60px;
+    right: $content-padding;
     transform-origin: bottom right;
   }
 
   &__write {
     position: absolute;
-    right: var(--content-padding);
-    bottom: var(--content-padding);
+    right: $content-padding;
+    bottom: $content-padding;
     width: 60px;
     height: 60px;
     display: flex;

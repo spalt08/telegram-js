@@ -7,14 +7,14 @@
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.3);
-  transition: background-color var(--animation-sidebar);
-  animation: sidebarWrapperAppear var(--animation-sidebar);
+  transition: background-color $animation-sidebar;
+  animation: sidebarWrapperAppear $animation-sidebar;
 
   &__content {
     height: 100%;
     background-color: #FFFFFF;
-    transition: transform var(--animation-sidebar);
-    animation: sidebarWrapperContentAppear var(--animation-sidebar);
+    transition: transform $animation-sidebar;
+    animation: sidebarWrapperContentAppear $animation-sidebar;
   }
 
   &:first-child {

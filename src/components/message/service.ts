@@ -1,15 +1,15 @@
+
+import { Message, Peer } from 'mtproto-js';
 import { userCache } from 'cache';
 import { userToTitle } from 'cache/accessors';
 import { profileTitle } from 'components/profile';
 import { div, strong, text } from 'core/html';
-import { todoAssertHasValue } from 'helpers/other';
-import { Message, Peer } from 'mtproto-js';
+import { userIdToPeer } from 'helpers/api';
 import './service.scss';
 
-export default function messageSerivce(originalPeer: Peer, msg: Message.messageService) {
-  const peer: Peer = msg.from_id !== 0
-    ? { _: 'peerUser', user_id: todoAssertHasValue(msg.from_id) }
-    : originalPeer;
+export default function messageSerivce(msg: Message.messageService) {
+  const originalPeer = msg.to_id;
+  const peer: Peer = msg.from_id !== undefined ? userIdToPeer(msg.from_id) : originalPeer;
 
   let innerContent: Node[];
 

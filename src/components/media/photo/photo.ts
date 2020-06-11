@@ -24,7 +24,7 @@ export default function photoRenderer(photo: Photo.photo | Document.document, op
 
   const src = file(location, {});
   const image = img`.photo__content`({ src });
-  const container = div`.photo`(image);
+  const container = div`.photo${options.className}`(image);
 
   // apply classes
   if (options.fit) container.classList.add(options.fit);
