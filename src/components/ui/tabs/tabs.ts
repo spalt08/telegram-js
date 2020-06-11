@@ -2,16 +2,11 @@ import { BehaviorSubject } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { div } from 'core/html';
 import { listenOnce, unmount, mount, animationFrameStart } from 'core/dom';
-import { useInterface, hasInterface, getInterface, useMaybeObservable } from 'core/hooks';
+import { useInterface, getInterface, useMaybeObservable } from 'core/hooks';
 import { MaybeObservable } from 'core/types';
 import simpleList from '../simple_list';
 import tabHeader from './tab_header';
 import './tabs.scss';
-
-interface TabsInterface {
-  shouldRemove(): void,
-  didAppear(): void,
-}
 
 export interface TabItem {
   key: string;
@@ -60,16 +55,6 @@ export default function tabsPanel({ className = '', headerAlign = 'center', hide
   const contentEl = div`.tabs-panel__container`();
   const container = div`.tabs-panel${className}`(contentEl);
 
-  const triggerTabDidAppear = (key: string) => {
-    const element = tabsMeta[key]?.content;
-    if (element && hasInterface<TabsInterface>(element) && getInterface(element).didAppear) getInterface(element).didAppear();
-  };
-
-  const triggerTabShouldRemove = (key: string) => {
-    const element = tabsMeta[key]?.content;
-    if (element && hasInterface<TabsInterface>(element) && getInterface(element).shouldRemove) getInterface(element).shouldRemove();
-  };
-
   change = (nextSelected: string) => {
     if (isLocked) return;
     if (selected.value === nextSelected) return;
@@ -86,8 +71,6 @@ export default function tabsPanel({ className = '', headerAlign = 'center', hide
 
     const direction = removingIndex > appearingIndex ? 'right' : 'left';
 
-    triggerTabShouldRemove(selected.value!);
-
     selected.next(nextSelected);
 
     appearingEl.classList.add(`appearing-${direction}`);
@@ -101,9 +84,6 @@ export default function tabsPanel({ className = '', headerAlign = 'center', hide
         removingEl.classList.remove(`removing-${direction}`);
         appearingEl.classList.remove(`appearing-${direction}`);
         isLocked = false;
-
-        // trigger interface if exists
-        triggerTabDidAppear(nextSelected);
       });
     } else {
       isLocked = false;
@@ -134,7 +114,6 @@ export default function tabsPanel({ className = '', headerAlign = 'center', hide
 
     // Unselect the selected tab if it's removed
     if (selected.value !== undefined && !newTabsMeta[selected.value]) {
-      triggerTabShouldRemove(selected.value);
       selected.next(undefined);
     }
 
@@ -154,7 +133,6 @@ export default function tabsPanel({ className = '', headerAlign = 'center', hide
       selected.next(key);
       tabMeta.content = tabMeta.content || tabMeta.factory();
       mount(contentEl, tabMeta.content!);
-      triggerTabDidAppear(key);
     }
 
     tabsMeta = newTabsMeta;
