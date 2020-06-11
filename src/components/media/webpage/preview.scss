@@ -1,4 +1,4 @@
-// CSS API variables: --accent-color
+@import '~styles/variables.scss';
 
 .webpage-preview {
   display: flex;
@@ -12,7 +12,7 @@
     flex: none;
     width: 2px;
     border-radius: 1px;
-    background: var(--accent-color, #4EA4F5);
+    background: $accent-color;
     margin-right: 8px;
   }
 
@@ -36,7 +36,7 @@
   }
 
   &__header {
-    color: var(--accent-color, #4EA4F5);
+    color: $accent-color;
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;

@@ -7,16 +7,17 @@ import { PhotoOptions } from 'helpers/other';
 import { getSize, getPhotoLocation } from 'helpers/photo';
 import './video.scss';
 
-export default function videoRenderer(document: Document.document, photoOptions: PhotoOptions = {}, controls: boolean | undefined = undefined) {
+export default function videoRenderer(document: Document.document, photoOptions: PhotoOptions = {}, controls?: boolean,
+  muted?: boolean) {
   const location = getDocumentLocation(document, '');
   const videoAttribute = getAttributeVideo(document);
 
   if (!videoAttribute) return nothing;
 
   const src = file(location, { dc_id: document.dc_id, size: document.size, mime_type: document.mime_type, progress: true });
-  const videoEl = video({ loop: true, autoplay: true, controls, src });
+  const videoEl = video`.video__player`({ loop: true, autoplay: true, controls, src, muted });
   const progressEl = div`.video__progress`();
-  const container = div`.video`(videoEl, progressEl);
+  const container = div`.video${photoOptions.className || ''}`(videoEl, progressEl);
 
   progressEl.textContent = '0%';
 

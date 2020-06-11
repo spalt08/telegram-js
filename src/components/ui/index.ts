@@ -22,7 +22,7 @@ export { default as virtualScrollBar } from './virtual_scroll_bar/virtual_scroll
 export { default as waveform } from './waveform/waveform';
 export { default as audioSeekbar } from './audio_seekbar/audio_seekbar';
 export { default as playButton } from './play_button/play_button';
-export { default as bubble } from './bubble2/bubble';
+export { default as bubble, bubbleClassName } from './bubble/bubble';
 export { MessageInfoInterface, default as messageInfo } from './message_info/message_info';
 export { default as roundButton } from './round_button/round_button';
 export { default as heading } from './heading/heading';
