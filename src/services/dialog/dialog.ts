@@ -32,9 +32,6 @@ import { first } from 'rxjs/operators';
  * Singleton service class for handling dialogs
  */
 export default class DialogsService {
-  // todo: Remove in favour of the filter service
-  readonly dialogs = new BehaviorSubject(dialogCache.indices.order.getIds());
-
   readonly loading = new BehaviorSubject(false);
 
   protected isComplete = false;
@@ -56,10 +53,6 @@ export default class DialogsService {
     authService.state
       .pipe(first((state) => state === AuthStage.Authorized))
       .subscribe(() => this.updateDialogs());
-
-    dialogCache.indices.order.changes.subscribe(() => {
-      this.dialogs.next(dialogCache.indices.order.getIds());
-    });
 
     dialogCache.changes.subscribe((changes) => {
       changes.forEach(([action, _dialog, dialogId]) => {

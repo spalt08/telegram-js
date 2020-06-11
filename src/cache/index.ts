@@ -1,11 +1,4 @@
-import {
-  dialogToId,
-  isDialogInFolder,
-  messageToId,
-  peerMessageToId,
-  peerToId,
-} from 'helpers/api';
-import { ROOT_FOLDER_ID } from 'const/api';
+import { dialogToId, messageToId, peerToId } from 'helpers/api';
 import { Chat, Dialog, Message, User, UserFull, ChatFull } from 'mtproto-js';
 import { considerMinItemMerger } from './fastStorages/dictionary';
 import Collection, { GetId, makeGetIdFromProp } from './fastStorages/collection';
@@ -70,35 +63,6 @@ export const messageCache = new Collection({
 export const dialogCache = new Collection({
   getId: dialogToId as GetId<Dialog, string>,
   indices: {
-    // todo: Remove
-    order: orderBy<Dialog>(
-      (dialog1, dialog2) => {
-        // Pinned first
-        if (dialog1.pinned !== dialog2.pinned) {
-          return (dialog2.pinned ? 1 : 0) - (dialog1.pinned ? 1 : 0);
-        }
-        // If both are (not) pinned, with most recent message first
-        const message1 = messageCache.get(peerMessageToId(dialog1.peer, dialog1.top_message));
-        const message2 = messageCache.get(peerMessageToId(dialog2.peer, dialog2.top_message));
-        return (message2 && message2._ !== 'messageEmpty' ? message2.date : 0) - (message1 && message1._ !== 'messageEmpty' ? message1.date : 0);
-      },
-      (dialog) => {
-        if (dialog._ === 'dialogFolder') {
-          return false;
-        }
-        if (!isDialogInFolder(dialog, ROOT_FOLDER_ID)) {
-          return false;
-        }
-        if (dialog.peer._ === 'peerChat') {
-          const chat = chatCache.get(dialog.peer.chat_id);
-          if (chat && chat._ === 'chat' && chat.migrated_to) {
-            return false;
-          }
-        }
-        return true;
-      },
-    ),
-
     recentFirst: orderBy(compareDialogs),
 
     /**
