@@ -1,4 +1,4 @@
-import { img, div, canvas } from 'core/html';
+import { img, div, canvas, nothing } from 'core/html';
 import { Document } from 'mtproto-js';
 import { listen } from 'core/dom';
 import { getDocumentLocation } from 'helpers/files';
@@ -9,53 +9,37 @@ import { useCacheRenderer } from './player';
 
 type StickerOptions = {
   className?: string,
+  size: string,
   onClick?: (sticker: Document) => void,
 };
 
-export default function stickerRenderer(sticker: Document.document, { onClick, className = '' }: StickerOptions) {
-  const image = img`.sticker${className}`();
-  const location = getDocumentLocation(sticker, '');
-  const src = file(location, { dc_id: sticker.dc_id, size: sticker.size, mime_type: sticker.mime_type });
-
+export default function stickerRenderer(sticker: Document.document, { onClick, size, className = '' }: StickerOptions) {
   switch (sticker.mime_type) {
     case StickerMimeType.TGS: {
-      // image.src = `/stickers/${sticker.id}.png`;
-
-      // // cache sticker
-      // listen(image, 'error', () => {
-      //   image.style.opacity = '0';
-
-      //   useObservable(image, loadSticker(sticker.id, src), (ready) => {
-      //     if (ready) {
-      //       image.src = '';
-      //       image.src = `/stickers/${sticker.id}.png`;
-      //       image.style.opacity = '';
-      //     }
-      //   });
-      // });
-
-      const canvasEl = canvas`.sticker__canvas`({ width: 140, height: 140 });
-      // const context = canvasEl.getContext('2d');
-      const container = div`.sticker${className}`(canvasEl);
+      const canvasSize = parseInt(size, 10) * window.devicePixelRatio;
+      const canvasEl = canvas`.sticker__canvas`({ width: canvasSize, height: canvasSize });
+      const container = div`.sticker${className}`({ style: { width: size, height: size } }, canvasEl);
 
       if (onClick) listen(container, 'click', () => onClick(sticker));
 
-      useCacheRenderer(canvasEl, sticker);
-      // if (context) loadSticker(sticker.id, src, context);
-      return container;
+      useCacheRenderer(canvasEl, sticker, canvasSize);
+      // if (canvasSize < 200) useCacheRenderer(canvasEl, sticker, canvasSize);
+      // else useLottieRenderer(canvasEl, sticker);
 
-      break;
+      return container;
     }
 
     case StickerMimeType.WebP: {
-      image.src = src;
-      break;
+      const location = getDocumentLocation(sticker, '');
+      const src = file(location, { dc_id: sticker.dc_id, size: sticker.size, mime_type: sticker.mime_type });
+      const image = img`.sticker${className}`({ src, style: { width: size, height: size } });
+
+      if (onClick) listen(image, 'click', () => onClick(sticker));
+
+      return image;
     }
 
     default:
+      return nothing;
   }
-
-  if (onClick) listen(image, 'click', () => onClick(sticker));
-
-  return image;
 }

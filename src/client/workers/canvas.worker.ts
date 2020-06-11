@@ -2,10 +2,9 @@
 import Lottie, { AnimationItem } from 'vendor/lottie-5.6.10';
 import { STICKER_CACHE_NAME } from 'const';
 import { CanvasWorkerRequest, CanvasWorkerResponse } from 'client/types';
-import { TaskQueue } from './extensions/quene';
 import { compress, decompress, Header } from './extensions/compression';
 
-type StickerCacheTask = { id: string, src: string, width: number, priority?: number };
+type StickerCacheTask = { id: string, src: string, width: number };
 
 const ctx = self as DedicatedWorkerGlobalScope;
 const cachePromise = caches.open(STICKER_CACHE_NAME);
@@ -38,8 +37,7 @@ function loadFrame(id: string, frame: number) {
 /**
  * Render and manage each sticker frame vie setTimeout
  */
-function cacheStickerLoop(context: OffscreenCanvasRenderingContext2D, animation: AnimationItem, id: string, frame: number, header: Header,
-  complete: () => void) {
+function cacheStickerLoop(context: OffscreenCanvasRenderingContext2D, animation: AnimationItem, id: string, frame: number, header: Header) {
   const imageData = context.getImageData(0, 0, header.width, header.width);
 
   ctx.postMessage({
@@ -50,69 +48,63 @@ function cacheStickerLoop(context: OffscreenCanvasRenderingContext2D, animation:
     header,
   } as CanvasWorkerResponse);
 
-  saveFrame(id, frame, imageData.data, header);
+  if (header.width < 200) {
+    saveFrame(id, frame, imageData.data, header);
+  }
 
   if (frame < header.totalFrames - 1) {
     setTimeout(() => {
       animation.renderer.renderFrame(frame + 1);
-      cacheStickerLoop(context, animation, id, frame + 1, header, complete);
+      cacheStickerLoop(context, animation, id, frame + 1, header);
     });
   } else {
     animation.destroy();
-    complete();
+    ctx.postMessage({ type: 'cache_complete', id } as CanvasWorkerResponse);
   }
 }
 
 /**
  * Cache sticker task entry point
  */
-function cacheSticker({ id, src, width }: StickerCacheTask, complete: () => void) {
+function cacheSticker({ id, src, width }: StickerCacheTask) {
   const canvas = new OffscreenCanvas(width, width); // eslint-disable-line compat/compat
   const context = canvas.getContext('2d');
 
-  if (!context) {
-    complete();
-    return;
-  }
+  if (!context) return;
 
-  try {
-    fetch(src)
-      .then((response) => response.json())
-      .then((animationData) => {
-        const animation = Lottie.loadAnimation({
-          renderer: 'canvas',
-          loop: false,
-          autoplay: false,
-          animationData,
-          rendererSettings: {
-            context,
-            clearCanvas: true,
-          },
-        });
-
-        const header = {
-          version: 1,
-          totalFrames: animation.totalFrames,
-          frameRate: animation.frameRate,
-          width,
-        };
-
-        cacheStickerLoop(context, animation, id, 0, header, complete);
+  fetch(src)
+    .then((response) => response.json())
+    .then((animationData) => {
+      const animation = Lottie.loadAnimation({
+        renderer: 'canvas',
+        loop: false,
+        autoplay: false,
+        animationData,
+        rendererSettings: {
+          context,
+          clearCanvas: true,
+        },
       });
-  } catch (e) {
-    complete();
-  }
+
+      const header = {
+        version: 1,
+        totalFrames: animation.totalFrames,
+        frameRate: animation.frameRate * animation.playSpeed,
+        width,
+      };
+
+      cacheStickerLoop(context, animation, id, 0, header);
+    });
 }
 
-/**
- * Cache sticker task quene
- */
-const renderQueue = new TaskQueue<StickerCacheTask>({
-  compare: (left, right) => (left.priority || 0) - (right.priority || 0),
-  process: cacheSticker,
-});
-
-
+function missingNotification(id: string, frame: number, width: number) {
+  ctx.postMessage({
+    type: 'cached_frame_missing',
+    id,
+    frame,
+    width,
+  } as CanvasWorkerResponse);
+}
 /**
  * Window messages (tasks)
  */
@@ -121,19 +113,25 @@ ctx.addEventListener('message', async (event: MessageEvent) => {
 
   switch (message.type) {
     case 'cache_sticker': {
-      const { id, src, priority, width } = message;
-      renderQueue.register({ id, src, priority, width });
+      const { id, src, width } = message;
+      cacheSticker({ id, src, width });
       break;
     }
 
     case 'set_cached_frame': {
       const { id, frame, data, header } = message;
-      saveFrame(id, frame, data, { ...header, version: 1 });
+      if (header.width < 200) saveFrame(id, frame, data, { ...header, version: 1 });
       break;
     }
 
     case 'get_cached_frame': {
-      const { id, frame } = message;
+      const { id, frame, width } = message;
+
+      if (width < 200) {
+        missingNotification(id, frame, width);
+        return;
+      }
+
       const frameData = await loadFrame(id, frame);
 
       if (frameData) {
@@ -145,11 +143,7 @@ ctx.addEventListener('message', async (event: MessageEvent) => {
           header: frameData.header,
         } as CanvasWorkerResponse);
       } else {
-        ctx.postMessage({
-          type: 'cached_frame_missing',
-          id,
-          frame,
-        } as CanvasWorkerResponse);
+        missingNotification(id, frame, width);
       }
 
       break;

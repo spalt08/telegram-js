@@ -207,4 +207,8 @@ export type CanvasWorkerResponse = {
   type: 'cached_frame_missing',
   id: string,
   frame: number,
+  width: number,
+} | {
+  type: 'cache_complete',
+  id: string,
 };

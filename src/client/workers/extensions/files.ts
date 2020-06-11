@@ -37,12 +37,14 @@ const fileQueue: FileURL[] = [];
 let currentlyProcessing = 0;
 
 export function ungzip(chunks: ArrayBuffer[], mime: string = 'application/json') {
-  const inflate = new Inflate({ to: 'string' });
+  const inflate = new Inflate();
 
   for (let i = 0; i < chunks.length; i++) inflate.push(chunks[i], i === chunks.length - 1);
 
+  console.log(inflate);
+
   return new Response(
-    inflate.result as string,
+    inflate.result.buffer,
     {
       headers: {
         'Content-Type': mime,

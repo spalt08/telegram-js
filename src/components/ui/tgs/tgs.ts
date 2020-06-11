@@ -1,9 +1,8 @@
-import loadLottie from 'lazy-modules/lottie';
+import { AnimationItem } from 'lottie-web';
+import loadLottie, { LottiePlayer } from 'lazy-modules/lottie';
 import { div } from 'core/html';
-import { useInterface, useOnUnmount } from 'core/hooks';
-import { watchVisibility } from 'core/dom';
-import { TGSManager } from './lottie.browser';
-import './tgs.scss';
+import { useInterface, useOnMount, useOnUnmount } from 'core/hooks';
+import { watchVisibility, listen } from 'core/dom';
 
 interface Props {
   src: string,
@@ -11,36 +10,148 @@ interface Props {
   autoplay?: boolean,
   loop?: boolean,
   playOnHover?: boolean,
-  offscreen?: boolean,
-  width?: number,
-  height?: number,
   onLoad?: () => void;
 }
 
-export function tgsFreeze() {}
-export function tgsUnFreeze() {}
+type AnimationHandler = AnimationItem & { currentFrame: number };
+type LottieLoadCallback = (lottie: LottiePlayer) => void;
+const queue: Array<LottieLoadCallback> = [];
+let isProcessing = false;
 
-export default function tgs({
-  src,
-  className,
-  autoplay = true,
-  loop = false,
-  offscreen = true,
-  onLoad,
-}: Props) {
-  const animation = new TGSManager(src, { loop, offscreen, onLoad });
-  const container = div({ className }, animation.element);
+function load() {
+  isProcessing = true;
+
+  loadLottie().then((player) => {
+    const cb = queue.shift();
+
+    if (!cb) {
+      isProcessing = false;
+      return;
+    }
+
+    cb(player);
+    requestAnimationFrame(() => requestAnimationFrame(load));
+  });
+}
+
+function queueLoading(cb: (lottie: LottiePlayer) => void) {
+  queue.push(cb);
+  if (!isProcessing) load();
+}
+
+export default function tgs({ src, className, autoplay = true, loop = false, playOnHover = false, onLoad }: Props) {
+  let animation: AnimationHandler | undefined;
+  let animationData: any;
+  let isVisible = false;
+  let isRequested = false;
+  let isLoading = false;
+  let shouldPlay = autoplay;
+
+  const container = div({ className });
+
+  const loadAnimation = () => {
+    if (animation && shouldPlay && isVisible) animation.play();
+
+    if (!animation && animationData) {
+      if (isLoading) return;
+
+      isLoading = true;
+
+      queueLoading((player) => {
+        isLoading = false;
+
+        if (!isVisible) return;
+
+        animation = player.loadAnimation({
+          container,
+          loop,
+          animationData,
+          autoplay: isVisible && shouldPlay,
+          renderer: 'canvas',
+        }) as AnimationHandler;
+
+        animation.frameRate = 30;
+        if (onLoad) onLoad();
+      });
+    }
+  };
+
+  const playAnimation = () => {
+    if (!shouldPlay || !isVisible) return;
+
+    if (animationData && !animation) loadAnimation();
+    if (shouldPlay && animation && animation.isPaused) animation.play();
+  };
+
+  useOnMount(container, () => {
+    if (isRequested || animationData) return;
+
+    isRequested = true;
+
+    fetch(src)
+      .then((res) => res.json())
+      .then((data: any) => {
+        animationData = data;
+        isRequested = false;
+        if (isVisible) playAnimation();
+      })
+      .catch(() => {
+        isRequested = false;
+      });
+  });
 
   useOnUnmount(container, () => {
-    animation.destroy();
+    if (animation) {
+      animation.destroy();
+      animation = undefined;
+    }
   });
 
-  watchVisibility(container, (isVisible) => {
-    if (isVisible && autoplay) animation.play();
-    else animation.pause();
+  if (playOnHover) {
+    listen(container, 'mouseenter', () => playAnimation());
+    listen(container, 'mouseleave', () => animation && !animation.isPaused && animation.pause());
+  }
+
+  watchVisibility(container, (_isVisible) => {
+    isVisible = _isVisible;
+
+    if (isVisible && animationData) playAnimation();
+    else if (!isVisible && animation && !animation.isPaused) animation.pause();
   });
 
-  return useInterface(container, animation);
+  return useInterface(container, {
+    play() {
+      // console.log('playi');
+      shouldPlay = true;
+      if (isVisible && animation) {
+        animation.play();
+      }
+    },
+    pause() {
+      shouldPlay = false;
+      if (animation) {
+        animation.pause();
+      }
+    },
+    resize() {
+      if (animation && isVisible) {
+        animation.resize();
+      }
+    },
+    goTo(value: number, animate: boolean = false) {
+      if (animation) {
+        if (animation.currentFrame === 0) {
+          animation.playSegments([0, value + 1], true);
+        } else if (value === 0) {
+          animation.playSegments([animation.currentFrame, 0], true);
+        } else if (animate) {
+          animation.playSegments([animation.currentFrame, value], true);
+        } else {
+          animation.goToAndStop(value, true);
+        }
+      }
+    },
+  });
 }
 
 /**
@@ -50,5 +161,5 @@ export default function tgs({
  * Such way the TGS and the assets will be loading simultaneously.
  */
 export function preloadTgsAssets() {
-  if (!('transferControlToOffscreen' in HTMLCanvasElement.prototype)) loadLottie();
+  loadLottie();
 }

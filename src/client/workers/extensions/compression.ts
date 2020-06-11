@@ -59,6 +59,9 @@ export function compress(data: Uint8ClampedArray, header: Header): ArrayBuffer {
   return buffer.buffer.slice(offset + 1, i);
 }
 
+const pixels32 = new Uint32Array(140 * 140);
+const pixels8 = new Uint8ClampedArray(pixels32.buffer);
+
 export function decompress(raw: ArrayBuffer): { rgba: Uint8ClampedArray, header: Header } {
   const data = new Uint8Array(raw);
   let i = 0;
@@ -72,20 +75,25 @@ export function decompress(raw: ArrayBuffer): { rgba: Uint8ClampedArray, header:
 
   /** Pixel Data */
   const colorsBytes = new Uint32Array(raw, i, colors);
-  const pixels = new Uint32Array(width * width);
   i += colors * 4 + 1;
 
-  let j = 0;
-  for (; i < buffer.length; i += 3) {
-    const code = (data[i] << 8) ^ data[i + 1];
-    const pixel = colorsBytes[code] || 0;
-    const count = data[i + 2];
 
-    for (let n = 0; n < count; n++) pixels[j++] = pixel;
+  // let j = 0;
+  // for (; i < buffer.length; i += 3) {
+  //   const code = (data[i] << 8) ^ data[i + 1];
+  //   const pixel = colorsBytes[code] || 0;
+  //   const count = data[i + 2];
+
+  //   for (let n = 0; n < count; n++) pixels32[j++] = pixel;
+  // }
+
+  let j = 0; let n = 0;
+  for (; i < buffer.length; i += 3) {
+    for (n = 0; n < data[i + 2]; n++, j++) pixels32[j] = colorsBytes[(data[i] << 8) ^ data[i + 1]];
   }
 
   return {
-    rgba: new Uint8ClampedArray(pixels.buffer),
+    rgba: pixels8,
     header: { version, totalFrames, frameRate, width },
   };
 }

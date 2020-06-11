@@ -5,6 +5,9 @@
   user-select: none;
   object-fit: contain;
   cursor: pointer;
+  background-size: 100% auto;
+  background-position: center;
+  background-repeat: no-repeat;
 
   &__thumb {
     position: absolute;
