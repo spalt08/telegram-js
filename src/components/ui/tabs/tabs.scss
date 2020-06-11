@@ -1,3 +1,4 @@
+@import '~styles/variables.scss';
 
 .tabs-panel {
   flex-direction: column;
@@ -7,10 +8,13 @@
 
   &__header {
     flex: none;
-    height: 44px;
+    min-height: 44px;
     display: flex;
     border-bottom: 1px solid #dedfe2;
     width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    @include scrollbar-width(4px);
 
     &.-center {
       justify-content: center;
@@ -24,6 +28,7 @@
   &__tab {
     $transition-duration: 0.2s;
 
+    flex-shrink: 0;
     display: flex;
     justify-content: center;
     color: #7b8083;
@@ -79,7 +84,7 @@
   }
 
   &__header.-stretch &__tab {
-    flex: 1 1 auto;
+    flex: 1 0 auto;
     padding-left: 0;
     padding-right: 0;
   }
