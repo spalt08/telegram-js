@@ -1,4 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
+import { first } from 'rxjs/operators';
 import client from 'client/client';
 import { userCache, chatCache, messageCache, dialogCache } from 'cache';
 import {
@@ -26,7 +27,6 @@ import { dialogPeerToInputDialogPeer } from 'cache/accessors';
 import MessageService from '../message/message';
 import AuthService, { AuthStage } from '../auth';
 import makeDialogReadReporter, { DialogReadReporter } from './dialog_read_reporter';
-import { first } from 'rxjs/operators';
 
 /**
  * Singleton service class for handling dialogs
@@ -137,6 +137,7 @@ export default class DialogsService {
       }
     });
 
+    // dialog was pinned or unpinned
     client.updates.on('updateDialogPinned', (update) => {
       if (update.peer._ === 'dialogPeer') {
         this.changeOrLoadDialog(update.peer, (dialog) => ({
@@ -151,6 +152,7 @@ export default class DialogsService {
       }
     });
 
+    // pinned dialogs order changed
     client.updates.on('updatePinnedDialogs', (update) => {
       const { order, folder_id } = update;
       if (order) {
@@ -175,12 +177,20 @@ export default class DialogsService {
       }
     });
 
+    // a dialog was moved from/to the archive
     client.updates.on('updateFolderPeers', (update) => {
       dialogCache.batchChanges(() => {
         update.folder_peers.forEach((folderPeer) => {
           dialogCache.change(peerToDialogId(folderPeer.peer), { folder_id: folderPeer.folder_id });
         });
       });
+    });
+
+    // a dialog or a group of dialogs was muted/unmuted
+    client.updates.on('updateNotifySettings', (update) => {
+      if (update.peer._ === 'notifyPeer') {
+        dialogCache.change(peerToDialogId(update.peer.peer), { notify_settings: update.notify_settings });
+      }
     });
   }
 
