@@ -3,13 +3,15 @@ import { distinctUntilChanged, map } from 'rxjs/operators';
 import { DialogListIndex } from 'services/folder/commonTypes';
 import { sectionSpinner, VirtualizedList } from 'components/ui';
 import { dialog as dialogService } from 'services';
-import { useObservable } from 'core/hooks';
+import { useMaybeObservableMaybeObservable, useObservable } from 'core/hooks';
 import { div } from 'core/html';
 import { mount, unmount } from 'core/dom';
+import { MaybeObservable } from 'core/types';
 import dialog from '../dialog/dialog';
 import './dialogs_list.scss';
 
-export default function dialogsList(dialogList: DialogListIndex, className: string = '') {
+export default function dialogsList(dialogList: MaybeObservable<DialogListIndex | undefined>, className: string = '') {
+  // The dialog list indices observables are optimized to have only 1 subscription so separate subjects are created to store the data
   const ids = new BehaviorSubject<readonly string[]>([]);
   const pinned = new BehaviorSubject<ReadonlySet<string>>(new Set());
   const loading = combineLatest([ids, dialogService.loading]).pipe(
@@ -46,13 +48,15 @@ export default function dialogsList(dialogList: DialogListIndex, className: stri
     }
   });
 
-  // The indices observables are optimized to have only 1 subscription
-  useObservable(
+  useMaybeObservableMaybeObservable(
     container,
-    dialogList.order,
+    dialogList,
+    (listIndex) => listIndex?.order,
     (order) => {
-      ids.next(order.ids);
-      pinned.next(order.pinned);
+      if (order) {
+        ids.next(order.ids);
+        pinned.next(order.pinned);
+      }
     },
   );
 

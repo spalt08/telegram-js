@@ -247,7 +247,8 @@ export function makeDialogMatchFilterChecker(filter: Readonly<DialogFilter>) {
   let peerId: string;
   let user: Readonly<User> | undefined;
 
-  filter.include_peers.forEach((inputPeer) => {
+  // Pinned peers aren't listed in include_peers but must be included
+  [...filter.include_peers, ...filter.pinned_peers].forEach((inputPeer) => {
     const peer = inputPeerToPeer(inputPeer);
     if (peer) {
       includePeers.add(peerToId(peer));

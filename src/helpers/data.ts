@@ -5,7 +5,7 @@ import { getSurrogatePairAtIndex } from './emoji';
 Helper functions to work with a pure data not related to any business logic
  */
 
-export function arrayToMap<K extends keyof any, T extends { [key in K]: keyof any }>(items: T[], key: K): Record<T[K], T> {
+export function arrayToMap<K extends keyof any, T extends { [key in K]: keyof any }>(items: readonly T[], key: K): Record<T[K], T> {
   const map = {} as Record<T[K], T>;
   for (let i = 0; i < items.length; ++i) {
     map[items[i][key]] = items[i];

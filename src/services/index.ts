@@ -26,4 +26,4 @@ export const messageSearch = new MessageSearchService();
 export const topUsers = new TopUsersService(message, auth);
 export const globalSearch = new GlobalSearchService(topUsers);
 export const polls = new PollsService();
-export const folder = new FolderService(auth);
+export const folder = new FolderService(auth, dialog);
