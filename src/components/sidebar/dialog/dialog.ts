@@ -1,4 +1,6 @@
-import { distinctUntilChanged, map } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
+import { Dialog } from 'mtproto-js';
 import { div } from 'core/html';
 import { listen, mount, unmountChildren, unmount } from 'core/dom';
 import { useObservable } from 'core/hooks';
@@ -6,13 +8,16 @@ import { dialogCache, messageCache } from 'cache';
 import { datetime, ripple } from 'components/ui';
 import { message } from 'services';
 import { pinnedchat } from 'components/icons';
-import { peerMessageToId, peerToId } from 'helpers/api';
+import { dialogIdToPeer, peerMessageToId, peerToId } from 'helpers/api';
 import { avatarWithStatus, profileTitle } from 'components/profile';
 import dialogMessage from './dialog_message';
 import './dialog.scss';
 
-export default function dialogPreview(id: string) {
-  const { peer } = dialogCache.get(id)!;
+export default function dialogPreview(id: string, pinned: Observable<boolean> = new BehaviorSubject(false)) {
+  const peer = dialogIdToPeer(id);
+  if (!peer) {
+    throw new Error(`The dialog id "${id}" isn't a dialog id`);
+  }
 
   const date = div`.dialog__date`();
   const badge = div`.dialog__badge.hidden`();
@@ -38,43 +43,40 @@ export default function dialogPreview(id: string) {
     ),
   );
 
-  const dialogSubject = dialogCache.useItemBehaviorSubject(container, id);
-
   const isSelectedObservable = message.activePeer.pipe(
     map((activePeer) => !!activePeer && peerToId(activePeer) === id),
     distinctUntilChanged(),
   );
 
-  // on update
-  dialogSubject.subscribe((next) => {
-    if (next?._ !== 'dialog') {
+  const applyDialogView = (dialog: Dialog | undefined, isPinned: boolean) => {
+    if (dialog?._ !== 'dialog') {
       return;
     }
 
-    if (next.unread_count === 0) {
+    if (dialog.unread_count === 0) {
       badge.textContent = '';
       if (!badge.classList.contains('hidden')) badge.classList.add('hidden');
     }
 
-    if (next.unread_count > 0) {
-      badge.textContent = next.unread_count.toString();
+    if (dialog.unread_count > 0) {
+      badge.textContent = dialog.unread_count.toString();
       if (badge.classList.contains('hidden')) badge.classList.remove('hidden');
     }
 
-    if (next.unread_mark && next.unread_count === 0) {
+    if (dialog.unread_mark && dialog.unread_count === 0) {
       badge.textContent = '';
       if (badge.classList.contains('hidden')) badge.classList.remove('hidden');
     }
 
-    if (next.unread_mentions_count > 0) {
+    if (dialog.unread_mentions_count > 0) {
       badge.textContent = '@';
       if (badge.classList.contains('hidden')) badge.classList.remove('hidden');
     }
 
-    if (next.notify_settings && next.notify_settings.mute_until! > 0) badge.classList.add('muted');
+    if (dialog.notify_settings && dialog.notify_settings.mute_until! > 0) badge.classList.add('muted');
     else badge.classList.remove('muted');
 
-    if (next.pinned) {
+    if (isPinned) {
       if (badge.textContent === '' && !pin.parentElement) {
         unmount(badge);
         mount(preview, pin);
@@ -91,13 +93,13 @@ export default function dialogPreview(id: string) {
     }
 
     unmountChildren(topMessage);
-    mount(topMessage, dialogMessage(next));
+    mount(topMessage, dialogMessage(dialog));
 
     // unmountChildren(preview);
     // mount(preview, dialogMessage(next));
     // if (badge) mount(preview, badge);
 
-    const msg = messageCache.get(peerMessageToId(next.peer, next.top_message));
+    const msg = messageCache.get(peerMessageToId(dialog.peer, dialog.top_message));
 
     if (msg && msg._ !== 'messageEmpty') {
       date.textContent = datetime({ timestamp: msg.date }).textContent;
@@ -105,12 +107,17 @@ export default function dialogPreview(id: string) {
       if (msg.out) date.classList.add('out');
       else if (date.classList.contains('out')) date.classList.remove('out');
 
-      if (msg.out && msg.id > next.read_outbox_max_id) date.classList.add('unread');
+      if (msg.out && msg.id > dialog.read_outbox_max_id) date.classList.add('unread');
       else if (date.classList.contains('unread')) date.classList.remove('unread');
     } else {
       date.textContent = '';
     }
-  });
+  };
+
+  // on update
+  combineLatest([dialogCache.useItemBehaviorSubject(container, id), pinned])
+    .pipe(debounceTime(0)) // Dialog and pin updates often go one after another so a debounce is added to batch them
+    .subscribe(([dialog, isPinned]) => applyDialogView(dialog, isPinned));
 
   useObservable(clickable, isSelectedObservable, (selected) => {
     clickable.classList.toggle('-selected', selected);

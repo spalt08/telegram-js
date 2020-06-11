@@ -35,6 +35,13 @@ export function dialogPeerToDialogId(dialogPeer: DialogPeer) {
   return peerToDialogId(dialogPeer.peer);
 }
 
+export function dialogIdToDialogPeer(id: string): DialogPeer {
+  if (id.startsWith('folder_')) {
+    return { _: 'dialogPeerFolder', folder_id: Number(id.slice(7)) };
+  }
+  return { _: 'dialogPeer', peer: peerIdToPeer(id) };
+}
+
 export function dialogToId(dialog: Readonly<Dialog>): string {
   if (dialog._ === 'dialogFolder') {
     return `folder_${dialog.folder.id}`;
@@ -195,4 +202,12 @@ export function isDialogUnread(dialog: Dialog): boolean {
     return dialog.unread_count > 0 || !!dialog.unread_mark;
   }
   return dialog.unread_muted_peers_count > 0 || dialog.unread_unmuted_peers_count > 0;
+}
+
+export function dialogIdToPeer(id: string): Peer | null {
+  const dialogPeer = dialogIdToDialogPeer(id);
+  if (dialogPeer._ === 'dialogPeer') {
+    return dialogPeer.peer;
+  }
+  return null;
 }

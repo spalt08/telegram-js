@@ -1,11 +1,12 @@
 import { BehaviorSubject, combineLatest } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { distinctUntilChanged, map } from 'rxjs/operators';
 import { DialogFilter } from 'mtproto-js';
 import { useObservable } from 'core/hooks';
 import { status } from 'components/sidebar';
 import { VirtualizedList, sectionSpinner, TabItem, tabsPanel } from 'components/ui';
 import { dialog as dialogService, folder as folderService } from 'services';
-import { ListItem } from 'services/folder/commonTypes';
+import { DialogListIndex } from 'services/folder/commonTypes';
+import makeFilterIndex from 'services/folder/filterIndex';
 import { mount, unmount } from 'core/dom';
 import { div } from 'core/html';
 import dialog from '../dialog/dialog';
@@ -15,18 +16,37 @@ interface Props {
   className?: string;
 }
 
-function makeDialogList() {
-  const dialogs = new BehaviorSubject<readonly ListItem[]>([]);
+function makeDialogList(dialogList: DialogListIndex) {
+  const ids = new BehaviorSubject<readonly string[]>([]);
+  const pinned = new BehaviorSubject<ReadonlySet<string>>(new Set());
+
   const listEl = new VirtualizedList({
     className: 'dialogs__list',
-    items: dialogs,
+    items: ids,
     threshold: 2,
     batch: 20,
     pivotBottom: false,
-    renderer: dialog,
-    onReachBottom: () => dialogService.loadMoreDialogs(),
+    renderer(id) {
+      return dialog(id, pinned.pipe(
+        map((pinnedSet) => pinnedSet.has(id)),
+        distinctUntilChanged(),
+      ));
+    },
+    onReachBottom() {
+      dialogService.loadMoreDialogs();
+    },
   });
-  useObservable(listEl.container, folderService.allIndex.order, (order) => dialogs.next(order));
+
+  // The indices observables are optimized to have only 1 subscription
+  useObservable(
+    listEl.container,
+    dialogList.order,
+    (order) => {
+      ids.next(order.ids);
+      pinned.next(order.pinned);
+    },
+  );
+
   return listEl.container;
 }
 
@@ -34,7 +54,7 @@ function filterToTab(filter: Readonly<DialogFilter>): TabItem {
   return {
     key: `filter_${filter.id}`,
     title: filter.title,
-    content: makeDialogList,
+    content: () => makeDialogList(makeFilterIndex(filter, dialogService)),
   };
 }
 
@@ -43,7 +63,7 @@ function filtersToTabs(filters: readonly Readonly<DialogFilter>[]): TabItem[] {
     {
       key: 'all',
       title: 'All',
-      content: makeDialogList,
+      content: () => makeDialogList(folderService.allIndex),
     },
     ...filters.map(filterToTab),
   ];

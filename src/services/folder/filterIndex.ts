@@ -6,8 +6,8 @@ import { dialogCache } from 'cache';
 import { makeDialogMatchFilterChecker } from 'cache/accessors';
 import DialogsService from '../dialog/dialog';
 import makeUnreadCounter from './unreadCounter';
-import getIdsList, { areItemsEqual } from './getIdsList';
-import { DialogListIndex, ListItem } from './commonTypes';
+import getIdsList from './getIdsList';
+import { DialogListIndex, DialogListOrder } from './commonTypes';
 
 export default function makeFilterIndex(filter: Readonly<DialogFilter>, dialogService: DialogsService): DialogListIndex {
   const pinned = new Set<string>();
@@ -29,18 +29,20 @@ export default function makeFilterIndex(filter: Readonly<DialogFilter>, dialogSe
   // const unreadCountSubject = new BehaviorSubject(0);
   // const unreadCountSubscription = unreadCountObservable.subscribe(unreadCountSubject);
 
-  const orderObservable = new Observable<ListItem[]>((subscriber) => {
-    let previousOrder = getIdsList(pinned, isInIndex);
-    subscriber.next(previousOrder);
+  const orderObservable = new Observable<DialogListOrder>((subscriber) => {
+    let lastOrder: string[] | undefined;
 
-    const cacheSubscription = dialogCache.changes.subscribe(() => {
+    const handleUpdate = () => {
       const newOrder = getIdsList(pinned, isInIndex);
 
-      if (!areArraysEqual(previousOrder, newOrder, areItemsEqual)) {
-        previousOrder = newOrder;
-        subscriber.next(newOrder);
+      if (!lastOrder || !areArraysEqual(lastOrder, newOrder)) {
+        lastOrder = newOrder;
+        subscriber.next({ ids: newOrder, pinned });
       }
-    });
+    };
+
+    handleUpdate();
+    const cacheSubscription = dialogCache.changes.subscribe(handleUpdate);
 
     return () => cacheSubscription.unsubscribe();
   });
