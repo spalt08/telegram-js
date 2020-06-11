@@ -1,5 +1,5 @@
-import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { distinctUntilChanged, map } from 'rxjs/operators';
 import { Dialog } from 'mtproto-js';
 import { div } from 'core/html';
 import { listen, mount, unmountChildren, unmount } from 'core/dom';
@@ -43,12 +43,24 @@ export default function dialogPreview(id: string, pinned: Observable<boolean> = 
     ),
   );
 
-  const isSelectedObservable = message.activePeer.pipe(
-    map((activePeer) => !!activePeer && peerToId(activePeer) === id),
-    distinctUntilChanged(),
-  );
+  function leaveOnlyOneBadge() {
+    if (!badge.classList.contains('hidden')) {
+      if (!badge.parentNode) {
+        mount(preview, badge);
+      }
+      pin.style.display = 'none';
+    } else if (pin.parentNode) {
+      unmount(badge);
+      pin.style.display = '';
+    } else {
+      // eslint-disable-next-line no-lonely-if
+      if (!badge.parentNode) {
+        mount(preview, badge);
+      }
+    }
+  }
 
-  function applyDialogView(dialog: Dialog | undefined, isPinned: boolean) {
+  function applyDetailsUI(dialog?: Dialog) {
     if (dialog?._ !== 'dialog') {
       return;
     }
@@ -69,32 +81,20 @@ export default function dialogPreview(id: string, pinned: Observable<boolean> = 
       isBadgeMuted = true;
     }
 
-    if (badgeText !== undefined) {
-      unmount(pin);
+    badge.classList.toggle('hidden', badgeText === undefined);
 
+    if (badgeText !== undefined) {
       badge.textContent = badgeText;
       badge.classList.toggle('muted', isBadgeMuted);
       if (!badge.parentNode) {
         mount(preview, badge);
       }
-    } else if (isPinned) {
-      unmount(badge);
-      if (!pin.parentNode) {
-        mount(preview, pin);
-      }
-    } else {
-      unmount(pin);
     }
 
-    container.classList.toggle('-pinned', isPinned);
-    badge.classList.toggle('hidden', badgeText === undefined);
+    leaveOnlyOneBadge();
 
     unmountChildren(topMessage);
     mount(topMessage, dialogMessage(dialog));
-
-    // unmountChildren(preview);
-    // mount(preview, dialogMessage(next));
-    // if (badge) mount(preview, badge);
 
     const msg = messageCache.get(peerMessageToId(dialog.peer, dialog.top_message));
 
@@ -111,10 +111,29 @@ export default function dialogPreview(id: string, pinned: Observable<boolean> = 
     }
   }
 
-  // on update
-  combineLatest([dialogCache.useItemBehaviorSubject(container, id), pinned])
-    .pipe(debounceTime(0)) // Dialog and pin updates often go one after another so a debounce is added to batch them
-    .subscribe(([dialog, isPinned]) => applyDialogView(dialog, isPinned));
+  function applyPinUI(isPinned: boolean) {
+    container.classList.toggle('-pinned', isPinned);
+
+    // Only this function mounts and unmounts the pin
+    if (isPinned) {
+      if (!pin.parentNode) {
+        mount(preview, pin);
+      }
+    } else {
+      unmount(pin);
+    }
+
+    leaveOnlyOneBadge();
+  }
+
+  const isSelectedObservable = message.activePeer.pipe(
+    map((activePeer) => !!activePeer && peerToId(activePeer) === id),
+    distinctUntilChanged(),
+  );
+
+  dialogCache.useItemBehaviorSubject(container, id).subscribe(applyDetailsUI);
+
+  useObservable(clickable, pinned, applyPinUI);
 
   useObservable(clickable, isSelectedObservable, (selected) => {
     clickable.classList.toggle('-selected', selected);
