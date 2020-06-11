@@ -234,15 +234,6 @@ ctx.addEventListener('fetch', (event: FetchEvent): void => {
         break;
       }
 
-      case 'stickers': {
-        event.respondWith(
-          ctx.cache.match(url)
-            .then((cached) => cached || new Response('', { status: 404 })),
-        );
-
-        break;
-      }
-
       case 'cached': {
         const [, bytes] = /\/cached\/(.*?).svg/.exec(url) || [];
         event.respondWith(fetchCachedSize(bytes));

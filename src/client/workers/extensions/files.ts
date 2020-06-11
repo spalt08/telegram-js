@@ -41,10 +41,8 @@ export function ungzip(chunks: ArrayBuffer[], mime: string = 'application/json')
 
   for (let i = 0; i < chunks.length; i++) inflate.push(chunks[i], i === chunks.length - 1);
 
-  console.log(inflate);
-
   return new Response(
-    inflate.result.buffer,
+    (inflate.result as Uint8Array).buffer,
     {
       headers: {
         'Content-Type': mime,
