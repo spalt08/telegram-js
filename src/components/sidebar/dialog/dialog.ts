@@ -48,7 +48,7 @@ export default function dialogPreview(id: string, pinned: Observable<boolean> = 
     distinctUntilChanged(),
   );
 
-  const applyDialogView = (dialog: Dialog | undefined, isPinned: boolean) => {
+  function applyDialogView(dialog: Dialog | undefined, isPinned: boolean) {
     if (dialog?._ !== 'dialog') {
       return;
     }
@@ -109,7 +109,7 @@ export default function dialogPreview(id: string, pinned: Observable<boolean> = 
     } else {
       date.textContent = '';
     }
-  };
+  }
 
   // on update
   combineLatest([dialogCache.useItemBehaviorSubject(container, id), pinned])

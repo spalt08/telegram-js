@@ -37,7 +37,7 @@ export default function makeFolderIndex(folderId: number): DialogListIndex {
       currentPinned = getPinned();
     });
 
-    const handleUpdate = () => {
+    function handleUpdate() {
       const currentIds = getIdsList(currentPinned, isInIndex);
 
       if (currentPinned !== lastPinned || !lastIds || !areArraysEqual(lastIds, currentIds)) {
@@ -45,7 +45,7 @@ export default function makeFolderIndex(folderId: number): DialogListIndex {
         lastIds = currentIds;
         subscriber.next({ ids: lastIds, pinned: lastPinned });
       }
-    };
+    }
 
     const cacheSubscription = merge(dialogCache.changes, dialogCache.indices.pinned.changes)
       .pipe(debounceTime(0)) // Order and pin updates often go one after another so a debounce is added to batch them

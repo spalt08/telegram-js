@@ -5,15 +5,6 @@ export default function getIdsList(pinned: ReadonlySet<string>, isDialogIncluded
   const list: string[] = [];
   const allRecent = dialogCache.indices.recentFirst;
 
-  /*
-  pinned.forEach((id) => {
-    const dialog = dialogCache.get(id);
-    if (dialog && isDialogIncluded(id, dialog)) {
-      list.push(id);
-    }
-  });
-   */
-
   list.push(...pinned);
 
   for (let i = 0, l = allRecent.getLength(); i < l; ++i) {
