@@ -50,11 +50,18 @@ function makeDialogList(dialogList: DialogListIndex) {
   return listEl.container;
 }
 
+function countToBadge(count: number): string {
+  return count ? count.toString() : '';
+}
+
 function filterToTab(filter: Readonly<DialogFilter>): TabItem {
+  const filterIndex = makeFilterIndex(filter, dialogService);
+
   return {
     key: `filter_${filter.id}`,
     title: filter.title,
-    content: () => makeDialogList(makeFilterIndex(filter, dialogService)),
+    badge: filterIndex.unreadCount.pipe(map(countToBadge)),
+    content: () => makeDialogList(filterIndex),
   };
 }
 
@@ -63,6 +70,7 @@ function filtersToTabs(filters: readonly Readonly<DialogFilter>[]): TabItem[] {
     {
       key: 'all',
       title: 'All',
+      badge: folderService.allIndex.unreadCount.pipe(map(countToBadge)),
       content: () => makeDialogList(folderService.allIndex),
     },
     ...filters.map(filterToTab),
