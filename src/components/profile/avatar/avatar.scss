@@ -1,7 +1,5 @@
 @import '~styles/variables.scss';
 
-// CSS API variables: --initials-font-size
-
 .avatar {
   min-width: 30px;
   min-height: 30px;
@@ -9,6 +7,7 @@
   overflow: hidden;
   user-select: none;
   flex: none;
+  font-size: 20px;
 
   &.-standard {
     color: #FFFFFF;
@@ -16,7 +15,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: var(--initials-font-size, 20px);
     text-transform: uppercase;
 
     @each $i, $color in $user-bg-colors {

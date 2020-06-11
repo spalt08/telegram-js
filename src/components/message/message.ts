@@ -1,391 +1,221 @@
-import { dialogCache, messageCache } from 'cache';
+import { messageCache } from 'cache';
+import { BehaviorSubject } from 'rxjs';
 import { messageToSenderPeer, peerToColorCode } from 'cache/accessors';
-import { useContextMenu } from 'components/global_context_menu';
-import * as icons from 'components/icons';
-import audio from 'components/media/audio/audio';
-import documentFile from 'components/media/document/file';
-import photoPreview from 'components/media/photo/preview';
-import poll from 'components/media/poll/poll';
-import stickerRenderer from 'components/media/sticker/sticker';
-import videoPreview from 'components/media/video/preview';
-import videoRenderer from 'components/media/video/video';
-import webpagePreview from 'components/media/webpage/preview';
 import { profileAvatar, profileTitle } from 'components/profile';
-import { bubble, formattedMessage, messageInfo, MessageInfoInterface } from 'components/ui';
-import { mount, unmount } from 'core/dom';
-import { getInterface, hasInterface, useInterface, useOnMount } from 'core/hooks';
-import { div, nothing, span, text } from 'core/html';
-import { peerToId, userIdToPeer } from 'helpers/api';
-import { getAttributeAnimated, getAttributeAudio, getAttributeSticker, getAttributeVideo } from 'helpers/files';
-import { isEmoji } from 'helpers/message';
-import { todoAssertHasValue } from 'helpers/other';
-import { Dialog, Message, Peer } from 'mtproto-js';
-import { main, message as service } from 'services';
+import { bubble, formattedMessage, datetime, bubbleClassName } from 'components/ui';
+import { mount, unmountChildren, unmount } from 'core/dom';
+import { div, nothing, text } from 'core/html';
+import { useObservable } from 'core/hooks';
+import { getDayOffset, getMessageTooltipTitle } from 'helpers/message';
+import { formatNumber } from 'helpers/other';
+import { Message, Peer } from 'mtproto-js';
 import './message.scss';
 import messageReply from './reply';
-import replyMarkupRenderer from './reply_markup';
 import messageSerivce from './service';
+import { messageMediaUpper, messageMediaLower, enhanceClassName, hasMediaToMask, messageMediaImmutable, hasMediaChanged } from './message_media';
 
-type MessageInterface = {
-  from(): number,
-  update(): void,
-  updateLayout(): void,
-  getBorders(): { first: boolean, last: boolean },
-  setBorders(first: boolean, last: boolean): void,
-  id: string,
+export type MessageSibling = undefined | {
+  id: string;
+  day: string;
+  from?: number;
 };
 
-function messageText(msg: Message.message, info: Node) {
-  if (msg.message) {
-    return div`.message__text`(formattedMessage(msg), info);
-  }
-  return info;
+function isLastMessage(msg: Message.message, siblings: [MessageSibling, MessageSibling]) {
+  const nextSibling = siblings[0];
+  if (!nextSibling) return true;
+  return nextSibling.day !== getDayOffset(msg) || nextSibling.from !== msg.from_id;
 }
 
-// message renderer
-const renderMessage = (msg: Message.message, peer: Peer): { message: Node, info: Node } => {
-  const out = msg.out ?? false;
-  const info = messageInfo({ className: 'message__info', status: 'read' }, msg);
-  const hasReply = !!msg.reply_to_msg_id;
-  const hasMessage = !!msg.message;
-  const reply = hasReply ? messageReply(msg.reply_to_msg_id!, peer, msg) : nothing;
-  let title: Node = nothing;
+function isFirstMessage(msg: Message.message, siblings: [MessageSibling, MessageSibling]) {
+  const prevSibling = siblings[1];
+  if (!prevSibling) return true;
+  return prevSibling.day !== getDayOffset(msg) || prevSibling.from !== msg.from_id;
+}
 
-  if (peer._ !== 'peerUser') {
-    const senderPeer = messageToSenderPeer(msg);
-    title = div`.message__title${`color-${peerToColorCode(senderPeer)}`}`(profileTitle(senderPeer));
+function messageTitle(peer: Peer) {
+  return div`.message__title${`color-${peerToColorCode(peer)}`}`(profileTitle(peer));
+}
+
+export default function message(id: string, siblings: BehaviorSubject<[MessageSibling, MessageSibling]>, unreadMark?: boolean) {
+  const cached = messageCache.get(id);
+
+  if (!cached) return div();
+
+  switch (cached._) {
+    case 'messageEmpty':
+      return div();
+
+    case 'messageService':
+      return messageSerivce(cached);
+
+    default:
   }
 
-  // regular message
-  if (!msg.media || msg.media._ === 'messageMediaEmpty') {
-    // Display only emoji
-    if (msg.message.length <= 6 && isEmoji(msg.message)) {
-      return {
-        message: div`.as-emoji.only-sticker`(
-          reply,
-          div`.message__emoji${`e${msg.message.length / 2}`}`(text(msg.message)),
-          info,
-        ),
-        info,
-      };
-    }
+  let msg = cached;
+  const senderPeer = messageToSenderPeer(msg);
+  const isChat = msg.to_id._ !== 'peerUser';
+  let isLast = isLastMessage(msg, siblings.value);
+  let isFirst = isFirstMessage(msg, siblings.value);
+  const masked = hasMediaToMask(msg);
 
-    // regular
-    return {
-      message: bubble(
-        { out },
-        title,
-        reply,
-        messageText(msg, info),
-      ),
-      info,
-    };
+  let wrapper: HTMLDivElement;
+  let avatar = (isChat && !msg.out && isLast) ? profileAvatar(senderPeer) : undefined;
+  let reply = msg.reply_to_msg_id ? messageReply(msg.reply_to_msg_id, msg) : undefined;
+  let title = (isChat && isFirst && !msg.out && !masked) ? messageTitle(senderPeer) : undefined;
+  let textEl = msg.message ? div`.message__text${msg.out ? '.message__text-out' : ''}`(formattedMessage(msg)) : undefined;
+  let mediaUpper = messageMediaUpper(msg);
+  let mediaLower = messageMediaLower(msg);
+  let bubbleContent: HTMLDivElement | undefined;
+
+  const edited = text(msg.edit_date && !msg.edit_hide ? 'edited ' : '');
+  const info: HTMLDivElement = div({ className: msg.out ? 'message__info-out' : 'message__info' },
+    (msg.views && !msg.out) ? div`.message__views`(text(formatNumber(msg.views))) : nothing, // to do: update views
+    (msg.post_author && !msg.out) ? div`.message__author`(text(`${msg.post_author}, `)) : nothing,
+    edited,
+    datetime({ timestamp: msg.date, date: false }),
+  );
+
+  let content: HTMLElement | undefined = messageMediaImmutable(msg);
+
+  if (!content) {
+    content = bubble({ media: masked, out: msg.out, isFirst, isLast, className: enhanceClassName(msg, textEl), setRef: (el) => bubbleContent = el },
+      title || nothing,
+      reply || nothing,
+      mediaUpper || nothing,
+      textEl || nothing,
+      mediaLower || nothing,
+    );
+  } else if (reply) {
+    mount(content, reply, content.firstChild || undefined);
   }
 
-  // with webpage
-  if (msg.media._ === 'messageMediaWebPage' && msg.media.webpage._ !== 'webPageEmpty') {
-    const type = msg.media.webpage._ === 'webPage' ? msg.media.webpage.type : '';
-    const extraClass = (type === 'video' || type === 'photo') ? 'with-webpage-media' : 'with-webpage';
-
-    return {
-      message: bubble(
-        { out, className: extraClass },
-        title,
-        reply,
-        div`.message__text`(formattedMessage(msg), info),
-        msg.media.webpage._ === 'webPage' ? div`.message__media-padded`(webpagePreview(msg.media.webpage)) : nothing,
-      ),
-      info,
-    };
-  }
-
-  // with photo
-  if (msg.media._ === 'messageMediaPhoto' && msg.media.photo?._ === 'photo') {
-    const extraClass = msg.message ? 'with-photo' : 'only-photo';
-    const popupPeer = peer._ === 'peerChannel' ? peer : userIdToPeer(todoAssertHasValue(msg.from_id));
-    const photoEl = photoPreview(msg.media.photo, popupPeer, msg, {
-      fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined,
-    });
-    if (!hasMessage && photoEl instanceof Element) photoEl.classList.add('raw');
-
-    return {
-      message: bubble(
-        { out, className: extraClass, media: true },
-        reply,
-        photoEl || nothing,
-        messageText(msg, info),
-      ),
-      info,
-    };
-  }
-
-  // with sticker
-  if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document' && getAttributeSticker(msg.media.document)) {
-    const attr = getAttributeSticker(msg.media.document);
-
-    return {
-      message: div`.only-sticker`(
-        reply,
-        stickerRenderer(msg.media.document, { size: '200px', autoplay: true, onClick: () => attr && main.showPopup('stickerSet', attr.stickerset) }),
-        info,
-      ),
-      info,
-    };
-  }
-
-  // with video gif
-  if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document' && getAttributeAnimated(msg.media.document)) {
-    const extraClass = msg.message ? 'with-photo' : 'only-photo with-video';
-    const video = videoRenderer(msg.media.document, {
-      fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined,
-    });
-    if (!hasMessage && video instanceof Element) video.classList.add('raw');
-
-    return {
-      message: bubble(
-        { out, className: extraClass, media: true },
-        reply,
-        video,
-        messageText(msg, info),
-      ),
-      info,
-    };
-  }
-
-  // with video
-  if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document' && getAttributeVideo(msg.media.document)) {
-    const extraClass = hasMessage ? 'with-photo' : 'only-photo';
-    const previewEl = videoPreview(msg.media.document, {
-      fit: 'contain', width: 320, height: 320, minHeight: 60, minWidth: msg.message ? 320 : undefined,
-    }, peer, msg);
-    if (!hasMessage && previewEl instanceof Element) previewEl.classList.add('raw');
-
-    return {
-      message: bubble(
-        { out, className: extraClass, media: true },
-        reply,
-        previewEl || nothing,
-        messageText(msg, info),
-      ),
-      info,
-    };
-  }
-
-  // with audio
-  if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document' && getAttributeAudio(msg.media.document)) {
-    const extraClass = hasMessage ? 'with-audio' : 'only-audio';
-    const previewEl = audio(msg.media.document);
-
-    return {
-      message: bubble(
-        { out, className: extraClass },
-        reply,
-        div`.message__media-padded`(previewEl),
-        messageText(msg, info),
-      ),
-      info,
-    };
-  }
-
-  // with document
-  if (msg.media._ === 'messageMediaDocument' && msg.media.document?._ === 'document') {
-    const extraClass = hasMessage ? 'with-document' : 'only-document';
-    return {
-      message: bubble(
-        { out, className: extraClass },
-        reply,
-        div`.message__media-padded`(documentFile(msg.media.document)),
-        messageText(msg, info),
-      ),
-      info,
-    };
-  }
-
-  // with poll
-  if (msg.media._ === 'messageMediaPoll') {
-    return {
-      message: bubble(
-        { out, className: 'with-poll' },
-        reply,
-        poll(peer, msg, info),
-      ),
-      info,
-    };
-  }
-
-  // console.log(msg);
-
-  // fallback
-  return {
-    message: bubble(
-      { out, className: 'not-implemented' },
-      title,
-      reply,
-      div`.message__text`(
-        span`.fallback`(text('This type of message is not implemented yet')),
-        info,
-      ),
+  const container = div(
+    { className: msg.out ? 'message-out' : `message${isChat ? '-chat' : ''}${isLast ? '-last' : ''}` },
+    unreadMark ? div`.message__unread-mark`(text('Unread Messages')) : nothing,
+    wrapper = div`.message__align`(
+      avatar || nothing,
+      content,
     ),
-    info,
-  };
-};
+  );
 
-export default function message(id: string, peer: Peer, onUpdateHeight?: (id: string) => void) {
-  const container = div`.message`();
-  const subject = messageCache.useItemBehaviorSubject(container, id);
+  info.title = getMessageTooltipTitle(msg);
+  if (textEl && !mediaLower) mount(textEl, info);
+  else mount(content, info);
 
-  if (peer._ !== 'peerUser') container.classList.add('chat');
+  /**
+   * Position was updated inside scroll
+   */
+  useObservable(container, siblings, (next) => {
+    const isLastNow = isLastMessage(msg, next);
+    const isFirstNow = isFirstMessage(msg, next);
 
-  let aligner: HTMLElement | undefined;
-  let renderedMessage: Node | undefined;
-  let renderedInfo: Node | undefined;
-  let profilePicture: Node | undefined;
-  let replyMarkup: Node | undefined;
+    // no changes
+    if (isLastNow === isLast && isFirstNow === isFirst) return;
 
-  // previous message before update
-  let cached: Message | undefined;
-
-  // listen cache changes for auto rerendering
-  subject.subscribe((msg: Message | undefined) => {
-    if (!msg) return;
-
-    // shouldn't rerender service and empty message
-    if (!msg || msg._ !== 'message') {
-      if (msg._ === 'messageService') mount(container, messageSerivce(peer, msg));
-      cached = msg;
-      return;
+    // display or remove avatar
+    if (isChat && !msg.out && isLast) {
+      if (!avatar || !avatar.parentElement) mount(wrapper, avatar = profileAvatar(senderPeer), content);
+    } else if (avatar) {
+      unmount(avatar);
+      avatar = undefined;
     }
 
-    if (msg.out) container.classList.add('out');
-
-    // first render for common message
-    if (!aligner) {
-      aligner = div`.message__align`();
-      mount(container, aligner);
-    } else return;
-
-    // re-rendering
-    if (!renderedMessage || !cached || (cached._ === 'message' && msg.message !== cached.message)) {
-      if (renderedMessage) unmount(renderedMessage);
-
-      const rm = renderMessage(msg, peer);
-
-      renderedMessage = rm.message;
-      renderedInfo = rm.info;
-
-      useContextMenu(renderedMessage, [
-        { icon: icons.reply, label: 'Reply', onClick: () => service.setMessageForReply(id) },
-      ]);
-
-      // to do: optimize
-      // if unread
-      const dialog = dialogCache.get(peerToId(peer));
-      if (dialog?._ === 'dialog' && dialog.read_outbox_max_id < msg.id) {
-        if (hasInterface<MessageInfoInterface>(renderedInfo)) {
-          getInterface(renderedInfo).updateStatus('unread');
-
-          const unsubscribe = dialogCache.watchItem(peerToId(peer), (nextDialog: Dialog) => {
-            if (nextDialog._ === 'dialog' && nextDialog.read_outbox_max_id >= msg.id) {
-              if (hasInterface<MessageInfoInterface>(renderedInfo)) {
-                getInterface(renderedInfo).updateStatus('read');
-              }
-              unsubscribe();
-            }
-          });
-        }
+    // display or remove title
+    if (isChat && isFirst && !msg.out && !masked) {
+      if ((!title || !title.parentElement) && bubbleContent) {
+        mount(bubbleContent, title = messageTitle(senderPeer), reply || mediaUpper || textEl || mediaLower);
       }
-
-      mount(aligner, renderedMessage);
-
-      if (onUpdateHeight) onUpdateHeight(id);
+    } else if (title) {
+      unmount(title);
+      title = undefined;
     }
 
-    // render reply markup
-    if (msg.reply_markup && !replyMarkup) {
-      replyMarkup = replyMarkupRenderer(msg.reply_markup);
-      mount(aligner, replyMarkup);
-
-      if (msg.reply_markup._ === 'replyKeyboardMarkup' || msg.reply_markup._ === 'replyInlineMarkup') {
-        aligner.classList.add('with-reply-markup');
-        aligner.classList.add(`rm-rows-${msg.reply_markup.rows.length}`);
-      }
+    // update className
+    if (bubbleContent && content) {
+      content.className = bubbleClassName(
+        enhanceClassName(msg, textEl),
+        msg.out || false,
+        hasMediaToMask(msg),
+        isFirstNow,
+        isLastNow,
+      );
     }
 
-    cached = msg;
+    isFirst = isFirstNow;
+    isLast = isLastNow;
   });
 
-  let isFirst = false;
-  let isLast = false;
+  /**
+   * Update Contents Strategy
+   */
+  messageCache.useItemBehaviorSubject(container, id).subscribe((next: Message.message) => {
+    if (!next) return;
 
-  const getBorders = () => ({ first: isFirst, last: isLast });
+    // message text
+    if (next.message !== msg.message) {
+      if (next.message && !textEl) textEl = div`.message__text${msg.out ? '.message__text-out' : ''}`();
+      else if (textEl) unmountChildren(textEl);
 
-  const setBorders = (first: boolean, last: boolean) => {
-    isFirst = first;
-    isLast = last;
-    container.classList.toggle('first', first);
-    container.classList.toggle('last', last);
-    if (hasInterface<any>(renderedMessage)) {
-      getInterface(renderedMessage).updateBorders(first, last);
-    }
-  };
-
-  // update meta elemens (message avatar for chats) depends on classList
-  const updateLayout = () => {
-    // remove picture
-    if (profilePicture && !isLast) {
-      unmount(profilePicture);
-      profilePicture = undefined;
-    }
-
-    // display picture
-    if (aligner && container.classList.contains('chat') && isLast && !container.classList.contains('out')
-      && !profilePicture && cached && cached._ !== 'messageEmpty') {
-      const senderPeer = messageToSenderPeer(cached);
-      profilePicture = profileAvatar(senderPeer);
-      mount(aligner, profilePicture, aligner.firstChild || undefined);
-    }
-  };
-
-  // update classList for first, last
-  const update = (recursive: boolean = false) => {
-    const nextEl = container.nextElementSibling;
-    const prevEl = container.previousElementSibling;
-
-    // check next message meta
-    if (nextEl && hasInterface<MessageInterface>(nextEl)) {
-      const next = getInterface(nextEl);
-
-      if (cached && cached._ !== 'messageEmpty' && next.from && next.from() === cached.from_id) {
-        setBorders(isFirst, false);
-        getInterface(nextEl).setBorders(false, getInterface(nextEl).getBorders().last);
-      } else {
-        getInterface(nextEl).setBorders(true, getInterface(nextEl).getBorders().last);
-        setBorders(isFirst, true);
+      if (next.message && textEl) mount(textEl, formattedMessage(next));
+      else if (textEl) {
+        unmount(textEl);
+        textEl = undefined;
       }
-    } else {
-      setBorders(isFirst, true);
+
+      if (textEl && bubbleContent && !textEl.parentElement) mount(bubbleContent, textEl, mediaLower);
+
+      // remount info badge if necessary
+      if (textEl && !mediaLower && info.parentElement !== textEl) mount(textEl, info);
+      else if (content && info.parentElement !== content) mount(content, info);
     }
 
-    if (!prevEl) {
-      setBorders(true, isLast);
-    } else if (!getInterface(prevEl)) {
-      setBorders(true, isLast);
+    // message reply
+    if (next.reply_to_msg_id !== msg.reply_to_msg_id) {
+      if (reply) unmount(reply);
+
+      if (next.reply_to_msg_id) reply = messageReply(next.reply_to_msg_id, next);
+      else reply = undefined;
+
+      if (reply && bubbleContent) mount(bubbleContent, reply, mediaUpper || textEl || mediaLower);
     }
 
-    // update previous
-    if (recursive && prevEl && hasInterface<MessageInterface>(prevEl)) getInterface(prevEl).update();
+    // message edited
+    if (next.edit_date !== msg.edit_date) {
+      if (next.edit_hide) edited.textContent = '';
+      else edited.textContent = 'edited, ';
 
-    updateLayout();
-  };
+      info.title = getMessageTooltipTitle(next);
+    }
 
-  useOnMount(container, () => update(true));
+    if (hasMediaChanged(msg, next)) {
+      // upper media remount
+      if (mediaUpper) unmount(mediaUpper);
 
-  return useInterface(container, {
-    from: () => cached && cached._ !== 'messageEmpty' ? cached.from_id : 0,
-    updateLayout,
-    update,
-    id,
-    getBorders,
-    setBorders,
+      mediaUpper = messageMediaUpper(next);
+
+      if (mediaUpper && bubbleContent) mount(bubbleContent, mediaUpper, textEl);
+
+      // lower media remount
+      if (mediaLower) unmount(mediaLower);
+
+      mediaLower = messageMediaLower(next);
+
+      if (mediaLower && bubbleContent) mount(bubbleContent, mediaLower);
+    }
+
+    // update className
+    if (bubbleContent && content) {
+      content.className = bubbleClassName(
+        enhanceClassName(next, textEl),
+        msg.out || false,
+        hasMediaToMask(msg),
+        isFirst,
+        isLast,
+      );
+    }
+
+    msg = next;
   });
+
+  return container;
 }

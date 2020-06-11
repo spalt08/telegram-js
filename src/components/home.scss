@@ -29,7 +29,7 @@
       width: 100%;
       height: 100%;
       background-color: rgba(0, 0, 0, 0.0);
-      transition: background-color var(--animation-sidebar);
+      transition: background-color $animation-sidebar;
 
       &.-opening {
         background-color: rgba(0, 0, 0, 0.3);
@@ -52,7 +52,7 @@
       width: 100%;
       height: 100%;
       background-color: rgba(0, 0, 0, 0.0);
-      transition: background-color var(--animation-sidebar);
+      transition: background-color $animation-sidebar;
 
       &.-opening {
         background-color: rgba(0, 0, 0, 0.3);

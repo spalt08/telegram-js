@@ -3,11 +3,12 @@ import { ripple } from 'components/ui';
 import { div } from 'core/html';
 import { getInterface } from 'core/hooks';
 import { messageCache } from 'cache';
-import { Peer, Message } from 'mtproto-js';
+import { Message } from 'mtproto-js';
 import { message as service } from 'services';
 import messageQuote from './quote';
 
-export default function messageReply(id: number, peer: Peer, original: Message.message) {
+export default function messageReply(id: number, original: Message.message) {
+  const peer = original.to_id;
   const fullId = peerMessageToId(peer, id);
 
   const contentElement = ripple({

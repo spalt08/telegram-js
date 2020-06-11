@@ -13,7 +13,7 @@ export default function videoStreamRenderer(document: Document.document, options
   if (!videoAttribute) return nothing;
   if (!videoAttribute.supports_streaming) return videoRenderer(document, options, true);
 
-  const videoEl = video({ autoplay: true, loop: true, controls: true });
+  const videoEl = video`.video__player`({ autoplay: true, loop: true, controls: true });
   const container = div`.video`(videoEl);
 
   useVideoArrtibuteSize(container, videoAttribute, options);
