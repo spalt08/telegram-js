@@ -5,7 +5,7 @@ import { chatCache, messageCache, userCache } from 'cache';
 import { getFirstLetters } from 'helpers/data';
 import {
   inputPeerToInputDialogPeer,
-  inputPeerToPeer,
+  inputPeerToPeer, isDialogInFolder,
   messageToDialogPeer,
   peerMessageToId,
   peerToId,
@@ -265,7 +265,7 @@ export function makeDialogMatchFilterChecker(filter: Readonly<DialogFilter>) {
     if (dialog._ !== 'dialog') {
       return false;
     }
-    if (filter.exclude_archived && dialog.folder_id === ARCHIVE_FOLDER_ID) {
+    if (filter.exclude_archived && isDialogInFolder(dialog, ARCHIVE_FOLDER_ID)) {
       return false;
     }
     if (filter.exclude_muted && dialog.notify_settings.silent) {

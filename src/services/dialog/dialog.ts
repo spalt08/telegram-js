@@ -24,7 +24,9 @@ import {
 import { dialogPeerToInputDialogPeer } from 'cache/accessors';
 
 import MessageService from '../message/message';
+import AuthService, { AuthStage } from '../auth';
 import makeDialogReadReporter, { DialogReadReporter } from './dialog_read_reporter';
+import { first } from 'rxjs/operators';
 
 /**
  * Singleton service class for handling dialogs
@@ -50,7 +52,11 @@ export default class DialogsService {
    */
   protected loadingPeers = new Set<string>();
 
-  constructor(private messageService: MessageService) {
+  constructor(private messageService: MessageService, authService: AuthService) {
+    authService.state
+      .pipe(first((state) => state === AuthStage.Authorized))
+      .subscribe(() => this.updateDialogs());
+
     dialogCache.indices.order.changes.subscribe(() => {
       this.dialogs.next(dialogCache.indices.order.getIds());
     });

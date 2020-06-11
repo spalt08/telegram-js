@@ -1,16 +1,10 @@
-.dialogs {
-  &__status {
-    z-index: 1;
-  }
+.dialogsList {
+  position: relative;
 
   &__spinner {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-  }
-
-  &__tabs {
-    height: 100%;
   }
 }

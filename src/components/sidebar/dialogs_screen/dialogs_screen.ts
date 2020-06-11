@@ -6,7 +6,7 @@ import { getInterface } from 'core/hooks';
 import { animationFrameStart, mount, unmount } from 'core/dom';
 import * as icons from 'components/icons';
 import { globalSearch } from 'services';
-import dialogs from '../dialogs/dialogs';
+import dialogsTabs from '../dialogs_tabs/dialogs_tabs';
 import globalSearchResult from '../global_search_result/global_search_result';
 import './dialogs_screen.scss';
 
@@ -35,21 +35,21 @@ export default function dialogsScreen({ onNavigate }: SidebarComponentProps) {
   const buttonMenu = contextMenu({
     className: 'dialogsScreen__button-menu',
     options: [
-      { icon: icons.group, label: 'New Group', onClick: () => onNavigate && onNavigate('newGroup') },
-      { icon: icons.user, label: 'Contacts', onClick: () => onNavigate && onNavigate('contacts') },
-      { icon: icons.archive, label: 'Archived', onClick: () => onNavigate && onNavigate('contacts') },
-      { icon: icons.savedmessages, label: 'Saved', onClick: () => onNavigate && onNavigate('contacts') },
-      { icon: icons.settings, label: 'Settings', onClick: () => onNavigate && onNavigate('settings') },
-      { icon: icons.help, label: 'Help', onClick: () => onNavigate && onNavigate('contacts') },
+      { icon: icons.group, label: 'New Group', onClick: () => onNavigate?.('newGroup') },
+      { icon: icons.user, label: 'Contacts', onClick: () => onNavigate?.('contacts') },
+      { icon: icons.archive, label: 'Archived', onClick: () => onNavigate?.('archive') },
+      { icon: icons.savedmessages, label: 'Saved', onClick: () => onNavigate?.('contacts') },
+      { icon: icons.settings, label: 'Settings', onClick: () => onNavigate?.('settings') },
+      { icon: icons.help, label: 'Help', onClick: () => onNavigate?.('contacts') },
     ],
   });
 
   const newMessageMenu = contextMenu({
     className: 'dialogsScreen__new-message-menu',
     options: [
-      { icon: icons.channel, label: 'New Channel', onClick: () => onNavigate && onNavigate('newGroup') },
-      { icon: icons.group, label: 'New Group', onClick: () => onNavigate && onNavigate('newGroup') },
-      { icon: icons.user, label: 'New Private Chat', onClick: () => onNavigate && onNavigate('newGroup') },
+      { icon: icons.channel, label: 'New Channel', onClick: () => onNavigate?.('newGroup') },
+      { icon: icons.group, label: 'New Group', onClick: () => onNavigate?.('newGroup') },
+      { icon: icons.user, label: 'New Private Chat', onClick: () => onNavigate?.('newGroup') },
     ],
   });
 
@@ -63,7 +63,7 @@ export default function dialogsScreen({ onNavigate }: SidebarComponentProps) {
 
   // listen(writeButton, 'transitionstart', () => getInterface(newMessageMenu).close());
 
-  const dialogsLayer = dialogs({ className: 'dialogsScreen__layer' });
+  const dialogsLayer = dialogsTabs({ className: 'dialogsScreen__layer' });
 
   let searchResultLayer: HTMLElement | undefined;
 
