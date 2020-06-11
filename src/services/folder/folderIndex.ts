@@ -1,4 +1,4 @@
-import { combineLatest, Observable } from 'rxjs';
+import { merge, Observable } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { Dialog } from 'mtproto-js';
 import { areArraysEqual } from 'helpers/data';
@@ -47,7 +47,7 @@ export default function makeFolderIndex(folderId: number): DialogListIndex {
       }
     };
 
-    const cacheSubscription = combineLatest([dialogCache.changes, dialogCache.indices.pinned.changes])
+    const cacheSubscription = merge(dialogCache.changes, dialogCache.indices.pinned.changes)
       .pipe(debounceTime(0)) // Order and pin updates often go one after another so a debounce is added to batch them
       .subscribe(handleUpdate);
 

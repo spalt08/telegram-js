@@ -181,6 +181,14 @@ export default class DialogsService {
         });
       }
     });
+
+    client.updates.on('updateFolderPeers', (update) => {
+      dialogCache.batchChanges(() => {
+        update.folder_peers.forEach((folderPeer) => {
+          dialogCache.change(peerToDialogId(folderPeer.peer), { folder_id: folderPeer.folder_id });
+        });
+      });
+    });
   }
 
   async updateDialogs(offsetDate = 0) {
