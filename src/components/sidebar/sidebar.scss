@@ -13,7 +13,7 @@ $sidebar-max: 400px;
   position: relative;
   overflow: hidden;
 
-  & > * {
+  & > .sidebarWrapper {
     flex: none;
     width: $sidebar-width;
     max-width: $sidebar-max;
@@ -30,7 +30,7 @@ $sidebar-max: 400px;
       width: 100%;
       max-width: 100%;
       will-change: transform;
-      transition: transform var(--animation-sidebar);
+      transition: transform $animation-sidebar;
       transform: translate3d(0, 0, 0);
       position: relative;
 
@@ -50,7 +50,7 @@ $sidebar-max: 400px;
     transition: .2s ease-out;
 
     @include respond-to(medium) {
-      transition: transform var(--animation-sidebar);
+      transition: transform $animation-sidebar;
       transform: translate3d(0, 0, 0);
       position: fixed;
       width: 75vw;
@@ -61,7 +61,7 @@ $sidebar-max: 400px;
       height: 100%;
       border-left: none;
 
-      & > * {
+      & > .sidebarWrapper {
         width: 75vw;
         min-width: calc(100vw - #{$sidebar-max});
         max-width: calc(100vw - #{$sidebar-min});
@@ -69,7 +69,7 @@ $sidebar-max: 400px;
     }
 
     @include respond-to(small) {
-      transition: transform var(--animation-sidebar);
+      transition: transform $animation-sidebar;
       transform: translate3d(0, 0, 0);
       position: fixed;
       width: 100%;
@@ -80,7 +80,7 @@ $sidebar-max: 400px;
       border-left: none;
       transform: translate3d(0, 0, 0);
 
-      & > * {
+      & > .sidebarWrapper {
         width: 100%;
         max-width: 100%;
       }

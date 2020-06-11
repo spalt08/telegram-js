@@ -29,11 +29,12 @@
   &__voter {
     display: flex;
     align-items: center;
-    padding: 9px var(--content-padding);
+    padding: 9px $content-padding;
 
     & .avatar {
       width: 32px;
       height: 32px;
+      font-size: 14px;
     }
 
     &.-hidden {
@@ -47,7 +48,7 @@
     &-placeholder {
       display: flex;
       align-items: center;
-      padding: 9px var(--content-padding);
+      padding: 9px $content-padding;
 
       & .avatar {
         width: 32px;
@@ -70,7 +71,7 @@
     cursor: pointer;
     display: flex;
     align-items: center;
-    padding: 9px var(--content-padding);
+    padding: 9px $content-padding;
 
     svg {
       margin: 4px;

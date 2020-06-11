@@ -9,7 +9,7 @@ import photoRenderer from '../photo/photo';
 import './preview.scss';
 
 export default function videoPreview(video: Document.document, photoOptions: PhotoOptions = {}, peer?: Peer, message?: Message.message) {
-  const thumbnail = photoRenderer(video, photoOptions);
+  const thumbnail = photoRenderer(video, { ...photoOptions, className: '' });
 
   const videoAttribute = getAttributeVideo(video);
   const gifAttribute = getAttributeAnimated(video);
@@ -18,7 +18,7 @@ export default function videoPreview(video: Document.document, photoOptions: Pho
   if (gifAttribute) duration = 'GIF';
   else if (videoAttribute) duration = getReadableDuration(videoAttribute.duration);
 
-  const container = div`.video-preview`(
+  const container = div`.video-preview${photoOptions.className || ''}`(
     div`.video-preview__duration`(text(duration)),
     div`.video-preview__playbtn`(),
     thumbnail,

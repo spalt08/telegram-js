@@ -25,3 +25,16 @@ export type MediaMessage<M extends MessageMedia> = Omit<Message.message, 'media'
 export function isPollMessage(message?: any): message is MediaMessage<MessageMedia.messageMediaPoll> {
   return message?._ === 'message' && message.media?._ === 'messageMediaPoll';
 }
+
+const timezoneOffset = new Date().getTimezoneOffset() * 60;
+
+export function getDayOffset(msg: Message.message | Message.messageService) {
+  return Math.ceil((msg.date - timezoneOffset) / (3600 * 24)).toString();
+}
+
+export function getMessageTooltipTitle(msg: Message.message) {
+  let title = new Date(msg.date * 1000).toLocaleString();
+  if (msg.edit_date && !msg.edit_hide) title += `\nEdited: ${new Date(msg.edit_date * 1000).toLocaleString()}`;
+
+  return title;
+}

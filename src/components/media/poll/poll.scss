@@ -1,3 +1,5 @@
+@import '~styles/variables.scss';
+
 .poll {
   user-select: none;
   font-size: 1rem;
@@ -31,7 +33,7 @@
     grid-template-columns: auto 1fr auto;
     align-items: center;
     font-size: 0.9rem;
-    color: var(--accent-color-inactive);
+    color: $accent-color-inactive;
 
     .pollCountdown, .pollSolution {
       grid-row: 1;
@@ -57,13 +59,13 @@
       height: 18px;
       min-width: 18px;
       min-height: 18px;
-      border: 1px solid var(--bubble-background);
-      --initials-font-size: 0.6rem;
+      border: 1px solid $bubble-background;
+      font-size: 0.6rem;
     }
   }
 
   &__voters {
-    color: var(--accent-color-inactive);
+    color: $accent-color-inactive;
     font-size: 0.9rem;
     padding: 10px 0 4px 10px;
   }
@@ -71,13 +73,13 @@
   &__vote-button {
     margin: 8PX 0;
     text-align: center;
-    color: var(--accent-color);
+    color: $accent-color;
     transition: color 0.3s;
     cursor: pointer;
   }
 
   &__vote-button.-inactive {
-    color: var(--accent-color-inactive);
+    color: $accent-color-inactive;
     cursor: default;
   }
 }

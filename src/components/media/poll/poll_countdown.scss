@@ -1,5 +1,7 @@
+@import '~styles/variables.scss';
+
 .pollCountdown {
-  color: var(--accent-color-inactive);
+  color: $accent-color-inactive;
   display: flex;
   align-items: center;
 
@@ -8,10 +10,9 @@
   }
 
   circle {
-    rotate: -90deg;
     fill: none;
     stroke-width: 2px;
-    stroke: var(--accent-color-inactive);
+    stroke: $accent-color-inactive;
     transform: rotate(-90deg);
     transform-origin: center;
   }

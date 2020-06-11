@@ -10,6 +10,7 @@ import { StickerMimeType } from 'const';
 import './sticker.scss';
 
 type StickerOptions = {
+  className?: string,
   size: string,
   autoplay: boolean,
   playOnHover?: boolean,
@@ -17,18 +18,20 @@ type StickerOptions = {
 };
 
 export default function stickerRenderer(sticker: Document.document,
-  { size = '200px', autoplay = true, playOnHover = false, onClick }: StickerOptions) {
+  { size = '200px', autoplay = true, playOnHover = false, onClick, className = '' }: StickerOptions) {
   let thumbnail: HTMLImageElement | undefined;
   let animated: ReturnType<typeof tgs> | undefined;
 
-  const container = div`.sticker`({ style: { width: size, height: size } });
+  const container = div`.sticker${className}`({ style: { width: size, height: size } });
 
   const location = getDocumentLocation(sticker, '');
   const src = file(location, { dc_id: sticker.dc_id, size: sticker.size, mime_type: sticker.mime_type });
 
+  const sizeInt = parseInt(size, 10);
+
   // diplay thumbnail
   if (sticker.mime_type === StickerMimeType.TGS && sticker.thumbs && sticker.thumbs.length > 0) {
-    const tsize = getSize(sticker.thumbs, 200, 200, 'cover');
+    const tsize = getSize(sticker.thumbs, sizeInt, sizeInt, 'cover');
 
     if (tsize) {
       const loc = getPhotoLocation(sticker, tsize.type);

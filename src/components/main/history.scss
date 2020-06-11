@@ -29,7 +29,7 @@
   }
 
   @include respond-to(small-medium) {
-    transition: transform var(--animation-sidebar);
+    transition: transform $animation-sidebar;
     will-change: transform;
 
     &.-visible.-popping {

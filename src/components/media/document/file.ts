@@ -21,7 +21,7 @@ const renderMeta = (document: Document.document, message: Message | undefined) =
   return nodes;
 };
 
-export default function documentFile(document: Document.document, message?: Message) {
+export default function documentFile(document: Document.document, message?: Message, className?: string) {
   const filenameAttributte = getAttributeFilename(document);
 
   let filename = '';
@@ -34,7 +34,7 @@ export default function documentFile(document: Document.document, message?: Mess
 
   const sizeEl = div`.document-file__size`(...renderMeta(document, message));
 
-  const container = div`.document-file`(
+  const container = div`.document-file${className}`(
     icon,
     div`.document-file__info`(
       div`.document-file__title`(text(filename)),

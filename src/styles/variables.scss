@@ -1,13 +1,13 @@
 
 $user-bg-colors: (
-  "1" #cc90e2,
-  "2" #80d066,
-  "3" #ecd074,
-  "4" #6fb1e4,
-  "5" #e57979,
-  "6" #f98bae,
-  "7" #73cdd0,
-  "8" #fba76f,
+  "1" #8365ab,
+  "2" #539e4f,
+  "3" #ae9661,
+  "4" #4979a3,
+  "5" #b7635d,
+  "6" #b3577a,
+  "7" #5397b4,
+  "8" #c07844,
 );
 
 $break-small: 720px;
@@ -68,20 +68,18 @@ $main-header-height: 56px;
   }
 }
 
-:root {
-  --content-padding: 20px;
-  --content-message-padding: 11px;
-  --bubble-max-width: 75%;
-  --bubble-background: #FFFFFF;
-  --accent-color: #1da1f1;
-  --voice-message-bar: #1da1f1;
-  --voice-message-bar-transparent: rgba(112, 117, 121, 0.35);
-  --accent-color-inactive: #707579;
-  --animation-sidebar: .3s ease-in-out;
+$content-padding: 20px;
+$content-message-padding: 11px;
+$bubble-max-width: 75%;
+$bubble-background: #FFFFFF;
+$accent-color: #1da1f1;
+$voice-message-bar: #1da1f1;
+$voice-message-bar-transparent: rgba(112, 117, 121, 0.35);
+$accent-color-inactive: #707579;
+$animation-sidebar: .3s ease-in-out;
 
-  @include respond-to(small) {
-    --content-padding: 12px;
-    --content-message-padding: 3px;
-    --bubble-max-width: 80%;
-  }
-}
+// @include respond-to(small) {
+//   $content-padding: 12px;
+//   $content-message-padding: 3px;
+//   $bubble-max-width: 80%;
+// }

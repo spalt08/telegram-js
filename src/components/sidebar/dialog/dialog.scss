@@ -40,7 +40,7 @@
 
     @include respond-to(small) {
       border-radius: 0;
-      padding: 9PX var(--content-padding);
+      padding: 9PX $content-padding;
     }
   }
 

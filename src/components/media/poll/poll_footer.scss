@@ -1,8 +1,10 @@
+@import '~styles/variables.scss';
+
 .pollFooter {
   display: grid;
   padding: 8PX 0;
   text-align: center;
-  color: var(--accent-color);
+  color: $accent-color;
   transition: color 0.3s;
   cursor: pointer;
 
@@ -13,6 +15,6 @@
 }
 
 .pollFooter.-inactive {
-  color: var(--accent-color-inactive);
+  color: $accent-color-inactive;
   cursor: default;
 }
