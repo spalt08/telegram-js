@@ -150,7 +150,7 @@ ctx.addEventListener('message', async (event: MessageEvent) => {
     case 'get_cached_frame': {
       const { id, frame, width } = message;
 
-      if (width < 200) {
+      if (width > 200) {
         missingNotification(id, frame, width);
         return;
       }

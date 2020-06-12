@@ -95,7 +95,7 @@ function cacheStickerLoop(context: CanvasRenderingContext2D, animation: Animatio
 const cacheQuene = new TaskQueue<CacheRendererDescription>({
   process: ({ id, src, width }, complete) => {
     // worker thread caching
-    if ('OffscreenCanvas' in window) {
+    if (true || 'OffscreenCanvas' in window) {
       getCanvasWorker(onCanvasWorkerResponse)
         .postMessage({ type: 'cache_sticker', id, src, width } as CanvasWorkerRequest);
 
