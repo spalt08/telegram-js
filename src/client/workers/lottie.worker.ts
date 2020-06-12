@@ -52,6 +52,7 @@ function cacheSticker({ id, src, width }: StickerCacheTask) {
       animation.destroy();
 
       console.log('Sticker processing time', performance.now() - start, totalFrames, (performance.now() - start) / totalFrames);
+      ctx.postMessage({ type: 'cache_complete', id } as CanvasWorkerResponse);
     });
 }
 

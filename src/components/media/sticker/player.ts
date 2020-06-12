@@ -74,7 +74,6 @@ onCanvasWorkerResponse = (message: CanvasWorkerResponse) => {
         renderer.totalFrames = header.totalFrames;
       }
 
-      if (frame === renderer.totalFrames - 1) cacheQuene.complete();
       if (frame === 0) {
         if (renderer.thumb) {
           const parents = renderer.contexts.map((context) => context.canvas.parentElement);
@@ -126,7 +125,10 @@ export function useCacheRenderer(element: HTMLCanvasElement, sticker: Document.d
   let thumb: string | undefined;
   if (sticker.thumbs && sticker.thumbs.length > 0) {
     const tsize = getSize(sticker.thumbs, width, width, 'contain');
-    if (tsize) thumb = file(getPhotoLocation(sticker, tsize.type), { mime_type: 'image/webp' });
+    if (tsize) {
+      thumb = file(getPhotoLocation(sticker, tsize.type), { mime_type: 'image/webp' });
+      if (element.parentElement) element.parentElement.style.backgroundImage = `url(${thumb})`;
+    }
   }
 
   // watchVisibility(element, (isVisible) => {
