@@ -2,7 +2,7 @@ import { distinctUntilChanged, map } from 'rxjs/operators';
 import { status } from 'components/sidebar';
 import { TabItem, tabsPanel } from 'components/ui';
 import { folder as folderService } from 'services';
-import { FilterRecord } from 'services/folder/folder';
+import { FilterRecord, UnreadCount } from 'services/folder/commonTypes';
 import { div } from 'core/html';
 import dialogsList from '../dialogs_list/dialogs_list';
 import './dialogs_tabs.scss';
@@ -11,8 +11,11 @@ interface Props {
   className?: string;
 }
 
-function countToBadge(count: number): string {
-  return count ? count.toString() : '';
+function countToBadge({ count, hasUnmuted }: Readonly<UnreadCount>) {
+  return !count ? undefined : {
+    text: count.toString(),
+    highlight: hasUnmuted,
+  };
 }
 
 const allTab = {

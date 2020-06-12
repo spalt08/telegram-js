@@ -4,9 +4,14 @@ import { listen, mount, unmount } from 'core/dom';
 import { div, span, text } from 'core/html';
 import './tabs.scss';
 
+export interface TabBadge {
+  text: string;
+  highlight?: boolean;
+}
+
 export default function tabHeader(
   title: MaybeObservable<string>,
-  badge: MaybeObservable<string> = '',
+  badge: MaybeObservable<TabBadge | undefined>,
   isActive: MaybeObservable<boolean>,
   onClick: () => void,
 ) {
@@ -25,15 +30,16 @@ export default function tabHeader(
     });
   };
 
-  const setBadge = (newBadge: MaybeObservable<string>) => {
+  const setBadge = (newBadge: MaybeObservable<TabBadge | undefined>) => {
     if (releaseBadge) releaseBadge();
-    releaseBadge = useMaybeObservable(container, newBadge, (badgeString) => {
-      if (badgeString) {
+    releaseBadge = useMaybeObservable(container, newBadge, (newBadgeData) => {
+      if (newBadgeData) {
         if (!badgeEl) {
           badgeEl = span`.tabs-panel__tab_badge`();
           mount(contentEl, badgeEl);
         }
-        badgeEl.textContent = badgeString;
+        badgeEl.textContent = newBadgeData.text;
+        badgeEl.classList.toggle('-highlight', newBadgeData.highlight);
       } else if (badgeEl) {
         unmount(badgeEl);
         badgeEl = undefined;

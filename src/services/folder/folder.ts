@@ -8,18 +8,15 @@ import AuthService, { AuthStage } from '../auth';
 import DialogsService from '../dialog/dialog';
 import makeFolderIndex from './folderIndex';
 import makeFilterIndex from './filterIndex';
-import { DialogListIndex } from './commonTypes';
-
-const startLoadDelay = 500;
-
-export interface FilterRecord {
-  readonly filter: Readonly<DialogFilter>;
-  readonly index: DialogListIndex;
-}
+import { FilterRecord } from './commonTypes';
 
 export type Filters = ReadonlyMap<number, FilterRecord>;
 
+const startLoadDelay = 500;
+
 function loadFilters() {
+  // When there are no filters, the client returns not an array (meanwhile the type says that the response is always an array)
+  // todo: Fix it in mtproto and remove the `|| []` workaround
   return client.call('messages.getDialogFilters', {});
 }
 

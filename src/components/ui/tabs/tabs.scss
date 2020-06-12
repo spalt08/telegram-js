@@ -67,9 +67,14 @@
       border-radius: 10px;
       line-height: 21px;
       padding: 0 3px;
-      background: #4EA4F5;
+      background: #C4C9CC;
       color: #fff;
       margin: -5px 0 -5px 5px;
+      transition: background $transition-duration ease-out;
+
+      &.-highlight {
+        background: #4EA4F5;
+      }
     }
 
     &:hover {
