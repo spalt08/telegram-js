@@ -28,6 +28,7 @@ type CacheRendererDescription = {
   isLoaded?: boolean,
 };
 
+let time: number;
 export const cacheRenderers = new Map<string, CacheRendererDescription>();
 export const cacheFrames = new Map<string, ImageData[]>();
 
@@ -75,7 +76,7 @@ function cacheStickerLoop(context: CanvasRenderingContext2D, animation: Animatio
 
   addCachedFrame(id, frame, imageData, header);
 
-  // cache only small stickers
+  //  cache only small stickers
   if (header.width < 200) {
     getCanvasWorker(onCanvasWorkerResponse)
       .postMessage({ type: 'set_cached_frame', id, frame, data: imageData.data, header } as CanvasWorkerRequest);
@@ -89,7 +90,18 @@ function cacheStickerLoop(context: CanvasRenderingContext2D, animation: Animatio
   } else {
     animation.destroy();
     complete();
+    console.log('browser rendering', performance.now() - time, animation.totalFrames, (performance.now() - time) / animation.totalFrames);
   }
+
+  // for (let i = 0; i < header.totalFrames; i++) {
+  //   const imageData = context.getImageData(0, 0, header.width, header.width);
+  //   addCachedFrame(id, i, imageData, header);
+  //   if (i < header.totalFrames - 1) animation.renderer.renderFrame(i + 1);
+  // }
+
+  // animation.destroy();
+  // complete();
+  // console.log('browser rendering', performance.now() - time, animation.totalFrames, (performance.now() - time) / animation.totalFrames);
 }
 
 const cacheQuene = new TaskQueue<CacheRendererDescription>({
@@ -113,6 +125,7 @@ const cacheQuene = new TaskQueue<CacheRendererDescription>({
       ]).then(([player, animationData]: [LottiePlayer, any]) => {
         if (!context) return;
 
+        time = performance.now();
         const animaton = player.loadAnimation({
           animationData,
           autoplay: false,
@@ -122,6 +135,8 @@ const cacheQuene = new TaskQueue<CacheRendererDescription>({
             context,
           },
         } as any);
+        console.log('browser loading', performance.now() - time, animaton.totalFrames);
+        time = performance.now();
 
         (animaton as any).wrapper = {}; // lottie destory error fix
 

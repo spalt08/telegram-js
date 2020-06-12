@@ -1,8 +1,9 @@
 /* eslint-disable import/named, no-restricted-globals */
 import { CanvasWorkerRequest, CanvasWorkerResponse } from 'client/types';
 import { STICKER_CACHE_NAME } from 'const';
-import CanvasKitInit, { CanvasKit, SkAnimation } from 'vendor/canvas-kit/canvaskit';
+import CanvasKitInit, { CanvasKit, SkAnimation, SkCanvas } from 'vendor/canvas-kit/canvaskit';
 import { compress, decompress, Header } from './extensions/compression';
+import Lottie, { AnimationItem } from 'vendor/lottie-5.6.10';
 
 type StickerCacheTask = { id: string, src: string, width: number };
 const ctx = self as DedicatedWorkerGlobalScope;
@@ -44,19 +45,31 @@ function loadFrame(id: string, frame: number) {
     .then((raw) => raw && decompress(raw));
 }
 
+const canvases = new Map<number, SkCanvas>();
+function getCanvas(width: number) {
+  let canvas = canvases.get(width);
+  if (!canvas) {
+    const surface = canvasKit.MakeSurface(width, width);
+    canvas = surface.getCanvas();
+  }
+  return canvas;
+}
+
 /**
  * Render and manage each sticker frame via setTimeout
  */
 function cacheStickerLoop(id: string, header: Header, animation: SkAnimation) {
-  const surface = canvasKit.MakeSurface(header.width, header.width);
-  const canvas = surface.getCanvas();
+  const { width, totalFrames } = header;
+  const canvas = getCanvas(width);
   const start = performance.now();
-  for (let i = 1; i < header.totalFrames; i++) {
+
+  for (let i = 0; i < totalFrames; i++) {
     canvas.clear(0);
     animation.seekFrame(i);
-    animation.render(canvas, { fLeft: 0, fTop: 0, fRight: header.width, fBottom: header.width });
-    canvas.flush();
-    const pixels = canvas.readPixels(0, 0, header.width, header.width);
+    animation.render(canvas, { fLeft: 0, fTop: 0, fRight: width, fBottom: width });
+
+    const pixels = canvas.readPixels(0, 0, width, width);
+
     const imageData = new Uint8ClampedArray(pixels.buffer);
     ctx.postMessage({
       type: 'cached_frame',
@@ -66,12 +79,37 @@ function cacheStickerLoop(id: string, header: Header, animation: SkAnimation) {
       header,
     } as CanvasWorkerResponse);
 
-    if (header.width < 200) {
-      saveFrame(id, i, imageData, header);
-    }
+    // if (header.width < 200) {
+    //   saveFrame(id, i, imageData, header);
+    // }
   }
-  surface.delete();
-  console.log('Sticker processing time', performance.now() - start, header.totalFrames);
+  console.log('Sticker processing time', performance.now() - start, header.totalFrames, 'fps', (performance.now() - start) / totalFrames);
+  ctx.postMessage({ type: 'cache_complete', id } as CanvasWorkerResponse);
+}
+/**
+ * Render and manage each sticker frame via setTimeout
+ */
+function cacheStickerLoopLottie(id: string, header: Header, animation: AnimationItem, context: OffscreenCanvasRenderingContext2D) {
+  const { width, totalFrames } = header;
+  const start = performance.now();
+
+  for (let i = 0; i < totalFrames; i++) {
+    animation.renderer.renderFrame(i);
+    // const imageData = context.getImageData(0, 0, width, width).data;
+    const bitmap = context.canvas.transferToImageBitmap();
+    // ctx.postMessage({
+    //   type: 'cached_frame',
+    //   id,
+    //   frame: i,
+    //   data: imageData,
+    //   header,
+    // } as CanvasWorkerResponse);
+
+    // if (header.width < 200) {
+    //   saveFrame(id, i, imageData, header);
+    // }
+  }
+  console.log('Sticker processing time', performance.now() - start, header.totalFrames, 'fps', (performance.now() - start) / totalFrames);
   ctx.postMessage({ type: 'cache_complete', id } as CanvasWorkerResponse);
 }
 
@@ -100,22 +138,47 @@ function queueJob(job: () => void) {
 function cacheSticker({ id, src, width }: StickerCacheTask) {
   inited.then(() => {
     fetch(src)
-      .then((response) => response.text())
+      .then((response) => response.json())
       .then((animationData) => {
-        queueJob(() => {
-          const animation = canvasKit.MakeManagedAnimation(animationData);
-          const frameCount = animation.fps() * animation.duration();
+        // const animation = canvasKit.MakeManagedAnimation(animationData);
+        // const frameCount = animation.fps() * animation.duration();
 
-          const header = {
-            version: 1,
-            totalFrames: Math.round(frameCount),
-            frameRate: animation.fps(),
-            width,
-          };
+        // const header = {
+        //   version: 1,
+        //   totalFrames: Math.round(frameCount),
+        //   frameRate: animation.fps(),
+        //   width,
+        // };
 
-          cacheStickerLoop(id, header, animation);
-          animation.delete();
+        // cacheStickerLoop(id, header, animation);
+        // animation.delete();
+
+        const start = performance.now();
+        let canvas = new OffscreenCanvas(width, width);
+        let context = canvas.getContext('2d')!;
+        let animation = Lottie.loadAnimation({
+          animationData,
+          autoplay: false,
+          loop: false,
+          renderer: 'canvas',
+          rendererSettings: {
+            context,
+          },
         });
+        const header = {
+          version: 1,
+          totalFrames: animation.totalFrames,
+          frameRate: animation.frameRate * animation.playSpeed,
+          width,
+        };
+
+        console.log('Sticker loading time', performance.now() - start, header.totalFrames, 'fps', (performance.now() - start) / header.totalFrames);
+        cacheStickerLoopLottie(id, header, animation, context);
+
+        animation.destroy();
+        canvas = undefined;
+        context = undefined;
+        animation = undefined;
       });
   });
 }
