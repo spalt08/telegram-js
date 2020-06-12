@@ -1,12 +1,13 @@
 /* eslint-disable no-param-reassign */
-import { Document } from 'mtproto-js';
-import { getLottieWorker, getCanvasKitWorker } from 'client/context';
-import { CanvasWorkerRequest, CanvasWorkerResponse } from 'client/types';
-import { getDocumentLocation } from 'helpers/files';
+import { getCanvasKitWorker, getLottieWorker } from 'client/context';
 import { file } from 'client/media';
+import { CanvasWorkerRequest, CanvasWorkerResponse } from 'client/types';
 import { TaskQueue } from 'client/workers/extensions/quene';
-import { useOnUnmount, useOnMount } from 'core/hooks';
-import { getSize, getPhotoLocation } from 'helpers/photo';
+import { useOnMount, useOnUnmount } from 'core/hooks';
+import { canvas } from 'core/html';
+import { getDocumentLocation } from 'helpers/files';
+import { getPhotoLocation, getSize } from 'helpers/photo';
+import { Document } from 'mtproto-js';
 
 type CacheRendererDescription = {
   id: string,
@@ -24,7 +25,7 @@ type CacheRendererDescription = {
 
 export const cacheRenderers = new Map<string, CacheRendererDescription>();
 export const cacheFrameData = new Map<string, ImageData[]>();
-export const cacheFrameBitmap = new Map<string, ImageBitmap[]>();
+export const cacheFrameBitmap = new Map<string, HTMLCanvasElement[]>();
 
 let onCanvasWorkerResponse: (message: CanvasWorkerResponse) => void;
 
@@ -43,10 +44,12 @@ const cacheQuene = new TaskQueue<CacheRendererDescription>({
   },
 });
 
-function setImageBitmap(context: ImageBitmapRenderingContext, source: ImageBitmap) {
-  createImageBitmap(source).then((cloned) => {
-    context.transferFromImageBitmap(cloned);
-  });
+function setImageBitmap(context: CanvasRenderingContext2D, width: number, source: HTMLCanvasElement) {
+  try {
+    context.clearRect(0, 0, width, width);
+    context.drawImage(source, 0, 0);
+  } catch {
+  }
 }
 
 function setImageData(context: CanvasRenderingContext2D, data: ImageData) {
@@ -96,10 +99,13 @@ onCanvasWorkerResponse = (message: CanvasWorkerResponse) => {
       } else {
         let frames = cacheFrameBitmap.get(sid);
         if (!frames) cacheFrameBitmap.set(sid, frames = new Array(header.totalFrames));
-        frames[frame] = data;
+
+        const c = canvas();
+        c.getContext('bitmaprenderer')!.transferFromImageBitmap(data);
+        frames[frame] = c;
 
         if (frame === renderer.currentFrame) {
-          for (let i = 0; i < renderer.contexts.length; i++) setImageBitmap(renderer.contexts[i], data);
+          for (let i = 0; i < renderer.contexts.length; i++) setImageBitmap(renderer.contexts[i], renderer.width, data);
         }
       }
 
@@ -118,7 +124,7 @@ onCanvasWorkerResponse = (message: CanvasWorkerResponse) => {
 export function useCacheRenderer(element: HTMLCanvasElement, sticker: Document.document, width = 140) {
   const { id } = sticker;
   const src = file(getDocumentLocation(sticker, ''), { size: sticker.size, dc_id: sticker.dc_id, mime_type: sticker.mime_type });
-  const context = isSupportsOffscreen ? element.getContext('bitmaprenderer') : element.getContext('2d');
+  const context = element.getContext('2d');
   const sid = `${id}_${width}`;
 
   if (!context) return;
@@ -190,7 +196,7 @@ function renderStickerFrame(renderer: CacheRendererDescription) {
     if (!frames || !frames[nextFrame]) return;
 
     renderer.currentFrame = nextFrame;
-    for (let i = 0; i < renderer.contexts.length; i++) setImageBitmap(renderer.contexts[i], frames[nextFrame]);
+    for (let i = 0; i < renderer.contexts.length; i++) setImageBitmap(renderer.contexts[i], renderer.width, frames[nextFrame]);
   } else {
     const frames = cacheFrameData.get(renderer.sid);
     if (!frames || !frames[nextFrame]) return;
