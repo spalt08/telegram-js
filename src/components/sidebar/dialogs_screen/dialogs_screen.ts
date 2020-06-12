@@ -2,10 +2,10 @@ import { BehaviorSubject, combineLatest } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { roundButton, searchInput, contextMenu } from 'components/ui';
 import { div } from 'core/html';
-import { getInterface } from 'core/hooks';
+import { getInterface, useToBehaviorSubject } from 'core/hooks';
 import { animationFrameStart, mount, unmount } from 'core/dom';
 import * as icons from 'components/icons';
-import { globalSearch } from 'services';
+import { folder as folderService, globalSearch } from 'services';
 import dialogsTabs from '../dialogs_tabs/dialogs_tabs';
 import globalSearchResult from '../global_search_result/global_search_result';
 import './dialogs_screen.scss';
@@ -13,7 +13,7 @@ import './dialogs_screen.scss';
 type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
 export default function dialogsScreen({ onNavigate }: SidebarComponentProps) {
-  let container: HTMLElement;
+  const container = div`.dialogsScreen`();
 
   // Subscribing to this observable directly is ok because they're created in this scope
   // therefore subscribing doesn't create an external reference to this component
@@ -32,12 +32,20 @@ export default function dialogsScreen({ onNavigate }: SidebarComponentProps) {
     },
   });
 
+  // The folder index observables do a hard job on subscribe, contextMenu is unmounted when closed and useObservable subscribes when mounted.
+  // Therefore the index is subscribed once here to not do the hard job on every open.
+  const [archiveBadge] = useToBehaviorSubject(
+    container,
+    folderService.archiveIndex.unreadCount.pipe(map(({ count }) => !count ? undefined : { text: count.toString() })),
+    undefined,
+  );
+
   const buttonMenu = contextMenu({
     className: 'dialogsScreen__button-menu',
     options: [
       { icon: icons.group, label: 'New Group', onClick: () => onNavigate?.('newGroup') },
       { icon: icons.user, label: 'Contacts', onClick: () => onNavigate?.('contacts') },
-      { icon: icons.archive, label: 'Archived', onClick: () => onNavigate?.('archive') },
+      { icon: icons.archive, label: 'Archived', badge: archiveBadge, onClick: () => onNavigate?.('archive') },
       { icon: icons.savedmessages, label: 'Saved', onClick: () => onNavigate?.('contacts') },
       { icon: icons.settings, label: 'Settings', onClick: () => onNavigate?.('settings') },
       { icon: icons.help, label: 'Help', onClick: () => onNavigate?.('contacts') },
@@ -114,20 +122,20 @@ export default function dialogsScreen({ onNavigate }: SidebarComponentProps) {
     }
   };
 
-  return (
-    container = div`.dialogsScreen`(
-      div`.dialogsScreen__head`(
-        roundButton(
-          {
-            className: 'dialogsScreen__head_button',
-            onClick: handleButtonClick,
-          },
-          icons.menuAndBack({ state: isSearchActive.pipe(map((isActive) => isActive ? 'back' : 'menu')) }),
-        ),
-        searchInputEl,
+  mount(container, (
+    div`.dialogsScreen__head`(
+      roundButton(
+        {
+          className: 'dialogsScreen__head_button',
+          onClick: handleButtonClick,
+        },
+        icons.menuAndBack({ state: isSearchActive.pipe(map((isActive) => isActive ? 'back' : 'menu')) }),
       ),
-      div`.dialogsScreen__body`(dialogsLayer),
-      writeButton,
+      searchInputEl,
     )
-  );
+  ));
+  mount(container, div`.dialogsScreen__body`(dialogsLayer));
+  mount(container, writeButton);
+
+  return container;
 }

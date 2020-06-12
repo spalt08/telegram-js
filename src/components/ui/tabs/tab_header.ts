@@ -39,7 +39,7 @@ export default function tabHeader(
           mount(contentEl, badgeEl);
         }
         badgeEl.textContent = newBadgeData.text;
-        badgeEl.classList.toggle('-highlight', newBadgeData.highlight);
+        badgeEl.classList.toggle('-highlight', !!newBadgeData.highlight);
       } else if (badgeEl) {
         unmount(badgeEl);
         badgeEl = undefined;
