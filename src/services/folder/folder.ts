@@ -15,8 +15,6 @@ export type Filters = ReadonlyMap<number, FilterRecord>;
 const startLoadDelay = 500;
 
 function loadFilters() {
-  // When there are no filters, the client returns not an array (meanwhile the type says that the response is always an array)
-  // todo: Fix it in mtproto and remove the `|| []` workaround
   return client.call('messages.getDialogFilters', {});
 }
 
