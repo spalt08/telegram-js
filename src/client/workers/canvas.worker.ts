@@ -1,7 +1,7 @@
 /* eslint-disable import/named, no-restricted-globals */
 import { CanvasWorkerRequest, CanvasWorkerResponse } from 'client/types';
 import { STICKER_CACHE_NAME } from 'const';
-import CanvasKitInit, { CanvasKit, SkAnimation } from 'vendor/canvas-kit/canvaskit';
+import CanvasKitInit, { CanvasKit, SkAnimation, SkCanvas } from 'vendor/canvas-kit/canvaskit';
 import { compress, decompress, Header } from './extensions/compression';
 
 type StickerCacheTask = { id: string, src: string, width: number };
@@ -44,34 +44,45 @@ function loadFrame(id: string, frame: number) {
     .then((raw) => raw && decompress(raw));
 }
 
+const canvases = new Map<number, {
+  canvasGl: OffscreenCanvas,
+  sc: SkCanvas }>();
+
 /**
  * Render and manage each sticker frame via setTimeout
  */
 function cacheStickerLoop(id: string, header: Header, animation: SkAnimation) {
-  const surface = canvasKit.MakeSurface(header.width, header.width);
-  const canvas = surface.getCanvas();
-  const start = performance.now();
-  for (let i = 1; i < header.totalFrames; i++) {
-    canvas.clear(0);
-    animation.seekFrame(i);
-    animation.render(canvas, { fLeft: 0, fTop: 0, fRight: header.width, fBottom: header.width });
-    canvas.flush();
-    const pixels = canvas.readPixels(0, 0, header.width, header.width);
-    const imageData = new Uint8ClampedArray(pixels.buffer);
-    ctx.postMessage({
-      type: 'cached_frame',
-      id,
-      frame: i,
-      data: imageData,
-      header,
-    } as CanvasWorkerResponse);
-
-    if (header.width < 200) {
-      saveFrame(id, i, imageData, header);
-    }
+  let cc = canvases.get(header.width);
+  if (!cc) {
+    // eslint-disable-next-line compat/compat
+    const canvasGl = new OffscreenCanvas(header.width, header.width) as any;
+    canvasGl.tagName = 'CANVAS';
+    const surface = canvasKit.MakeCanvasSurface(canvasGl);
+    const canvas = surface.getCanvas();
+    cc = { canvasGl, sc: canvas };
+    canvases.set(header.width, cc);
   }
-  surface.delete();
-  console.log('Sticker processing time', performance.now() - start, header.totalFrames);
+  const cv = cc.sc;
+  const start = performance.now();
+  for (let i = 0; i < header.totalFrames; i++) {
+    cv.clear(0);
+    animation.seekFrame(i);
+    animation.render(cv, { fLeft: 0, fTop: 0, fRight: header.width, fBottom: header.width });
+    cv.flush();
+    // ctx.postMessage({
+    //   type: 'cached_frame',
+    //   id,
+    //   frame: i,
+    //   data: cc.canvasGl.transferToImageBitmap(),
+    //   header,
+    // } as CanvasWorkerResponse);
+
+    // if (header.width < 200) {
+    //   saveFrame(id, i, imageData.data, header);
+    // }
+  }
+  const time = performance.now() - start;
+  console.log('Sticker processing time', time, header.totalFrames, 'fps', time / header.totalFrames);
   ctx.postMessage({ type: 'cache_complete', id } as CanvasWorkerResponse);
 }
 
