@@ -37,10 +37,10 @@ export default function dialogPreview(id: string, pinned: Observable<boolean> = 
       ),
     ])
   );
-  const container = div`.dialog__wrapper`(
+  const container = (
     div`.dialog`(
       clickable,
-    ),
+    )
   );
 
   function leaveOnlyOneBadge() {
@@ -112,8 +112,6 @@ export default function dialogPreview(id: string, pinned: Observable<boolean> = 
   }
 
   function applyPinUI(isPinned: boolean) {
-    container.classList.toggle('-pinned', isPinned);
-
     // Only this function mounts and unmounts the pin
     if (isPinned) {
       if (!pin.parentNode) {
@@ -139,7 +137,7 @@ export default function dialogPreview(id: string, pinned: Observable<boolean> = 
     clickable.classList.toggle('-selected', selected);
   });
 
-  listen(clickable, 'click', () => message.selectPeer(peer));
+  listen(clickable, 'mousedown', () => message.selectPeer(peer));
 
   return container;
 }
