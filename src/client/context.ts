@@ -3,8 +3,9 @@ import runtime from 'serviceworker-webpack-plugin/lib/runtime';
 import { SERVICE_WORKER_SCOPE } from 'const';
 import EncoderWorker from 'worker-loader!./workers/encoder.worker';
 import CanvasWorker from 'worker-loader!./workers/canvas.worker';
+import LottieWorker from 'worker-loader!./workers/lottie.worker';
 import { ServiceRequestID, ServiceRequestCallback, WindowMessage, NotificationType, ServiceNotificationCallback, TaskPayloadMap,
-  RequestType, RequestPayloadMap, ServiceRequest, ServiceMessage, ServiceTask, ServiceNotification, CanvasWorkerResponse } from './types';
+  RequestType, RequestPayloadMap, ServiceRequest, ServiceMessage, ServiceTask, CanvasWorkerResponse } from './types';
 
 // Request resolvers
 const requests: Record<ServiceRequestID, ServiceRequestCallback<any>> = {};
@@ -64,6 +65,21 @@ export function getCanvasWorker(onMessage: (message: CanvasWorkerResponse) => vo
   });
 
   return canvasWorker;
+}
+
+/**
+ * Offscreen Rendering for Chrome
+ */
+let lottieWorker: LottieWorker;
+export function getLottieWorker(onMessage: (message: CanvasWorkerResponse) => void) {
+  if (lottieWorker) return lottieWorker;
+
+  lottieWorker = new LottieWorker();
+  lottieWorker.addEventListener('message', (event) => {
+    onMessage(event.data as CanvasWorkerResponse);
+  });
+
+  return lottieWorker;
 }
 
 /**

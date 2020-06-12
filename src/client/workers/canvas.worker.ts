@@ -68,7 +68,7 @@ function cacheStickerLoop(id: string, header: Header, animation: SkAnimation) {
     cv.clear(0);
     animation.seekFrame(i);
     animation.render(cv, { fLeft: 0, fTop: 0, fRight: header.width, fBottom: header.width });
-    cv.flush();
+    const bitmap = (cc.canvasGl as OffscreenCanvas).transferToImageBitmap();
     // ctx.postMessage({
     //   type: 'cached_frame',
     //   id,

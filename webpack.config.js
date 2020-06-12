@@ -10,7 +10,6 @@ const CssoWebpackPlugin = require('csso-webpack-plugin').default;
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const ServiceWorkerWebpackPlugin = require('serviceworker-webpack-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
 
 const sourceDirectory = 'src';
 const destinationDirectory = 'dist';
@@ -188,11 +187,6 @@ module.exports = (env, argv) => {
           analyzerPort: 3002,
         }),
       ] : []),
-      new CopyPlugin({
-        patterns: [
-          { from: 'src/vendor/canvas-kit/canvaskit.wasm' },
-        ],
-      }),
     ],
   };
 };

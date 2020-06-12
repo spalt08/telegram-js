@@ -197,7 +197,7 @@ export type CanvasWorkerResponse = {
   type: 'cached_frame',
   id: string,
   frame: number,
-  data: Uint8ClampedArray,
+  data: Uint8ClampedArray | ImageBitmap,
   header: {
     totalFrames: number,
     frameRate: number,
