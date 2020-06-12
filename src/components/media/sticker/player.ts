@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { Document } from 'mtproto-js';
-import { getLottieWorker } from 'client/context';
+import { getLottieWorker, getCanvasKitWorker } from 'client/context';
 import { CanvasWorkerRequest, CanvasWorkerResponse } from 'client/types';
 import { getDocumentLocation } from 'helpers/files';
 import { file } from 'client/media';
@@ -19,7 +19,7 @@ type CacheRendererDescription = {
   totalFrames: number,
   width: number,
   lastLoadedFrame?: number,
-  contexts: ImageBitmapRenderingContext[],
+  contexts: RenderingContext[],
 };
 
 export const cacheRenderers = new Map<string, CacheRendererDescription>();
@@ -34,6 +34,9 @@ const cacheQuene = new TaskQueue<CacheRendererDescription>({
     if ('OffscreenCanvas' in window) {
       getLottieWorker(onCanvasWorkerResponse)
         .postMessage({ type: 'cache_sticker', id, src, width } as CanvasWorkerRequest);
+    } else {
+      getCanvasKitWorker(onCanvasWorkerResponse)
+        .postMessage({ type: 'cache_sticker', id, src, width } as CanvasWorkerRequest);
     }
   },
 });
@@ -42,6 +45,10 @@ function setImageBitmap(context: ImageBitmapRenderingContext, source: ImageBitma
   createImageBitmap(source).then((cloned) => {
     context.transferFromImageBitmap(cloned);
   });
+}
+
+function setImageData(context: CanvasRenderingContext2D, data: ImageData) {
+  context.putImageData(data, 0, 0);
 }
 
 onCanvasWorkerResponse = (message: CanvasWorkerResponse) => {
@@ -83,7 +90,7 @@ onCanvasWorkerResponse = (message: CanvasWorkerResponse) => {
         frames[frame] = imageData;
 
         if (frame === renderer.currentFrame) {
-          for (let i = 0; i < renderer.contexts.length; i++) renderer.contexts[i].putImageData(imageData, 0, 0);
+          for (let i = 0; i < renderer.contexts.length; i++) setImageData(renderer.contexts[i], imageData);
         }
       } else {
         let frames = cacheFrameBitmap.get(sid);
@@ -110,7 +117,7 @@ onCanvasWorkerResponse = (message: CanvasWorkerResponse) => {
 export function useCacheRenderer(element: HTMLCanvasElement, sticker: Document.document, width = 140) {
   const { id } = sticker;
   const src = file(getDocumentLocation(sticker, ''), { size: sticker.size, dc_id: sticker.dc_id, mime_type: sticker.mime_type });
-  const context = element.getContext('bitmaprenderer');
+  const context = 'OffscreenCanvas' in window ? element.getContext('bitmaprenderer') : element.getContext('2d');
   const sid = `${id}_${width}`;
 
   if (!context) return;
@@ -174,11 +181,19 @@ function renderStickerFrame(renderer: CacheRendererDescription) {
   renderer.currentFrameRaw += (nowTime - prevTime) * renderer.frameMult;
   const nextFrame = Math.floor(renderer.currentFrameRaw) % renderer.totalFrames;
 
-  const frames = cacheFrameBitmap.get(renderer.sid);
-  if (!frames || !frames[nextFrame]) return;
+  if ('OffscreenCanvas' in window) {
+    const frames = cacheFrameBitmap.get(renderer.sid);
+    if (!frames || !frames[nextFrame]) return;
 
-  renderer.currentFrame = nextFrame;
-  for (let i = 0; i < renderer.contexts.length; i++) setImageBitmap(renderer.contexts[i], frames[nextFrame]);
+    renderer.currentFrame = nextFrame;
+    for (let i = 0; i < renderer.contexts.length; i++) setImageBitmap(renderer.contexts[i], frames[nextFrame]);
+  } else {
+    const frames = cacheFrameData.get(renderer.sid);
+    if (!frames || !frames[nextFrame]) return;
+
+    renderer.currentFrame = nextFrame;
+    for (let i = 0; i < renderer.contexts.length; i++) setImageData(renderer.contexts[i], frames[nextFrame]);
+  }
 }
 
 export function handleStickerRendering(time: number) {
