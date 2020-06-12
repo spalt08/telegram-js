@@ -1,35 +1,23 @@
 /* eslint-disable import/named, no-restricted-globals */
 import { CanvasWorkerRequest, CanvasWorkerResponse } from 'client/types';
 import { STICKER_CACHE_NAME } from 'const';
-import Module, { lengthBytesUTF8, stringToUTF8 } from 'vendor/rlottie/rlottie-wasm';
+import CanvasKitInit, { CanvasKit, SkAnimation } from 'vendor/canvas-kit/canvaskit';
 import { compress, decompress, Header } from './extensions/compression';
 
 type StickerCacheTask = { id: string, src: string, width: number };
-
 const ctx = self as DedicatedWorkerGlobalScope;
 const cachePromise = caches.open(STICKER_CACHE_NAME);
-const obj: Record<string, any> = {};
 
-let fireInit: () => void;
+let canvasKit: CanvasKit;
+let fireInited: () => void;
 const inited = new Promise((r) => {
-  fireInit = r;
+  fireInited = r;
 });
 
-Module.onRuntimeInitialized = () => {
-  obj.Api = {
-    init: Module.cwrap('lottie_init', '', []),
-    destroy: Module.cwrap('lottie_destroy', '', ['number']),
-    resize: Module.cwrap('lottie_resize', '', ['number', 'number', 'number']),
-    buffer: Module.cwrap('lottie_buffer', 'number', ['number']),
-    frameCount: Module.cwrap('lottie_frame_count', 'number', ['number']),
-    render: Module.cwrap('lottie_render', '', ['number', 'number']),
-    loadFromData: Module.cwrap('lottie_load_from_data', 'number', ['number', 'number']),
-    malloc: Module.cwrap('malloc', 'number', ['number']),
-    free: Module.cwrap('free', 'number', ['number']),
-  };
-  obj.lottieHandle = obj.Api.init();
-  fireInit();
-};
+CanvasKitInit().then((kit) => {
+  canvasKit = kit;
+  fireInited();
+});
 
 /**
  * Compress RGBA pixels and save to persistent cache
@@ -59,14 +47,17 @@ function loadFrame(id: string, frame: number) {
 /**
  * Render and manage each sticker frame via setTimeout
  */
-function cacheStickerLoop(id: string, header: Header) {
+function cacheStickerLoop(id: string, header: Header, animation: SkAnimation) {
+  const surface = canvasKit.MakeSurface(header.width, header.width);
+  const canvas = surface.getCanvas();
   const start = performance.now();
-  obj.Api.resize(obj.lottieHandle, header.width, header.width);
-  for (let i = 0; i < header.totalFrames; i++) {
-    obj.Api.render(obj.lottieHandle, i);
-    const bufferPointer = obj.Api.buffer(obj.lottieHandle);
-    const imageData = new Uint8ClampedArray(Module.HEAP8.buffer, bufferPointer, header.width * header.width * 4);
-
+  for (let i = 1; i < header.totalFrames; i++) {
+    canvas.clear(0);
+    animation.seekFrame(i);
+    animation.render(canvas, { fLeft: 0, fTop: 0, fRight: header.width, fBottom: header.width });
+    canvas.flush();
+    const pixels = canvas.readPixels(0, 0, header.width, header.width);
+    const imageData = new Uint8ClampedArray(pixels.buffer);
     ctx.postMessage({
       type: 'cached_frame',
       id,
@@ -79,7 +70,8 @@ function cacheStickerLoop(id: string, header: Header) {
       saveFrame(id, i, imageData, header);
     }
   }
-  console.error('Done', performance.now() - start, header.totalFrames);
+  surface.delete();
+  console.log('Sticker processing time', performance.now() - start, header.totalFrames);
   ctx.postMessage({ type: 'cache_complete', id } as CanvasWorkerResponse);
 }
 
@@ -111,22 +103,18 @@ function cacheSticker({ id, src, width }: StickerCacheTask) {
       .then((response) => response.text())
       .then((animationData) => {
         queueJob(() => {
-          const lengthBytes = lengthBytesUTF8(animationData) + 1;
-          const stringOnWasmHeap = obj.Api.malloc(lengthBytes);
-          stringToUTF8(animationData, stringOnWasmHeap, lengthBytes + 1);
-
-          obj.Api.loadFromData(obj.lottieHandle, stringOnWasmHeap);
-          const frameCount = obj.Api.frameCount(obj.lottieHandle);
+          const animation = canvasKit.MakeManagedAnimation(animationData);
+          const frameCount = animation.fps() * animation.duration();
 
           const header = {
             version: 1,
-            totalFrames: frameCount,
-            frameRate: 60,
+            totalFrames: Math.round(frameCount),
+            frameRate: animation.fps(),
             width,
           };
 
-          cacheStickerLoop(id, header);
-          obj.Api.free(stringOnWasmHeap);
+          cacheStickerLoop(id, header, animation);
+          animation.delete();
         });
       });
   });

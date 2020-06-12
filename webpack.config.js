@@ -140,6 +140,10 @@ module.exports = (env, argv) => {
       publicPath: '/',
     },
 
+    node: {
+      fs: 'empty', // canvas-kit invokes `require("fs")` which is should be ignored.
+    },
+
     plugins: [
       new ServiceWorkerWebpackPlugin({
         entry: path.join(__dirname, 'src/client/workers/service.ts'),
@@ -186,7 +190,7 @@ module.exports = (env, argv) => {
       ] : []),
       new CopyPlugin({
         patterns: [
-          { from: 'src/vendor/rlottie/rlottie-wasm.wasm' },
+          { from: 'src/vendor/canvas-kit/canvaskit.wasm' },
         ],
       }),
     ],
