@@ -15,6 +15,7 @@ export function isMounted(element: Node): boolean {
   return element.isConnected;
 }
 
+// Exported only for Storybook
 export function triggerMountRecursive(element: Node) {
   // The parent is triggered as mounted means that the children are triggered too (if they use mount/unmount as expected)
   if (isMountTriggered(element) === true) {
@@ -32,7 +33,8 @@ export function triggerMountRecursive(element: Node) {
   }
 }
 
-function triggerUnmountRecursive(element: Node) {
+// Exported only for Storybook
+export function triggerUnmountRecursive(element: Node) {
   // The parent is triggered as unmounted means that the children are triggered too (if they use mount/unmount as expected)
   if (isMountTriggered(element) === false) {
     return;

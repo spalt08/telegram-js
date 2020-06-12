@@ -41,12 +41,12 @@ export default function info({ onBack }: SidebarComponentProps) {
       ],
     }),
     peer ? infoPanel(peer) : nothing,
-    peer ? tabsPanel({ className: 'infoSidebar__panels', headerAlign: 'space-between' }, {
+    peer ? tabsPanel({ className: 'infoSidebar__panels', headerAlign: 'space-between' }, [
       // to do: members panel,
-      Media: mediaPanel(peer),
-      Docs: docsPanel(peer),
-      Links: linksPanel(peer),
-    }) : nothing,
+      { key: 'media', title: 'Media', content: () => mediaPanel(peer) },
+      { key: 'docs', title: 'Docs', content: () => docsPanel(peer) },
+      { key: 'links', title: 'Links', content: () => linksPanel(peer) },
+    ]) : nothing,
   );
 
   // todo prevent scrolling shared media

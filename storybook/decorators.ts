@@ -2,7 +2,7 @@
 
 import { StoryContext, StoryFn } from '@storybook/addons';
 import { number, select } from '@storybook/addon-knobs';
-import { triggerMountRecursive, unmount, mount } from 'core/dom';
+import { triggerMountRecursive, unmount, mount, triggerUnmountRecursive } from 'core/dom';
 import { div } from 'core/html';
 import chamomile from 'assets/chamomile-blurred.jpg';
 import popup from 'components/popup/popup';
@@ -16,7 +16,7 @@ import 'styles/global.scss';
 
 export function withMountTrigger(getStory: StoryFn<Node>, context: StoryContext) {
   const element = getStory(context);
-
+  triggerUnmountRecursive(element);
   triggerMountRecursive(element);
   return element;
 }

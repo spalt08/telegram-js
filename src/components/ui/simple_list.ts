@@ -77,5 +77,8 @@ export default function simpleList<TItem, TNode extends Node>({
     getItemNode(item: TItem): TNode | undefined {
       return itemNodes.get(getItemKey(item));
     },
+    getKeyNode(key: unknown): TNode | undefined {
+      return itemNodes.get(key);
+    },
   });
 }
