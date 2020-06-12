@@ -28,10 +28,12 @@ export const cacheFrameBitmap = new Map<string, ImageBitmap[]>();
 
 let onCanvasWorkerResponse: (message: CanvasWorkerResponse) => void;
 
+const isSupportsOffscreen = false; // 'OffscreenCanvas' in window;
+
 const cacheQuene = new TaskQueue<CacheRendererDescription>({
   process: ({ id, src, width }) => {
     // worker thread caching
-    if ('OffscreenCanvas' in window) {
+    if (isSupportsOffscreen) {
       getLottieWorker(onCanvasWorkerResponse)
         .postMessage({ type: 'cache_sticker', id, src, width } as CanvasWorkerRequest);
     } else {
@@ -116,7 +118,7 @@ onCanvasWorkerResponse = (message: CanvasWorkerResponse) => {
 export function useCacheRenderer(element: HTMLCanvasElement, sticker: Document.document, width = 140) {
   const { id } = sticker;
   const src = file(getDocumentLocation(sticker, ''), { size: sticker.size, dc_id: sticker.dc_id, mime_type: sticker.mime_type });
-  const context = 'OffscreenCanvas' in window ? element.getContext('bitmaprenderer') : element.getContext('2d');
+  const context = isSupportsOffscreen ? element.getContext('bitmaprenderer') : element.getContext('2d');
   const sid = `${id}_${width}`;
 
   if (!context) return;
@@ -162,7 +164,7 @@ export function useCacheRenderer(element: HTMLCanvasElement, sticker: Document.d
       cacheRenderers.delete(sid);
       cacheFrameData.delete(sid);
 
-      const bitmaps = cacheFrameBitmap.get(sid)
+      const bitmaps = cacheFrameBitmap.get(sid);
       if (bitmaps) for (let i = 0; i < bitmaps.length; i++) bitmaps[i].close();
     } else {
       const contextIndex = renderer.contexts.indexOf(context);
@@ -183,7 +185,7 @@ function renderStickerFrame(renderer: CacheRendererDescription) {
   renderer.currentFrameRaw += (nowTime - prevTime) * renderer.frameMult;
   const nextFrame = Math.floor(renderer.currentFrameRaw) % renderer.totalFrames;
 
-  if ('OffscreenCanvas' in window) {
+  if (isSupportsOffscreen) {
     const frames = cacheFrameBitmap.get(renderer.sid);
     if (!frames || !frames[nextFrame]) return;
 
