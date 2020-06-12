@@ -10,6 +10,7 @@ const CssoWebpackPlugin = require('csso-webpack-plugin').default;
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const ServiceWorkerWebpackPlugin = require('serviceworker-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 
 const sourceDirectory = 'src';
 const destinationDirectory = 'dist';
@@ -80,7 +81,7 @@ module.exports = (env, argv) => {
               loader: 'raw-loader',
             },
             {
-              test: /\.(svg|png|jpe?g|gif|woff|woff2|otf|ttf|eot|tgs|webp)$/,
+              test: /\.(svg|png|jpe?g|gif|woff|woff2|otf|ttf|eot|tgs|webp|wasm)$/,
               loader: 'file-loader',
               options: {
                 name: 'assets/[contenthash].[ext]',
@@ -183,6 +184,11 @@ module.exports = (env, argv) => {
           analyzerPort: 3002,
         }),
       ] : []),
+      new CopyPlugin({
+        patterns: [
+          { from: 'src/vendor/rlottie/rlottie-wasm.wasm' },
+        ],
+      }),
     ],
   };
 };

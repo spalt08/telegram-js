@@ -11,6 +11,7 @@ interface FileReaderSync {
 // };
 
 declare module 'vendor/libwebp-0.2.0'
+declare module 'vendor/rlottie/rlottie-wasm'
 declare module 'mp4box'
 declare module 'serviceworker-webpack-plugin/lib/runtime'
 
@@ -76,8 +77,8 @@ declare module 'code-points' {
 }
 
 declare module 'lottie-web/build/player/lottie_canvas' {
-  export { default } from 'lottie-web';
   export * from 'lottie-web';
+  export { default } from 'lottie-web';
 }
 
 declare module 'worker-loader!*' {
