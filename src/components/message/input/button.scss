@@ -3,13 +3,13 @@
   display: flex;
   flex: none;
   width: 60PX;
-  transition: .2s ease-out;
+  transition: width .2s ease-out;
   will-change: width;
   justify-content: flex-end;
+  z-index: 1;
 
   &.-recording {
     width: 120PX;
-    transition: .2s ease-out;
   }
 
   &__button {
@@ -37,7 +37,7 @@
 
     &:active {
       transform: scale(0.9);
-    } 
+    }
 
     &.-cancel {
       opacity: 1;
@@ -94,7 +94,7 @@
   &__tooltip {
     position: absolute;
     right: 0;
-    top: -40px; 
+    top: -40px;
     width: auto;
     background-color: rgba(0, 0, 0, 0.5);
     color: #FFFFFF;
