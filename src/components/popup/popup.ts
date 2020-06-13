@@ -1,13 +1,12 @@
+import { mount, unmount } from 'core/dom';
+import { useInterface, useObservable } from 'core/hooks';
 import { div } from 'core/html';
 import { main } from 'services';
-import { useObservable, useInterface } from 'core/hooks';
-import { unmount, mount } from 'core/dom';
 import photoPopup from './photo/photo';
+import './popup.scss';
 import SendMediaPopup from './send_media/send_media';
 import stickerSetPopup from './sticker_set/sticker_set';
 import videoPopup from './video/video';
-import pollResultsPopup from './poll_results/poll_results';
-import './popup.scss';
 
 /**
  * Generic handler for popups
@@ -46,12 +45,6 @@ export default function popup() {
         wrapper.classList.add('opened');
         mount(wrapper, element = stickerSetPopup(main.popupCtx));
         break;
-
-      case 'pollResults': {
-        wrapper.classList.add('opened');
-        mount(wrapper, element = pollResultsPopup(main.popupCtx));
-        break;
-      }
 
       default:
         throw new Error('Unknown popup');

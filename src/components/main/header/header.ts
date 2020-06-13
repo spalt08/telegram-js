@@ -1,14 +1,14 @@
-import { message, main } from 'services';
-import { useObservable, getInterface } from 'core/hooks';
-import { div } from 'core/html';
-import { unmountChildren, mount, listen } from 'core/dom';
-import { profileAvatar, profileTitle } from 'components/profile';
-import * as icons from 'components/icons';
-import { peerFullStatus, roundButton, typingIndicator, ripple, contextMenu } from 'components/ui';
 import { pinnedMessageCache } from 'cache';
-import { peerToId } from 'helpers/api';
-import './header.scss';
+import * as icons from 'components/icons';
 import messageQuote from 'components/message/quote';
+import { profileAvatar, profileTitle } from 'components/profile';
+import { contextMenu, peerFullStatus, ripple, roundButton, typingIndicator } from 'components/ui';
+import { listen, mount, unmountChildren } from 'core/dom';
+import { getInterface, useObservable } from 'core/hooks';
+import { div } from 'core/html';
+import { peerToId } from 'helpers/api';
+import { main, message } from 'services';
+import './header.scss';
 
 type Props = {
   onBackToContacts: () => void,
@@ -41,7 +41,7 @@ export default function header({ onBackToContacts }: Props) {
       ),
     );
 
-    listen(profile, 'click', () => main.openSidebar('info'));
+    listen(profile, 'click', () => main.openSidebar('info', peer));
     mount(container, profile);
 
     const pinnedMessage = div`.header__pinned`();
@@ -64,8 +64,8 @@ export default function header({ onBackToContacts }: Props) {
     const headerContextMenu = contextMenu({
       className: 'header__context-menu',
       options: [
-        { icon: icons.info, label: 'Info', onClick: () => main.openSidebar('info') },
-        { icon: icons.document, label: 'Shared Media', onClick: () => main.openSidebar('sharedMedia') },
+        { icon: icons.info, label: 'Info', onClick: () => main.openSidebar('info', peer) },
+        { icon: icons.document, label: 'Shared Media', onClick: () => main.openSidebar('sharedMedia', peer) },
         { icon: icons.mute, label: 'Mute', onClick: () => {} },
         { icon: icons.archive, label: 'Archive', onClick: () => {} },
         { icon: icons.del, label: 'Delete and Leave', onClick: () => {} },
@@ -76,7 +76,7 @@ export default function header({ onBackToContacts }: Props) {
       roundButton({
         className: 'header__search',
         onClick: () => {
-          main.openSidebar('messageSearch');
+          main.openSidebar('messageSearch', peer);
         },
       }, icons.search()),
       roundButton({

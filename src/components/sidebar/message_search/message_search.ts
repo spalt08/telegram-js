@@ -1,20 +1,21 @@
-import { map } from 'rxjs/operators';
+import * as icons from 'components/icons';
+import { foundMessage } from 'components/sidebar';
+import { roundButton, searchInput, VirtualizedList } from 'components/ui';
+import { mount } from 'core/dom';
+import { useToBehaviorSubject } from 'core/hooks';
 import { div, text } from 'core/html';
+import { peerMessageToId } from 'helpers/api';
+import { pluralize } from 'helpers/other';
+import { Peer } from 'mtproto-js';
+import { map } from 'rxjs/operators';
 import { message, messageSearch } from 'services';
 import { isSearchRequestEmpty } from 'services/message_search/message_search_session';
-import * as icons from 'components/icons';
-import { roundButton, searchInput, VirtualizedList } from 'components/ui';
-import { useToBehaviorSubject } from 'core/hooks';
-import { mount } from 'core/dom';
-import { peerMessageToId } from 'helpers/api';
-import { foundMessage } from 'components/sidebar';
-import { pluralize } from 'helpers/other';
 import './message_search.scss';
 
 type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
-export default function messageSearchSidebar({ onBack }: SidebarComponentProps) {
-  if (message.activePeer.value) messageSearch.setPeer(message.activePeer.value);
+export default function messageSearchSidebar({ onBack }: SidebarComponentProps, peer: Peer) {
+  messageSearch.setPeer(peer);
 
   const rootEl = div`.messagesSearch`();
   const [resultIdsSubject] = useToBehaviorSubject(

@@ -7,8 +7,7 @@
 
   @include respond-to(widescreen) {
     width: 1680px;
-    border-left: 1px solid #EDEEF0;
-    border-right: 1px solid #EDEEF0;
+    border-left: 1px solid $common-border-color;
     margin: 0 auto;
   }
 

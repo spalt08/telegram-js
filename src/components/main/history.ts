@@ -1,23 +1,23 @@
 import binarySearch from 'binary-search';
+import { chatCache, dialogCache, messageCache } from 'cache';
+import * as icons from 'components/icons';
+import messageInput from 'components/message/input/input';
+import message, { MessageSibling } from 'components/message/message';
+import { sectionSpinner, VirtualizedList } from 'components/ui';
+import { animationFrameStart, mount, unmount } from 'core/dom';
+import { useObservable } from 'core/hooks';
+import { button, div, text } from 'core/html';
+import { compareSamePeerMessageIds, peerMessageToId, peerToId } from 'helpers/api';
+import { isiOS } from 'helpers/browser';
+import { getDayOffset } from 'helpers/message';
 import { Peer } from 'mtproto-js';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
-import { button, div, text } from 'core/html';
-import { mount, unmount, animationFrameStart } from 'core/dom';
-import { useObservable } from 'core/hooks';
-import { message as service, dialog as dialogService } from 'services';
+import { dialog as dialogService, message as service } from 'services';
 import { Direction as MessageDirection } from 'services/message/types';
-import message, { MessageSibling } from 'components/message/message';
-import { sectionSpinner, VirtualizedList } from 'components/ui';
-import * as icons from 'components/icons';
-import messageInput from 'components/message/input/input';
-import { compareSamePeerMessageIds, peerMessageToId, peerToId } from 'helpers/api';
-import { getDayOffset } from 'helpers/message';
-import { isiOS } from 'helpers/browser';
-import { messageCache, dialogCache, chatCache } from 'cache';
 import header from './header/header';
-import historyDay from './history_day/history_day';
 import './history.scss';
+import historyDay from './history_day/history_day';
 
 type Props = {
   onBackToContacts: () => void,
@@ -83,6 +83,7 @@ function prepareIdsList(peer: Peer, messageIds: Readonly<number[]>): string[] {
 
 export default function history({ onBackToContacts }: Props) {
   const welcome = div`.history__welcome`(div`.history__welcome-text`(text('Select a chat to start messaging')));
+
   const container = div`.history`(welcome);
   const showDownButton = new BehaviorSubject(false);
 

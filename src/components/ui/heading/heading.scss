@@ -1,10 +1,13 @@
+@import '~styles/variables.scss';
+
 .sidebarHeading {
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 60px;
-  padding: 0 0 0 20px;
+  height: $main-header-height;
+  padding: 0 0 0 12px;
+  flex-shrink: 0;
 
   & h3 {
     flex: 1 50%;
@@ -15,7 +18,7 @@
   }
 
   &__icon-left {
-    margin-right: 12px;
+    margin-right: 20px;
     flex-shrink: 0;
   }
 

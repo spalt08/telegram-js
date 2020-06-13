@@ -1,7 +1,6 @@
 import { ripple } from 'components/ui';
 import { getInterface, useInterface } from 'core/hooks';
 import { div, text } from 'core/html';
-import { pluralize } from 'helpers/other';
 import './poll_footer.scss';
 
 export enum VoteButtonState {
@@ -13,14 +12,7 @@ const voteText = 'VOTE';
 const viewResultsText = 'VIEW RESULTS';
 
 function pluralizeVoters(quiz: boolean, voters: number) {
-  if (quiz) {
-    return voters > 0
-      ? `${voters} ${pluralize(voters, 'answer', 'answers')}`
-      : 'No answers';
-  }
-  return voters > 0
-    ? `${voters} ${pluralize(voters, 'vote', 'votes')}`
-    : 'No votes';
+  return `${voters > 0 ? voters : 'No one'} ${quiz ? 'answered' : 'voted'}`;
 }
 
 function formatStateText(state: VoteButtonState, voters: number, quiz: boolean, publicVoters: boolean, multipleChoice: boolean) {

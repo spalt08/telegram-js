@@ -1,10 +1,10 @@
+import * as icons from 'components/icons';
+import { contextMenu, roundButton, searchInput } from 'components/ui';
+import { animationFrameStart, mount, unmount } from 'core/dom';
+import { getInterface, useToBehaviorSubject } from 'core/hooks';
+import { div } from 'core/html';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
-import { roundButton, searchInput, contextMenu } from 'components/ui';
-import { div } from 'core/html';
-import { getInterface, useToBehaviorSubject } from 'core/hooks';
-import { animationFrameStart, mount, unmount } from 'core/dom';
-import * as icons from 'components/icons';
 import { folder as folderService, globalSearch } from 'services';
 import { UnreadCount } from 'services/folder/commonTypes';
 import dialogsTabs from '../dialogs_tabs/dialogs_tabs';
@@ -21,7 +21,7 @@ export default function dialogsScreen({ onNavigate }: SidebarComponentProps) {
   const isSearchActive = new BehaviorSubject(false);
 
   const searchInputEl = searchInput({
-    placeholder: 'Search',
+    placeholder: 'Telegram Search',
     className: 'dialogsScreen__head_search',
     isLoading: combineLatest([globalSearch.isSearching, isSearchActive]).pipe(map(([isSearching, isActive]) => isSearching && isActive)),
     onFocus(value) {

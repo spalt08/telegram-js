@@ -2,8 +2,7 @@
 
 .header {
   background: #FFFFFF;
-  height: 60px;
-  border-bottom: 1px solid #EDEEF0;
+  height: $main-header-height;
   padding: 5px $content-padding 5px $content-padding;
   display: flex;
   justify-content: space-between;
@@ -12,6 +11,8 @@
   position: relative;
   box-shadow: 0px 0px 3px 0px #828282;
   z-index: 2;
+  border-left: 1px solid $common-border-color;
+  border-right: 1px solid $common-border-color;
 
   &.hidden {
     display: none;
@@ -25,8 +26,8 @@
     overflow: hidden;
 
     & .avatar {
-      width: 46px;
-      height: 46px;
+      width: 40px;
+      height: 40px;
       font-size: 16px;
     }
   }
@@ -113,5 +114,8 @@
     &__profile {
       max-width: calc(100% - 96px);
     }
+
+    border-left: none;
+    border-right: none;
   }
 }

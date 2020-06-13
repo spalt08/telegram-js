@@ -1,9 +1,11 @@
+@import '~styles/variables.scss';
+
 .pollOption.-correct {
-  --color: #00da00;
+  --color: #44A448;
 }
 
 .pollOption.-incorrect {
-  --color: red;
+  --color: #DF3F40;
 }
 
 .pollOption {
@@ -42,7 +44,7 @@
   }
 
   &__answer {
-    background-color: var(--color, var(--accent-color));
+    background-color: var(--color, $accent-color);
     border-radius: 100%;
     grid-row: 1;
     grid-column: 1;
@@ -82,7 +84,7 @@
     height: 30px;
 
     path {
-      stroke: var(--color, var(--accent-color));
+      stroke: var(--color, $accent-color);
       stroke-width: 4px;
       stroke-linecap: round;
       fill: none;
@@ -105,7 +107,7 @@
   }
 
   .checkbox__input:checked+.checkbox__box {
-    border-color: var(--accent-color);
-    background: var(--accent-color);
+    border-color: $accent-color;
+    background: $accent-color;
   }
 }

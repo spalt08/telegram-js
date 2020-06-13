@@ -1,0 +1,27 @@
+@import '~styles/variables.scss';
+
+.pollCountdown {
+  color: $accent-color-inactive;
+  display: flex;
+  align-items: center;
+
+  svg {
+    margin-left: 8px;
+  }
+
+  circle {
+    fill: none;
+    stroke-width: 2px;
+    stroke: $accent-color-inactive;
+    transform: rotate(-90deg);
+    transform-origin: center;
+  }
+
+  &.-hurry-up {
+    color: red;
+
+    circle {
+      stroke: red;
+    }
+  }
+}

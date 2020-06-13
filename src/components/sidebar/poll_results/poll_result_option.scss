@@ -1,0 +1,92 @@
+@import '~styles/variables.scss';
+
+.pollResultOption {
+  display: flex;
+  flex-direction: column;
+
+  &__percent {
+    padding-left: 16px;
+  }
+
+  &__header {
+    border-top: 1px solid $common-border-color;
+    background-color: white;
+    padding: 16px 18px 9px 14px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    color: #707579;
+    font-weight: 500;
+    font-size: 0.95rem;
+    position: sticky;
+    top: 0;
+  }
+
+  &__voters-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__voter {
+    display: flex;
+    align-items: center;
+    padding: 9px $content-padding;
+
+    & .avatar {
+      width: 32px;
+      height: 32px;
+      font-size: 14px;
+    }
+
+    &.-hidden {
+      display: none;
+    }
+
+    &-name {
+      padding-left: 28px;
+    }
+
+    &-placeholder {
+      display: flex;
+      align-items: center;
+      padding: 9px $content-padding;
+
+      & .avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 100%;
+        background-color: rgba(0, 0, 0, 0.08);
+      }
+
+      & .voter-name {
+        width: 30px;
+        height: 20px;
+        margin-left: 20px;
+        border-radius: 8px;
+        background-color: rgba(0, 0, 0, 0.08);
+      }
+    }
+  }
+
+  &__load-more {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 9px $content-padding;
+
+    svg {
+      margin: 4px;
+
+      path {
+        fill: #707579;
+      }
+    }
+
+    &-text {
+      padding-left: 28px;
+    }
+  }
+}
+
+.pollResultOption.-hidden {
+  display: none;
+}
