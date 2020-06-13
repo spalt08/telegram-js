@@ -1,23 +1,28 @@
 import { BehaviorSubject } from 'rxjs';
 import { Chat, Dialog, Message, Peer, TopPeer, User } from 'mtproto-js';
-import { addValues, getAllEntries, getAllValues, putValuesEntries } from 'helpers/indexedDb';
+import { getValue } from 'helpers/indexedDb';
 import { peerMessageToId } from 'helpers/api';
 import { animationFrameStart } from 'core/dom';
 import { runTransaction } from './persistentStorages/database';
 import Collection from './fastStorages/collection';
 
+const indexedDBStore = 'cache';
+const indexedDBKey = 'persistentCache';
 const dialogsToStoreCount = 50;
+const autosaveStartDelay = 2000;
 const autosaveInterval = 10000;
 
-interface MiscData {
-  searchRecentPeers: readonly Peer[],
-  topUsers: {
-    items: TopPeer[],
-    fetchedAt: number, // unix ms
-  },
+interface CacheValue {
+  chats?: Record<number, Chat>;
+  dialogs?: Dialog[];
+  messages?: Record<string, Message>;
+  users?: Record<number, User>;
+  searchRecentPeers?: readonly Peer[];
+  topUsers?: {
+    items: TopPeer[];
+    fetchedAt: number; // unix ms
+  };
 }
-
-type MiscDataEntry = { [K in keyof MiscData]: [K, MiscData[K]] }[keyof MiscData];
 
 function autosaveStrategy(save: () => Promise<void> | void) {
   let isSaving = false;
@@ -45,7 +50,7 @@ function autosaveStrategy(save: () => Promise<void> | void) {
     }
   };
 
-  setTimeout(handleTimeout, autosaveInterval);
+  setTimeout(handleTimeout, autosaveStartDelay);
 }
 
 // todo: Clear on log out / sign out / exit
@@ -80,38 +85,34 @@ export default class PersistentCache {
 
   private async restoreCache() {
     try {
-      const [
-        messages,
-        users,
-        chats,
-        dialogs,
-        misc,
-      ] = await runTransaction(['messages', 'users', 'chats', 'dialogs', 'misc'], 'readonly', (transaction) => (
-        Promise.all([
-          getAllEntries<[string, Message]>(transaction.objectStore('messages')),
-          getAllEntries<[number, User]>(transaction.objectStore('users')),
-          getAllEntries<[number, Chat]>(transaction.objectStore('chats')),
-          getAllValues<Dialog>(transaction.objectStore('dialogs')),
-          getAllEntries<MiscDataEntry>(transaction.objectStore('misc')),
-        ])
+      const data = await runTransaction(indexedDBStore, 'readonly', (transaction) => (
+        getValue(transaction.objectStore(indexedDBStore), indexedDBKey)
       ));
 
+      const {
+        chats = {},
+        dialogs = [],
+        users = {},
+        messages = [],
+        searchRecentPeers,
+        topUsers,
+      } = (data && typeof data === 'object' ? data : {}) as CacheValue;
       const { messageCache, userCache, chatCache, dialogCache } = this;
 
       chatCache.batchChanges(() => {
-        chats.forEach(([id, chat]) => {
-          if (!chatCache.has(id)) chatCache.put(chat);
+        Object.entries(chats).forEach(([id, chat]) => {
+          if (!chatCache.has(Number(id))) chatCache.put(chat);
         });
       });
 
       userCache.batchChanges(() => {
-        users.forEach(([id, user]) => {
-          if (!userCache.has(id)) userCache.put(user);
+        Object.entries(users).forEach(([id, user]) => {
+          if (!userCache.has(Number(id))) userCache.put(user);
         });
       });
 
       messageCache.batchChanges(() => {
-        messages.forEach(([id, message]) => {
+        Object.entries(messages).forEach(([id, message]) => {
           if (!messageCache.has(id)) messageCache.put(message);
         });
       });
@@ -121,99 +122,92 @@ export default class PersistentCache {
         dialogCache.replaceAll(dialogs);
       }
 
-      misc.forEach((entry) => {
-        switch (entry[0]) {
-          case 'searchRecentPeers':
-            [, this.searchRecentPeers] = entry;
-            break;
-          case 'topUsers':
-            [, this.topUsers] = entry;
-            break;
-          default:
-        }
-      });
+      if (searchRecentPeers) {
+        this.searchRecentPeers = searchRecentPeers;
+      }
+
+      if (topUsers) {
+        this.topUsers = topUsers;
+      }
     } finally {
       this.isRestored.next(true);
     }
   }
 
   private async backupCache() {
-    const { dialogs, messages, users, chats, misc } = this.collectDataToCache();
+    const data = this.collectDataToCache();
 
-    await runTransaction(['messages', 'users', 'chats', 'dialogs', 'misc'], 'readwrite', (transaction) => {
-      const messageStore = transaction.objectStore('messages');
-      messageStore.clear();
-      putValuesEntries(messageStore, messages);
-
-      const userStore = transaction.objectStore('users');
-      userStore.clear();
-      putValuesEntries(userStore, users);
-
-      const chatStore = transaction.objectStore('chats');
-      chatStore.clear();
-      putValuesEntries(chatStore, chats);
-
-      const dialogStore = transaction.objectStore('dialogs');
-      dialogStore.clear();
-      addValues(dialogStore, dialogs);
-
-      const miscStore = transaction.objectStore('misc');
-      miscStore.clear();
-      putValuesEntries(miscStore, misc);
+    await runTransaction(indexedDBStore, 'readwrite', (transaction) => {
+      const store = transaction.objectStore(indexedDBStore);
+      store.put(data, indexedDBKey);
     });
   }
 
-  private collectDataToCache() {
-    const dialogs = this.dialogCache.indices.order.getItems(0, dialogsToStoreCount);
-    const messages: Array<[string, Message]> = [];
-    const users: Array<[number, User]> = [];
-    const chats: Array<[number, Chat]> = [];
-    const misc: MiscDataEntry[] = [];
+  private collectDataToCache(): CacheValue {
+    const data: CacheValue & Required<Pick<CacheValue, 'dialogs' | 'messages' | 'users' | 'chats'>> = {
+      dialogs: this.dialogCache.indices.order.getItems(0, dialogsToStoreCount),
+      messages: {} as Record<string, Message>,
+      users: {} as Record<number, User>,
+      chats: {} as Record<number, Chat>,
+    };
 
-    dialogs.forEach((dialog) => this.collectDialogModels(dialog, messages, users, chats));
+    data.dialogs.forEach((dialog) => this.collectDialogModels(dialog, data));
 
     if (this.searchRecentPeers) {
-      misc.push(['searchRecentPeers', this.searchRecentPeers]);
-      this.searchRecentPeers.forEach((peer) => this.collectPeerModels(peer, users, chats));
+      data.searchRecentPeers = this.searchRecentPeers;
+      this.searchRecentPeers.forEach((peer) => this.collectPeerModels(peer, data));
     }
 
     if (this.topUsers) {
-      misc.push(['topUsers', this.topUsers]);
-      this.topUsers.items.forEach(({ peer }) => this.collectPeerModels(peer, users, chats));
+      data.topUsers = this.topUsers;
+      this.topUsers.items.forEach(({ peer }) => this.collectPeerModels(peer, data));
     }
 
-    return { dialogs, messages, users, chats, misc };
+    return data;
   }
 
-  private collectDialogModels(dialog: Dialog, messages: Array<[string, Message]>, users: Array<[number, User]>, chats: Array<[number, Chat]>) {
+  private collectDialogModels(
+    dialog: Dialog,
+    models: { messages: Record<string, Message>, users: Record<number, User>, chats: Record<number, Chat> },
+  ) {
     if (dialog._ === 'dialog') {
-      this.collectPeerModels(dialog.peer, users, chats);
+      this.collectPeerModels(dialog.peer, models);
 
       const topMessageId = peerMessageToId(dialog.peer, dialog.top_message);
       const topMessage = this.messageCache.get(topMessageId);
 
       if (topMessage) {
-        messages.push([topMessageId, topMessage]);
+        // eslint-disable-next-line no-param-reassign
+        models.messages[topMessageId] = topMessage;
         if (dialog.peer._ !== 'peerUser' && topMessage._ !== 'messageEmpty' && topMessage.from_id) {
           const user = this.userCache.get(topMessage.from_id);
-          if (user) users.push([topMessage.from_id, user]);
+          if (user) {
+            // eslint-disable-next-line no-param-reassign
+            models.users[topMessage.from_id] = user;
+          }
         }
       }
     }
   }
 
-  private collectPeerModels(peer: Peer, users: Array<[number, User]>, chats: Array<[number, Chat]>) {
+  private collectPeerModels(peer: Peer, models: { users: Record<number, User>, chats: Record<number, Chat> }) {
     switch (peer._) {
       case 'peerUser': {
         const user = this.userCache.get(peer.user_id);
-        if (user) users.push([peer.user_id, user]);
+        if (user) {
+          // eslint-disable-next-line no-param-reassign
+          models.users[peer.user_id] = user;
+        }
         break;
       }
       case 'peerChat':
       case 'peerChannel': {
         const chatId = peer._ === 'peerChat' ? peer.chat_id : peer.channel_id;
         const chat = this.chatCache.get(chatId);
-        if (chat) chats.push([chatId, chat]);
+        if (chat) {
+          // eslint-disable-next-line no-param-reassign
+          models.chats[chatId] = chat;
+        }
         break;
       }
       default:
