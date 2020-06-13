@@ -1,25 +1,12 @@
-<<<<<<< HEAD:src/components/sidebar/dialogs/dialogs.ts
 import * as icons from 'components/icons';
-import { status } from 'components/sidebar';
-import { contextMenu, roundButton, searchInput, sectionSpinner, VirtualizedList } from 'components/ui';
+import { contextMenu, roundButton, searchInput } from 'components/ui';
 import { animationFrameStart, mount, unmount } from 'core/dom';
-import { getInterface, useObservable } from 'core/hooks';
-import { div } from 'core/html';
-import { BehaviorSubject, combineLatest } from 'rxjs';
-import { distinctUntilChanged, map } from 'rxjs/operators';
-import { dialog as service, globalSearch } from 'services';
-import dialog from '../dialog/dialog';
-=======
-import { BehaviorSubject, combineLatest } from 'rxjs';
-import { distinctUntilChanged, map } from 'rxjs/operators';
-import { roundButton, searchInput, contextMenu } from 'components/ui';
-import { div } from 'core/html';
 import { getInterface, useToBehaviorSubject } from 'core/hooks';
-import { animationFrameStart, mount, unmount } from 'core/dom';
-import * as icons from 'components/icons';
+import { div } from 'core/html';
+import { BehaviorSubject, combineLatest } from 'rxjs';
+import { distinctUntilChanged, map } from 'rxjs/operators';
 import { folder as folderService, globalSearch } from 'services';
 import dialogsTabs from '../dialogs_tabs/dialogs_tabs';
->>>>>>> 25ba756572698c6fbaa9a1612817ebbada0f4b0f:src/components/sidebar/dialogs_screen/dialogs_screen.ts
 import globalSearchResult from '../global_search_result/global_search_result';
 import './dialogs_screen.scss';
 
@@ -33,13 +20,8 @@ export default function dialogsScreen({ onNavigate }: SidebarComponentProps) {
   const isSearchActive = new BehaviorSubject(false);
 
   const searchInputEl = searchInput({
-<<<<<<< HEAD:src/components/sidebar/dialogs/dialogs.ts
     placeholder: 'Telegram Search',
-    className: 'dialogs__head_search',
-=======
-    placeholder: 'Search',
     className: 'dialogsScreen__head_search',
->>>>>>> 25ba756572698c6fbaa9a1612817ebbada0f4b0f:src/components/sidebar/dialogs_screen/dialogs_screen.ts
     isLoading: combineLatest([globalSearch.isSearching, isSearchActive]).pipe(map(([isSearching, isActive]) => isSearching && isActive)),
     onFocus(value) {
       globalSearch.search(value);
