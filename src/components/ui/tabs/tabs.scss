@@ -61,15 +61,21 @@
     }
 
     &_badge {
+      $size: 20px;
       box-sizing: border-box;
-      min-width: 20px;
-      height: 20px;
-      border-radius: 10px;
+      min-width: $size;
+      height: $size;
+      border-radius: $size / 2;
       line-height: 21px;
       padding: 0 3px;
-      background: #4EA4F5;
+      background: #C4C9CC;
       color: #fff;
       margin: -5px 0 -5px 5px;
+      transition: background $transition-duration ease-out;
+
+      &.-highlight {
+        background: #4EA4F5;
+      }
     }
 
     &:hover {

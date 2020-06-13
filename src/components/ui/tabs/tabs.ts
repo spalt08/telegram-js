@@ -5,13 +5,13 @@ import { listenOnce, unmount, mount, animationFrameStart } from 'core/dom';
 import { useInterface, getInterface, useMaybeObservable } from 'core/hooks';
 import { MaybeObservable } from 'core/types';
 import simpleList from '../simple_list';
-import tabHeader from './tab_header';
+import tabHeader, { TabBadge } from './tab_header';
 import './tabs.scss';
 
 export interface TabItem {
   key: string;
   title: MaybeObservable<string>;
-  badge?: MaybeObservable<string>;
+  badge?: MaybeObservable<TabBadge | undefined>;
   // Warning: the function isn't recalled when changed
   content: () => HTMLElement;
 }
@@ -46,7 +46,7 @@ export default function tabsPanel({ className = '', headerAlign = 'center', hide
     update: (tabNode, tabData) => {
       const tabControl = getInterface(tabNode);
       tabControl.setTitle(tabData.title);
-      tabControl.setBadge(tabData.badge || '');
+      tabControl.setBadge(tabData.badge);
     },
     props: {
       className: `tabs-panel__header -${headerAlign}`,

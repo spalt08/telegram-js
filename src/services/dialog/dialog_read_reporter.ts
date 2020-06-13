@@ -2,7 +2,7 @@ import { dialogCache } from 'cache';
 import { Dialog, Peer } from 'mtproto-js';
 import { peerToInputChannel, peerToInputPeer } from 'cache/accessors';
 import client from 'client/client';
-import { dialogPeerToDialogId } from 'helpers/api';
+import { peerToDialogId } from 'helpers/api';
 
 export interface DialogReadReporter {
   reportRead(readMessageId: number): void;
@@ -27,7 +27,7 @@ async function sendReport(peer: Peer, messageId: number) {
  */
 export default function makeDialogReadReporter(peer: Peer): DialogReadReporter {
   function getDialog() {
-    return dialogCache.get(dialogPeerToDialogId(peer)) as Dialog.dialog | undefined;
+    return dialogCache.get(peerToDialogId(peer)) as Dialog.dialog | undefined;
   }
 
   let lastReportedMessageId = getDialog()?.read_inbox_max_id ?? 0;

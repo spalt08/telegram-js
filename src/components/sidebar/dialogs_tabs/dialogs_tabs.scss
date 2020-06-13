@@ -1,0 +1,14 @@
+.dialogsTabs {
+  &__status {
+    z-index: 1;
+  }
+
+  &__tabs {
+    height: 100%;
+  }
+
+  &__tab {
+    width: 100%;
+    height: 100%;
+  }
+}

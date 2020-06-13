@@ -302,6 +302,37 @@ export function useMaybeObservable<T>(
 }
 
 /**
+ * Resolves the value of an observable that emits an observable
+ *
+ * We need to go deeper...
+ */
+export function useMaybeObservableMaybeObservable<T, P>(
+  base: Node,
+  value: MaybeObservable<T>,
+  getInner: (subValue: T) => MaybeObservable<P>,
+  isPureState: boolean,
+  onChange: (newValue: P) => void,
+  lazy = false,
+): () => void {
+  let unsubscribeInner: (() => void) | undefined;
+
+  const unsubscribeOuter = useMaybeObservable(base, value, true, (subValue) => {
+    if (unsubscribeInner) {
+      unsubscribeInner();
+    }
+    const innerObservable = getInner(subValue);
+    unsubscribeInner = useMaybeObservable(base, innerObservable, isPureState, onChange, lazy);
+  }, lazy);
+
+  return () => {
+    unsubscribeOuter();
+    if (unsubscribeInner) {
+      unsubscribeInner();
+    }
+  };
+}
+
+/**
  * Listens to an event outside the hooked element while it's mounted
  */
 export function useOutsideEvent<P extends keyof HTMLElementEventMap>(base: HTMLElement, name: P, cb: (event: HTMLElementEventMap[P]) => void) {

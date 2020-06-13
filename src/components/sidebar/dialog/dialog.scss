@@ -8,28 +8,14 @@
     padding: 0;
   }
 
-  &__wrapper {
-    &.-pinned + &:not(.-pinned) {
-      padding-top: 6px;
-
-      &::before {
-        content: '';
-        display: block;
-        border-top: 1px solid #EDEEF0;
-        margin-bottom: 6px;
-      }
-    }
-  }
-
   &__clickable {
     padding: 9PX;
     border-radius: 10px;
     cursor: pointer;
     width: 100%;
-    transition: background-color 0.2s;
 
-    // temporary disable dialog hover due to safari rendering issues
-    &.-selected { // &:hover, 
+    &:hover,
+    &.-selected {
       background-color: rgba(#707579, 0.08);
     }
 

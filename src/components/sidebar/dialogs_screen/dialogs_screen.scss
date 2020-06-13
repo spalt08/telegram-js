@@ -1,6 +1,6 @@
 @import '~styles/variables.scss';
 
-.dialogs {
+.dialogsScreen {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -70,17 +70,6 @@
         opacity: 0;
         transform: scale($transition-scale);
       }
-    }
-  }
-
-  .dialogs {
-    height: 100%;
-
-    &__spinner {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
     }
   }
 
