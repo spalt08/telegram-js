@@ -6,6 +6,7 @@ import { getInterface, useToBehaviorSubject } from 'core/hooks';
 import { animationFrameStart, mount, unmount } from 'core/dom';
 import * as icons from 'components/icons';
 import { folder as folderService, globalSearch } from 'services';
+import { UnreadCount } from 'services/folder/commonTypes';
 import dialogsTabs from '../dialogs_tabs/dialogs_tabs';
 import globalSearchResult from '../global_search_result/global_search_result';
 import './dialogs_screen.scss';
@@ -34,8 +35,10 @@ export default function dialogsScreen({ onNavigate }: SidebarComponentProps) {
 
   // The folder index observables do a hard job on subscribe, contextMenu is unmounted when closed and useObservable subscribes when mounted.
   // Therefore the index is subscribed once here to not do the hard job on every open.
-  const [archiveUnread] = useToBehaviorSubject(container, folderService.archiveIndex.unreadCount, true, undefined);
-  const archiveBadge = archiveUnread.pipe(map(({ count }) => !count ? undefined : { text: count.toString() }));
+  const [archiveUnread] = useToBehaviorSubject(container, folderService.archiveIndex.unreadCount, undefined);
+  const archiveBadge = archiveUnread.pipe(map(({ count }: Readonly<UnreadCount>) => (
+    count ? { text: count.toString() } : undefined
+  )));
 
   const buttonMenu = contextMenu({
     className: 'dialogsScreen__button-menu',
