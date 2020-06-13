@@ -1,13 +1,12 @@
 @import '~styles/variables.scss';
 
-textarea.message-text {
+.message-text {
   width: 100%;
   appearance: none;
   border: none;
   font-family: 'Roboto';
   font-size: 15PX;
   background: #FFFFFF;
-  margin: 16px 0;
   box-sizing: border-box;
   padding: 0;
   outline: none;
@@ -16,9 +15,10 @@ textarea.message-text {
   line-height: 20PX;
   resize: none;
   overflow: hidden;
+  margin: 16px 0;
 
   @include respond-to(small) {
-    max-width: calc(100% - 106px);
+    margin: 13px 0;
   }
 
   &:active {

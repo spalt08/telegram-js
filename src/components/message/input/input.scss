@@ -3,6 +3,10 @@
 .msginput {
   padding: 0 $content-padding;
 
+  @include respond-to(small) {
+    padding: 0;
+  }
+
   &.hidden {
     display: none;
   }
@@ -15,7 +19,11 @@
     justify-content: center;
     align-items: center;
     position: absolute;
-    bottom: 2PX;
+
+    @include respond-to(small) {
+      width: 46px;
+      height: 46px;
+    }
 
     svg {
       width: 24px;
@@ -42,17 +50,24 @@
 
   &__container {
     position: relative;
-    margin: 0 auto;
     padding: 5px 0px 18px;
-    max-width: 700px;
+    width: 100%;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: flex-end;
 
     @include respond-to(small) {
-      padding: 8px;
+      padding: 8PX 8PX 5PX 6PX;
+      max-width: none;
     }
+  }
+
+  &__wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
   }
 
   &__bubble {
@@ -84,9 +99,14 @@
     position: relative;
     box-sizing: border-box;
     transition: padding-right .2s ease-out;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
 
-    textarea.message-text {
-      margin: 18px 0 14px;
+    @include respond-to(small) {
+      min-height: 46px;
+      padding-left: 46px;
+      padding-right: 46px;
     }
   }
 

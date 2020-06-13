@@ -1,3 +1,5 @@
+@import '~styles/variables.scss';
+
 .msgRecordSend {
   position: relative;
   display: flex;
@@ -8,12 +10,19 @@
   justify-content: flex-end;
   z-index: 1;
 
+  @include respond-to(small) {
+    width: 52px;
+  }
+
   &.-recording {
     width: 120PX;
+
+    @include respond-to(small) {
+      width: 104px;
+    }
   }
 
   &__button {
-    flex-basis: 54px;
     flex-shrink: 0;
     overflow: hidden;
     display: inline-flex;
@@ -29,6 +38,12 @@
     margin-left: 6PX;
     cursor: pointer;
     transition: .1s ease-out;
+
+
+    @include respond-to(small) {
+      width: 46px;
+      height: 46px;
+    }
 
     &:hover {
       background-color: #4EA4F5;

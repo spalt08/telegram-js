@@ -1,7 +1,7 @@
 import { div } from 'core/html';
 import { media } from 'services';
 import { materialSpinner, recent } from 'components/icons';
-import { useObservable, useInterface, getInterface } from 'core/hooks';
+import { useObservable, useInterface, getInterface, useOnMount } from 'core/hooks';
 import { Document, StickerSet } from 'mtproto-js';
 import { mount, unmount, listen, animationFrameStart } from 'core/dom';
 import { BehaviorSubject } from 'rxjs';
@@ -36,18 +36,18 @@ export default function stickerPanel(onSelect?: (sticker: Document) => void) {
     className: 'sticker-panel__list',
     items,
     renderer,
-    batch: 1,
-    threshold: 3,
-    batchService: 1,
-    pivotBottom: false,
+    batch: 2,
+    batchService: 2,
+    threshold: 1,
+    topReached: true,
   });
 
   listen(tabs.recent, 'click', () => list.focus('recent'));
 
   const container = (
     div`.sticker-panel`(
-      loader,
       tabsEl,
+      loader,
     )
   );
 
@@ -85,8 +85,9 @@ export default function stickerPanel(onSelect?: (sticker: Document) => void) {
   });
 
   let times = 0;
+
   // load recent
-  useObservable(container, media.recentStickers, false, (stickers: Document[]) => {
+  media.recentStickers.subscribe((stickers: Document[]) => {
     times++;
 
     if ((stickers.length > 0 || times > 1) && items.value.indexOf('recent') === -1) {
@@ -102,19 +103,7 @@ export default function stickerPanel(onSelect?: (sticker: Document) => void) {
     }
   });
 
-  return useInterface(container, {
-    update() {},
-    shouldRemove() {
-      for (let i = list.firstRendered; i <= list.lastRendered; i++) {
-        if (list.elements[list.items[i]]) getInterface(list.elements[list.items[i]] as ReturnType<typeof stickerSet>).pauseAll();
-      }
-    },
-    didAppear() {
-      media.loadRecentStickers();
+  media.loadRecentStickers();
 
-      // for (let i = list.firstRendered; i <= list.lastRendered; i++) {
-      //   if (list.elements[list.items[i]]) getInterface(list.elements[list.items[i]] as ReturnType<typeof stickerSet>).playAll();
-      // }
-    },
-  });
+  return container;
 }

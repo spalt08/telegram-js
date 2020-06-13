@@ -19,6 +19,7 @@ import messageShort from '../short';
 
 export default function messageInput() {
   let inner: HTMLElement;
+  let wrapper: HTMLElement;
 
   const btn = recordSendButton({
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -96,16 +97,18 @@ export default function messageInput() {
   const quoteContainer = div`.msginput__quote.hidden`();
 
   const container = div`.msginput`(
-    inner = div`.msginput__container`(
-      bubble({ className: 'msginput__bubble bubble-first-last' },
-        quoteContainer,
-        div`.msginput__bubble-content`(
-          emojiIcon,
-          textarea,
-          attachIcon,
+    wrapper = div`.msginput__wrapper`(
+      inner = div`.msginput__container`(
+        bubble({ className: 'msginput__bubble bubble-first-last' },
+          quoteContainer,
+          div`.msginput__bubble-content`(
+            emojiIcon,
+            textarea,
+            attachIcon,
+          ),
         ),
+        btn,
       ),
-      btn,
     ),
   );
 
@@ -145,14 +148,13 @@ export default function messageInput() {
 
   const openPanel = () => {
     if (closeTimer) clearTimeout(closeTimer);
-    stickmojiPanelEl.classList.add('opened');
-    emojiIcon.classList.add('active');
+    if (!stickmojiPanelEl.parentElement) mount(wrapper, stickmojiPanelEl);
+    stickmojiPanelEl.classList.remove('-closing');
     getInterface(attachmentMenu).close();
   };
 
   const closePanel = () => {
-    stickmojiPanelEl.classList.remove('opened');
-    emojiIcon.classList.remove('active');
+    stickmojiPanelEl.classList.add('-closing');
   };
 
   const closePanelDelayed = () => {

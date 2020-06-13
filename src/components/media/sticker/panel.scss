@@ -10,22 +10,24 @@
 
   &__tabs {
     flex: none;
-    height: 48px;
-    border-top: 1px solid #dedfe2;
+    height: 46px;
     text-align: left;
     width: 100%;
     padding: 0 8px;
     overflow-x: auto;
     overflow-y: hidden;
     white-space: nowrap;
+    box-shadow: 0px 0px 3px 0px #a5a5a5;  
+    position: relative;
+    z-index: 2;
 
-    @include scrollbar-width(4px);
+    @include hide-scrollbar();
   }
 
   &__tab {
     display: inline-block;
-    width: 48px;
-    height: 47px;
+    width: 46px;
+    height: 45px;
     vertical-align: top;
     border-radius: 4px;
     cursor: pointer;

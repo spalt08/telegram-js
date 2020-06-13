@@ -1,6 +1,12 @@
+@import '~styles/variables.scss';
+
 .emoji-category {
   padding: 0 10px 16px;
   text-align: left;
+
+  @include respond-to(small) {
+    padding: 8PX;
+  }
 
   &:last-child { padding-bottom: 0; }
 
@@ -13,30 +19,25 @@
     position: sticky;
     background: linear-gradient(to bottom, rgba(255,255,255,1) 0%,rgba(255,255,255,0.9) 60%,rgba(255,255,255,0) 100%);;
     top: 0;
+
+    @include respond-to(small) {
+      padding: 8px 0;
+    }
   }
 
   &__items {
-    display: grid;
-    justify-content: space-between;
-    grid-template-columns: repeat(9, 1fr);
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
 
   &__item {
     font-size: 30px;
-    width: 40px;
-    height: 40px;
+    width: 12.5%;
     cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
+    text-align: center;
     line-height: 1;
     padding-top: 5px;
-    border-radius: 10px;
-    transition: background-color .15s ease-out;
-
-    &:hover {
-      background-color: rgba(#707579, 0.08);
-    }
+    padding-bottom: 5px;
   }
 }
