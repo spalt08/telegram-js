@@ -163,33 +163,38 @@ export function peerChatFullStatus(peer: Peer.peerChat, props?: Props) {
   );
 
   // todo: Counting users on every user cache update can slow the render. Also the user cache may omit no changes. Optimize it.
-  useObservable(container, combineLatest([countObservable, participantsObservable, userCache.changes]), ([participantsCount, participants]) => {
-    if (participantsCount === undefined) {
-      container.textContent = blankStatus;
-      return;
-    }
-
-    let statusText = `${formatCount(participantsCount)} members`;
-
-    if (participants) {
-      let onlineUsers = 0;
-      let wasMe = false;
-
-      participants.forEach((p) => {
-        const user = userCache.get(p.user_id);
-        if (user?._ === 'user' && user.status?._ === 'userStatusOnline') {
-          onlineUsers++;
-          if (user.id === authService.userID) wasMe = true;
-        }
-      });
-
-      if (onlineUsers > 0 && !(onlineUsers === 1 && wasMe)) {
-        statusText += `, ${onlineUsers} online`;
+  useObservable(
+    container,
+    combineLatest([countObservable, participantsObservable, userCache.changes]),
+    false,
+    ([participantsCount, participants]) => {
+      if (participantsCount === undefined) {
+        container.textContent = blankStatus;
+        return;
       }
-    }
 
-    container.textContent = statusText;
-  });
+      let statusText = `${formatCount(participantsCount)} members`;
+
+      if (participants) {
+        let onlineUsers = 0;
+        let wasMe = false;
+
+        participants.forEach((p) => {
+          const user = userCache.get(p.user_id);
+          if (user?._ === 'user' && user.status?._ === 'userStatusOnline') {
+            onlineUsers++;
+            if (user.id === authService.userID) wasMe = true;
+          }
+        });
+
+        if (onlineUsers > 0 && !(onlineUsers === 1 && wasMe)) {
+          statusText += `, ${onlineUsers} online`;
+        }
+      }
+
+      container.textContent = statusText;
+    },
+  );
 
   return container;
 }
@@ -219,17 +224,22 @@ export function peerChannelFullStatus(peer: Peer.peerChannel, props?: Props) {
 
   const channelFullObservable = chatFullCache.useItemBehaviorSubject(container, peer.channel_id);
 
-  useObservable(container, combineLatest([broadcastObservable, channelFullObservable]), ([isBroadcast, channelFull]) => {
-    if (channelFull?._ !== 'channelFull') {
-      container.textContent = blankStatus;
-      return;
-    }
+  useObservable(
+    container,
+    combineLatest([broadcastObservable, channelFullObservable]),
+    false,
+    ([isBroadcast, channelFull]) => {
+      if (channelFull?._ !== 'channelFull') {
+        container.textContent = blankStatus;
+        return;
+      }
 
-    container.textContent = isBroadcast
-      ? `${formatCount(todoAssertHasValue(channelFull.participants_count))} subscribers`
-      : `${formatCount(todoAssertHasValue(channelFull.participants_count))} members, `
-        + `${formatCount(todoAssertHasValue(channelFull.online_count))} online`;
-  });
+      container.textContent = isBroadcast
+        ? `${formatCount(todoAssertHasValue(channelFull.participants_count))} subscribers`
+        : `${formatCount(todoAssertHasValue(channelFull.participants_count))} members, `
+          + `${formatCount(todoAssertHasValue(channelFull.online_count))} online`;
+    },
+  );
 
   return container;
 }

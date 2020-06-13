@@ -28,14 +28,12 @@ export default function menuAndBack({ state, className, 'class': _class, ...prop
 
   const stateToClass = (_state: State) => `-${_state}`;
 
-  useMaybeObservable(element, state, (newState) => {
-    if (newState !== currentState) {
-      if (currentState) {
-        element.classList.remove(stateToClass(currentState));
-      }
-      element.classList.add(stateToClass(newState));
-      currentState = newState;
+  useMaybeObservable(element, state, true, (newState) => {
+    if (currentState) {
+      element.classList.remove(stateToClass(currentState));
     }
+    element.classList.add(stateToClass(newState));
+    currentState = newState;
   });
 
   return element;

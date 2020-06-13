@@ -39,7 +39,7 @@ export default function docsPanel(peer: Peer) {
 
   media.loadMedia(peer, SEARCH_FILTER);
 
-  useObservable(container, messageCache.indices.documents.getPeerMedia(peer), (messages: Message[]) => {
+  useObservable(container, messageCache.indices.documents.getPeerMedia(peer), true, (messages: Message[]) => {
     if (!messages.length && media.isMediaLoading(peer, SEARCH_FILTER)) {
       return;
     }

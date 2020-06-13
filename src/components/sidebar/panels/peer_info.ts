@@ -6,7 +6,6 @@ import { BehaviorSubject } from 'rxjs';
 import { infoListItem } from 'components/ui';
 import { mount } from 'core/dom';
 import './peer_info.scss';
-import { useObservable } from 'core/hooks';
 
 function userInfo(id: number) {
   const container = div`.peerInfo`();
@@ -19,7 +18,7 @@ function userInfo(id: number) {
   mount(container, infoListItem({ icon: icons.username, label: 'Username', value: username }));
   mount(container, infoListItem({ icon: icons.phone, label: 'Phone', value: phone }));
 
-  useObservable(container, userCache.useItemBehaviorSubject(container, id), (user) => {
+  userCache.useWatchItem(container, id, (user) => {
     if (user && user._ === 'user' && user.username) username.next(user.username);
     else username.next('');
 
@@ -27,7 +26,7 @@ function userInfo(id: number) {
     else phone.next('');
   });
 
-  useObservable(container, userFullCache.useItemBehaviorSubject(container, id), (user) => {
+  userFullCache.useWatchItem(container, id, (user) => {
     if (user && user.about) bio.next(user.about);
     else bio.next('');
   });
@@ -44,12 +43,12 @@ function chatInfo(id: number) {
   mount(container, infoListItem({ icon: icons.info, label: 'About', value: about }));
   mount(container, infoListItem({ icon: icons.username, label: 'Link', value: link }));
 
-  useObservable(container, chatFullCache.useItemBehaviorSubject(container, id), (chat) => {
+  chatFullCache.useWatchItem(container, id, (chat) => {
     if (chat && chat.about) about.next(chat.about);
     else about.next('');
   });
 
-  useObservable(container, chatCache.useItemBehaviorSubject(container, id), (chat) => {
+  chatCache.useWatchItem(container, id, (chat) => {
     if (chat && chat._ === 'channel' && chat.username) link.next(chat.username);
     else link.next('');
   });

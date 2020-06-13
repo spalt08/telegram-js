@@ -40,7 +40,7 @@ export default function audio(doc: Document.document) {
     ));
 
 
-  useObservable(container, mediaService.audioInfo(doc), (info) => {
+  useObservable(container, mediaService.audioInfo(doc), true, (info) => {
     getInterface(track).updateProgress(info.playProgress);
     const progress = info.status === MediaPlaybackStatus.Playing ? info.playProgress * audioAttribute.duration : audioAttribute.duration;
     if (info.status === MediaPlaybackStatus.Playing) {

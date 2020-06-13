@@ -67,15 +67,15 @@ export default class MessagesService {
       ));
     });
 
-    client.updates.on('updateEditMessage', (update: Update.updateEditMessage) => {
+    client.updates.on('updateEditMessage', (update) => {
       messageCache.put(update.message);
     });
 
-    client.updates.on('updateEditChannelMessage', (update: Update.updateEditChannelMessage) => {
+    client.updates.on('updateEditChannelMessage', (update) => {
       messageCache.put(update.message);
     });
 
-    client.updates.on('updateMessageID', ({ id, random_id }: Update.updateMessageID) => {
+    client.updates.on('updateMessageID', ({ id, random_id }) => {
       const msg = this.pendingMessages[random_id];
       if (!msg) return;
 

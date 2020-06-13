@@ -39,7 +39,7 @@ export const canvas = ElementFactory('canvas');
  */
 export function text(value: MaybeObservable<{ toString(): string; }>) {
   const node = document.createTextNode('');
-  useMaybeObservable(node, value, (newValue) => {
+  useMaybeObservable(node, value, true, (newValue) => {
     node.textContent = newValue.toString();
   });
   return node;

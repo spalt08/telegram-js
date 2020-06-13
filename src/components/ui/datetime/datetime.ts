@@ -32,7 +32,7 @@ export default function datetime({ timestamp, date = true, full = false }: Props
   let lastText = '';
   const node = text(lastText);
 
-  useMaybeObservable(node, timestamp, (ts) => {
+  useMaybeObservable(node, timestamp, true, (ts) => {
     const newText = format(new Date(ts * 1000), date, full);
     if (newText !== lastText) {
       lastText = newText;

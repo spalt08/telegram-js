@@ -84,8 +84,8 @@ export default function textInput({
 
   if (error) {
     const hasError = error.pipe(map((message) => message !== undefined));
-    useObservable(element, hasError, (isError) => { element.classList[isError ? 'add' : 'remove']('error'); });
-    useObservable(element, error, (errorMessage) => labelText.next(errorMessage === undefined ? label : errorMessage));
+    useObservable(element, hasError, true, (isError) => element.classList.toggle('error', isError));
+    useObservable(element, error, true, (errorMessage) => labelText.next(errorMessage === undefined ? label : errorMessage));
   }
 
   if (ref) ref(inputEl);

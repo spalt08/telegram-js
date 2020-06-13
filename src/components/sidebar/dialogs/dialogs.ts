@@ -126,7 +126,7 @@ export default function dialogs({ onNavigate }: SidebarComponentProps) {
     }
   });
 
-  useObservable(dialogsLayer, showSpinnerObservable, (show) => {
+  useObservable(dialogsLayer, showSpinnerObservable, true, (show) => {
     if (show && !spinner) {
       mount(dialogsLayer, spinner = sectionSpinner({ className: 'dialogs__spinner' }));
     } else if (!show && spinner) {

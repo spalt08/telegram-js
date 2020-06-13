@@ -86,7 +86,7 @@ export function stream(document: Document.document) {
 
 export function useProgress(base: Node, url: string, onProgress: (downloaded: number) => void) {
   if (!fileProgress[url]) return;
-  useObservable(base, fileProgress[url], onProgress);
+  useObservable(base, fileProgress[url], true, onProgress);
 }
 
 /**

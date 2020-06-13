@@ -42,7 +42,7 @@ export default function formCode() {
   );
 
   // Manage transitions
-  useObservable(element, auth.state, (view) => {
+  useObservable(element, auth.state, true, (view) => {
     if (view === AuthStage.TwoFA) {
       transitioner.translateRight(() => c2fa);
       getInterface(monkeyEl).closeEyes();

@@ -176,7 +176,7 @@ export class VirtualizedList {
     useListenWhileMounted(this.container, window, 'resize', this.updateViewport);
 
     // when items changed
-    useMaybeObservable(this.container, items, (next: readonly string[]) => {
+    useMaybeObservable(this.container, items, false, (next: readonly string[]) => {
       if (this.isLocked) this.pending = next.slice(0);
       else {
         this.update(next);

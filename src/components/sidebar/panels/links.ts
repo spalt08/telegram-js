@@ -36,7 +36,7 @@ export default function linksPanel(peer: Peer) {
 
   media.loadMedia(peer, SEARCH_FILTER);
 
-  useObservable(container, messageCache.indices.links.getPeerMedia(peer), (messages: Message[]) => {
+  useObservable(container, messageCache.indices.links.getPeerMedia(peer), true, (messages: Message[]) => {
     if (!messages.length && media.isMediaLoading(peer, SEARCH_FILTER)) {
       return;
     }

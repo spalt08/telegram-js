@@ -1,4 +1,4 @@
-import { distinctUntilChanged, map } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { div } from 'core/html';
 import { listen, mount, unmountChildren, unmount } from 'core/dom';
 import { useObservable } from 'core/hooks';
@@ -38,15 +38,8 @@ export default function dialogPreview(id: string) {
     ),
   );
 
-  const dialogSubject = dialogCache.useItemBehaviorSubject(container, id);
-
-  const isSelectedObservable = message.activePeer.pipe(
-    map((activePeer) => !!activePeer && peerToId(activePeer) === id),
-    distinctUntilChanged(),
-  );
-
   // on update
-  dialogSubject.subscribe((next) => {
+  dialogCache.useWatchItem(container, id, (next) => {
     if (next?._ !== 'dialog') {
       return;
     }
@@ -112,7 +105,11 @@ export default function dialogPreview(id: string) {
     }
   });
 
-  useObservable(clickable, isSelectedObservable, (selected) => {
+  const isSelectedObservable = message.activePeer.pipe(
+    map((activePeer) => !!activePeer && peerToId(activePeer) === id),
+  );
+
+  useObservable(clickable, isSelectedObservable, true, (selected) => {
     clickable.classList.toggle('-selected', selected);
   });
 

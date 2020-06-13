@@ -1,5 +1,5 @@
 import { Peer, Update, SendMessageAction } from 'mtproto-js';
-import { Subject, Observable, empty, BehaviorSubject } from 'rxjs';
+import { Subject, Observable, EMPTY, BehaviorSubject } from 'rxjs';
 import client from 'client/client';
 
 type TypingState = {
@@ -30,7 +30,7 @@ export default class UserTyping {
       case 'peerChannel':
         return this.ensureState(`chat_${peer.channel_id}`).subject;
       default:
-        return empty();
+        return EMPTY;
     }
   }
 

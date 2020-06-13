@@ -69,7 +69,7 @@ export default function playButton(doc: Document.document) {
     }
   };
 
-  useObservable(container, mediaService.audioInfo(doc), (info) => {
+  useObservable(container, mediaService.audioInfo(doc), true, (info) => {
     setStatus(info.status);
     setProgress(info.downloadProgress);
   });

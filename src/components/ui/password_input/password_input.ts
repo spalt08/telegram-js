@@ -41,7 +41,9 @@ export default function passwordInput({ className = '', inputClassName = '', ini
     });
   });
 
-  useObservable(element, isHidden, (hidden) => { element.classList[hidden ? 'add' : 'remove']('-hidden'); });
+  useObservable(element, isHidden, true, (hidden) => {
+    element.classList.toggle('-hidden', hidden);
+  });
 
   return useInterface(element, {
     getValue() {
