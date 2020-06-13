@@ -5,14 +5,10 @@ import { promisifyTransaction } from 'helpers/indexedDb';
 const META_STORE_NAME = 'meta';
 
 // Increment it when you change the schema below
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 
 function makeSchema(db: IDBDatabase) {
-  db.createObjectStore('messages');
-  db.createObjectStore('users');
-  db.createObjectStore('chats');
-  db.createObjectStore('dialogs', { autoIncrement: true });
-  db.createObjectStore('misc'); // All other not listable data, e.g. top peers, recent search peers, etc
+  db.createObjectStore('cache');
 }
 
 function actualizeSchema(db: IDBDatabase, oldVersion: number, _newVersion: number) {
