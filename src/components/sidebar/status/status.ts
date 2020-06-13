@@ -4,20 +4,24 @@ import { useObservable } from 'core/hooks';
 import { main } from 'services';
 import './status.scss';
 
-export default function status() {
+interface Props {
+  className?: string;
+}
+
+export default function status({ className = '' }: Props = {}) {
   let isDisplayed = true;
   let timer: ReturnType<typeof setTimeout>;
   const label = text('Connecting...');
   const spinner = materialSpinner({ className: 'network-status__loader' });
 
-  const element = div`.network-status`(
+  const element = div`.network-status ${className}`(
     div`.network-status__container`(
       spinner,
       label,
     ),
   );
 
-  useObservable(element, main.network, (state: string) => {
+  useObservable(element, main.network, true, (state: string) => {
     if (state === 'connected' && isDisplayed === true) {
       element.classList.add('hidden');
       isDisplayed = false;

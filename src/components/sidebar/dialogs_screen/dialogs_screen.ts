@@ -1,36 +1,27 @@
-import { status } from 'components/sidebar';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
-import { VirtualizedList, sectionSpinner, roundButton, searchInput, contextMenu } from 'components/ui';
+import { roundButton, searchInput, contextMenu } from 'components/ui';
 import { div } from 'core/html';
-import { getInterface, useObservable } from 'core/hooks';
+import { getInterface, useToBehaviorSubject } from 'core/hooks';
 import { animationFrameStart, mount, unmount } from 'core/dom';
 import * as icons from 'components/icons';
-import { globalSearch, dialog as service } from 'services';
-import dialog from '../dialog/dialog';
+import { folder as folderService, globalSearch } from 'services';
+import dialogsTabs from '../dialogs_tabs/dialogs_tabs';
 import globalSearchResult from '../global_search_result/global_search_result';
-import './dialogs.scss';
+import './dialogs_screen.scss';
 
 type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
-export default function dialogs({ onNavigate }: SidebarComponentProps) {
-  let container: HTMLElement;
-
-  // fetch dialogs
-  service.updateDialogs();
+export default function dialogsScreen({ onNavigate }: SidebarComponentProps) {
+  const container = div`.dialogsScreen`();
 
   // Subscribing to this observable directly is ok because they're created in this scope
   // therefore subscribing doesn't create an external reference to this component
   const isSearchActive = new BehaviorSubject(false);
-  const showSpinnerObservable = combineLatest([service.dialogs, service.loading]).pipe(
-    map(([dialogsList, isLoading]) => dialogsList.length === 0 && isLoading),
-  );
-
-  let spinner: Node | undefined;
 
   const searchInputEl = searchInput({
     placeholder: 'Search',
-    className: 'dialogs__head_search',
+    className: 'dialogsScreen__head_search',
     isLoading: combineLatest([globalSearch.isSearching, isSearchActive]).pipe(map(([isSearching, isActive]) => isSearching && isActive)),
     onFocus(value) {
       globalSearch.search(value);
@@ -41,28 +32,33 @@ export default function dialogs({ onNavigate }: SidebarComponentProps) {
     },
   });
 
+  // The folder index observables do a hard job on subscribe, contextMenu is unmounted when closed and useObservable subscribes when mounted.
+  // Therefore the index is subscribed once here to not do the hard job on every open.
+  const [archiveUnread] = useToBehaviorSubject(container, folderService.archiveIndex.unreadCount, true, undefined);
+  const archiveBadge = archiveUnread.pipe(map(({ count }) => !count ? undefined : { text: count.toString() }));
+
   const buttonMenu = contextMenu({
-    className: 'dialogs__button-menu',
+    className: 'dialogsScreen__button-menu',
     options: [
-      { icon: icons.group, label: 'New Group', onClick: () => onNavigate && onNavigate('newGroup') },
-      { icon: icons.user, label: 'Contacts', onClick: () => onNavigate && onNavigate('contacts') },
-      { icon: icons.archive, label: 'Archived', onClick: () => onNavigate && onNavigate('contacts') },
-      { icon: icons.savedmessages, label: 'Saved', onClick: () => onNavigate && onNavigate('contacts') },
-      { icon: icons.settings, label: 'Settings', onClick: () => onNavigate && onNavigate('settings') },
-      { icon: icons.help, label: 'Help', onClick: () => onNavigate && onNavigate('contacts') },
+      { icon: icons.group, label: 'New Group', onClick: () => onNavigate?.('newGroup') },
+      { icon: icons.user, label: 'Contacts', onClick: () => onNavigate?.('contacts') },
+      { icon: icons.archive, label: 'Archived', badge: archiveBadge, onClick: () => onNavigate?.('archive') },
+      { icon: icons.savedmessages, label: 'Saved', onClick: () => onNavigate?.('contacts') },
+      { icon: icons.settings, label: 'Settings', onClick: () => onNavigate?.('settings') },
+      { icon: icons.help, label: 'Help', onClick: () => onNavigate?.('contacts') },
     ],
   });
 
   const newMessageMenu = contextMenu({
-    className: 'dialogs__new-message-menu',
+    className: 'dialogsScreen__new-message-menu',
     options: [
-      { icon: icons.channel, label: 'New Channel', onClick: () => onNavigate && onNavigate('newGroup') },
-      { icon: icons.group, label: 'New Group', onClick: () => onNavigate && onNavigate('newGroup') },
-      { icon: icons.user, label: 'New Private Chat', onClick: () => onNavigate && onNavigate('newGroup') },
+      { icon: icons.channel, label: 'New Channel', onClick: () => onNavigate?.('newGroup') },
+      { icon: icons.group, label: 'New Group', onClick: () => onNavigate?.('newGroup') },
+      { icon: icons.user, label: 'New Private Chat', onClick: () => onNavigate?.('newGroup') },
     ],
   });
 
-  const writeButton = div`.dialogs__write`({ onClick: (event: MouseEvent) => {
+  const writeButton = div`.dialogsScreen__write`({ onClick: (event: MouseEvent) => {
     if (buttonMenu.parentElement) getInterface(buttonMenu).close();
     if (newMessageMenu.parentElement) getInterface(newMessageMenu).close();
     else mount(container, newMessageMenu);
@@ -72,21 +68,7 @@ export default function dialogs({ onNavigate }: SidebarComponentProps) {
 
   // listen(writeButton, 'transitionstart', () => getInterface(newMessageMenu).close());
 
-  const listEl = new VirtualizedList({
-    className: 'dialogs',
-    items: service.dialogs,
-    threshold: 2,
-    batch: 20,
-    pivotBottom: false,
-    renderer: dialog,
-    onReachBottom: () => service.loadMoreDialogs(),
-  });
-
-
-  const dialogsLayer = div`dialogs__layer`(
-    status(),
-    listEl.container,
-  );
+  const dialogsLayer = dialogsTabs({ className: 'dialogsScreen__layer' });
 
   let searchResultLayer: HTMLElement | undefined;
 
@@ -107,7 +89,7 @@ export default function dialogs({ onNavigate }: SidebarComponentProps) {
       } else {
         // Create the element on open and destroy on close to reduce the initial render time and save memory
         searchResultLayer = globalSearchResult({
-          className: 'dialogs__layer -appearFromUp',
+          className: 'dialogsScreen__layer -appearFromUp',
           onTransitionEnd: handleSearchResultTransitionEnd,
           onAnimationEnd: handleSearchResultTransitionEnd,
           exit() {
@@ -126,15 +108,6 @@ export default function dialogs({ onNavigate }: SidebarComponentProps) {
     }
   });
 
-  useObservable(dialogsLayer, showSpinnerObservable, (show) => {
-    if (show && !spinner) {
-      mount(dialogsLayer, spinner = sectionSpinner({ className: 'dialogs__spinner' }));
-    } else if (!show && spinner) {
-      unmount(spinner);
-      spinner = undefined;
-    }
-  });
-
   const handleButtonClick = (event: MouseEvent) => {
     if (isSearchActive.value) isSearchActive.next(false);
     else {
@@ -146,20 +119,20 @@ export default function dialogs({ onNavigate }: SidebarComponentProps) {
     }
   };
 
-  return (
-    container = div`.dialogs`(
-      div`.dialogs__head`(
-        roundButton(
-          {
-            className: 'dialogs__head_button',
-            onClick: handleButtonClick,
-          },
-          icons.menuAndBack({ state: isSearchActive.pipe(map((isActive) => isActive ? 'back' : 'menu')) }),
-        ),
-        searchInputEl,
+  mount(container, (
+    div`.dialogsScreen__head`(
+      roundButton(
+        {
+          className: 'dialogsScreen__head_button',
+          onClick: handleButtonClick,
+        },
+        icons.menuAndBack({ state: isSearchActive.pipe(map((isActive) => isActive ? 'back' : 'menu')) }),
       ),
-      div`.dialogs__body`(dialogsLayer),
-      writeButton,
+      searchInputEl,
     )
-  );
+  ));
+  mount(container, div`.dialogsScreen__body`(dialogsLayer));
+  mount(container, writeButton);
+
+  return container;
 }

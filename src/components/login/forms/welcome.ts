@@ -58,9 +58,11 @@ export default function formWelcome() {
 
   const element = (
     form`.login__form`(
-      img`.login__logo`({ src: logo }),
-      h1`.login__title`(text('Sign in to Telegram')),
-      p`.login__description`(text('Please confirm your country and enter your phone number.')),
+      div`.login__about`(
+        img`.login__logo`({ src: logo }),
+        h1`.login__title`(text('Sign in to Telegram')),
+        p`.login__description`(text('Please confirm your country and enter your phone number.')),
+      ),
       div`.login__inputs`(
         inputCountry,
         inputPhone,

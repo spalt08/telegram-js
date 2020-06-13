@@ -2,7 +2,8 @@ import { div } from 'core/html';
 import { mount, unmount, listen } from 'core/dom';
 import { useInterface } from 'core/hooks';
 import wrapper from './wrapper/wrapper';
-import dialogs from './dialogs/dialogs';
+import dialogs from './dialogs_screen/dialogs_screen';
+import archive from './archived_dialogs/archived_dialogs';
 import settings from './settings/settings';
 import newGroup from './new_group/new_group';
 import contacts from './contacts_list/contacts_list';
@@ -13,6 +14,7 @@ import './sidebar.scss';
 
 const elements = {
   dialogs,
+  archive,
   settings,
   newGroup,
   contacts,

@@ -1,11 +1,18 @@
-import { div, text } from 'core/html';
-import { useOutsideEvent, useInterface } from 'core/hooks';
+import { div, span, text } from 'core/html';
+import { useOutsideEvent, useInterface, useMaybeObservable } from 'core/hooks';
 import { mount, listen, unmount } from 'core/dom';
+import { MaybeObservable } from 'core/types';
 import './context_menu.scss';
+
+export type ContextMenuBadge = {
+  text: string,
+  highlight?: boolean,
+};
 
 export type ContextMenuOption = {
   icon: (props?: any) => Node,
   label: string,
+  badge?: MaybeObservable<ContextMenuBadge | undefined>,
   onClick: () => void,
 };
 
@@ -15,6 +22,31 @@ type Props = {
   onClose?: () => void,
   options: ContextMenuOption[],
 };
+
+function contextMenuOption({ icon, label, badge, onClick }: ContextMenuOption) {
+  const element = div`.contextMenu__item`({ onClick },
+    div`.contextMenu__icon`(icon()),
+    div`.contextMenu__label`(text(label)),
+  );
+
+  let badgeEl: HTMLElement | undefined;
+
+  useMaybeObservable(element, badge, false, (currentBadge) => {
+    if (currentBadge) {
+      if (!badgeEl) {
+        badgeEl = span`.contextMenu__badge`();
+        mount(element, badgeEl);
+      }
+      badgeEl.textContent = currentBadge.text;
+      badgeEl.classList.toggle('-highlight', !!currentBadge.highlight);
+    } else if (badgeEl) {
+      unmount(badgeEl);
+      badgeEl = undefined;
+    }
+  });
+
+  return element;
+}
 
 export default function contextMenu({ className, options, onClose }: Props) {
   const container = div`.contextMenu${className}`();
@@ -27,13 +59,14 @@ export default function contextMenu({ className, options, onClose }: Props) {
   };
 
   for (let i = 0; i < options.length; i++) {
-    const { icon, label, onClick } = options[i];
-    const element = div`.contextMenu__item`({ onClick: () => { close(); onClick(); } },
-      div`.contextMenu__icon`(icon()),
-      div`.contextMenu__label`(text(label)),
-    );
-
-    mount(container, element);
+    const { onClick, ...option } = options[i];
+    mount(container, contextMenuOption({
+      ...option,
+      onClick: () => {
+        close();
+        onClick();
+      },
+    }));
   }
 
   useOutsideEvent(container, 'click', close);

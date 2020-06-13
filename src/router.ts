@@ -1,4 +1,4 @@
-import { distinctUntilChanged, map } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { mount, unmount } from 'core/dom';
 import { useListenWhileMounted, useObservable, useOnMount } from 'core/hooks';
 import { div } from 'core/html';
@@ -35,10 +35,8 @@ export class Router {
 
     useObservable(
       this.element,
-      auth.state.pipe(
-        map((state) => state === AuthStage.Authorized),
-        distinctUntilChanged(),
-      ),
+      auth.state.pipe(map((state) => state === AuthStage.Authorized)),
+      true,
       () => this.fetchLocation(),
     );
   }

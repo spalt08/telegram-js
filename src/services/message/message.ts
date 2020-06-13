@@ -1,10 +1,8 @@
 import { dialogCache, messageCache } from 'cache';
-import { peerToInputPeer } from 'cache/accessors';
+import { peerToInputChannel, peerToInputPeer } from 'cache/accessors';
 import client, { fetchUpdates } from 'client/client';
-import { arePeersSame, dialogPeerToDialogId, getDialogLastReadMessageId, getUserMessageId, peerMessageToId, shortChatMessageToMessage,
-  shortMessageToMessage } from 'helpers/api';
-import { Dialog, InputMedia, Message, MessagesGetMessages, MessagesMessages, MessagesSendMedia, MethodDeclMap, Peer, Updates,
-  Update } from 'mtproto-js';
+import { arePeersSame, peerToDialogId, getDialogLastReadMessageId, getUserMessageId, peerMessageToId, shortChatMessageToMessage, shortMessageToMessage } from 'helpers/api';
+import { ChannelsGetMessages, Dialog, InputMedia, Message, MessagesGetMessages, MessagesMessages, MessagesSendMedia, MethodDeclMap, Peer } from 'mtproto-js';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { first } from 'rxjs/operators';
 import makeMessageChunk, { MessageChunkService, MessageHistoryChunk } from './message_chunk';
@@ -40,36 +38,44 @@ export default class MessagesService {
   readonly replyToMessageID = new BehaviorSubject('');
 
   constructor() {
-    client.updates.on('updateNewMessage', (update: Update.updateNewMessage) => {
+    client.updates.on('updateNewMessage', (update) => {
       this.pushMessages([update.message]);
     });
 
-    client.updates.on('updateShortMessage', (update: Updates.updateShortMessage) => {
+    client.updates.on('updateShortMessage', (update) => {
       const message = shortMessageToMessage(client.getUserID(), update);
       this.pushMessages([message]);
     });
 
-    client.updates.on('updateShortChatMessage', (update: Updates.updateShortChatMessage) => {
+    client.updates.on('updateShortChatMessage', (update) => {
       const message = shortChatMessageToMessage(update);
       this.pushMessages([message]);
     });
 
-    client.updates.on('updateNewChannelMessage', (update: Update.updateNewChannelMessage) => {
+    client.updates.on('updateNewChannelMessage', (update) => {
       this.pushMessages([update.message]);
     });
 
-    client.updates.on('updateDeleteMessages', (update: Update.updateDeleteMessages) => {
+    client.updates.on('updateDeleteMessages', (update) => {
       update.messages.forEach((messageId: number) => messageCache.remove(getUserMessageId(messageId)));
     });
 
-    client.updates.on('updateDeleteChannelMessages', (update: Update.updateDeleteChannelMessages) => {
+    client.updates.on('updateDeleteChannelMessages', (update) => {
       // console.log('updateDeleteChannelMessages', update);
       update.messages.forEach((messageId: number) => messageCache.remove(
         peerMessageToId({ _: 'peerChannel', channel_id: update.channel_id }, messageId),
       ));
     });
 
-    client.updates.on('updateMessageID', ({ id, random_id }: Update.updateMessageID) => {
+    client.updates.on('updateEditMessage', (update) => {
+      messageCache.put(update.message);
+    });
+
+    client.updates.on('updateEditChannelMessage', (update) => {
+      messageCache.put(update.message);
+    });
+
+    client.updates.on('updateMessageID', ({ id, random_id }) => {
       const msg = this.pendingMessages[random_id];
       if (!msg) return;
 
@@ -78,7 +84,7 @@ export default class MessagesService {
       delete this.pendingMessages[random_id];
     });
 
-    client.updates.on('updateShortSentMessage', (update: Updates.updateShortSentMessage) => {
+    client.updates.on('updateShortSentMessage', (update) => {
       const pending = Object.keys(this.pendingMessages);
 
       if (pending.length >= 0) {
@@ -232,7 +238,7 @@ export default class MessagesService {
     switch (target) {
       case 'none': return undefined;
       case 'firstUnread': {
-        const dialog = peer && dialogCache.get(dialogPeerToDialogId(peer)) as Dialog.dialog | undefined;
+        const dialog = peer && dialogCache.get(peerToDialogId(peer)) as Dialog.dialog | undefined;
         if (!dialog) {
           return Infinity;
         }
@@ -286,17 +292,32 @@ export default class MessagesService {
     if (!this.loadMessageReplyPromise) {
       this.loadMessageReplyPromise = new Promise((resolve, reject) => {
         setTimeout(() => {
-          const params: MessagesGetMessages = {
-            id: this.loadMessageReplyList.map((m) => ({ _: 'inputMessageReplyTo', id: m.id })),
-          };
+          if (msg.to_id._ === 'peerChannel') {
+            const params: ChannelsGetMessages = {
+              channel: peerToInputChannel(msg.to_id),
+              id: this.loadMessageReplyList.map((m) => ({ _: 'inputMessageReplyTo', id: m.id })),
+            };
 
-          client.call('messages.getMessages', params)
-            .then((messages) => {
-              this.loadMessageReplyPromise = undefined;
-              this.loadMessageReplyList = [];
-              resolve(messages);
-            })
-            .catch(reject);
+            client.call('channels.getMessages', params)
+              .then((messages) => {
+                this.loadMessageReplyPromise = undefined;
+                this.loadMessageReplyList = [];
+                resolve(messages);
+              })
+              .catch(reject);
+          } else {
+            const params: MessagesGetMessages = {
+              id: this.loadMessageReplyList.map((m) => ({ _: 'inputMessageReplyTo', id: m.id })),
+            };
+
+            client.call('messages.getMessages', params)
+              .then((messages) => {
+                this.loadMessageReplyPromise = undefined;
+                this.loadMessageReplyList = [];
+                resolve(messages);
+              })
+              .catch(reject);
+          }
         });
       });
     }

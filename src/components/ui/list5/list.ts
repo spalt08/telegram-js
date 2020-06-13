@@ -2,9 +2,9 @@ import { animationFrameStart, listen, listenOnce, mount, unmount, unmountChildre
 import { useMaybeObservable } from 'core/hooks';
 import { div } from 'core/html';
 import { MaybeObservable } from 'core/types';
-import { isSafari, isiOS } from 'helpers/browser';
-import './list.scss';
+import { isiOS, isSafari } from 'helpers/browser';
 import { tgsFreeze, tgsUnFreeze } from '../tgs/tgs';
+import './list.scss';
 
 type ListConfig = {
   batch: number,
@@ -126,7 +126,7 @@ export class VirtualizedList {
     if (initialPaddingTop) this.wrapper.style.paddingTop = `${this.paddingTop = initialPaddingTop + this.cfg.forcePadding}px`;
 
     // listen items changed
-    useMaybeObservable(this.container, items, (next) => {
+    useMaybeObservable(this.container, items, false, (next) => {
       if (this.isLocked) this.pendingItems = next.slice(0);
       else this.update(next.slice(0));
     });
@@ -284,14 +284,18 @@ export class VirtualizedList {
   init() {
     // already initied
     if (this.firstRendered + this.lastRendered >= 0) return;
-
+    if (!this.viewport) this.viewport = this.container.getBoundingClientRect();
     this.lock();
 
     animationFrameStart().then(() => {
-      const appendCount = Math.min(this.cfg.batchService, this.items.length);
+      let appendCount = Math.min(this.cfg.batchService, this.items.length);
+      const focusIndex = this.shouldFocus ? this.items.indexOf(this.shouldFocus) : -1;
 
       if (appendCount > 0) {
-        this.firstRendered = this.cfg.pivotBottom ? Math.max(0, this.items.length - this.cfg.batchService) : 0;
+        if (focusIndex > -1 && focusIndex !== this.items.length - 1) {
+          this.firstRendered = Math.max(0, focusIndex - this.cfg.batchService / 2);
+          appendCount = Math.min(this.cfg.batchService, this.items.length - this.firstRendered - 1);
+        } else this.firstRendered = this.cfg.pivotBottom ? Math.max(0, this.items.length - this.cfg.batchService) : 0;
         this.lastRendered = this.firstRendered - 1;
       }
 
@@ -299,7 +303,10 @@ export class VirtualizedList {
       for (let i = 0; i < appendCount; i += 1) this.mount(this.items[++this.lastRendered]);
 
       // set initial scroll position
-      if (this.cfg.pivotBottom) this.container.scrollTop = this.cfg.forcePadding + 9999;
+      if (this.shouldFocus && focusIndex > -1) {
+        this.container.scrollTop = this.scrollTop = this.getScrollToValue(this.shouldFocus) - (this.cfg.groupPadding || 0);
+        this.shouldFocus = undefined;
+      } else if (this.cfg.pivotBottom) this.container.scrollTop = this.cfg.forcePadding + 9999;
       else this.scrollTop = 0;
 
       // set initial values
@@ -307,8 +314,6 @@ export class VirtualizedList {
         this.viewport = this.container.getBoundingClientRect();
         this.scrollHeight = this.container.scrollHeight;
         this.scrollTop = this.container.scrollTop;
-        this.shouldFocus = undefined;
-        this.shouldFocusDirection = undefined;
         this.unlock();
       });
     });
@@ -672,7 +677,7 @@ export class VirtualizedList {
 
     if (this.items.indexOf(item) === this.lastRendered) scrollValue = this.scrollHeight - this.viewport.height + 1;
 
-    return Math.floor(scrollValue);
+    return Math.ceil(scrollValue);
   }
 
   scrollTo(item: string) {

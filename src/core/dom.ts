@@ -15,6 +15,7 @@ export function isMounted(element: Node): boolean {
   return element.isConnected;
 }
 
+// Exported only for Storybook
 export function triggerMountRecursive(element: Node) {
   // The parent is triggered as mounted means that the children are triggered too (if they use mount/unmount as expected)
   if (isMountTriggered(element) === true) {
@@ -32,7 +33,8 @@ export function triggerMountRecursive(element: Node) {
   }
 }
 
-function triggerUnmountRecursive(element: Node) {
+// Exported only for Storybook
+export function triggerUnmountRecursive(element: Node) {
   // The parent is triggered as unmounted means that the children are triggered too (if they use mount/unmount as expected)
   if (isMountTriggered(element) === false) {
     return;
@@ -129,7 +131,7 @@ export function unmountChildren(element: Node) {
  * Sets any attribute to HTMLElement
  */
 export function setAttribute(element: Element, attr: string, value: MaybeObservable<string | undefined>) {
-  useMaybeObservable(element, value, (v) => {
+  useMaybeObservable(element, value, true, (v) => {
     if (v === undefined) {
       element.removeAttribute(attr);
     } else {
@@ -149,14 +151,14 @@ export function getAttribute(element: Element, attr: string): string {
  * Sets class name to HTMLElement
  */
 export function setClassName(element: Element, className: MaybeObservable<string | undefined>) {
-  useMaybeObservable(element, className, (cn = '') => { element.className = cn; });
+  useMaybeObservable(element, className, true, (cn = '') => { element.className = cn; });
 }
 
 /**
  * Sets any property to HTMLElement
  */
 export function setProperty<T extends Node, K extends keyof T>(element: T, prop: K, value: MaybeObservable<T[K]>) {
-  useMaybeObservable(element, value, (v) => { element[prop] = v; });
+  useMaybeObservable(element, value, true, (v) => { element[prop] = v; });
 }
 
 /**
@@ -164,7 +166,7 @@ export function setProperty<T extends Node, K extends keyof T>(element: T, prop:
  */
 export function setStyle(element: HTMLElement | SVGElement, style: Partial<MaybeObservableMap<WritableStyles>>) {
   (Object.keys(style) as Array<keyof WritableStyles>).forEach((prop) => {
-    useMaybeObservable(element, style[prop], (value) => {
+    useMaybeObservable(element, style[prop], true, (value) => {
       element.style[prop] = value;
     });
   });
@@ -174,7 +176,7 @@ export function setStyle(element: HTMLElement | SVGElement, style: Partial<Maybe
  * Updates value at HTMLElement and disatch input event;x
  */
 export function setValue(element: HTMLInputElement, value: MaybeObservable<string>) {
-  useMaybeObservable(element, value, (v) => {
+  useMaybeObservable(element, value, true, (v) => {
     element.value = v;
     element.dispatchEvent(new Event('input'));
   });

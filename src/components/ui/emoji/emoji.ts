@@ -30,7 +30,7 @@ export default function emoji(emojiStr: MaybeObservable<string>, {
   if (polyfill) {
     content = img({ loading: lazy ? 'lazy' : 'auto' });
     let lastEmojiStr: string | undefined;
-    useMaybeObservable(content, emojiStr, (str) => {
+    useMaybeObservable(content, emojiStr, true, (str) => {
       if (str !== lastEmojiStr) {
         lastEmojiStr = str;
         setProperty(content as HTMLImageElement, 'src', getEmojiImageUrl(str, variant));

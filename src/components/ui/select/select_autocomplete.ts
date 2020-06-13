@@ -62,7 +62,7 @@ export default function selectAutoComplete<T>({
     )),
   );
 
-  const [disabledSubject] = useToBehaviorSubject(element, disabled, false);
+  const [disabledSubject] = useToBehaviorSubject(element, disabled, true, false);
 
   const performBlur = () => {
     setValue(inputEl, optionLabeler(options[selected]));

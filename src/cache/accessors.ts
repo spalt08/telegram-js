@@ -1,10 +1,30 @@
 import { Observable, of } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
-import { chatCache, userCache } from 'cache';
+// eslint-disable-next-line import/no-cycle
+import { chatCache, messageCache, userCache } from 'cache';
 import { getFirstLetters } from 'helpers/data';
-import { messageToDialogPeer, userIdToPeer } from 'helpers/api';
+import {
+  inputPeerToInputDialogPeer,
+  inputPeerToPeer, isDialogInFolder, isDialogMuted,
+  messageToDialogPeer,
+  peerMessageToId,
+  peerToId,
+  userIdToPeer,
+} from 'helpers/api';
 import { todoAssertHasValue } from 'helpers/other';
-import { InputPeer, Message, Peer, FileLocation, User, Chat, InputUser, InputDialogPeer, InputChannel } from 'mtproto-js';
+import {
+  InputPeer,
+  Message,
+  Peer,
+  FileLocation,
+  User,
+  Chat,
+  InputUser,
+  InputChannel,
+  DialogFilter,
+  Dialog, DialogPeer, InputDialogPeer,
+} from 'mtproto-js';
+import { ARCHIVE_FOLDER_ID } from '../const/api';
 
 interface PeerReference {
   peer: InputPeer;
@@ -72,13 +92,6 @@ export function messageSenderToInputUser(message: Exclude<Message, Message.messa
     peer: peerToInputPeer(messageToDialogPeer(message)),
     msg_id: message.id,
     user_id: todoAssertHasValue(message.from_id),
-  };
-}
-
-export function peerToInputDialogPeer(peer: Peer, reference?: PeerReference): InputDialogPeer {
-  return {
-    _: 'inputDialogPeer',
-    peer: peerToInputPeer(peer, reference),
   };
 }
 
@@ -216,4 +229,96 @@ export function messageToSenderPeer(message: Exclude<Message, Message.messageEmp
   return channel && channel._ === 'channel' && !channel.megagroup
     ? message.to_id
     : userIdToPeer(todoAssertHasValue(message.from_id));
+}
+
+// See Array.prototype.sort
+export function compareDialogs(dialog1: Readonly<Dialog>, dialog2: Readonly<Dialog>): number {
+  // With most recent message first
+  const message1 = messageCache.get(peerMessageToId(dialog1.peer, dialog1.top_message));
+  const message2 = messageCache.get(peerMessageToId(dialog2.peer, dialog2.top_message));
+  return (message2 && message2._ !== 'messageEmpty' ? message2.date : 0) - (message1 && message1._ !== 'messageEmpty' ? message1.date : 0);
+}
+
+export function makeDialogMatchFilterChecker(filter: Readonly<DialogFilter>) {
+  const includePeers = new Set<string>();
+  const excludePeers = new Set<string>();
+
+  // A little trick to reduce GC work
+  let peerId: string;
+  let user: Readonly<User> | undefined;
+
+  // Pinned peers aren't listed in include_peers but must be included
+  [...filter.include_peers, ...filter.pinned_peers].forEach((inputPeer) => {
+    const peer = inputPeerToPeer(inputPeer);
+    if (peer) {
+      includePeers.add(peerToId(peer));
+    }
+  });
+
+  filter.exclude_peers.forEach((inputPeer) => {
+    const peer = inputPeerToPeer(inputPeer);
+    if (peer) {
+      excludePeers.add(peerToId(peer));
+    }
+  });
+
+  return (dialog: Dialog): boolean => {
+    if (dialog._ !== 'dialog') {
+      return false;
+    }
+    if (filter.exclude_archived && isDialogInFolder(dialog, ARCHIVE_FOLDER_ID)) {
+      return false;
+    }
+    if (filter.exclude_muted && isDialogMuted(dialog)) {
+      return false;
+    }
+    if (filter.exclude_read && !dialog.unread_count && !dialog.unread_mark) {
+      return false;
+    }
+    peerId = peerToId(dialog.peer);
+    if (excludePeers.has(peerId)) {
+      return false;
+    }
+    if (includePeers.has(peerId)) {
+      return true;
+    }
+    switch (dialog.peer._) {
+      case 'peerChannel':
+        if (filter.broadcasts) {
+          return true;
+        }
+        break;
+      case 'peerChat':
+        if (filter.groups) {
+          return true;
+        }
+        break;
+      case 'peerUser':
+        user = userCache.get(dialog.peer.user_id);
+        if (user?._ === 'user') {
+          if (filter.contacts && user.contact) {
+            return true;
+          }
+          if (filter.non_contacts && !user.contact && !user.bot) {
+            return true;
+          }
+          if (filter.bots && user.bot) {
+            return true;
+          }
+        }
+        break;
+      default:
+    }
+    return false;
+  };
+}
+
+export function dialogPeerToInputDialogPeer(dialogPeer: DialogPeer): InputDialogPeer {
+  if (dialogPeer._ === 'dialogPeer') {
+    return inputPeerToInputDialogPeer(peerToInputPeer(dialogPeer.peer));
+  }
+  return {
+    _: 'inputDialogPeerFolder',
+    folder_id: dialogPeer.folder_id,
+  };
 }

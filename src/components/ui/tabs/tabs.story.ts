@@ -1,7 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { storiesOf } from '@storybook/html';
 import centered from '@storybook/addon-centered/html';
-import { withKnobs, array, number } from '@storybook/addon-knobs';
+import { withKnobs, array, number, select } from '@storybook/addon-knobs';
 import { withMountTrigger } from 'storybook/decorators';
 import { div, text } from 'core/html';
 
@@ -13,10 +13,16 @@ const stories = storiesOf('Layout | UI Elements', module)
   .addDecorator(withKnobs);
 
 stories.add('Tabs Container', () => {
-  const tabsNames = array('Tabs', ['Tab 1', 'Tab 2']);
-  const items: Record<string, HTMLElement> = {};
-
-  for (let i = 0; i < tabs.length; i++) items[tabsNames[i]] = div({ style: { width: '100%' } }, text(tabsNames[i]));
+  const tabsNames = array('Tabs', ['Tab 1', 'Tab 2 (4)', 'Tab 3']);
+  const items = tabsNames.map((name, index) => {
+    const badgeMatch = /^(.*?)\s*\(([^)]*)\)\s*$/.exec(name);
+    return {
+      key: `tab_${index}`,
+      title: badgeMatch ? badgeMatch[1] : name,
+      badge: badgeMatch ? badgeMatch[2] : undefined,
+      content: () => div({ style: { width: '100%' } }, text(name)),
+    };
+  });
 
   return div(
     { style: {
@@ -25,6 +31,8 @@ stories.add('Tabs Container', () => {
       border: '1px solid #dedfe2',
       borderRadius: '10px',
     } },
-    tabs({}, items),
+    tabs({
+      headerAlign: select('Align', { Center: 'center', 'Space between': 'space-between', Stretch: 'stretch' }, 'center'),
+    }, items),
   );
 });

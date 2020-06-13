@@ -108,14 +108,14 @@ export function makeTextMatchHighlightComponent(options: HighlighterOptions) {
       }
     }
 
-    useMaybeObservable(element, content, (newContent) => {
+    useMaybeObservable(element, content, true, (newContent) => {
       if (newContent !== lastContent) {
         lastContent = newContent;
         updateContent();
       }
     });
 
-    useMaybeObservable(element, query, (newQuery) => {
+    useMaybeObservable(element, query, true, (newQuery) => {
       if (newQuery !== lastQuery) {
         lastQuery = newQuery;
         updateContent();

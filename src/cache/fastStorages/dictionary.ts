@@ -35,7 +35,7 @@ export default class Dictionary<TKey extends keyof any, TItem> {
   protected data: Record<TKey, Readonly<TItem>>;
 
   protected changesBatch = new BatchActions((events: ChangeEvent<TItem, TKey>[]) => {
-    if (this.changes.observers.length > 0) {
+    if (events.length > 0 && this.changes.observers.length > 0) {
       this.changes.next(events);
     }
   });
@@ -150,18 +150,34 @@ export default class Dictionary<TKey extends keyof any, TItem> {
   }
 
   /**
+   * Like this.watchItem but watches only when the element is mounted.
+   * Also calls the handler on mount if the item has been changed since the last handler call.
+   */
+  public useWatchItem(base: Node, key: TKey, onChange: ItemWatcher<TItem>): () => void {
+    let lastItem = this.get(key);
+
+    const handleChange: ItemWatcher<TItem> = (item) => {
+      if (lastItem !== item) {
+        lastItem = item;
+        onChange(item);
+      }
+    };
+
+    onChange(lastItem);
+
+    return useWhileMounted(base, () => {
+      handleChange(this.get(key));
+      return this.watchItem(key, handleChange);
+    });
+  }
+
+  /**
    * Makes a behavior subject that is updated only while the element is mounted for an item with the given key.
    * This subject can be subscribed on directly without memory leaks concerns.
    */
   public useItemBehaviorSubject(base: Node, key: TKey): BehaviorSubject<Readonly<TItem> | undefined> {
     const subject = new BehaviorSubject(this.get(key));
-    useWhileMounted(base, () => {
-      const item = this.get(key);
-      if (subject.value !== item) {
-        subject.next(item);
-      }
-      return this.watchItem(key, (newItem) => subject.next(newItem));
-    });
+    this.useWatchItem(base, key, (item) => subject.next(item));
     return subject;
   }
 

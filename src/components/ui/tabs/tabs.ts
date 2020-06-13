@@ -1,79 +1,142 @@
-import { div, text } from 'core/html';
-import { listenOnce, unmount, mount, listen, animationFrameStart } from 'core/dom';
-import { useInterface, hasInterface, getInterface } from 'core/hooks';
+import { BehaviorSubject } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { div } from 'core/html';
+import { listenOnce, unmount, mount, animationFrameStart } from 'core/dom';
+import { useInterface, getInterface, useMaybeObservable } from 'core/hooks';
+import { MaybeObservable } from 'core/types';
+import simpleList from '../simple_list';
+import tabHeader, { TabBadge } from './tab_header';
 import './tabs.scss';
 
-interface TabsInterface {
-  shouldRemove(): void,
-  didAppear(): void,
+export interface TabItem {
+  key: string;
+  title: MaybeObservable<string>;
+  badge?: MaybeObservable<TabBadge | undefined>;
+  // Warning: the function isn't recalled when changed
+  content: () => HTMLElement;
 }
 
-type TabsItems = Record<string, HTMLElement>;
+interface TabMeta {
+  factory: () => HTMLElement;
+  content?: HTMLElement;
+  index: number;
+}
+
 type Props = {
   className?: string,
-  headerAlign?: 'center' | 'space-between' | 'stretch';
+  headerAlign?: 'center' | 'space-between' | 'stretch',
+  hideHeader?: MaybeObservable<boolean>,
 };
 
-export default function tabsPanel({ className = '', headerAlign = 'center' }: Props, tabs: TabsItems) {
-  const tabsIndexes = Object.keys(tabs);
-
-  let selected = 0;
+export default function tabsPanel({ className = '', headerAlign = 'center', hideHeader }: Props, tabs: MaybeObservable<TabItem[]>) {
+  let tabsMeta: Record<string, TabMeta> = {};
+  const selected = new BehaviorSubject<string | undefined>(undefined);
   let isLocked = false;
+  let change: (key: keyof any) => void;
 
-  const tabsEl: HTMLElement[] = [];
+  const tabsHeader = simpleList<TabItem, ReturnType<typeof tabHeader>>({
+    items: tabs,
+    getItemKey: (tab) => tab.key,
+    render: (tab) => tabHeader(
+      tab.title,
+      tab.badge,
+      selected.pipe(map((key) => tab.key === key)),
+      () => change(tab.key),
+    ),
+    update: (tabNode, tabData) => {
+      const tabControl = getInterface(tabNode);
+      tabControl.setTitle(tabData.title);
+      tabControl.setBadge(tabData.badge);
+    },
+    props: {
+      className: `tabs-panel__header -${headerAlign}`,
+    },
+  });
+  const contentEl = div`.tabs-panel__container`();
+  const container = div`.tabs-panel${className}`(contentEl);
 
-  for (let i = 0; i < tabsIndexes.length; i += 1) {
-    tabsEl[i] = div`.tabs-panel__tab`(
-      div(text(tabsIndexes[i])),
-    );
-  }
-
-  const contentEl = div`.tabs-panel__container`(tabs[tabsIndexes[selected]]);
-  const container = div`.tabs-panel${className}`(
-    div`.tabs-panel__header ${`-${headerAlign}`}`(...tabsEl),
-    contentEl,
-  );
-
-  tabsEl[selected].classList.add('-active');
-
-  const change = (nextSelected: number) => {
+  change = (nextSelected: string) => {
     if (isLocked) return;
-    if (selected === nextSelected) return;
+    if (selected.value === nextSelected) return;
+    if (!tabsMeta[nextSelected]) return;
 
     isLocked = true;
 
-    const removingEl = tabs[tabsIndexes[selected]];
-    const appearingEl = tabs[tabsIndexes[nextSelected]];
+    const removingTabMeta = tabsMeta[selected.value!];
+    const appearingTabMeta = tabsMeta[nextSelected];
+    const removingIndex = removingTabMeta.index;
+    const appearingIndex = appearingTabMeta.index;
+    const removingEl = removingTabMeta.content;
+    const appearingEl = appearingTabMeta.content = appearingTabMeta.content || appearingTabMeta.factory();
 
-    let direction = 'left';
-    if (nextSelected < selected) direction = 'right';
+    const direction = removingIndex > appearingIndex ? 'right' : 'left';
 
-    // trigger interface if exists
-    if (hasInterface<TabsInterface>(removingEl) && getInterface(removingEl).shouldRemove) getInterface(removingEl).shouldRemove();
-
-    tabsEl[selected].classList.remove('-active');
-    tabsEl[nextSelected].classList.add('-active');
+    selected.next(nextSelected);
 
     appearingEl.classList.add(`appearing-${direction}`);
-    removingEl.classList.add(`removing-${direction}`);
 
-    selected = nextSelected;
+    if (removingEl) {
+      removingEl.classList.add(`removing-${direction}`);
 
-    listenOnce(removingEl, 'transitionend', async () => {
-      await animationFrameStart();
-      unmount(removingEl);
-      removingEl.classList.remove(`removing-${direction}`);
-      appearingEl.classList.remove(`appearing-${direction}`);
+      listenOnce(removingEl, 'transitionend', async () => {
+        await animationFrameStart();
+        unmount(removingEl);
+        removingEl.classList.remove(`removing-${direction}`);
+        appearingEl.classList.remove(`appearing-${direction}`);
+        isLocked = false;
+      });
+    } else {
       isLocked = false;
-
-      // trigger interface if exists
-      if (hasInterface<TabsInterface>(appearingEl) && getInterface(appearingEl).didAppear) getInterface(appearingEl).didAppear();
-    });
+    }
 
     mount(contentEl, appearingEl);
   };
 
-  for (let i = 0; i < tabsIndexes.length; i += 1) listen(tabsEl[i], 'click', () => change(i));
+  useMaybeObservable(container, hideHeader, true, (isHidden) => {
+    if (isHidden && tabsHeader.parentNode) {
+      unmount(tabsHeader);
+    }
+    if (!isHidden && !tabsHeader.parentNode) {
+      mount(container, tabsHeader, container.firstChild || undefined);
+    }
+  });
+
+  useMaybeObservable(container, tabs, false, (newTabs) => {
+    const newTabsMeta: Record<string, TabMeta> = {};
+
+    newTabs.forEach((tab, index) => {
+      newTabsMeta[tab.key] = {
+        factory: tab.content,
+        content: tabsMeta[tab.key]?.content,
+        index,
+      };
+    });
+
+    // Unselect the selected tab if it's removed
+    if (selected.value !== undefined && !newTabsMeta[selected.value]) {
+      selected.next(undefined);
+    }
+
+    // Remove removed tabs
+    Object.keys(tabsMeta).forEach((key) => {
+      if (!newTabsMeta[key]) {
+        const { content } = tabsMeta[key];
+        if (content) unmount(content);
+        delete tabsMeta[key];
+      }
+    });
+
+    // Switch a tab if no tab is selected
+    if (selected.value === undefined && newTabs.length) {
+      const { key } = newTabs[0];
+      const tabMeta = newTabsMeta[key];
+      selected.next(key);
+      tabMeta.content = tabMeta.content || tabMeta.factory();
+      mount(contentEl, tabMeta.content!);
+    }
+
+    tabsMeta = newTabsMeta;
+  });
 
   return useInterface(container, {
     change,

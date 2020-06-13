@@ -62,7 +62,7 @@ export default function mediaPanel(peer: Peer) {
 
   media.loadMedia(peer, SEARCH_FILTER);
 
-  useObservable(container, messageCache.indices.photoVideos.getPeerMedia(peer), (messages: Message[]) => {
+  useObservable(container, messageCache.indices.photoVideos.getPeerMedia(peer), true, (messages: Message[]) => {
     if (!messages.length && media.isMediaLoading(peer, SEARCH_FILTER)) {
       return;
     }
