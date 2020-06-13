@@ -21,7 +21,6 @@ export default function messageSearchSidebar({ onBack }: SidebarComponentProps, 
   const [resultIdsSubject] = useToBehaviorSubject(
     rootEl,
     messageSearch.result.pipe(map((result) => result.ids.map((id) => peerMessageToId(message.activePeer.value!, id)))),
-    true,
     [],
   );
   const resultQueryObservable = messageSearch.result.pipe(map((result) => result.request));
