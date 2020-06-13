@@ -10,19 +10,17 @@ import './shared_media.scss';
 type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
 export default function sharedMedia({ onBack }: SidebarComponentProps, peer: Peer) {
-  const container = div`.sharedMediaSidebar`(
+  return div`.sharedMediaSidebar`(
     heading({
       title: 'Shared Media',
       buttons: [
         { icon: icons.back, position: 'left', onClick: () => onBack && onBack() },
       ],
     }),
-    peer ? tabsPanel({ className: 'sharedMediaSidebar__panels', headerAlign: 'space-between' }, {
-      Media: mediaPanel(peer),
-      Docs: docsPanel(peer),
-      Links: linksPanel(peer),
-    }) : nothing,
+    peer ? tabsPanel({ className: 'sharedMediaSidebar__panels', headerAlign: 'space-between' }, [
+      { key: 'media', title: 'Media', content: () => mediaPanel(peer) },
+      { key: 'docs', title: 'Docs', content: () => docsPanel(peer) },
+      { key: 'links', title: 'Links', content: () => linksPanel(peer) },
+    ]) : nothing,
   );
-
-  return container;
 }

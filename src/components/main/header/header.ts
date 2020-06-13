@@ -17,7 +17,7 @@ type Props = {
 export default function header({ onBackToContacts }: Props) {
   const container = div`.header.hidden`();
 
-  useObservable(container, message.activePeer, (peer) => {
+  useObservable(container, message.activePeer, true, (peer) => {
     unmountChildren(container);
 
     if (!peer) {
@@ -47,7 +47,7 @@ export default function header({ onBackToContacts }: Props) {
     const pinnedMessage = div`.header__pinned`();
     mount(container, pinnedMessage);
 
-    pinnedMessageCache.useItemBehaviorSubject(container, peerToId(peer)).subscribe((msg) => {
+    pinnedMessageCache.useWatchItem(container, peerToId(peer), (msg) => {
       unmountChildren(pinnedMessage);
       if (msg) {
         mount(pinnedMessage, ripple({

@@ -2,8 +2,9 @@ import { listen, mount, unmount } from 'core/dom';
 import { useInterface } from 'core/hooks';
 import { div } from 'core/html';
 import { main } from 'services';
+import archive from './archived_dialogs/archived_dialogs';
 import contacts from './contacts_list/contacts_list';
-import dialogs from './dialogs/dialogs';
+import dialogs from './dialogs_screen/dialogs_screen';
 import info from './info/info';
 import messageSearch from './message_search/message_search';
 import newGroup from './new_group/new_group';
@@ -15,6 +16,7 @@ import wrapper from './wrapper/wrapper';
 
 const elements = {
   dialogs,
+  archive,
   settings,
   newGroup,
   contacts,

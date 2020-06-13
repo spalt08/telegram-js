@@ -12,7 +12,7 @@ export default function sharedMediaIndex(collection: Collection<Message, any>) {
     },
   });
 
-  const cache: Record<string, { snapshot: ReturnType<typeof createEmptySnapshot>, subject: Subject<Message[]> }> = {};
+  const cache: Record<string, { snapshot: ReturnType<typeof createEmptySnapshot>, subject: Subject<readonly Readonly<Message>[]> }> = {};
 
   collection.changes.subscribe((collectionChanges) => {
     collectionChanges.forEach(([action, item]) => {
@@ -53,7 +53,7 @@ export default function sharedMediaIndex(collection: Collection<Message, any>) {
       cacheLine.subject.next(snapshot);
     },
 
-    getPeerMedia(peer: Peer): Observable<Message[]> {
+    getPeerMedia(peer: Peer): Observable<readonly Readonly<Message>[]> {
       return getCacheLine(peer).subject;
     },
 

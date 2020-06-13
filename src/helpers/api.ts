@@ -1,5 +1,4 @@
-import { Dialog, Peer, Message, Updates, UserStatus } from 'mtproto-js';
-import { ARCHIVE_FOLDER_ID, ROOT_FOLDER_ID } from 'const/api';
+import { Dialog, Peer, Message, Updates, UserStatus, InputPeer, InputDialogPeer, DialogPeer } from 'mtproto-js';
 import client from 'client/client';
 import { todoAssertHasValue } from './other';
 
@@ -25,15 +24,29 @@ export function peerIdToPeer(id: string): Peer {
   throw TypeError('Unknown peer type');
 }
 
-export function dialogPeerToDialogId(peer: Peer) {
+export function peerToDialogId(peer: Peer) {
   return peerToId(peer);
+}
+
+export function dialogPeerToDialogId(dialogPeer: DialogPeer) {
+  if (dialogPeer._ === 'dialogPeerFolder') {
+    return `folder_${dialogPeer.folder_id}`;
+  }
+  return peerToDialogId(dialogPeer.peer);
+}
+
+export function dialogIdToDialogPeer(id: string): DialogPeer {
+  if (id.startsWith('folder_')) {
+    return { _: 'dialogPeerFolder', folder_id: Number(id.slice(7)) };
+  }
+  return { _: 'dialogPeer', peer: peerIdToPeer(id) };
 }
 
 export function dialogToId(dialog: Readonly<Dialog>): string {
   if (dialog._ === 'dialogFolder') {
     return `folder_${dialog.folder.id}`;
   }
-  return dialogPeerToDialogId(dialog.peer);
+  return peerToDialogId(dialog.peer);
 }
 
 // Use it to convert a user message id to the message cache key
@@ -116,12 +129,11 @@ export function shortChatMessageToMessage(message: Updates.updateShortChatMessag
   };
 }
 
-export function isDialogInRootFolder(dialog: Dialog) {
-  return dialog._ === 'dialogFolder' || dialog.folder_id === ROOT_FOLDER_ID || !dialog.folder_id;
-}
-
-export function isDialogArchived(dialog: Dialog) {
-  return dialog._ !== 'dialogFolder' && dialog.folder_id === ARCHIVE_FOLDER_ID;
+export function isDialogInFolder(dialog: Readonly<Dialog>, folderId: number | undefined): boolean {
+  if (!folderId) {
+    return dialog._ !== 'dialog' || !dialog.folder_id;
+  }
+  return dialog._ === 'dialog' && dialog.folder_id === folderId;
 }
 
 export function getDialogLastReadMessageId(dialog: Dialog.dialog) {
@@ -152,4 +164,57 @@ export function areUserStatusesEqual(status1: UserStatus | undefined, status2: U
 
 export function isSelf(peer: Peer) {
   return peer._ === 'peerUser' && peer.user_id === client.getUserID();
+}
+
+export function inputPeerToPeer(peer: InputPeer): Peer | null {
+  switch (peer._) {
+    case 'inputPeerChat':
+      return { _: 'peerChat', chat_id: peer.chat_id };
+    case 'inputPeerUser':
+    case 'inputPeerUserFromMessage':
+      return { _: 'peerUser', user_id: peer.user_id };
+    case 'inputPeerChannel':
+    case 'inputPeerChannelFromMessage':
+      return { _: 'peerChannel', channel_id: peer.channel_id };
+    case 'inputPeerSelf':
+      return { _: 'peerUser', user_id: client.getUserID() };
+    default:
+      return null;
+  }
+}
+
+export function inputPeerToInputDialogPeer(inputPeer: InputPeer): InputDialogPeer.inputDialogPeer {
+  return {
+    _: 'inputDialogPeer',
+    peer: inputPeer,
+  };
+}
+
+export function peerToDialogPeer(peer: Peer): DialogPeer {
+  return {
+    _: 'dialogPeer',
+    peer,
+  };
+}
+
+export function isDialogUnread(dialog: Dialog): boolean {
+  if (dialog._ === 'dialog') {
+    return dialog.unread_count > 0 || !!dialog.unread_mark;
+  }
+  return dialog.unread_muted_peers_count > 0 || dialog.unread_unmuted_peers_count > 0;
+}
+
+export function isDialogMuted(dialog: Dialog): boolean {
+  if (dialog._ !== 'dialog') {
+    return false;
+  }
+  return dialog.notify_settings && dialog.notify_settings.mute_until! > 0;
+}
+
+export function dialogIdToPeer(id: string): Peer | null {
+  const dialogPeer = dialogIdToDialogPeer(id);
+  if (dialogPeer._ === 'dialogPeer') {
+    return dialogPeer.peer;
+  }
+  return null;
 }

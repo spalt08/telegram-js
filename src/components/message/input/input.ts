@@ -7,6 +7,7 @@ import { Document } from 'mtproto-js';
 import { bubble, contextMenu, quote } from 'components/ui';
 import { documentToInputMedia } from 'helpers/message';
 import { messageCache } from 'cache';
+import { upload } from 'client/media';
 import { messageToSenderPeer } from 'cache/accessors';
 import { profileTitle } from 'components/profile';
 import photoRenderer from 'components/media/photo/photo';
@@ -22,7 +23,29 @@ export default function messageInput() {
   const btn = recordSendButton({
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     onMessage: () => message.sendMessage(textarea.value),
-    onAudio: () => console.log('audio no implemented'),
+    onAudio: ({ blob, duration, waveform }) => {
+      upload(blob, (file) => {
+        message.sendMediaMessage({
+          _: 'inputMediaUploadedDocument',
+          file,
+          mime_type: blob.type,
+          attributes: [{
+            _: 'documentAttributeAudio',
+            voice: true,
+            duration,
+            waveform,
+          }],
+        });
+      });
+    },
+    onStartRecording: () => {
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      container.classList.add('-recording');
+    },
+    onFinishRecording: () => {
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      container.classList.remove('-recording');
+    },
   });
 
   const btnI = getInterface(btn);
@@ -87,7 +110,7 @@ export default function messageInput() {
   );
 
   // Reply
-  useObservable(container, message.replyToMessageID, (msgID) => {
+  useObservable(container, message.replyToMessageID, true, (msgID) => {
     unmountChildren(quoteContainer);
 
     if (msgID) {

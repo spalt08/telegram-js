@@ -8,7 +8,7 @@ export default function profileTitle(peer: Peer, isForDialogList = false) {
   const [firstTitle, titleObservable] = peerToTitle(peer, isForDialogList ? client.getUserID() : undefined);
   const textNode = text(firstTitle);
 
-  useObservable(textNode, titleObservable, (title) => {
+  useObservable(textNode, titleObservable, true, (title) => {
     textNode.textContent = title;
   });
 

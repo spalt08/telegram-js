@@ -23,7 +23,7 @@ export default function infoListItem({ icon, label, value }: Props) {
     ),
   );
 
-  useMaybeObservable(container, value, (next) => {
+  useMaybeObservable(container, value, true, (next) => {
     unmountChildren(valueContainer);
     if (next) mount(valueContainer, highlightLinks(next));
 

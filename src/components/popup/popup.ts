@@ -15,7 +15,7 @@ export default function popup() {
   const wrapper = div`.opaco`();
   let element: Node | undefined;
 
-  useObservable(wrapper, main.popup, (type: string) => {
+  useObservable(wrapper, main.popup, true, (type: string) => {
     if (element) unmount(element);
     wrapper.classList.remove('closing');
 

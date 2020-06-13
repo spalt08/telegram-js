@@ -40,15 +40,15 @@ export default function home() {
     rightSidebarFade,
   );
 
-  useObservable(container, main.rightSidebarDelegate, (state) => {
+  useObservable(container, main.rightSidebarDelegate, true, (state) => {
     if (state) getInterface(rightSidebar).pushState(state);
   });
 
-  useObservable(container, message.activePeer, (peer) => {
+  useObservable(container, message.activePeer, true, (peer) => {
     if (peer !== null) isChatOpened.next(true);
   });
 
-  useObservable(container, isChatOpened, (opened) => {
+  useObservable(container, isChatOpened, true, (opened) => {
     if (opened !== null) {
       leftSidebar.classList.toggle('-popping', opened);
       historyEl.classList.toggle('-visible', opened);

@@ -155,7 +155,7 @@ export default class MediaService {
     if (this.main.popup.value !== 'sendMedia') this.main.showPopup('sendMedia');
   };
 
-  private audioInfos: Record<string, BehaviorSubject<MediaPlaybackState>> = {};
+  private audioInfos: Record<string, BehaviorSubject<Readonly<MediaPlaybackState>>> = {};
 
   private getPlaybackState(doc: Document.document) {
     let info = this.audioInfos[doc.id];

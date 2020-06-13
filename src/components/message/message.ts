@@ -105,7 +105,7 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
   /**
    * Position was updated inside scroll
    */
-  useObservable(container, siblings, (next) => {
+  useObservable(container, siblings, true, (next) => {
     const isLastNow = isLastMessage(msg, next);
     const isFirstNow = isFirstMessage(msg, next);
 
@@ -148,7 +148,7 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
   /**
    * Update Contents Strategy
    */
-  messageCache.useItemBehaviorSubject(container, id).subscribe((next: Message.message) => {
+  messageCache.useWatchItem(container, id, (next: Message.message) => {
     if (!next) return;
 
     // message text

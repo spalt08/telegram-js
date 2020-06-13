@@ -1,0 +1,13 @@
+.archivedDialogs {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  &__head {
+    flex: none;
+  }
+
+  &__list {
+    flex: 1;
+  }
+}

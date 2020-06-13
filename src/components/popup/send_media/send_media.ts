@@ -40,7 +40,7 @@ export default class SendMediaPopup {
       )
     );
 
-    useObservable(this.container, service.attachedFiles, (files: FileList) => {
+    useObservable(this.container, service.attachedFiles, false, (files: FileList) => {
       if (!files) return;
 
       for (let i = 0; i < files.length; i++) {

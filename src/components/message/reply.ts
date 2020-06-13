@@ -33,7 +33,7 @@ export default function messageReply(id: number, original: Message.message) {
     service.loadMessageReply(original);
   }
 
-  messageCache.useItemBehaviorSubject(contentElement, fullId).subscribe(renderReply);
+  messageCache.useWatchItem(contentElement, fullId, renderReply);
 
   return div`.message__reply`(contentElement);
 }

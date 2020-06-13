@@ -123,7 +123,7 @@ async function searchMessages(request: SearchRequest, offsetMessage: Exclude<Mes
 }
 
 export default class GlobalSearch {
-  readonly result = new BehaviorSubject<SearchResult>({
+  readonly result = new BehaviorSubject<Readonly<SearchResult>>({
     type: SearchResultType.ForEmptyQuery,
     request: '',
     topUsers: [],

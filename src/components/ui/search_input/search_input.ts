@@ -42,7 +42,7 @@ export default function searchInput({ placeholder, className = '', isLoading, on
     listen(inputEl, 'blur', makeHandleAction(onBlur));
   }
 
-  useMaybeObservable(element, isLoading, (isLoadingNow) => {
+  useMaybeObservable(element, isLoading, true, (isLoadingNow) => {
     if (isLoadingNow && !loadingEl) {
       loadingEl = icons.materialSpinner({ className: 'searchInput__loading' });
       element.classList.add('-loading');

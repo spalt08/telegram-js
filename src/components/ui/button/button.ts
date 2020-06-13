@@ -24,7 +24,7 @@ export default function button({ label = '', disabled, loading }: Props) {
 
   let spinner: Node | undefined;
 
-  useMaybeObservable(element, loading, (isLoading) => {
+  useMaybeObservable(element, loading, true, (isLoading) => {
     if (isLoading && !spinner) {
       element.classList.add('loading');
       spinner = materialSpinner({ class: 'button__spinner' });

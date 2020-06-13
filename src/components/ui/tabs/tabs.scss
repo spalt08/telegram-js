@@ -1,6 +1,6 @@
+@import '~styles/variables.scss';
 
 .tabs-panel {
-  text-align: center;
   flex-direction: column;
   justify-content: space-between;
   overflow: hidden;
@@ -8,10 +8,13 @@
 
   &__header {
     flex: none;
-    height: 48px;
+    min-height: 44px;
     display: flex;
     border-bottom: 1px solid #dedfe2;
     width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    @include scrollbar-width(4px);
 
     &.-center {
       justify-content: center;
@@ -25,6 +28,7 @@
   &__tab {
     $transition-duration: 0.2s;
 
+    flex-shrink: 0;
     display: flex;
     justify-content: center;
     color: #7b8083;
@@ -34,25 +38,43 @@
     cursor: pointer;
     transition: all $transition-duration;
 
-    > div {
+    &_content {
       display: flex;
       align-items: center;
       text-align: center;
       position: relative;
       font-weight: 500;
-      font-size: 16px;
+      font-size: 14px;
 
       &::after {
         content: '';
         position: absolute;
         bottom: 0;
-        left: -2px;
-        right: -2px;
-        height: 4px;
+        left: -12px;
+        right: -12px;
+        height: 3px;
         background: #4EA4F5;
         border-radius: 2px 2px 0 0;
         opacity: 0;
         transition: opacity $transition-duration ease-out;
+      }
+    }
+
+    &_badge {
+      $size: 20px;
+      box-sizing: border-box;
+      min-width: $size;
+      height: $size;
+      border-radius: $size / 2;
+      line-height: 21px;
+      padding: 0 3px;
+      background: #C4C9CC;
+      color: #fff;
+      margin: -5px 0 -5px 5px;
+      transition: background $transition-duration ease-out;
+
+      &.-highlight {
+        background: #4EA4F5;
       }
     }
 
@@ -62,17 +84,16 @@
 
     &.-active {
       color: #4EA4F5;
-
-      > div::after {
-        opacity: 1;
-      }
+    }
+    &.-active > &_content::after {
+      opacity: 1;
     }
   }
 
   &__header.-stretch &__tab {
-    flex: 1 1 auto;
-    padding-left: 0;
-    padding-right: 0;
+    flex: 1 0 auto;
+    padding-left: 8px;
+    padding-right: 8px;
   }
 
   &__container {
