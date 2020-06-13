@@ -1,5 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
-import { distinctUntilChanged, map } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { div } from 'core/html';
 import { listenOnce, unmount, mount, animationFrameStart } from 'core/dom';
 import { useInterface, getInterface, useMaybeObservable } from 'core/hooks';
@@ -40,7 +40,7 @@ export default function tabsPanel({ className = '', headerAlign = 'center', hide
     render: (tab) => tabHeader(
       tab.title,
       tab.badge,
-      selected.pipe(map((key) => tab.key === key), distinctUntilChanged()),
+      selected.pipe(map((key) => tab.key === key)),
       () => change(tab.key),
     ),
     update: (tabNode, tabData) => {
@@ -92,7 +92,7 @@ export default function tabsPanel({ className = '', headerAlign = 'center', hide
     mount(contentEl, appearingEl);
   };
 
-  useMaybeObservable(container, hideHeader, (isHidden) => {
+  useMaybeObservable(container, hideHeader, true, (isHidden) => {
     if (isHidden && tabsHeader.parentNode) {
       unmount(tabsHeader);
     }
@@ -101,7 +101,7 @@ export default function tabsPanel({ className = '', headerAlign = 'center', hide
     }
   });
 
-  useMaybeObservable(container, tabs, (newTabs) => {
+  useMaybeObservable(container, tabs, false, (newTabs) => {
     const newTabsMeta: Record<string, TabMeta> = {};
 
     newTabs.forEach((tab, index) => {

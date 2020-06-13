@@ -240,14 +240,33 @@ export function useListenWhileMounted(base: Node, target: EventTarget, event: st
  * Listens to the Observable data change during the element is mounted.
  * Call `stop` to unsubscribe from the observable immediately and stop watching the mount events.
  *
+ * Set `isPureState` to `true` when the callback should be called only when the observable value changes and you are
+ * sure that the values are pure (e.g. value1 !== value2 when the value is changed). Otherwise set to `false`, e.g. when
+ * the callback must be called on every emit.
+ *
  * @example
- * const stop = useObservable(element, observable, (event) => {
- *   element.foo = event;
+ * const stop = useObservable(element, observable, true, (value) => {
+ *   element.foo = value;
  * });
  */
-export function useObservable<T>(base: Node, observable: Observable<T>, onChange: (newValue: T) => void) {
+export function useObservable<T>(
+  base: Node,
+  observable: Observable<T>,
+  isPureState = false,
+  onChange: (newValue: T) => void,
+) {
+  let lastValue: T | undefined;
+  let wasEmitted = false;
+  const handleEmit = !isPureState ? onChange : ((newValue: T) => {
+    if (!wasEmitted || newValue !== lastValue) {
+      lastValue = newValue;
+      wasEmitted = true;
+      onChange(newValue);
+    }
+  });
+
   return useWhileMounted(base, () => {
-    const subscription = observable.subscribe(onChange);
+    const subscription = observable.subscribe(handleEmit);
     return () => subscription.unsubscribe();
   });
 }
@@ -255,11 +274,19 @@ export function useObservable<T>(base: Node, observable: Observable<T>, onChange
 /**
  * Listens to the MaybeObservable value change during the element is mounted
  *
+ * See `useObservable` for an information about `isPureState`.
+ *
  * Set `lazy` to `false` to force calling `onChange` when the element is mounted
  */
-export function useMaybeObservable<T>(base: Node, value: MaybeObservable<T>, onChange: (newValue: T) => void, lazy = false): () => void {
+export function useMaybeObservable<T>(
+  base: Node,
+  value: MaybeObservable<T>,
+  isPureState: boolean,
+  onChange: (newValue: T) => void,
+  lazy = false,
+): () => void {
   if (value instanceof Observable) {
-    return useObservable(base, value, onChange);
+    return useObservable(base, value, isPureState, onChange);
   }
 
   if (lazy && !isMountTriggered(base)) {
@@ -283,18 +310,26 @@ export function useMaybeObservableMaybeObservable<T, P>(
   base: Node,
   value: MaybeObservable<T>,
   getInner: (subValue: T) => MaybeObservable<P>,
+  isPureState: boolean,
   onChange: (newValue: P) => void,
   lazy = false,
 ): () => void {
   let unsubscribeInner: (() => void) | undefined;
 
-  return useMaybeObservable(base, value, (subValue) => {
+  const unsubscribeOuter = useMaybeObservable(base, value, true, (subValue) => {
     if (unsubscribeInner) {
       unsubscribeInner();
     }
     const innerObservable = getInner(subValue);
-    unsubscribeInner = useMaybeObservable(base, innerObservable, onChange, lazy);
+    unsubscribeInner = useMaybeObservable(base, innerObservable, isPureState, onChange, lazy);
   }, lazy);
+
+  return () => {
+    unsubscribeOuter();
+    if (unsubscribeInner) {
+      unsubscribeInner();
+    }
+  };
 }
 
 /**
@@ -314,7 +349,11 @@ export function useOutsideEvent<P extends keyof HTMLElementEventMap>(base: HTMLE
  *
  * @link https://stackoverflow.com/a/58834889/1118709 Explanation
  */
-export function useToBehaviorSubject<T>(base: Node, observable: MaybeObservable<T>, initial: T): [BehaviorSubject<T>, () => void] {
+export function useToBehaviorSubject<T>(
+  base: Node,
+  observable: MaybeObservable<T>,
+  initial: T,
+): [BehaviorSubject<T>, () => void] {
   if (observable instanceof BehaviorSubject) {
     return [observable, () => {}];
   }
@@ -322,7 +361,11 @@ export function useToBehaviorSubject<T>(base: Node, observable: MaybeObservable<
   if (observable instanceof Observable) {
     const subject = new BehaviorSubject(initial);
     const stop = useWhileMounted(base, () => {
-      const subscription = observable.subscribe(subject);
+      const subscription = observable.subscribe((newValue: T) => {
+        if (newValue !== subject.value) {
+          subject.next(newValue);
+        }
+      });
       return () => subscription.unsubscribe();
     });
     return [subject, stop];

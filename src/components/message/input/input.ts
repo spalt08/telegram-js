@@ -87,7 +87,7 @@ export default function messageInput() {
   );
 
   // Reply
-  useObservable(container, message.replyToMessageID, (msgID) => {
+  useObservable(container, message.replyToMessageID, true, (msgID) => {
     unmountChildren(quoteContainer);
 
     if (msgID) {

@@ -25,14 +25,14 @@ export default function tabHeader(
 
   const setTitle = (newTitle: MaybeObservable<string>) => {
     if (releaseTitle) releaseTitle();
-    releaseTitle = useMaybeObservable(container, newTitle, (titleString) => {
+    releaseTitle = useMaybeObservable(container, newTitle, true, (titleString) => {
       titleNode.textContent = titleString;
     });
   };
 
   const setBadge = (newBadge: MaybeObservable<TabBadge | undefined>) => {
     if (releaseBadge) releaseBadge();
-    releaseBadge = useMaybeObservable(container, newBadge, (newBadgeData) => {
+    releaseBadge = useMaybeObservable(container, newBadge, false, (newBadgeData) => {
       if (newBadgeData) {
         if (!badgeEl) {
           badgeEl = span`.tabs-panel__tab_badge`();
@@ -47,7 +47,7 @@ export default function tabHeader(
     });
   };
 
-  useMaybeObservable(container, isActive, (value) => {
+  useMaybeObservable(container, isActive, true, (value) => {
     container.classList.toggle('-active', value);
   });
 

@@ -106,6 +106,10 @@ export default class Collection<TItem, TIndices extends Record<any, any>, TId ex
     return this.storage.watchItem(id, onChange);
   }
 
+  public useWatchItem(base: Node, id: TId, onChange: ItemWatcher<TItem>): () => void {
+    return this.storage.useWatchItem(base, id, onChange);
+  }
+
   /**
    * This subject can be subscribed on directly without memory leaks concerns.
    */

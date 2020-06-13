@@ -21,7 +21,7 @@ export default function status({ className = '' }: Props = {}) {
     ),
   );
 
-  useObservable(element, main.network, (state: string) => {
+  useObservable(element, main.network, true, (state: string) => {
     if (state === 'connected' && isDisplayed === true) {
       element.classList.add('hidden');
       isDisplayed = false;

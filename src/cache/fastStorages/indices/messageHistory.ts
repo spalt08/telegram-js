@@ -24,7 +24,7 @@ interface IdsChunkReference {
 
 export interface IdsChunk {
   // Ids in descending order without missing ids in between
-  readonly ids: Readonly<number[]>;
+  readonly ids: readonly number[];
   // Set to true if you know that these ids are the oldest for the peer
   readonly oldestReached?: boolean;
   // Set to true if you know that these ids are the newest for the peer so far
@@ -43,7 +43,7 @@ export interface MessagesChunk extends Omit<IdsChunk, 'ids'> {
    * ⚠️ Watch that the messages peer matches the chunk peer
    * In descending order with no missing messages in between
    */
-  readonly messages: Readonly<Message>[];
+  readonly messages: readonly Message[];
 }
 
 export interface MessagesChunkReference extends Omit<IdsChunkReference, 'putChunk'> {

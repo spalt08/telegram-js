@@ -27,7 +27,7 @@ export default function simpleList<TItem, TNode extends Node>({
   const container = el(tag, props);
   let itemNodes = new Map<unknown, TNode>(); // Map is used to keep also the items order
 
-  useMaybeObservable(container, items, (newItems) => {
+  useMaybeObservable(container, items, false, (newItems) => {
     const newItemNodes = new Map<unknown, TNode>();
 
     // Get&update or make a node for every item

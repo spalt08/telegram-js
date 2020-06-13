@@ -126,7 +126,7 @@ export class VirtualizedList {
     if (initialPaddingTop) this.wrapper.style.paddingTop = `${this.paddingTop = initialPaddingTop + this.cfg.forcePadding}px`;
 
     // listen items changed
-    useMaybeObservable(this.container, items, (next) => {
+    useMaybeObservable(this.container, items, false, (next) => {
       if (this.isLocked) this.pendingItems = next.slice(0);
       else this.update(next.slice(0));
     });

@@ -430,7 +430,7 @@ export default function list({ tag, className,
   };
 
   // on items changed
-  useMaybeObservable(container, items, (next: readonly string[]) => {
+  useMaybeObservable(container, items, false, (next: readonly string[]) => {
     if (isLocked) pending = next.slice(0);
     else {
       update(next);

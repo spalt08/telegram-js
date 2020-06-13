@@ -1,5 +1,4 @@
 import { Message, Peer, User } from 'mtproto-js';
-import { distinctUntilChanged, map } from 'rxjs/operators';
 import { div, nothing } from 'core/html';
 import { userCache } from 'cache';
 import client from 'client/client';
@@ -13,7 +12,7 @@ interface Props {
   className?: string;
 }
 
-function inOnline(user: User | undefined) {
+function isOnline(user: User | undefined) {
   return user?._ === 'user' && user.status?._ === 'userStatusOnline' && user.id !== client.getUserID();
 }
 
@@ -23,11 +22,10 @@ function status(peer: Peer) {
   }
 
   const element = div`.avatarWithStatus__status`();
-  const userSubject = userCache.useItemBehaviorSubject(element, peer.user_id);
 
-  userSubject
-    .pipe(map(inOnline), distinctUntilChanged())
-    .subscribe((online) => element.classList.toggle('-online', online));
+  userCache.useWatchItem(element, peer.user_id, (user) => {
+    element.classList.toggle('-online', isOnline(user));
+  });
 
   return element;
 }

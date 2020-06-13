@@ -42,19 +42,19 @@ export default function phoneInput({ label = '', prefix = '', formats = [], onCh
   const getValue = () => unformat(inputEl.value);
   const setValue = (v: string) => { inputEl.value = currentFormat ? format(currentFormat, v) : v; };
 
-  useMaybeObservable(element, formats, (newFormat) => {
+  useMaybeObservable(element, formats, false, (newFormat) => {
     currentFormat = newFormat;
     setValue(getValue());
   });
 
-  useMaybeObservable(element, disabled, (isDisabled) => {
+  useMaybeObservable(element, disabled, true, (isDisabled) => {
     element.classList[isDisabled ? 'add' : 'remove']('disabled');
   });
 
   if (error) {
     const hasError = error.pipe(map((message) => message !== undefined));
-    useObservable(element, hasError, (isError) => { element.classList[isError ? 'add' : 'remove']('error'); });
-    useObservable(element, error, (errorMessage) => labelText.next(errorMessage === undefined ? label : errorMessage));
+    useObservable(element, hasError, true, (isError) => element.classList.toggle('error', isError));
+    useObservable(element, error, true, (errorMessage) => labelText.next(errorMessage === undefined ? label : errorMessage));
   }
 
   listen(inputEl, 'focus', () => element.classList.add('focused'));

@@ -1,5 +1,5 @@
 import { BehaviorSubject, Observable } from 'rxjs';
-import { distinctUntilChanged, map } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { Dialog } from 'mtproto-js';
 import { div } from 'core/html';
 import { listen, mount, unmountChildren, unmount } from 'core/dom';
@@ -124,16 +124,15 @@ export default function dialogPreview(id: string, pinned: Observable<boolean> = 
     leaveOnlyOneBadge();
   }
 
+  dialogCache.useWatchItem(container, id, applyDetailsUI);
+
+  useObservable(clickable, pinned, true, applyPinUI);
+
   const isSelectedObservable = message.activePeer.pipe(
     map((activePeer) => !!activePeer && peerToId(activePeer) === id),
-    distinctUntilChanged(),
   );
 
-  dialogCache.useItemBehaviorSubject(container, id).subscribe(applyDetailsUI);
-
-  useObservable(clickable, pinned, applyPinUI);
-
-  useObservable(clickable, isSelectedObservable, (selected) => {
+  useObservable(clickable, isSelectedObservable, true, (selected) => {
     clickable.classList.toggle('-selected', selected);
   });
 

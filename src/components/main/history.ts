@@ -182,7 +182,7 @@ export default function history({ onBackToContacts }: Props) {
 
   mount(historySection, downButton);
 
-  useObservable(container, showSpinnerObservable, (show) => {
+  useObservable(container, showSpinnerObservable, true, (show) => {
     if (show && !spinner) {
       mount(historySection, spinner = sectionSpinner({ className: 'history__spinner', useBackdrop: true }));
     } else if (!show && spinner) {
@@ -193,7 +193,7 @@ export default function history({ onBackToContacts }: Props) {
     }
   });
 
-  useObservable(container, service.activePeer, (next) => {
+  useObservable(container, service.activePeer, true, (next) => {
     if (next) {
       messageDayMap.clear();
       messageSiblingsMap.clear();
@@ -219,7 +219,7 @@ export default function history({ onBackToContacts }: Props) {
   });
 
   // Handle message focus
-  useObservable(container, service.focusMessage, (focus) => {
+  useObservable(container, service.focusMessage, false, (focus) => {
     if (service.activePeer.value) {
       scroll.cfg.highlightFocused = focus.highlight || false;
       scroll.focus(
@@ -234,11 +234,11 @@ export default function history({ onBackToContacts }: Props) {
   });
 
   // Makes the list stick to bottom when it shows the newest messages
-  useObservable(container, service.history, ({ newestReached }) => {
+  useObservable(container, service.history, true, ({ newestReached }) => {
     scroll.cfg.pivotBottom = newestReached ? true : undefined;
   });
 
-  useObservable(container, service.history, (data) => {
+  useObservable(container, service.history, true, (data) => {
     scroll.cfg.topReached = data.oldestReached;
     itemsSubject.next(service.activePeer.value ? prepareIdsList(service.activePeer.value, data.ids) : []);
   });

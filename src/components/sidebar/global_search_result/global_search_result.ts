@@ -155,12 +155,12 @@ export default function globalSearchResult({ className = '', exit, ...props }: P
     resultList.container,
     globalSearch.result.pipe(
       map((result) => result.type),
-      distinctUntilChanged(),
     ),
+    true,
     () => resultList.clear(),
   );
 
-  useObservable(resultList.container, globalSearch.result, (result) => {
+  useObservable(resultList.container, globalSearch.result, true, (result) => {
     listItemsSubject.next(searchResultToListItems(result));
   });
 

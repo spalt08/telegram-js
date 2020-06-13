@@ -54,7 +54,7 @@ export default function pollResultsPopup({ peer, messageId }: PollResultsContext
     }
   };
 
-  messageCache.useItemBehaviorSubject(container, messageToId(message)).subscribe((msg) => {
+  messageCache.useWatchItem(container, messageToId(message), (msg) => {
     updateOptions(msg);
   });
 

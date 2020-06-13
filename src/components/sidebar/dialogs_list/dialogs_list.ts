@@ -1,5 +1,5 @@
 import { BehaviorSubject, combineLatest } from 'rxjs';
-import { distinctUntilChanged, map } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { DialogListIndex } from 'services/folder/commonTypes';
 import { sectionSpinner, VirtualizedList } from 'components/ui';
 import { dialog as dialogService } from 'services';
@@ -24,10 +24,10 @@ export default function dialogsList(dialogList: MaybeObservable<DialogListIndex 
     batch: 20,
     pivotBottom: false,
     renderer(id) {
-      return dialog(id, pinned.pipe(
-        map((pinnedSet) => pinnedSet.has(id)),
-        distinctUntilChanged(),
-      ));
+      return dialog(
+        id,
+        pinned.pipe(map((pinnedSet) => pinnedSet.has(id))),
+      );
     },
     onReachBottom() {
       dialogService.loadMoreDialogs();
@@ -39,7 +39,7 @@ export default function dialogsList(dialogList: MaybeObservable<DialogListIndex 
   );
   let spinner: Node | undefined;
 
-  useObservable(container, loading, (show) => {
+  useObservable(container, loading, true, (show) => {
     if (show && !spinner) {
       mount(container, spinner = sectionSpinner({ className: 'dialogsList__spinner' }));
     } else if (!show && spinner) {
@@ -52,6 +52,7 @@ export default function dialogsList(dialogList: MaybeObservable<DialogListIndex 
     container,
     dialogList,
     (listIndex) => listIndex?.order,
+    true,
     (order) => {
       if (order) {
         ids.next(order.ids);

@@ -363,7 +363,7 @@ export default function list({ tag, className, threshold = 400, reversed = false
   };
 
   // On data changed
-  useObservable(container, items, (next: any) => {
+  useObservable(container, items, false, (next: any) => {
     // console.log('list update', next);
     if (locked) pending = next;
     else flip(next);

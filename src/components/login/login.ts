@@ -20,7 +20,7 @@ export default function login() {
   );
 
   // Manage transitions
-  useObservable(element, auth.state, (view) => {
+  useObservable(element, auth.state, true, (view) => {
     const prevView = currentView;
     currentView = view;
 

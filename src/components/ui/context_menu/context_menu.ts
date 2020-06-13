@@ -31,7 +31,7 @@ function contextMenuOption({ icon, label, badge, onClick }: ContextMenuOption) {
 
   let badgeEl: HTMLElement | undefined;
 
-  useMaybeObservable(element, badge, (currentBadge) => {
+  useMaybeObservable(element, badge, false, (currentBadge) => {
     if (currentBadge) {
       if (!badgeEl) {
         badgeEl = span`.contextMenu__badge`();

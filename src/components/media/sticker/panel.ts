@@ -52,7 +52,7 @@ export default function stickerPanel(onSelect?: (sticker: Document) => void) {
   );
 
   // load sets
-  useObservable(container, media.stickerSets, (sets: StickerSet[]) => {
+  useObservable(container, media.stickerSets, false, (sets: StickerSet[]) => {
     if (sets.length > 0) {
       const newSets: string[] = [];
 
@@ -86,7 +86,7 @@ export default function stickerPanel(onSelect?: (sticker: Document) => void) {
 
   let times = 0;
   // load recent
-  useObservable(container, media.recentStickers, (stickers: Document[]) => {
+  useObservable(container, media.recentStickers, false, (stickers: Document[]) => {
     times++;
 
     if ((stickers.length > 0 || times > 1) && items.value.indexOf('recent') === -1) {

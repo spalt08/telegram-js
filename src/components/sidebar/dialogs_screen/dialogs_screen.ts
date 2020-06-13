@@ -34,11 +34,8 @@ export default function dialogsScreen({ onNavigate }: SidebarComponentProps) {
 
   // The folder index observables do a hard job on subscribe, contextMenu is unmounted when closed and useObservable subscribes when mounted.
   // Therefore the index is subscribed once here to not do the hard job on every open.
-  const [archiveBadge] = useToBehaviorSubject(
-    container,
-    folderService.archiveIndex.unreadCount.pipe(map(({ count }) => !count ? undefined : { text: count.toString() })),
-    undefined,
-  );
+  const [archiveUnread] = useToBehaviorSubject(container, folderService.archiveIndex.unreadCount, true, undefined);
+  const archiveBadge = archiveUnread.pipe(map(({ count }) => !count ? undefined : { text: count.toString() }));
 
   const buttonMenu = contextMenu({
     className: 'dialogsScreen__button-menu',
