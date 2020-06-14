@@ -1,12 +1,14 @@
 import { BehaviorSubject, Observable } from 'rxjs';
 import client from 'client/client';
-import { Document, Peer, StickerSet, MessagesFilter, MessagesAllStickers, MessagesRecentStickers, MessagesMessages, MessagesSavedGifs } from 'mtproto-js';
+import { Document, Peer, StickerSet, MessagesFilter, MessagesMessages, MessagesSavedGifs } from 'mtproto-js';
 import { el } from 'core/dom';
 import { peerToInputPeer } from 'cache/accessors';
-import { chatCache, messageCache, userCache } from 'cache';
+import { chatCache, messageCache, userCache, stickerSetCache } from 'cache';
 import { peerToId } from 'helpers/api';
-import { getDocumentLocation, getAttributeAudio } from 'helpers/files';
+import { getAttributeAudio } from 'helpers/files';
 import { stream } from 'client/media';
+import { TaskQueue } from 'client/workers/extensions/quene';
+import { stickerSetToInput } from 'helpers/photo';
 import type MainService from './main';
 
 export const enum MediaPlaybackStatus {
@@ -26,21 +28,15 @@ export type MediaPlaybackState = {
  * Singleton service class for handling media-related queries
  */
 export default class MediaService {
-  /** Recent Stickers */
-  recentStickers = new BehaviorSubject<Document.document[]>([]);
-
-  /** Stickers Packs */
-  stickerSets = new BehaviorSubject<StickerSet[]>([]);
-
   /** Saved Gifs */
   savedGifsMap = new Map<string, Document.document>();
   savedGifsIds = new BehaviorSubject<string[]>([]);
 
   mediaLoading: Record<string /* peerId */, Partial<Record<MessagesFilter['_'], boolean>>> = {};
 
-  /** Hash values for sticker syc */
-  stickerSetsHash = 0;
-  recentStickersHash = 0;
+  /** Hash values for sticker sync */
+  #recentStickersHash = 0;
+  #stickerSetLoadQueue: TaskQueue<StickerSet>;
 
   /** Attached files for sending */
   attachedFiles = new BehaviorSubject<FileList | undefined>(undefined);
@@ -54,27 +50,19 @@ export default class MediaService {
 
   constructor(main: MainService) {
     this.main = main;
-  }
 
-  /**
-   * Load installed sticker sets
-   * Ref: https://core.telegram.org/method/messages.getAllStickers
-   */
-  async loadStickerSets() {
-    let result: MessagesAllStickers;
-    try {
-      result = await client.call('messages.getAllStickers', { hash: this.stickerSetsHash });
-    } catch (err) {
-      throw new Error(JSON.stringify(err));
-    }
-    // sticker packs not changed
-    if (result._ === 'messages.allStickersNotModified') return;
-
-    // save stickers
-    if (result._ === 'messages.allStickers') {
-      this.stickerSetsHash = result.hash;
-      this.stickerSets.next(result.sets);
-    }
+    this.#stickerSetLoadQueue = new TaskQueue<StickerSet>({
+      process: async (set, complete) => {
+        // don't overload thread with requests
+        try {
+          const result = await client.call('messages.getStickerSet', { stickerset: stickerSetToInput(set) });
+          stickerSetCache.indices.stickers.putStickers(set.id, result.documents as Document.document[]);
+          complete();
+        } catch (err) {
+          throw new Error(`Unable to load sticker set: ${JSON.stringify(err)}`);
+        }
+      },
+    });
   }
 
   /**
@@ -108,18 +96,48 @@ export default class MediaService {
    * Load recent sticker sets
    * Ref: https://core.telegram.org/method/messages.getRecentStickers
    */
-  async loadRecentStickers() {
-    let result: MessagesRecentStickers;
+  async loadSavedStickers() {
+    // load recent
     try {
-      result = await client.call('messages.getRecentStickers', { hash: this.recentStickersHash });
+      const result = await client.call('messages.getRecentStickers', { hash: this.#recentStickersHash });
+
+      // update recent stickers cache
+      if (result._ === 'messages.recentStickers') {
+        this.#recentStickersHash = result.hash;
+        stickerSetCache.put({
+          _: 'stickerSet',
+          id: 'recent',
+          access_hash: '',
+          title: 'Recent',
+          short_name: 'recent',
+          count: result.stickers.length,
+          hash: 0,
+          installed_date: 0xFFFFFFF,
+        });
+        stickerSetCache.indices.stickers.putStickers('recent', result.stickers as Document.document[]);
+      }
     } catch (err) {
       throw new Error(JSON.stringify(err));
     }
-    // update recent stickers
-    if (result._ === 'messages.recentStickers') {
-      this.recentStickersHash = result.hash;
-      this.recentStickers.next(result.stickers as Document.document[]);
+
+    // load saved
+    try {
+      const result = await client.call('messages.getAllStickers', { hash: 0 });
+      if (result._ === 'messages.allStickers') {
+        stickerSetCache.put(result.sets);
+      }
+    } catch (err) {
+      throw new Error(JSON.stringify(err));
     }
+  }
+
+  async loadStickerSet(setId: string) {
+    const set = stickerSetCache.get(setId);
+    const count = stickerSetCache.indices.stickers.getStickers(setId).length;
+
+    if (!set || count > 0) return;
+
+    this.#stickerSetLoadQueue.register(set);
   }
 
   async loadMedia(peer: Peer, filterType: MessagesFilter['_'], offsetMessageId = 0) {

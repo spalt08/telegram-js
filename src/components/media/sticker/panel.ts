@@ -1,109 +1,65 @@
+
+import { Document } from 'mtproto-js';
+import { BehaviorSubject } from 'rxjs';
+import { stickerSetCache } from 'cache';
 import { div } from 'core/html';
 import { media } from 'services';
-import { materialSpinner, recent } from 'components/icons';
-import { useObservable, useInterface, getInterface, useOnMount } from 'core/hooks';
-import { Document, StickerSet } from 'mtproto-js';
-import { mount, unmount, listen, animationFrameStart } from 'core/dom';
-import { BehaviorSubject } from 'rxjs';
-import { VirtualizedList } from 'components/ui';
-import stickerSet from './set';
+import { materialSpinner } from 'components/icons';
+import { useOnMount, useWhileMounted } from 'core/hooks';
+import { VirtualizedList, simpleList } from 'components/ui';
+import { unmount } from 'core/dom';
 import stickerSetThumb from './set_thumb';
-import stickerSetRecent from './set_recent';
+import stickerSet from './set';
 import './panel.scss';
 
 export default function stickerPanel(onSelect?: (sticker: Document) => void) {
-  let loader: SVGSVGElement | undefined = materialSpinner({ className: 'sticker-panel__loader' });
+  let isRequested = false;
 
-  const tabs = {
-    recent: div`.sticker-panel__tab`(recent()),
-  } as Record<string, HTMLElement>;
-
-  const tabsEl = div`.sticker-panel__tabs`(tabs.recent);
-
-  const items = new BehaviorSubject<string[]>([]);
-
-  const renderer = (id: string) => {
-    if (id === 'recent') return stickerSetRecent(onSelect);
-
-    for (let i = 0; i < media.stickerSets.value.length; i += 1) {
-      if (media.stickerSets.value[i].id === id) return stickerSet(media.stickerSets.value[i], onSelect);
-    }
-
-    return div();
-  };
+  const loader = materialSpinner({ className: 'sticker-panel__loader' });
+  const items = new BehaviorSubject<readonly string[]>([]);
 
   const list = new VirtualizedList({
     className: 'sticker-panel__list',
     items,
-    renderer,
+    renderer: (id) => stickerSet(id, onSelect),
     batch: 2,
     batchService: 2,
-    threshold: 1,
+    threshold: 0.5,
     topReached: true,
   });
 
-  listen(tabs.recent, 'click', () => list.focus('recent'));
+  const tabs = simpleList({
+    props: { className: 'sticker-panel__tabs' },
+    items,
+    render: (id) => stickerSetThumb(id, (sid) => list.focus(sid)),
+  });
 
   const container = (
     div`.sticker-panel`(
-      tabsEl,
       loader,
+      tabs,
+      list.container,
     )
   );
 
-  // load sets
-  useObservable(container, media.stickerSets, false, (sets: StickerSet[]) => {
-    if (sets.length > 0) {
-      const newSets: string[] = [];
+  const savedIndex = stickerSetCache.indices.saved;
+  useWhileMounted(container, () => {
+    items.next(savedIndex.getIds());
 
-      for (let i = 0; i < sets.length; i += 1) {
-        const set = sets[i];
+    const subscription = savedIndex.changes.subscribe(() => {
+      items.next(savedIndex.getIds());
+      if (items.value.length > 0) unmount(loader);
+    });
 
-        if (!tabs[set.id]) {
-          tabs[set.id] = div`.sticker-panel__tab`(stickerSetThumb(set));
-
-          mount(tabsEl, tabs[set.id]);
-
-          listen(tabs[set.id], 'click', () => {
-            list.focus(set.id, list.items.indexOf(set.id) > list.items.indexOf(list.top || '') ? -1 : 1);
-          });
-        }
-
-        if (items.value.indexOf(set.id) === -1) newSets.push(set.id);
-      }
-
-      if (loader) {
-        mount(container, list.container, loader);
-        unmount(loader);
-        loader = undefined;
-      }
-
-      animationFrameStart().then(() => {
-        items.next([...items.value, ...newSets]);
-      });
-    }
+    return () => subscription.unsubscribe();
   });
 
-  let times = 0;
-
-  // load recent
-  media.recentStickers.subscribe((stickers: Document[]) => {
-    times++;
-
-    if ((stickers.length > 0 || times > 1) && items.value.indexOf('recent') === -1) {
-      items.next(['recent', ...items.value]);
-
-      if (loader) {
-        mount(container, list.container, loader);
-        unmount(loader);
-        loader = undefined;
-      }
-
-      media.loadStickerSets();
+  useOnMount(container, () => {
+    if (!isRequested) {
+      isRequested = true;
+      media.loadSavedStickers();
     }
   });
-
-  media.loadRecentStickers();
 
   return container;
 }
