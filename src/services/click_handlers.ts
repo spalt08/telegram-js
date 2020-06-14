@@ -1,8 +1,8 @@
 import { main } from 'services';
 import { internalUrlHandlers, localUrlHandlers, UrlHandler } from './url_handlers';
 
-function urlRequiresConfirmation(url: string) {
-  return /(^|\.)(telegram\.org|telegra\.ph|telesco\.pe)$/i.test(url);
+export function urlRequiresConfirmation(url: string) {
+  return !/(^|\.)(telegram\.org|telegra\.ph|telesco\.pe)$/i.test(url);
 }
 
 function tryConvertUrlToLocal(rawUrl: string) {
@@ -45,7 +45,7 @@ function tryConvertUrlToLocal(rawUrl: string) {
       return `tg://bg?slug=${bgMatch[1]}${params ? `&${params}` : ''}`;
     }
 
-    const postMatch = query.match(/^proxy\/?\?(.+)(#|$)/i);
+    const postMatch = query.match(/^c\/(-?\d+)\/(\d+)(#|$)/i);
     if (postMatch) return `tg://privatepost?channel=${postMatch[1]}&post=${postMatch[2]}`;
 
     const usernameMatch = query.match(/^([a-zA-Z0-9._]+)(\/?\?|\/?$|\/(\d+)\/?(?:\?|$))/i);
@@ -105,7 +105,8 @@ function openInternalUrl(url: string, context: any) {
 }
 
 function openUrl(url: string) {
-  window.open(url);
+  // Safe attributes: https://www.jitbit.com/alexblog/256-targetblank---the-most-underestimated-vulnerability-ever/
+  window.open(url, '_blank', 'noopener noreferrer');
 }
 
 export function urlClickHandler(url: string, context?: any) {

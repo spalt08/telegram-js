@@ -5,7 +5,7 @@ export type UrlHandler = [RegExp, (regExp: RegExpMatchArray, context: any) => bo
 
 function validDomain(domain: string) {
   return /^[a-zA-Z0-9\\.\\_]+$/.test(domain);
-};
+}
 
 function resolveUsername(match: RegExpMatchArray, context: any) {
   const params = new URLSearchParams(match[1]);
@@ -44,6 +44,20 @@ function resolveUsername(match: RegExpMatchArray, context: any) {
   return true;
 }
 
+function resolvePrivatePost(match: RegExpMatchArray) {
+  const params = new URLSearchParams(match[1]);
+  const channelId = +params.get('channel')!;
+  const msgId = +params.get('post')!;
+  message.selectPeer({ _: 'peerChannel', channel_id: channelId }, msgId);
+  return true;
+}
+
+function resolveUserId(match: RegExpMatchArray) {
+  const id = +match[1];
+  message.selectPeer({ _: 'peerUser', user_id: id });
+  return true;
+}
+
 export const localUrlHandlers: UrlHandler[] = [
   // [/^join\/?\?invite=([a-zA-Z0-9._-]+)(&|$)/, joinGroupByHash],
   // [/^addstickers\/?\?set=([a-zA-Z0-9._]+)(&|$)/, showStickerSet],
@@ -57,11 +71,12 @@ export const localUrlHandlers: UrlHandler[] = [
   // [/^passport\/?\?(.+)(#|$)/, showPassport],
   // [/^bg\/?\?(.+)(#|$)/, showWallPaper],
   [/^resolve\/?\?(.+)(#|$)/, resolveUsername],
-  // [/^privatepost\/?\?(.+)(#|$)/, resolvePrivatePost],
+  [/^privatepost\/?\?(.+)(#|$)/, resolvePrivatePost],
   // [/^settings(\/folders|\/devices|\/language)?$/, resolveSettings],
   // [/^([^?]+)(\?|#|$)/, handleUnknown],
 ];
 
 export const internalUrlHandlers: UrlHandler[] = [
   // [/^media_timestamp\/?\?base=([a-zA-Z0-9._-]+)&t=(\d+)(&|$)/, openMediaTimestamp],
+  [/^user-id\/\/([0-9]+)(&|$)/, resolveUserId],
 ];

@@ -5,7 +5,7 @@ import { arePeersSame, getDialogLastReadMessageId, getUserMessageId, peerMessage
 import { ChannelsGetMessages, Dialog, InputMedia, Message, MessagesGetMessages, MessagesMessages, MessagesSendMedia, MethodDeclMap, Peer, User } from 'mtproto-js';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { first } from 'rxjs/operators';
-import { main } from 'services';
+import { main } from 'services'; // TODO: Fix circular dependency
 import makeMessageChunk, { MessageChunkService, MessageHistoryChunk } from './message_chunk';
 import { Direction } from './types';
 
@@ -382,11 +382,12 @@ export default class MessagesService {
   };
 
   sendMessage = async (message: string) => {
-    if (!this.activePeer.value || !message) return;
+    const peer = this.activePeer.value;
+    if (!peer || !message) return;
 
     const randId = Math.ceil(Math.random() * 0xFFFFFF).toString(16) + Math.ceil(Math.random() * 0xFFFFFF).toString(16);
     const params: MethodDeclMap['messages.sendMessage']['req'] = {
-      peer: peerToInputPeer(this.activePeer.value),
+      peer: peerToInputPeer(peer),
       message,
       random_id: randId,
     };
@@ -402,7 +403,7 @@ export default class MessagesService {
       id: 0,
       out: true,
       from_id: client.getUserID(),
-      to_id: this.activePeer.value,
+      to_id: peer,
       date: Math.floor(Date.now() / 1000),
       reply_to_msg_id: params.reply_to_msg_id,
       media: {

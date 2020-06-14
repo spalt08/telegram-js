@@ -1,16 +1,16 @@
 import AuthService from './auth';
 import DialogService from './dialog/dialog';
+import FolderService from './folder/folder';
 import GlobalSearchService from './global_search';
-import MessageService from './message/message';
 import MainService from './main';
 import MediaService from './media';
-import PeerService from './peer';
+import MessageService from './message/message';
 import MessageSearchService from './message_search/message_search';
-import UserTyping from './user_typing';
-import UserService from './user';
-import TopUsersService from './top_users';
+import PeerService from './peer';
 import PollsService from './polls';
-import FolderService from './folder/folder';
+import TopUsersService from './top_users';
+import UserService from './user';
+import UserTyping from './user_typing';
 
 export { AuthStage } from './auth';
 

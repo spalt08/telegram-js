@@ -42,7 +42,7 @@ export default function webpageLink(msg: Message.message) {
         div`.webpageLink__info`(
           div`.webpageLink__title`(text(msg.media.webpage.title ?? '')),
           div`.webpageLink__description`(text(msg.media.webpage.description ?? '')),
-          div`.webpageLink__link`(createAnchor(msg.media.webpage.url ?? '#', msg.media.webpage.display_url ?? '')),
+          div`.webpageLink__link`(createAnchor(msg.media.webpage.url ?? '#', text(msg.media.webpage.display_url ?? ''))),
         ),
       ),
     ],

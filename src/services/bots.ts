@@ -1,15 +1,32 @@
 import { userCache } from 'cache';
+import { peerToInputPeer } from 'cache/accessors';
 import client from 'client/client';
-import { Message } from 'mtproto-js';
+import { peerMessageToId } from 'helpers/api';
+import { KeyboardButton, Message, Peer } from 'mtproto-js';
+import { message } from 'services';
 import { hiddenUrlClickHandler, urlClickHandler } from './click_handlers';
 
-client.updates.on('updateBotCallbackQuery', (e) => {
-  console.error(e);
-});
+function sendBotCommand(peer: Peer, botId: number, cmd: string, replyTo: number) {
+  const bot = userCache.get(botId);
+  if (bot?._ !== 'user') {
+    return;
+  }
 
-client.updates.on('updateBotInlineQuery', (e) => {
-  console.error(e);
-});
+  let toSend = cmd;
+  if (!replyTo && cmd.indexOf('@') < 2 && bot.username) {
+    toSend += `@${bot.username}`;
+  }
+  message.replyToMessageID.next(peerMessageToId(peer, replyTo));
+  message.sendMessage(toSend);
+}
+
+function sendBotCallback(button: KeyboardButton.keyboardButtonCallback, msg: Message.message) {
+  const bot = userCache.get(msg.from_id!);
+  if (bot?._ !== 'user') {
+    return;
+  }
+  client.call('messages.getBotCallbackAnswer', { peer: peerToInputPeer(msg.to_id), msg_id: msg.id, data: button.data, game: false });
+}
 
 export function activateBotCommand(msg: Message.message, row: number, column: number) {
   if (!msg.reply_markup || (msg.reply_markup._ !== 'replyInlineMarkup' && msg.reply_markup._ !== 'replyKeyboardMarkup')) {
@@ -21,12 +38,11 @@ export function activateBotCommand(msg: Message.message, row: number, column: nu
   switch (button._) {
     case 'keyboardButton': {
       const replyTo = (msg.id > 0) ? msg.id : 0;
-      // sendBotCommand(msg.to_id, msg.from_id, button.text, replyTo);
+      sendBotCommand(msg.to_id, msg.from_id!, button.text, replyTo);
       break;
     }
     case 'keyboardButtonCallback':
-    case 'keyboardButtonGame':
-      // sendBotCallback(button, msg, row, column);
+      sendBotCallback(button, msg);
       break;
     case 'keyboardButtonUrl': {
       const { url } = button;

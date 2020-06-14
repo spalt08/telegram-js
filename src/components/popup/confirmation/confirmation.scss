@@ -1,11 +1,16 @@
 .confirmation {
   padding: 15px;
   min-width: 300px;
+  max-width: 90vw;
 
   &__title {
     font-weight: 500;
     font-size: 1.3rem;
     margin-bottom: 1rem;
+  }
+
+  &__body {
+    white-space: pre-wrap;
   }
 
   &__buttons {

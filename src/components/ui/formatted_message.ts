@@ -1,7 +1,7 @@
-import { newWindowLinkAttributes } from 'const';
 import { mount } from 'core/dom';
 import { a, code, em, fragment, pre, span, strong, text } from 'core/html';
 import { Message, MessageEntity, PollResults } from 'mtproto-js';
+import { hiddenUrlClickHandler } from 'services/click_handlers';
 
 interface TreeNode {
   children: TreeNode[];
@@ -40,6 +40,15 @@ function fixUrl(url: string) {
   return /^([a-zA-Z]{2,}):\/\//.test(url) ? url : (`http://${url}`);
 }
 
+export function createAnchor(url: string, ...children: Node[]) {
+  const onClick = (e: Event) => {
+    e.preventDefault();
+    hiddenUrlClickHandler(url);
+  };
+
+  return a({ href: url, onClick }, ...children);
+}
+
 function nodeToHtml(node: TreeNode, result: Node[]) {
   if (node.value !== undefined) {
     if (!node.entity) {
@@ -63,22 +72,22 @@ function nodeToHtml(node: TreeNode, result: Node[]) {
         result.push(a({ href: `mailto:${node.value}` }, text(node.value)));
         break;
       case 'messageEntityUrl':
-        result.push(a({ ...newWindowLinkAttributes, href: fixUrl(node.value) }, text(node.value)));
+        result.push(createAnchor(fixUrl(node.value), text(node.value)));
         break;
       case 'messageEntityTextUrl':
-        result.push(a({ ...newWindowLinkAttributes, href: fixUrl(node.entity.url) }, text(node.value)));
+        result.push(createAnchor(fixUrl(node.entity.url), text(node.value)));
         break;
       case 'messageEntityMention':
-        result.push(a({ href: '#' }, text(node.value)));
+        result.push(createAnchor(`https://t.me/${node.value.substr(1)}`, text(node.value)));
         break;
       case 'messageEntityMentionName':
-        result.push(a({ href: '#' }, text(node.value)));
+        result.push(createAnchor(`internal:user-id//${node.entity.user_id}`, text(node.value)));
         break;
       case 'messageEntityBotCommand':
         result.push(a({ href: '#' }, text(node.value)));
         break;
       case 'messageEntityHashtag':
-        result.push(a({ href: '#' }, text(node.value)));
+        result.push(createAnchor(node.value, text(node.value)));
         break;
       default:
         result.push(text(node.value));
@@ -90,22 +99,7 @@ function nodeToHtml(node: TreeNode, result: Node[]) {
 }
 
 export function highlightLinks(message: string) {
-  const regexp = /(@\w+|#\w+|(?:https:\/\/)?t.me\/[\w/]+|https:\/\/tginfo.me\/[\w/]+)/;
-  const parts = message
-    .split(regexp)
-    .filter((part) => part)
-    .map((part) => {
-      if (part.startsWith('@')
-        || part.startsWith('#')
-        || part.startsWith('t.me/')
-        || part.startsWith('https://t.me/')
-        || part.startsWith('https://tginfo.me/')) {
-        return a({ ...newWindowLinkAttributes, href: '#' }, text(part));
-      }
-      return text(part);
-    });
-
-  return span(...parts);
+  return span(text(message));
 }
 
 export function formattedMessage(message: Message.message | PollResults | string) {

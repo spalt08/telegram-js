@@ -7,7 +7,7 @@ import './reply_markup.scss';
 
 function markupButton(msg: Message.message, button: KeyboardButton, row: number, column: number) {
   const buttonEl = div`.reply-markup__button`(text(button.text));
-  buttonEl.title = JSON.stringify(button);
+  // buttonEl.title = JSON.stringify(button);
   listen(buttonEl, 'click', () => {
     activateBotCommand(msg, row, column);
   });
