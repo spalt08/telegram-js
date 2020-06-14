@@ -1,6 +1,6 @@
 import { BehaviorSubject, Observable } from 'rxjs';
 import client from 'client/client';
-import { Document, Peer, StickerSet, MessagesFilter, MessagesAllStickers, MessagesRecentStickers, MessagesMessages } from 'mtproto-js';
+import { Document, Peer, StickerSet, MessagesFilter, MessagesAllStickers, MessagesRecentStickers, MessagesMessages, MessagesSavedGifs } from 'mtproto-js';
 import { el } from 'core/dom';
 import { peerToInputPeer } from 'cache/accessors';
 import { chatCache, messageCache, userCache } from 'cache';
@@ -31,6 +31,10 @@ export default class MediaService {
 
   /** Stickers Packs */
   stickerSets = new BehaviorSubject<StickerSet[]>([]);
+
+  /** Saved Gifs */
+  savedGifsMap = new Map<string, Document.document>();
+  savedGifsIds = new BehaviorSubject<string[]>([]);
 
   mediaLoading: Record<string /* peerId */, Partial<Record<MessagesFilter['_'], boolean>>> = {};
 
@@ -70,6 +74,33 @@ export default class MediaService {
     if (result._ === 'messages.allStickers') {
       this.stickerSetsHash = result.hash;
       this.stickerSets.next(result.sets);
+    }
+  }
+
+  /**
+   * Load saved gifs
+   * Ref: https://core.telegram.org/method/messages.getAllStickers
+   */
+  async loadSavedGis() {
+    let result: MessagesSavedGifs;
+    try {
+      result = await client.call('messages.getSavedGifs', { hash: 0 });
+    } catch (err) {
+      throw new Error(JSON.stringify(err));
+    }
+
+    // save gifs
+    if (result._ === 'messages.savedGifs') {
+      const ids: string[] = [];
+
+      for (let i = 0; i < result.gifs.length; i++) {
+        const doc = result.gifs[i];
+        if (doc._ === 'document') {
+          this.savedGifsMap.set(doc.id, doc);
+          ids.push(doc.id);
+        }
+      }
+      this.savedGifsIds.next(ids);
     }
   }
 
