@@ -1,7 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import { IdsChunk, MessageHistoryIndex, MessagesChunk } from 'cache/fastStorages/indices/messageHistory';
 import { MessagesFilter, Peer } from 'mtproto-js';
-import { Direction } from './types';
+import { Direction, MessageFilterData } from './types';
 import { LOAD_CHUNK_LENGTH, loadContinuousMessages } from './helpers';
 
 export interface MessageHistoryChunk extends IdsChunk {
@@ -38,12 +38,15 @@ export interface MessageChunkService {
  *
  * If you need a chunk for all messages, set `cacheIndex` to `messageCache.indices.history`.
  * If you need a chunk for filtered messages, create a custom message history index and set it to `cacheIndex`.
+ *
+ * `subFilters` can be used to automatically add loaded messages to other filtered message history caches.
  */
 export default function makeMessageChunk(
   peer: Peer,
   messageId: Exclude<number, 0>,
   cacheIndex: MessageHistoryIndex,
   filter?: Readonly<MessagesFilter>,
+  subFilters: readonly Pick<MessageFilterData, 'cacheIndex' | 'runtimeFilter'>[] = [],
 ): MessageChunkService {
   let isDestroyed = false;
   let isUpdatingCacheChunk = false;
@@ -59,6 +62,8 @@ export default function makeMessageChunk(
       });
     }
   });
+
+  const subCacheChunkRefs = subFilters.map((subFilter) => subFilter.cacheIndex.makeChunkReference(peer, messageId));
 
   async function loadMessages(direction: Direction, fromId?: number, toId?: number) {
     if (
@@ -96,6 +101,15 @@ export default function makeMessageChunk(
       } finally {
         isUpdatingCacheChunk = false;
       }
+
+      // Add the loaded messages to the filtered history caches
+      subCacheChunkRefs.forEach((subCacheChunkRef, index) => {
+        const { runtimeFilter } = subFilters[index];
+        subCacheChunkRef.putChunk({
+          ...result,
+          messages: result.messages.filter(runtimeFilter),
+        });
+      });
     } finally {
       if (!isDestroyed) {
         historySubject.next({

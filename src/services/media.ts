@@ -1,13 +1,13 @@
 import { BehaviorSubject, Observable } from 'rxjs';
 import client from 'client/client';
-import { Document, Peer, StickerSet, MessagesFilter, MessagesAllStickers, MessagesRecentStickers } from 'mtproto-js';
+import { Document, Peer, StickerSet, MessagesAllStickers, MessagesRecentStickers } from 'mtproto-js';
 import { el } from 'core/dom';
-import { messageCache } from 'cache';
 import { getDocumentLocation, getAttributeAudio } from 'helpers/files';
 import { stream } from 'client/media';
 import type MainService from './main';
-import { MessageHistoryIndex } from '../cache/fastStorages/indices/messageHistory';
 import makeMessageChunk from './message/message_chunk';
+import { MessageFilterType } from './message/types';
+import messageFilters from './message/message_filters';
 
 export const enum MediaPlaybackStatus {
   NotStarted,
@@ -21,8 +21,6 @@ export type MediaPlaybackState = {
   playProgress: number,
   status: MediaPlaybackStatus,
 };
-
-export type MediaMessageType = 'photoVideo' | 'document' | 'link' | 'voice' | 'music';
 
 /**
  * Singleton service class for handling media-related queries
@@ -94,36 +92,9 @@ export default class MediaService {
    *
    * Set messageId to Infinity to get the chunk of the newest messages.
    */
-  getMediaMessagesChunk(peer: Peer, type: MediaMessageType, messageId: Exclude<number, 0> = Infinity) {
-    let cacheIndex: MessageHistoryIndex;
-    let filter: MessagesFilter;
-
-    switch (type) {
-      case 'photoVideo':
-        cacheIndex = messageCache.indices.photoVideosHistory;
-        filter = { _: 'inputMessagesFilterPhotoVideo' };
-        break;
-      case 'document':
-        cacheIndex = messageCache.indices.documentsHistory;
-        filter = { _: 'inputMessagesFilterDocument' };
-        break;
-      case 'link':
-        cacheIndex = messageCache.indices.linksHistory;
-        filter = { _: 'inputMessagesFilterUrl' };
-        break;
-      case 'voice':
-        cacheIndex = messageCache.indices.voiceHistory;
-        filter = { _: 'inputMessagesFilterVoice' };
-        break;
-      case 'music':
-        cacheIndex = messageCache.indices.musicHistory;
-        filter = { _: 'inputMessagesFilterMusic' };
-        break;
-      default:
-        throw new TypeError(`Unknown type "${type}"`);
-    }
-
-    return makeMessageChunk(peer, messageId, cacheIndex, filter);
+  getMediaMessagesChunk(peer: Peer, type: MessageFilterType, messageId: Exclude<number, 0> = Infinity) {
+    const { cacheIndex, apiFilter } = messageFilters[type];
+    return makeMessageChunk(peer, messageId, cacheIndex, apiFilter);
   }
 
   attachFiles = (files: FileList) => {

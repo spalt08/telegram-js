@@ -7,7 +7,7 @@ import { MessageChunkService } from 'services/message/message_chunk';
 import { Direction } from 'services/message/types';
 import { messageCache } from 'cache';
 import { useWhileMounted } from 'core/hooks';
-import { peerMessageToId } from 'helpers/api';
+import { getMessageDocument, peerMessageToId } from 'helpers/api';
 import { unmount, mount } from 'core/dom';
 import documentFile from 'components/media/document/file';
 import { panelLoader } from './loader';
@@ -15,8 +15,9 @@ import './documents.scss';
 
 const documentRowRenderer = (id: string) => {
   const msg = messageCache.get(id);
-  if (msg?._ === 'message' && msg.media?._ === 'messageMediaDocument' && msg.media.document?._ === 'document') {
-    return documentFile(msg.media.document, msg);
+  const document = msg && getMessageDocument(msg);
+  if (document) {
+    return documentFile(document, msg);
   }
   return div(nothing);
 };

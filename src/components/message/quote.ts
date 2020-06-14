@@ -3,6 +3,7 @@ import { quote } from 'components/ui';
 import { messageToSenderPeer } from 'cache/accessors';
 import { profileTitle } from 'components/profile';
 import { div } from 'core/html';
+import { getMessageDocument } from 'helpers/api';
 import photoRenderer from 'components/media/photo/photo';
 import messageShort from './short';
 
@@ -14,9 +15,9 @@ export default function messageQuote(message: Message.message | Message.messageS
       preview = div`.quote__img`(photoRenderer(message.media.photo, { fit: 'cover', width: 32, height: 32 }));
     }
 
-    if (message.media._ === 'messageMediaDocument' && message.media.document && message.media.document._ === 'document'
-      && message.media.document.thumbs) {
-      preview = div`.quote__img`(photoRenderer(message.media.document, { fit: 'cover', width: 32, height: 32 }));
+    const document = getMessageDocument(message);
+    if (document?.thumbs) {
+      preview = div`.quote__img`(photoRenderer(document, { fit: 'cover', width: 32, height: 32 }));
     }
   }
 
