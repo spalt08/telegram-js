@@ -37,7 +37,7 @@ export default function stickMojiPanel({ onSelectEmoji, onSelectSticker, onClose
 
   const container = div`.stickmoji-panel`(
     panelContainer = div`.stickmoji-panel__panel`(
-      panels[activePanelIndex = 1],
+      panels[activePanelIndex = 0],
     ),
     div`.stickmoji-panel__tabs`(
       ...tabs.map((tab) => div`.stickmoji-panel__tab`(tab)),
