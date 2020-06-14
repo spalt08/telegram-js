@@ -7,7 +7,7 @@ import './poll_solution.scss';
 
 export default function pollSolution(results: MaybeObservable<PollResults>) {
   const container = div`.pollSolution`(lamp());
-  useMaybeObservable(container, results, (r) => {
+  useMaybeObservable(container, results, true, (r) => {
     container.classList.toggle('-visible', !!r.solution);
     container.title = r.solution ?? ''; // todo: show solution in popup
   });

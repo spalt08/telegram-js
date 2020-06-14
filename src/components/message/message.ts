@@ -1,18 +1,19 @@
 import { messageCache } from 'cache';
-import { BehaviorSubject } from 'rxjs';
 import { messageToSenderPeer, peerToColorCode } from 'cache/accessors';
 import { profileAvatar, profileTitle } from 'components/profile';
-import { bubble, formattedMessage, datetime, bubbleClassName } from 'components/ui';
-import { mount, unmountChildren, unmount } from 'core/dom';
+import { bubble, bubbleClassName, datetime, formattedMessage } from 'components/ui';
+import { mount, unmount, unmountChildren } from 'core/dom';
+import { getInterface, useObservable } from 'core/hooks';
 import { div, nothing, text } from 'core/html';
-import { useObservable } from 'core/hooks';
 import { getDayOffset, getMessageTooltipTitle } from 'helpers/message';
 import { formatNumber } from 'helpers/other';
 import { Message, Peer } from 'mtproto-js';
+import { BehaviorSubject } from 'rxjs';
 import './message.scss';
+import { enhanceClassName, hasMediaChanged, hasMediaToMask, messageMediaImmutable, messageMediaLower, messageMediaUpper } from './message_media';
 import messageReply from './reply';
-import messageSerivce from './service';
-import { messageMediaUpper, messageMediaLower, enhanceClassName, hasMediaToMask, messageMediaImmutable, hasMediaChanged } from './message_media';
+import replyMarkupRenderer from './reply_markup';
+import messageService from './service';
 
 export type MessageSibling = undefined | {
   id: string;
@@ -46,7 +47,7 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
       return div();
 
     case 'messageService':
-      return messageSerivce(cached);
+      return messageService(cached);
 
     default:
   }
@@ -75,16 +76,34 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
     datetime({ timestamp: msg.date, date: false }),
   );
 
-  let content: HTMLElement | undefined = messageMediaImmutable(msg);
+  let replyMarkup;
+  let replyHeight = 0;
+  if (msg.reply_markup) {
+    replyMarkup = replyMarkupRenderer(msg, msg.out ? 'message__reply-markup-out' : 'message__reply-markup');
+    replyHeight = getInterface(replyMarkup).height + 2;
+  }
+
+  let content = messageMediaImmutable(msg);
 
   if (!content) {
-    content = bubble({ media: masked, out: msg.out, isFirst, isLast, className: enhanceClassName(msg, textEl), setRef: (el) => bubbleContent = el },
+    content = bubble(
+      {
+        media: masked,
+        out: msg.out,
+        isFirst,
+        isLast,
+        className: enhanceClassName(msg, textEl),
+        setRef: (el) => bubbleContent = el,
+      },
       title || nothing,
       reply || nothing,
       mediaUpper || nothing,
       textEl || nothing,
       mediaLower || nothing,
     );
+    if (replyMarkup) {
+      mount(content, replyMarkup);
+    }
   } else if (reply) {
     mount(content, reply, content.firstChild || undefined);
   }
@@ -97,6 +116,10 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
       content,
     ),
   );
+
+  if (replyHeight > 0) {
+    wrapper.style.marginBottom = `${replyHeight + 2}px`;
+  }
 
   info.title = getMessageTooltipTitle(msg);
   if (textEl && !mediaLower) mount(textEl, info);

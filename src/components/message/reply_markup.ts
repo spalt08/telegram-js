@@ -1,25 +1,36 @@
-import { ReplyMarkup } from 'mtproto-js';
-import { nothing, div, text } from 'core/html';
-import { mount } from 'core/dom';
+import { listen } from 'core/dom';
+import { useInterface } from 'core/hooks';
+import { div, nothing, text } from 'core/html';
+import { KeyboardButton, Message } from 'mtproto-js';
+import { activateBotCommand } from 'services/bots';
 import './reply_markup.scss';
 
-export default function replyMarkupRenderer(markup: ReplyMarkup): Node {
-  if (markup._ === 'replyKeyboardForceReply' || markup._ === 'replyKeyboardHide') return nothing;
+function markupButton(msg: Message.message, button: KeyboardButton, row: number, column: number) {
+  const buttonEl = div`.reply-markup__button`(text(button.text));
+  buttonEl.title = JSON.stringify(button);
+  listen(buttonEl, 'click', () => {
+    activateBotCommand(msg, row, column);
+  });
+  return buttonEl;
+}
 
-  const container = div`.reply-markup`();
+export default function replyMarkupRenderer(msg: Message.message, className?: string) {
+  let container;
+  let rows;
 
-  for (let i = 0; i < markup.rows.length; i++) {
-    const row = div`.reply-markup__row`();
-
-    for (let j = 0; j < markup.rows[i].buttons.length; j++) {
-      const button = markup.rows[i].buttons[j];
-      const buttonEl = div`.reply-markup__button`(text(button.text));
-
-      mount(row, buttonEl);
-    }
-
-    mount(container, row);
+  if (msg._ === 'message' && msg.reply_markup && (msg.reply_markup._ === 'replyInlineMarkup' || msg.reply_markup._ === 'replyKeyboardMarkup')) {
+    container = div`.reply-markup ${className}`(
+      ...msg.reply_markup.rows.map((row, y) => div`.reply-markup__row`(
+        ...row.buttons.map((button, x) => markupButton(msg, button, y, x))),
+      ),
+    );
+    rows = msg.reply_markup.rows.length;
+  } else {
+    container = nothing;
+    rows = 0;
   }
 
-  return container;
+  return useInterface(container, {
+    height: rows * 40,
+  });
 }

@@ -1,13 +1,13 @@
 
-import { Message, Peer } from 'mtproto-js';
 import { userCache } from 'cache';
 import { userToTitle } from 'cache/accessors';
 import { profileTitle } from 'components/profile';
 import { div, strong, text } from 'core/html';
 import { userIdToPeer } from 'helpers/api';
+import { Message, Peer } from 'mtproto-js';
 import './service.scss';
 
-export default function messageSerivce(msg: Message.messageService) {
+export default function messageService(msg: Message.messageService) {
   const originalPeer = msg.to_id;
   const peer: Peer = msg.from_id !== undefined ? userIdToPeer(msg.from_id) : originalPeer;
 

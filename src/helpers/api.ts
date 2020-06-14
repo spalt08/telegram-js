@@ -1,5 +1,5 @@
-import { Dialog, Peer, Message, Updates, UserStatus, InputPeer, InputDialogPeer, DialogPeer } from 'mtproto-js';
 import client from 'client/client';
+import { Dialog, DialogPeer, InputDialogPeer, InputPeer, Message, Peer, Updates, UserStatus } from 'mtproto-js';
 import { todoAssertHasValue } from './other';
 
 export function peerToId(peer: Peer): string {
@@ -99,6 +99,14 @@ export function compareSamePeerMessageIds(id1: string, id2: string): number {
 
 export function userIdToPeer(id: number): Peer {
   return { _: 'peerUser', user_id: id };
+}
+
+export function chatIdToPeer(id: number): Peer {
+  return { _: 'peerChat', chat_id: id };
+}
+
+export function channelIdToPeer(id: number): Peer {
+  return { _: 'peerChannel', channel_id: id };
 }
 
 export function shortMessageToMessage(self: number, message: Updates.updateShortMessage): Message {

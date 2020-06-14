@@ -1,0 +1,29 @@
+.confirmation {
+  padding: 15px;
+  min-width: 300px;
+
+  &__title {
+    font-weight: 500;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+  }
+
+  &__buttons {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  &__button {
+    color: #4EA4F5;
+    text-transform: uppercase;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-radius: 0.25rem;
+    transition: background-color 200ms;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.08);
+    }
+  }
+}

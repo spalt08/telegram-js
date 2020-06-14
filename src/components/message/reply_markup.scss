@@ -1,17 +1,15 @@
 .reply-markup {
-  width: 100%;
-  padding-bottom: 5px;
 
   &__row {
     display: flex;
     justify-content: space-between;
-    margin-top: 2px;
+    margin-bottom: 2px;
   } 
 
   &__button {
     background: rgba(0, 0, 0, 0.3);
     color: #fff;
-    cursor: not-allowed;
+    cursor: pointer;
     height: 38px;
     flex: 1 20%;
     display: flex;

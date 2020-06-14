@@ -2,6 +2,7 @@ import { listen, mount, unmount } from 'core/dom';
 import { useInterface } from 'core/hooks';
 import { div } from 'core/html';
 import { main } from 'services';
+import addBotToGroup from './add_bot_to_group/add_bot_to_group';
 import archive from './archived_dialogs/archived_dialogs';
 import contacts from './contacts_list/contacts_list';
 import dialogs from './dialogs_screen/dialogs_screen';
@@ -24,6 +25,7 @@ const elements = {
   messageSearch,
   sharedMedia,
   pollResults,
+  addBotToGroup,
 };
 
 type SidebarRendererMap = typeof elements;

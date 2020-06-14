@@ -22,10 +22,10 @@ const renderMeta = (document: Document.document, message: Message | undefined) =
 };
 
 export default function documentFile(document: Document.document, message?: Message, className?: string) {
-  const filenameAttributte = getAttributeFilename(document);
+  const filenameAttribute = getAttributeFilename(document);
 
   let filename = '';
-  if (filenameAttributte) filename = filenameAttributte.file_name;
+  if (filenameAttribute) filename = filenameAttribute.file_name;
 
   let icon: HTMLElement;
   if (document.thumbs && document.thumbs.length > 0) {

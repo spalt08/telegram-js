@@ -1,14 +1,18 @@
-import { dialogCache, messageCache } from 'cache';
+import { chatCache, dialogCache, messageCache, userCache } from 'cache';
 import { peerToInputChannel, peerToInputPeer } from 'cache/accessors';
 import client, { fetchUpdates } from 'client/client';
-import { arePeersSame, peerToDialogId, getDialogLastReadMessageId, getUserMessageId, peerMessageToId, shortChatMessageToMessage, shortMessageToMessage } from 'helpers/api';
-import { ChannelsGetMessages, Dialog, InputMedia, Message, MessagesGetMessages, MessagesMessages, MessagesSendMedia, MethodDeclMap, Peer } from 'mtproto-js';
+import { arePeersSame, getDialogLastReadMessageId, getUserMessageId, peerMessageToId, peerToDialogId, shortChatMessageToMessage, shortMessageToMessage } from 'helpers/api';
+import { ChannelsGetMessages, Dialog, InputMedia, Message, MessagesGetMessages, MessagesMessages, MessagesSendMedia, MethodDeclMap, Peer, User } from 'mtproto-js';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { first } from 'rxjs/operators';
+import { main } from 'services';
 import makeMessageChunk, { MessageChunkService, MessageHistoryChunk } from './message_chunk';
 import { Direction } from './types';
 
 const emptyHistory: MessageHistoryChunk = { ids: [] };
+
+export const showAtProfileMsgId = -0x3FFFFFFE;
+export const showAtUnreadMsgId = 0;
 
 export type PeerScrollTarget
   = 'auto' // Decide where to scroll automatically
@@ -198,6 +202,53 @@ export default class MessagesService {
     }
 
     this.replyToMessageID.next('');
+  }
+
+  async openPeerByName(username: string, msgId: number, startToken: string | null, clickFromMessageId: string) {
+    const resolved = await client.call('contacts.resolveUsername', { username });
+    userCache.put(resolved.users);
+    chatCache.put(resolved.chats);
+    const { peer } = resolved;
+
+    let user: User.user | undefined;
+    if (peer._ === 'peerUser') {
+      user = userCache.get(peer.user_id) as User.user;
+    }
+
+    if (msgId === showAtProfileMsgId && peer._ !== 'peerChannel') {
+      if (user && user.bot && !user.bot_nochats && startToken) {
+        console.error(user);
+        // peer.botInfo.startGroupToken = startToken;
+        // AddBotToGroupBoxController::Start(_controller, peer->asUser());
+        main.openSidebar('addBotToGroup', peer);
+      } else if (user && user.bot) {
+        // Always open bot chats, even from mention links.
+        this.selectPeer(peer);
+      } else {
+        main.openSidebar('info', peer);
+      }
+    } else {
+      if (msgId === showAtProfileMsgId || peer._ !== 'peerChannel') { // show specific posts only in channels / supergroups
+        // eslint-disable-next-line no-param-reassign
+        msgId = showAtUnreadMsgId;
+      }
+      if (user && user.bot) {
+        // user.botInfo.startToken = startToken;
+        // if (peer == _history -> peer()) {
+        //   _history -> updateControlsVisibility();
+        //   _history -> updateControlsGeometry();
+        // }
+      }
+      const returnTo = messageCache.get(clickFromMessageId);
+      if (returnTo?._ === 'message') {
+        if (returnTo.to_id === peer) {
+          // pushReplyReturn(returnTo);
+        }
+      }
+      this.selectPeer(peer, msgId);
+    }
+
+    // this.selectPeer(resolved.peer);
   }
 
   loadMoreHistory(direction: Direction.Newer | Direction.Older) {

@@ -1,0 +1,10 @@
+.addBotToGroup {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  &__content {
+    height: 100%;
+    position: relative;
+  }
+}
