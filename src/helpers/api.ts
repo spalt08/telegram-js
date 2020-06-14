@@ -1,5 +1,5 @@
 import client from 'client/client';
-import { Dialog, DialogPeer, InputDialogPeer, InputPeer, Message, Peer, Updates, UserStatus } from 'mtproto-js';
+import { Dialog, DialogPeer, Document, InputDialogPeer, InputPeer, Message, Peer, Updates, UserStatus } from 'mtproto-js';
 import { todoAssertHasValue } from './other';
 
 export function peerToId(peer: Peer): string {
@@ -225,4 +225,11 @@ export function dialogIdToPeer(id: string): Peer | null {
     return dialogPeer.peer;
   }
   return null;
+}
+
+export function getMessageDocument(message: Readonly<Message>): Document.document | undefined {
+  if (message._ !== 'message') return undefined;
+  if (message.media?._ !== 'messageMediaDocument') return undefined;
+  if (message.media.document?._ !== 'document') return undefined;
+  return message.media.document;
 }

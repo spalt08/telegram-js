@@ -1,19 +1,19 @@
-import { Peer, Message, MessagesFilter } from 'mtproto-js';
+import { Peer } from 'mtproto-js';
 import { div } from 'core/html';
 import { VirtualizedList } from 'components/ui';
 import { BehaviorSubject } from 'rxjs';
 import { media } from 'services';
+import { MessageChunkService } from 'services/message/message_chunk';
+import { Direction } from 'services/message/types';
 import { messageCache } from 'cache';
-import { useObservable } from 'core/hooks';
-import { messageToId } from 'helpers/api';
-import { unmount, mount } from 'core/dom';
+import { useWhileMounted } from 'core/hooks';
+import { mount, unmount } from 'core/dom';
 import photoPreview from 'components/media/photo/preview';
 import { getAttributeVideo } from 'helpers/files';
+import { peerMessageToId } from 'helpers/api';
 import videoPreview from 'components/media/video/preview';
 import { panelLoader } from './loader';
 import './media.scss';
-
-const SEARCH_FILTER: MessagesFilter['_'] = 'inputMessagesFilterPhotoVideo';
 
 const mediaRowRenderer = (ids: string, peer: Peer): HTMLDivElement => {
   const messages = ids.split('+');
@@ -21,17 +21,21 @@ const mediaRowRenderer = (ids: string, peer: Peer): HTMLDivElement => {
 
   for (let i = 0; i < messages.length; i++) {
     const message = messageCache.get(messages[i]);
+    if (message?._ !== 'message') {
+      continue;
+    }
+
     const element = div`.mediaPanel__item`();
 
     // photo
-    if (message?._ === 'message' && message.media?._ === 'messageMediaPhoto' && message.media.photo?._ === 'photo') {
+    if (message.media?._ === 'messageMediaPhoto' && message.media.photo?._ === 'photo') {
       const photo = photoPreview(message.media.photo, peer, message, { fit: 'cover', width: 120, height: 120 });
       if (photo) mount(element, photo);
     }
 
     // video
-    if (message?._ === 'message'
-      && message.media?._ === 'messageMediaDocument'
+    if (
+      message.media?._ === 'messageMediaDocument'
       && message.media.document?._ === 'document'
       && getAttributeVideo(message.media.document)) {
       const photo = videoPreview(message.media.document, { fit: 'cover', width: 120, height: 120 });
@@ -44,44 +48,53 @@ const mediaRowRenderer = (ids: string, peer: Peer): HTMLDivElement => {
   return container;
 };
 
+function groupIds(peer: Peer, ids: readonly number[]): string[] {
+  const grouppedIds: string[] = [];
+  for (let i = 0; i < ids.length; i += 3) {
+    grouppedIds.push(`${
+      peerMessageToId(peer, ids[i])
+    }+${
+      peerMessageToId(peer, ids[i + 1])
+    }+${
+      peerMessageToId(peer, ids[i + 2])
+    }`);
+  }
+  return grouppedIds;
+}
+
 export default function mediaPanel(peer: Peer) {
-  let loader: HTMLElement | undefined = panelLoader();
-  const container = div`.mediaPanel`(loader);
-
-  const loadMore = () => {
-    media.loadMedia(peer, SEARCH_FILTER, messageCache.indices.photoVideos.getEarliestPeerMedia(peer)?.id);
-  };
-
   const items = new BehaviorSubject<string[]>([]);
+  let mediaChunkService: MessageChunkService | undefined;
+
   const list = new VirtualizedList({
     items,
     pivotBottom: false,
-    onReachBottom: loadMore,
+    onReachBottom: () => mediaChunkService?.loadMore(Direction.Older),
     renderer: (id: string) => mediaRowRenderer(id, peer),
   });
+  let loader: HTMLElement | undefined;
+  const container = div`.mediaPanel`(list.container);
 
-  media.loadMedia(peer, SEARCH_FILTER);
+  useWhileMounted(container, () => {
+    const chunkService = media.getMediaMessagesChunk(peer, 'photoVideo', Infinity);
+    mediaChunkService = chunkService;
 
-  useObservable(container, messageCache.indices.photoVideos.getPeerMedia(peer), true, (messages: Message[]) => {
-    if (!messages.length && media.isMediaLoading(peer, SEARCH_FILTER)) {
-      return;
-    }
+    const historySubscription = chunkService.history.subscribe((history) => {
+      items.next(groupIds(peer, history.ids));
 
-    if (loader) {
-      unmount(loader);
-      mount(container, list.container);
-      loader = undefined;
-    }
+      const showLoader = history.ids.length === 0 && history.loadingOlder;
+      if (!showLoader && loader) {
+        unmount(loader);
+        loader = undefined;
+      } else if (showLoader && !loader) {
+        mount(container, loader = panelLoader());
+      }
+    });
 
-    const ids = messages.map((message) => messageToId(message));
-    const nextItems = [];
-
-    // group by 3
-    for (let i = 0; i < ids.length; i += 3) {
-      nextItems.push(ids.slice(i, i + 3).join('+'));
-    }
-
-    items.next(nextItems);
+    return () => {
+      chunkService.destroy();
+      historySubscription.unsubscribe();
+    };
   });
 
   return container;

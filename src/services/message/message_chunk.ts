@@ -1,8 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
-import { IdsChunk, MessagesChunk } from 'cache/fastStorages/indices/messageHistory';
-import { Peer } from 'mtproto-js';
-import { messageCache } from 'cache';
-import { Direction } from './types';
+import { IdsChunk, MessageHistoryIndex, MessagesChunk } from 'cache/fastStorages/indices/messageHistory';
+import { MessagesFilter, Peer } from 'mtproto-js';
+import { Direction, MessageFilterData } from './types';
 import { LOAD_CHUNK_LENGTH, loadContinuousMessages } from './helpers';
 
 export interface MessageHistoryChunk extends IdsChunk {
@@ -16,6 +15,16 @@ export interface MessageChunkService {
   // Returns <0 if the message is older than chunk, =0 if inside chunk, >0 if newer than chunk, null when unknown.
   getMessageRelation(messageId: number): number | null;
 
+  /**
+   * Look for the sibling message id in the `history.value.ids` field.
+   * `undefined` means that the sibling message hasn't been loaded yet and you need to call `loadMore()` to get it.
+   * `false` means that there is no sibling message (the given message is the newest/oldest).
+   *
+   * `offset` is how far sibling you need; 0 is the given id, 1 (default value) is the closest sibling and so on.
+   */
+  getNewerId(id: number, offset?: number): number | undefined | false;
+  getOlderId(id: number, offset?: number): number | undefined | false;
+
   loadMore(direction: Direction.Newer | Direction.Older): void;
 
   // Also makes sure that the `history` subject won't be updated
@@ -26,14 +35,25 @@ export interface MessageChunkService {
  * Drives 1 chunk of a message history.
  *
  * Tip: give messageId = Infinity to make a chunk of the newest messages.
+ *
+ * If you need a chunk for all messages, set `cacheIndex` to `messageCache.indices.history`.
+ * If you need a chunk for filtered messages, create a custom message history index and set it to `cacheIndex`.
+ *
+ * `subFilters` can be used to automatically add loaded messages to other filtered message history caches.
  */
-export default function makeMessageChunk(peer: Peer, messageId: Exclude<number, 0>): MessageChunkService {
+export default function makeMessageChunk(
+  peer: Peer,
+  messageId: Exclude<number, 0>,
+  cacheIndex: MessageHistoryIndex,
+  filter?: Readonly<MessagesFilter>,
+  subFilters: readonly Pick<MessageFilterData, 'cacheIndex' | 'runtimeFilter'>[] = [],
+): MessageChunkService {
   let isDestroyed = false;
   let isUpdatingCacheChunk = false;
 
   const historySubject = new BehaviorSubject<MessageHistoryChunk>({ ids: [] });
 
-  const cacheChunkRef = messageCache.indices.history.makeChunkReference(peer, messageId);
+  const cacheChunkRef = cacheIndex.makeChunkReference(peer, messageId);
   const cacheSubscription = cacheChunkRef.history.subscribe((chunk) => {
     if (!isUpdatingCacheChunk) {
       historySubject.next({
@@ -42,6 +62,8 @@ export default function makeMessageChunk(peer: Peer, messageId: Exclude<number, 
       });
     }
   });
+
+  const subCacheChunkRefs = subFilters.map((subFilter) => subFilter.cacheIndex.makeChunkReference(peer, messageId));
 
   async function loadMessages(direction: Direction, fromId?: number, toId?: number) {
     if (
@@ -60,7 +82,7 @@ export default function makeMessageChunk(peer: Peer, messageId: Exclude<number, 
 
       let result: MessagesChunk;
       try {
-        result = await loadContinuousMessages(peer, direction, fromId, toId);
+        result = await loadContinuousMessages(peer, direction, fromId, toId, filter);
       } catch (err) {
         if (!isDestroyed && process.env.NODE_ENV !== 'production') {
           // eslint-disable-next-line no-console
@@ -79,6 +101,15 @@ export default function makeMessageChunk(peer: Peer, messageId: Exclude<number, 
       } finally {
         isUpdatingCacheChunk = false;
       }
+
+      // Add the loaded messages to the filtered history caches
+      subCacheChunkRefs.forEach((subCacheChunkRef, index) => {
+        const { runtimeFilter } = subFilters[index];
+        subCacheChunkRef.putChunk({
+          ...result,
+          messages: result.messages.filter(runtimeFilter),
+        });
+      });
     } finally {
       if (!isDestroyed) {
         historySubject.next({
@@ -115,6 +146,19 @@ export default function makeMessageChunk(peer: Peer, messageId: Exclude<number, 
         break;
       default:
     }
+  }
+
+  function getSiblingId(id: number, oldness: number) {
+    const idIndex = cacheChunkRef.getMessageIndex(id);
+    const siblingIndex = oldness >= 0 ? Math.floor(idIndex) + oldness : Math.ceil(idIndex) + oldness;
+    const history = cacheChunkRef.history.value;
+    if (siblingIndex < 0) {
+      return history.newestReached ? false : undefined;
+    }
+    if (siblingIndex >= history.ids.length) {
+      return history.oldestReached ? false : undefined;
+    }
+    return history.ids[siblingIndex];
   }
 
   function destroy() {
@@ -164,6 +208,12 @@ export default function makeMessageChunk(peer: Peer, messageId: Exclude<number, 
     history: historySubject,
     loadMore,
     getMessageRelation: cacheChunkRef.getMessageRelation,
+    getNewerId(id, offset = 1) {
+      return getSiblingId(id, -offset);
+    },
+    getOlderId(id, offset = 1) {
+      return getSiblingId(id, offset);
+    },
     destroy,
   };
 }

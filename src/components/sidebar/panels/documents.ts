@@ -1,58 +1,60 @@
-import { Peer, Message, MessagesFilter } from 'mtproto-js';
+import { Peer } from 'mtproto-js';
 import { div, nothing } from 'core/html';
 import { VirtualizedList } from 'components/ui';
 import { BehaviorSubject } from 'rxjs';
 import { media } from 'services';
+import { MessageChunkService } from 'services/message/message_chunk';
+import { Direction } from 'services/message/types';
 import { messageCache } from 'cache';
-import { useObservable } from 'core/hooks';
-import { messageToId } from 'helpers/api';
+import { useWhileMounted } from 'core/hooks';
+import { getMessageDocument, peerMessageToId } from 'helpers/api';
 import { unmount, mount } from 'core/dom';
 import documentFile from 'components/media/document/file';
 import { panelLoader } from './loader';
 import './documents.scss';
 
-const SEARCH_FILTER: MessagesFilter['_'] = 'inputMessagesFilterDocument';
-
 const documentRowRenderer = (id: string) => {
   const msg = messageCache.get(id);
-  if (msg?._ === 'message' && msg.media?._ === 'messageMediaDocument' && msg.media.document?._ === 'document') {
-    return documentFile(msg.media.document, msg);
+  const document = msg && getMessageDocument(msg);
+  if (document) {
+    return documentFile(document, msg);
   }
   return div(nothing);
 };
 
 export default function docsPanel(peer: Peer) {
-  let loader: HTMLElement | undefined = panelLoader();
-  const container = div`.documentsPanel`(loader);
-
-  const loadMore = () => {
-    media.loadMedia(peer, SEARCH_FILTER, messageCache.indices.documents.getEarliestPeerMedia(peer)?.id);
-  };
-
   const items = new BehaviorSubject<string[]>([]);
+  let mediaChunkService: MessageChunkService | undefined;
+
   const list = new VirtualizedList({
     items,
     pivotBottom: false,
-    onReachBottom: loadMore,
+    onReachBottom: () => mediaChunkService?.loadMore(Direction.Older),
     renderer: documentRowRenderer,
   });
+  let loader: HTMLElement | undefined;
+  const container = div`.documentsPanel`(list.container);
 
-  media.loadMedia(peer, SEARCH_FILTER);
+  useWhileMounted(container, () => {
+    const chunkService = media.getMediaMessagesChunk(peer, 'document', Infinity);
+    mediaChunkService = chunkService;
 
-  useObservable(container, messageCache.indices.documents.getPeerMedia(peer), true, (messages: Message[]) => {
-    if (!messages.length && media.isMediaLoading(peer, SEARCH_FILTER)) {
-      return;
-    }
+    const historySubscription = chunkService.history.subscribe((history) => {
+      items.next(history.ids.map((id) => peerMessageToId(peer, id)));
 
-    if (loader) {
-      unmount(loader);
-      mount(container, list.container);
-      loader = undefined;
-    }
+      const showLoader = history.ids.length === 0 && history.loadingOlder;
+      if (!showLoader && loader) {
+        unmount(loader);
+        loader = undefined;
+      } else if (showLoader && !loader) {
+        mount(container, loader = panelLoader());
+      }
+    });
 
-    const ids = messages.map((message) => messageToId(message));
-
-    items.next(ids);
+    return () => {
+      chunkService.destroy();
+      historySubscription.unsubscribe();
+    };
   });
 
   return container;
