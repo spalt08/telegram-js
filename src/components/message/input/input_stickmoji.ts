@@ -7,17 +7,20 @@ import { listen, mount, animationFrameStart, listenOnce, unmount } from 'core/do
 import { Document } from 'mtproto-js';
 import { div } from 'core/html';
 import * as icons from 'components/icons';
+import { useOutsideEvent } from 'core/hooks';
 
 type Props = {
   onSelectEmoji: (emoji: string) => void,
   onSelectSticker: (sticker: Document) => void,
+  onClose: () => void,
 };
 
-export default function stickMojiPanel({ onSelectEmoji, onSelectSticker }: Props) {
+export default function stickMojiPanel({ onSelectEmoji, onSelectSticker, onClose }: Props) {
   let panelContainer: HTMLDivElement;
   let activePanelIndex: number;
   let nextPanelIndex: number | undefined;
   let dragX: number | undefined;
+  let dragY: number | undefined;
   let isLocked = false;
 
   const panels = [
@@ -33,13 +36,11 @@ export default function stickMojiPanel({ onSelectEmoji, onSelectSticker }: Props
   ];
 
   const container = div`.stickmoji-panel`(
-    div`.stickmoji-panel__content`(
-      panelContainer = div`.stickmoji-panel__panel`(
-        panels[activePanelIndex = 0],
-      ),
-      div`.stickmoji-panel__tabs`(
-        ...tabs.map((tab) => div`.stickmoji-panel__tab`(tab)),
-      ),
+    panelContainer = div`.stickmoji-panel__panel`(
+      panels[activePanelIndex = 0],
+    ),
+    div`.stickmoji-panel__tabs`(
+      ...tabs.map((tab) => div`.stickmoji-panel__tab`(tab)),
     ),
   );
 
@@ -112,15 +113,23 @@ export default function stickMojiPanel({ onSelectEmoji, onSelectSticker }: Props
     if (event.touches.length === 1) {
       const touch = event.touches[0];
       dragX = touch.clientX;
+      dragY = touch.clientY;
     }
   });
 
   listen(panelContainer, 'touchmove', (event: TouchEvent) => {
     const touch = event.touches[0];
-    if (!touch || !dragX) return;
+    if (!touch || !dragX || !dragY) return;
 
     let indexCandidate;
     const dx = touch.clientX - dragX;
+    const dy = touch.clientY - dragY;
+
+    console.log(Math.abs(dx), Math.abs(dy));
+    if (Math.abs(dx) < Math.abs(dy) * 2) {
+      dragX = undefined;
+      return;
+    }
 
     if (dx > 0 && activePanelIndex > 0) indexCandidate = activePanelIndex - 1;
     if (dx < 0 && activePanelIndex < panels.length - 1) indexCandidate = activePanelIndex + 1;
@@ -171,6 +180,15 @@ export default function stickMojiPanel({ onSelectEmoji, onSelectSticker }: Props
   //     }
   //   }
   // });
+
+  listen(container, 'transitionend', () => {
+    if (container.classList.contains('-closing')) unmount(container);
+  });
+
+  useOutsideEvent(container, 'click', () => {
+    container.classList.add('-closing');
+    onClose();
+  });
 
   return container;
 }

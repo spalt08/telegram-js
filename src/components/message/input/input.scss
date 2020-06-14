@@ -25,18 +25,18 @@
       height: 46px;
     }
 
-    svg {
-      width: 24px;
-      height: 24px;
-    }
+    &:hover > .msginput__icon > .ic_fill, &.-active > .msginput__icon > .ic_fill {
+      fill: #50a2e8;
+    } 
+  }
 
-    svg path {
+  &__icon {
+    width: 24px;
+    height: 24px;
+
+    & > .ic_fill {
       fill: #8e979d;
       transition: fill .3s ease;
-    }
-
-    &:hover svg path, &.active svg path {
-      fill: #50a2e8;
     }
   }
 

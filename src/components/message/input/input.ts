@@ -57,12 +57,7 @@ export default function messageInput() {
     maxHeight: 400,
   });
 
-  const emojiIcon = div`.msginput__emoji`(icons.smile());
-
-  const stickmojiPanelEl = stickMojiPanel({
-    onSelectEmoji: (emoji: string) => getInterface(textarea).insertText(emoji),
-    onSelectSticker: (sticker: Document.document) => message.sendMediaMessage(documentToInputMedia(sticker)),
-  });
+  const emojiIcon = div`.msginput__emoji`(icons.smile({ className: 'msginput__icon' }));
 
   const fileInput = input`.msginput__file`({
     type: 'file',
@@ -83,15 +78,7 @@ export default function messageInput() {
     ],
   });
 
-  const attachIcon = div`.msginput__attach`(icons.attach());
-
-  listen(attachIcon, 'click', (event: MouseEvent) => {
-    event.stopPropagation();
-    event.preventDefault();
-
-    if (attachmentMenu.parentElement) getInterface(attachmentMenu).close();
-    else mount(inner, attachmentMenu);
-  });
+  const attachIcon = div`.msginput__attach`(icons.attach({ className: 'msginput__icon' }));
 
   const quoteCancel = div`.msginput__quote-cancel`(icons.close());
   const quoteContainer = div`.msginput__quote.hidden`();
@@ -111,6 +98,23 @@ export default function messageInput() {
       ),
     ),
   );
+
+  const stickmojiPanelEl = stickMojiPanel({
+    onSelectEmoji: (emoji: string) => getInterface(textarea).insertText(emoji),
+    onSelectSticker: (sticker: Document.document) => message.sendMediaMessage(documentToInputMedia(sticker)),
+    onClose: () => {
+      if (container.previousElementSibling) container.previousElementSibling.classList.remove('-messagePanelShowed');
+    },
+  });
+
+  listen(attachIcon, 'click', (event: MouseEvent) => {
+    stickmojiPanelEl.classList.add('-closing');
+    event.stopPropagation();
+    event.preventDefault();
+
+    if (attachmentMenu.parentElement) getInterface(attachmentMenu).close();
+    else mount(inner, attachmentMenu);
+  });
 
   // Reply
   useObservable(container, message.replyToMessageID, true, (msgID) => {
@@ -143,33 +147,25 @@ export default function messageInput() {
   });
 
   // Sticker & Emoji Panel Handling
-  let closeTimer: number | undefined;
-  const closeDelay = 300;
+  const toggleStickMojiPanel = (event: MouseEvent) => {
+    // open
+    if (stickmojiPanelEl.classList.contains('-closing') || !stickmojiPanelEl.parentElement) {
+      if (!stickmojiPanelEl.parentElement) mount(wrapper, stickmojiPanelEl);
+      if (container.previousElementSibling) container.previousElementSibling.classList.add('-messagePanelShowed');
+      stickmojiPanelEl.classList.remove('-closing');
 
-  const openPanel = () => {
-    if (closeTimer) clearTimeout(closeTimer);
-    if (!stickmojiPanelEl.parentElement) mount(wrapper, stickmojiPanelEl);
-    stickmojiPanelEl.classList.remove('-closing');
+    // close
+    } else {
+      stickmojiPanelEl.classList.add('-closing');
+      if (container.previousElementSibling) container.previousElementSibling.classList.remove('-messagePanelShowed');
+    }
+
     getInterface(attachmentMenu).close();
+    event.preventDefault();
+    event.stopPropagation();
   };
 
-  const closePanel = () => {
-    stickmojiPanelEl.classList.add('-closing');
-  };
-
-  const closePanelDelayed = () => {
-    if (closeTimer) clearTimeout(closeTimer);
-    closeTimer = setTimeout(closePanel as TimerHandler, closeDelay);
-  };
-
-  // listen(emojiIcon, 'mouseleave', closePanelDelayed);
-  // listen(stickmojiPanelEl, 'mouseenter', openPanel);
-  listen(stickmojiPanelEl, 'mouseleave', closePanelDelayed);
-  listen(emojiIcon, 'mouseenter', openPanel);
-  listen(emojiIcon, 'click', () => {
-    if (stickmojiPanelEl.classList.contains('-closing')) openPanel();
-    else closePanel();
-  });
+  listen(emojiIcon, 'click', toggleStickMojiPanel);
 
   // Upload with Drag'n'Drop
   useListenWhileMounted(container, document, 'dragenter', (event: Event) => event.preventDefault());
