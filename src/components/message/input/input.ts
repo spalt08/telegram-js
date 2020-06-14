@@ -162,10 +162,14 @@ export default function messageInput() {
     closeTimer = setTimeout(closePanel as TimerHandler, closeDelay);
   };
 
-  listen(emojiIcon, 'mouseenter', openPanel);
-  listen(emojiIcon, 'mouseleave', closePanelDelayed);
-  listen(stickmojiPanelEl, 'mouseenter', openPanel);
+  // listen(emojiIcon, 'mouseleave', closePanelDelayed);
+  // listen(stickmojiPanelEl, 'mouseenter', openPanel);
   listen(stickmojiPanelEl, 'mouseleave', closePanelDelayed);
+  listen(emojiIcon, 'mouseenter', openPanel);
+  listen(emojiIcon, 'click', () => {
+    if (stickmojiPanelEl.classList.contains('-closing')) openPanel();
+    else closePanel();
+  });
 
   // Upload with Drag'n'Drop
   useListenWhileMounted(container, document, 'dragenter', (event: Event) => event.preventDefault());
