@@ -94,7 +94,7 @@ export default class MediaService {
    *
    * Set messageId to Infinity to get the chunk of the newest messages.
    */
-  getMediaMessagesChunk(peer: Peer, type: MediaMessageType, messageId = Infinity) {
+  getMediaMessagesChunk(peer: Peer, type: MediaMessageType, messageId: Exclude<number, 0> = Infinity) {
     let cacheIndex: MessageHistoryIndex;
     let filter: MessagesFilter;
 

@@ -15,9 +15,15 @@ export interface MessageChunkService {
   // Returns <0 if the message is older than chunk, =0 if inside chunk, >0 if newer than chunk, null when unknown.
   getMessageRelation(messageId: number): number | null;
 
-  // Returns the message index in the `history` property.
-  // A fractional number means that the message isn't in the chunk, but if it was, it would stand in the given intermediate position.
-  getMessageIndex(messageId: number): number;
+  /**
+   * Look for the sibling message id in the `history.value.ids` field.
+   * `undefined` means that the sibling message hasn't been loaded yet and you need to call `loadMore()` to get it.
+   * `false` means that there is no sibling message (the given message is the newest/oldest).
+   *
+   * `offset` is how far sibling you need; 0 is the given id, 1 (default value) is the closest sibling and so on.
+   */
+  getNewerId(id: number, offset?: number): number | undefined | false;
+  getOlderId(id: number, offset?: number): number | undefined | false;
 
   loadMore(direction: Direction.Newer | Direction.Older): void;
 
@@ -128,6 +134,19 @@ export default function makeMessageChunk(
     }
   }
 
+  function getSiblingId(id: number, oldness: number) {
+    const idIndex = cacheChunkRef.getMessageIndex(id);
+    const siblingIndex = oldness >= 0 ? Math.floor(idIndex) + oldness : Math.ceil(idIndex) + oldness;
+    const history = cacheChunkRef.history.value;
+    if (siblingIndex < 0) {
+      return history.newestReached ? false : undefined;
+    }
+    if (siblingIndex >= history.ids.length) {
+      return history.oldestReached ? false : undefined;
+    }
+    return history.ids[siblingIndex];
+  }
+
   function destroy() {
     if (isDestroyed) {
       if (process.env.NODE_ENV !== 'production') {
@@ -175,7 +194,12 @@ export default function makeMessageChunk(
     history: historySubject,
     loadMore,
     getMessageRelation: cacheChunkRef.getMessageRelation,
-    getMessageIndex: cacheChunkRef.getMessageIndex,
+    getNewerId(id, offset = 1) {
+      return getSiblingId(id, -offset);
+    },
+    getOlderId(id, offset = 1) {
+      return getSiblingId(id, offset);
+    },
     destroy,
   };
 }
