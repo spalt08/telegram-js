@@ -184,6 +184,10 @@ onCanvasWorkerResponse = (message: CanvasWorkerResponse) => {
 
       if (!renderer.isCaching && frame === 0) {
         loadQuene.register(renderer);
+        // const worker = getCanvasWorker(onCanvasWorkerResponse);
+        // for (let i = renderer.lastLoadedFrame !== undefined ? renderer.lastLoadedFrame + 1 : 0; i < renderer.totalFrames; i++) {
+        //   worker.postMessage({ type: 'get_cached_frame', id, frame: i, width: renderer.width } as CanvasWorkerRequest);
+        // }
       }
 
       if (!renderer.isCaching && frame === header.totalFrames - 1) {
