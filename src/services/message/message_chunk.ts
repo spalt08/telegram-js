@@ -1,7 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
-import { IdsChunk, MessagesChunk } from 'cache/fastStorages/indices/messageHistory';
-import { Peer } from 'mtproto-js';
-import { messageCache } from 'cache';
+import { IdsChunk, MessageHistoryIndex, MessagesChunk } from 'cache/fastStorages/indices/messageHistory';
+import { MessagesFilter, Peer } from 'mtproto-js';
 import { Direction } from './types';
 import { LOAD_CHUNK_LENGTH, loadContinuousMessages } from './helpers';
 
@@ -16,6 +15,10 @@ export interface MessageChunkService {
   // Returns <0 if the message is older than chunk, =0 if inside chunk, >0 if newer than chunk, null when unknown.
   getMessageRelation(messageId: number): number | null;
 
+  // Returns the message index in the `history` property.
+  // A fractional number means that the message isn't in the chunk, but if it was, it would stand in the given intermediate position.
+  getMessageIndex(messageId: number): number;
+
   loadMore(direction: Direction.Newer | Direction.Older): void;
 
   // Also makes sure that the `history` subject won't be updated
@@ -26,14 +29,22 @@ export interface MessageChunkService {
  * Drives 1 chunk of a message history.
  *
  * Tip: give messageId = Infinity to make a chunk of the newest messages.
+ *
+ * If you need a chunk for all messages, set `cacheIndex` to `messageCache.indices.history`.
+ * If you need a chunk for filtered messages, create a custom message history index and set it to `cacheIndex`.
  */
-export default function makeMessageChunk(peer: Peer, messageId: Exclude<number, 0>): MessageChunkService {
+export default function makeMessageChunk(
+  peer: Peer,
+  messageId: Exclude<number, 0>,
+  cacheIndex: MessageHistoryIndex,
+  filter?: Readonly<MessagesFilter>,
+): MessageChunkService {
   let isDestroyed = false;
   let isUpdatingCacheChunk = false;
 
   const historySubject = new BehaviorSubject<MessageHistoryChunk>({ ids: [] });
 
-  const cacheChunkRef = messageCache.indices.history.makeChunkReference(peer, messageId);
+  const cacheChunkRef = cacheIndex.makeChunkReference(peer, messageId);
   const cacheSubscription = cacheChunkRef.history.subscribe((chunk) => {
     if (!isUpdatingCacheChunk) {
       historySubject.next({
@@ -60,7 +71,7 @@ export default function makeMessageChunk(peer: Peer, messageId: Exclude<number, 
 
       let result: MessagesChunk;
       try {
-        result = await loadContinuousMessages(peer, direction, fromId, toId);
+        result = await loadContinuousMessages(peer, direction, fromId, toId, filter);
       } catch (err) {
         if (!isDestroyed && process.env.NODE_ENV !== 'production') {
           // eslint-disable-next-line no-console
@@ -164,6 +175,7 @@ export default function makeMessageChunk(peer: Peer, messageId: Exclude<number, 
     history: historySubject,
     loadMore,
     getMessageRelation: cacheChunkRef.getMessageRelation,
+    getMessageIndex: cacheChunkRef.getMessageIndex,
     destroy,
   };
 }

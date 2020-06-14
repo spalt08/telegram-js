@@ -1,9 +1,9 @@
-import { Peer } from 'mtproto-js';
+import { MessagesFilter, MessagesMessages, Peer } from 'mtproto-js';
 import { peerToInputPeer } from 'cache/accessors';
 import client from 'client/client';
 import { MessagesChunk } from 'cache/fastStorages/indices/messageHistory';
+import { chatCache, messageCache, userCache } from 'cache';
 import { Direction } from './types';
-import { chatCache, messageCache, userCache } from '../../cache';
 
 export const LOAD_CHUNK_LENGTH = 35;
 
@@ -15,6 +15,7 @@ export async function loadContinuousMessages(
   direction: Direction,
   fromId?: number,
   toId?: number,
+  filter?: MessagesFilter,
 ): Promise<MessagesChunk> {
   if (direction === Direction.Newer && toId !== undefined) {
     direction = Direction.Older; // eslint-disable-line no-param-reassign
@@ -60,9 +61,18 @@ export async function loadContinuousMessages(
     default:
   }
 
-  // console.log('loadMessages - request', payload);
-  const data = await client.call('messages.getHistory', payload);
-  // console.log('loadMessages - response', data);
+  let data: MessagesMessages;
+  if (filter) {
+    data = await client.call('messages.search', {
+      ...payload,
+      q: '',
+      filter,
+      min_date: 0,
+      max_date: 0,
+    });
+  } else {
+    data = await client.call('messages.getHistory', payload);
+  }
 
   if (data._ === 'messages.messagesNotModified') {
     throw Error(data._);

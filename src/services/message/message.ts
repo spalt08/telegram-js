@@ -133,7 +133,7 @@ export default class MessagesService {
             if (this.nextChunk) {
               this.nextChunk.destroy();
             }
-            const nextChunk = makeMessageChunk(peer, messageId!);
+            const nextChunk = makeMessageChunk(peer, messageId!, messageCache.indices.history);
             this.nextChunk = nextChunk;
             this.loadingNextChunk.next(true);
 
@@ -169,7 +169,11 @@ export default class MessagesService {
           if (this.currentChunk) {
             this.currentChunk.destroy();
           }
-          this.setCurrentChunk(makeMessageChunk(peer, messageId || Infinity), messageId, focusedMessageDirection);
+          this.setCurrentChunk(
+            makeMessageChunk(peer, messageId || Infinity, messageCache.indices.history),
+            messageId,
+            focusedMessageDirection,
+          );
         }
       } else {
         // No peer – no chunks

@@ -453,3 +453,5 @@ export default function messageHistory(collection: Collection<Message, any>) {
     },
   };
 }
+
+export type MessageHistoryIndex = ReturnType<typeof messageHistory>;

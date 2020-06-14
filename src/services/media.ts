@@ -1,13 +1,13 @@
 import { BehaviorSubject, Observable } from 'rxjs';
 import client from 'client/client';
-import { Document, Peer, StickerSet, MessagesFilter, MessagesAllStickers, MessagesRecentStickers, MessagesMessages } from 'mtproto-js';
+import { Document, Peer, StickerSet, MessagesFilter, MessagesAllStickers, MessagesRecentStickers } from 'mtproto-js';
 import { el } from 'core/dom';
-import { peerToInputPeer } from 'cache/accessors';
-import { chatCache, messageCache, userCache } from 'cache';
-import { peerToId } from 'helpers/api';
+import { messageCache } from 'cache';
 import { getDocumentLocation, getAttributeAudio } from 'helpers/files';
 import { stream } from 'client/media';
 import type MainService from './main';
+import { MessageHistoryIndex } from '../cache/fastStorages/indices/messageHistory';
+import makeMessageChunk from './message/message_chunk';
 
 export const enum MediaPlaybackStatus {
   NotStarted,
@@ -22,6 +22,8 @@ export type MediaPlaybackState = {
   status: MediaPlaybackStatus,
 };
 
+export type MediaMessageType = 'photoVideo' | 'document' | 'link' | 'voice' | 'music';
+
 /**
  * Singleton service class for handling media-related queries
  */
@@ -32,8 +34,6 @@ export default class MediaService {
   /** Stickers Packs */
   stickerSets = new BehaviorSubject<StickerSet[]>([]);
 
-  mediaLoading: Record<string /* peerId */, Partial<Record<MessagesFilter['_'], boolean>>> = {};
-
   /** Hash values for sticker syc */
   stickerSetsHash = 0;
   recentStickersHash = 0;
@@ -41,16 +41,12 @@ export default class MediaService {
   /** Attached files for sending */
   attachedFiles = new BehaviorSubject<FileList | undefined>(undefined);
 
-  main: MainService;
-
   private currentAudioSource?: HTMLSourceElement;
   private currentAudio?: HTMLAudioElement;
   private docPlaying?: Document.document;
   private audioPlayingTimer: any;
 
-  constructor(main: MainService) {
-    this.main = main;
-  }
+  constructor(private main: MainService) {}
 
   /**
    * Load installed sticker sets
@@ -91,63 +87,43 @@ export default class MediaService {
     }
   }
 
-  async loadMedia(peer: Peer, filterType: MessagesFilter['_'], offsetMessageId = 0) {
-    const peerId = peerToId(peer);
-    if (!this.mediaLoading[peerId]) {
-      this.mediaLoading[peerId] = {};
-    }
-    if (this.mediaLoading[peerId][filterType]) return;
+  /**
+   * Makes an object that loads, caches and provides history for specific media messages.
+   *
+   * Don't forget to call destroy() when you don't need the object anymore.
+   *
+   * Set messageId to Infinity to get the chunk of the newest messages.
+   */
+  getMediaMessagesChunk(peer: Peer, type: MediaMessageType, messageId = Infinity) {
+    let cacheIndex: MessageHistoryIndex;
+    let filter: MessagesFilter;
 
-    const chunk = 40;
-    const filter = { _: filterType };
-    const payload = {
-      peer: peerToInputPeer(peer),
-      q: '',
-      filter,
-      min_date: 0,
-      max_date: 0,
-      offset_id: offsetMessageId || 0,
-      add_offset: 0,
-      limit: chunk,
-      max_id: 0,
-      min_id: 0,
-      hash: 0,
-    };
-
-    let index: typeof messageCache.indices.photoVideos;
-    switch (filterType) {
-      case 'inputMessagesFilterPhotoVideo':
-        index = messageCache.indices.photoVideos;
+    switch (type) {
+      case 'photoVideo':
+        cacheIndex = messageCache.indices.photoVideosHistory;
+        filter = { _: 'inputMessagesFilterPhotoVideo' };
         break;
-      case 'inputMessagesFilterDocument':
-        index = messageCache.indices.documents;
+      case 'document':
+        cacheIndex = messageCache.indices.documentsHistory;
+        filter = { _: 'inputMessagesFilterDocument' };
         break;
-      case 'inputMessagesFilterUrl':
-        index = messageCache.indices.links;
+      case 'link':
+        cacheIndex = messageCache.indices.linksHistory;
+        filter = { _: 'inputMessagesFilterUrl' };
+        break;
+      case 'voice':
+        cacheIndex = messageCache.indices.voiceHistory;
+        filter = { _: 'inputMessagesFilterVoice' };
+        break;
+      case 'music':
+        cacheIndex = messageCache.indices.musicHistory;
+        filter = { _: 'inputMessagesFilterMusic' };
         break;
       default:
-        throw Error('Unknown filter');
+        throw new TypeError(`Unknown type "${type}"`);
     }
 
-    this.mediaLoading[peerId][filterType] = true;
-
-    let res: MessagesMessages | undefined;
-    try {
-      res = await client.call('messages.search', payload);
-    } catch (err) {
-      // todo: handle the error
-    } finally {
-      this.mediaLoading[peerId][filterType] = false;
-    }
-    if (res && res._ !== 'messages.messagesNotModified') {
-      userCache.put(res.users);
-      chatCache.put(res.chats);
-      index.putMediaMessages(peer, res.messages);
-    }
-  }
-
-  isMediaLoading(peer: Peer, filterType: MessagesFilter['_']) {
-    return !!this.mediaLoading[peerToId(peer)]?.[filterType];
+    return makeMessageChunk(peer, messageId, cacheIndex, filter);
   }
 
   attachFiles = (files: FileList) => {
