@@ -7,13 +7,13 @@ import emojiCategory, { categories } from './category';
 import './panel.scss';
 
 const categoryIcons: Record<string, SVGSVGElement> = {
-  people: icons.smile(),
-  nature: icons.animals(),
-  foods: icons.eats(),
-  activity: icons.car(),
-  places: icons.sport(),
-  objects: icons.lamp(),
-  flags: icons.flag(),
+  people: icons.smile({ className: 'emoji-panel__icon -active' }),
+  nature: icons.animals({ className: 'emoji-panel__icon' }),
+  foods: icons.eats({ className: 'emoji-panel__icon' }),
+  activity: icons.car({ className: 'emoji-panel__icon' }),
+  places: icons.sport({ className: 'emoji-panel__icon' }),
+  objects: icons.lamp({ className: 'emoji-panel__icon' }),
+  flags: icons.flag({ className: 'emoji-panel__icon' }),
 };
 
 export default function emojiPanel(onSelect?: (emoji: string) => void) {
@@ -21,8 +21,8 @@ export default function emojiPanel(onSelect?: (emoji: string) => void) {
 
   const onTrace = (nextActive?: string) => {
     if (nextActive && active !== nextActive) {
-      if (active) categoryIcons[active].classList.remove('active');
-      categoryIcons[nextActive].classList.add('active');
+      if (active) categoryIcons[active].classList.remove('-active');
+      categoryIcons[nextActive].classList.add('-active');
       active = nextActive;
     }
   };
@@ -32,12 +32,14 @@ export default function emojiPanel(onSelect?: (emoji: string) => void) {
     items: categories,
     pivotBottom: false,
     renderer: (key: string) => emojiCategory(key, onSelect),
-    batch: 9,
+    batch: 1,
+    batchService: 1,
     threshold: 1,
     onTrace,
+    topReached: true,
   });
 
-  const recentIcon = div`.emoji-panel__tab`(icons.recent());
+  const recentIcon = div`.emoji-panel__tab`(icons.recent({ className: 'emoji-panel__icon' }));
 
   const ic = categories.map<Node>((key: string) => {
     const icon = div`.emoji-panel__tab`(categoryIcons[key]);
@@ -50,16 +52,12 @@ export default function emojiPanel(onSelect?: (emoji: string) => void) {
   });
 
   const container = div`.emoji-panel`(
-    categoryList.container,
     div`.emoji-panel__tabs`(
       recentIcon,
       ...ic,
     ),
+    categoryList.container,
   );
 
-  return useInterface(container, {
-    update() {
-      categoryList.trace();
-    },
-  });
+  return container;
 }

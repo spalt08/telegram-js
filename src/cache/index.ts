@@ -1,5 +1,5 @@
 import { dialogToId, messageToId, peerToId } from 'helpers/api';
-import { Chat, Dialog, Message, User, UserFull, ChatFull } from 'mtproto-js';
+import { Chat, Dialog, Message, User, UserFull, ChatFull, StickerSet } from 'mtproto-js';
 import { considerMinItemMerger } from './fastStorages/dictionary';
 import Collection, { GetId, makeGetIdFromProp } from './fastStorages/collection';
 import orderBy from './fastStorages/indices/orderBy';
@@ -10,6 +10,7 @@ import { getDatabase } from './persistentStorages/database';
 import PersistentCache from './persistentCache';
 // eslint-disable-next-line import/no-cycle
 import { compareDialogs } from './accessors';
+import stickerSetStickersIndex from './fastStorages/indices/stickerSetStickersIndex';
 
 /**
  * User repo
@@ -83,6 +84,17 @@ export const chatFullCache = new Collection<ChatFull, {}, number>({
 
 export const pinnedMessageCache = new Collection<Message.message, {}, string>({
   getId: (msg: Message.message) => peerToId(msg.to_id),
+});
+
+export const stickerSetCache = new Collection({
+  getId: (set: StickerSet) => set.id,
+  indices: {
+    stickers: stickerSetStickersIndex,
+    saved: orderBy<StickerSet>(
+      (m1, m2) => m1.id === 'recent' ? 0 : m2.installed_date! - m1.installed_date!,
+      (set) => set.installed_date !== undefined,
+    ),
+  },
 });
 
 export const persistentCache = new PersistentCache(

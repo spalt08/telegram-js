@@ -1,36 +1,56 @@
-import { StickerSet } from 'mtproto-js';
 import { div, img } from 'core/html';
-import { getStickerSetThumbLocation } from 'helpers/photo';
-import { download } from 'client/media';
-import { mount, listen } from 'core/dom';
-import { preloadTgsAssets, tgs } from 'components/ui';
-import { getInterface } from 'core/hooks';
-import { smile } from 'components/icons';
+import { getStickerSetThumbLocation, getSize, getPhotoLocation } from 'helpers/photo';
+import { file } from 'client/media';
+import { mount, watchVisibility, listen } from 'core/dom';
+import * as icons from 'components/icons';
 import './set_thumb.scss';
+import { stickerSetCache } from 'cache';
+import { useObservable } from 'core/hooks';
+import { media } from 'services';
 
-export default function stickerSetThumb(set: StickerSet) {
-  if (!set.thumb || set.thumb._ !== 'photoSize') return div`.sticker-set-thumb`(smile());
+const stickerIndex = stickerSetCache.indices.stickers;
 
+export default function stickerSetThumb(setId: string, onClick: (item: string) => void) {
+  const set = stickerSetCache.get(setId);
+
+  if (!set) return div();
+
+  const image = img`.sticker-set-thumb__image`();
   const container = div`.sticker-set-thumb`();
 
-  const location = getStickerSetThumbLocation(set, set.thumb.location.volume_id, set.thumb.location.local_id);
+  if (setId === 'recent') {
+    mount(container, icons.recent({ className: 'sticker-set-thumb__icon' }));
+  } else {
+    if (set.thumb && !set.animated) {
+      const size = getSize([set.thumb], 64, 64);
 
-  if (set.animated) {
-    preloadTgsAssets();
+      if (size) {
+        image.src = file(getStickerSetThumbLocation(set, size.location.volume_id, size.location.local_id), { dc_id: set.thumb_dc_id });
+        if (!image.parentElement) mount(container, image);
+      }
+    } else {
+      useObservable(container, stickerIndex.readySubject(setId), true, (isLoaded) => {
+        if (isLoaded && !image.src) {
+          const first = stickerIndex.getFirst(setId);
+          if (first && first.thumbs) {
+            const size = getSize(first.thumbs, 64, 64);
+            if (size) {
+              image.src = file(getPhotoLocation(first, size.type), { dc_id: first.dc_id });
+              if (!image.parentElement) mount(container, image);
+            }
+          }
+        }
+      });
+    }
+
+    watchVisibility(container, (isVisible) => {
+      if (isVisible && !image.src) {
+        media.loadStickerSet(setId);
+      }
+    });
   }
 
-  download(location, set.thumb, (src: string) => {
-    if (set.animated) {
-      const thumb = tgs({ src, className: 'sticker-set-thumb__animated', autoplay: false, loop: true });
-
-      mount(container, thumb);
-
-      listen(thumb, 'mouseenter', getInterface(thumb).play);
-      listen(thumb, 'mouseleave', getInterface(thumb).pause);
-    } else {
-      mount(container, img({ src, alt: set.title }));
-    }
-  });
+  listen(container, 'click', () => onClick(setId));
 
   return container;
 }

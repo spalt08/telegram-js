@@ -7,83 +7,39 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  position: relative;
 
   &__tabs {
     flex: none;
-    height: 48px;
-    border-top: 1px solid #dedfe2;
+    height: 46px;
     text-align: left;
     width: 100%;
     padding: 0 8px;
     overflow-x: auto;
     overflow-y: hidden;
     white-space: nowrap;
+    box-shadow: 0px 0px 3px 0px #a5a5a5;  
+    position: relative;
+    z-index: 2;
 
-    @include scrollbar-width(4px);
-  }
-
-  &__tab {
-    display: inline-block;
-    width: 48px;
-    height: 47px;
-    vertical-align: top;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color .15s ease-out;
-    overflow: hidden;
-    margin-right: 5px;
-    padding: 6px;
-    box-sizing: border-box;
-
-    &:last-child {
-      margin-right: 0;
-    }
-
-    &:hover {
-      background-color: rgba(#707579, 0.08);
-    }
-
-    svg {
-      width: 24px;
-      height: 24px;
-      position: relative;
-      top: 6px;
-      left: 6px;
-    }
-
-    svg path {
-      fill: #8e979d;
-      transition: fill .3s ease;
-    }
-
-    &:hover svg path, & svg.active path {
-      fill: #4EA4F5;
-    }
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
+    @include hide-scrollbar();
   }
 
   &__list {
     flex: auto;
 
-    .sticker-set {
-      margin: 0 10px;
-
-      &:not(:first-child) {
-        margin-top: 20px;
-      }
+    & > .list__wrapper > .sticker-set {
+      padding: 8px;
     }
   }
 
   &__loader {
-    flex: none;
-    margin: auto;
+    position: absolute;
     width: 30px;
     height: 30px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, 8px);
     color: #4EA4F5;
   }
 }

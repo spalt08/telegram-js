@@ -243,7 +243,7 @@ export class VirtualizedList {
       if (direction > 0) nextHeight = rect.bottom - this.viewport.top + this.scrollTop - this.paddingTop;
       else nextHeight = this.scrollHeight - this.paddingBottom - (rect.top - this.viewport.top + this.scrollTop);
 
-      if (height < maxHeight - (this.cfg.groupPadding || 0)) {
+      if (nextHeight < maxHeight - (this.cfg.groupPadding || 0)) {
         height = nextHeight;
         count++;
       } else break;
@@ -321,7 +321,8 @@ export class VirtualizedList {
 
   // user has scrolled upper
   onScrollUp() {
-    if (!this.viewport || this.viewport.height === 0) throw new Error('Viewport has not calculated yet');
+    if (!this.viewport || this.viewport.height === 0) this.viewport = this.container.getBoundingClientRect();
+    if (this.viewport.height === 0) throw new Error('Viewport height is zero');
 
     // apply top elements and shrink bottom
     if (this.scrollTop - this.paddingTop < this.cfg.threshold * this.viewport.height) {
@@ -377,10 +378,8 @@ export class VirtualizedList {
             this.container.style.opacity = '0';
           } else this.container.scrollTop = this.scrollTop += newElementsHeight;
         // ios safari workaround
-        } else if (isiOS) {
-          if (this.firstRendered === 0 && this.cfg.topReached) {
-            this.wrapper.style.paddingTop = `${this.paddingTop = this.cfg.initialPaddingTop}px`;
-          }
+        } else if (this.firstRendered === 0 && this.cfg.topReached) {
+          this.wrapper.style.paddingTop = `${this.paddingTop = this.cfg.initialPaddingTop}px`;
         }
 
         animationFrameStart().then(() => {
@@ -405,7 +404,8 @@ export class VirtualizedList {
 
   // user has scrolled lower
   onScrollDown() {
-    if (!this.viewport) this.viewport = this.container.getBoundingClientRect();
+    if (!this.viewport || this.viewport.height === 0) this.viewport = this.container.getBoundingClientRect();
+    if (this.viewport.height === 0) throw new Error('Viewport height is zero');
 
     // apply bottom elements and shrink top
     if (this.scrollHeight - this.paddingBottom - this.scrollTop - this.viewport.height < this.cfg.threshold * this.viewport.height) {
@@ -673,9 +673,11 @@ export class VirtualizedList {
     if (this.viewport.height > rect.height) scrollValue -= (this.viewport.height - rect.height) / 2;
 
     scrollValue = Math.max(0, scrollValue);
-    scrollValue = Math.min(this.scrollHeight - this.viewport.height, scrollValue);
+    scrollValue = Math.min(this.scrollHeight - this.viewport.height + 1, scrollValue);
 
-    if (this.items.indexOf(item) === this.lastRendered) scrollValue = this.scrollHeight - this.viewport.height + 1;
+    // if (this.items.indexOf(item) === this.lastRendered && this.firstRendered - this.lastRendered > 1) {
+    //   scrollValue = this.scrollHeight - this.viewport.height + 1;
+    // }
 
     return Math.ceil(scrollValue);
   }
@@ -816,7 +818,7 @@ export class VirtualizedList {
 
       if (rect.top <= this.scrollTop) {
         this.top = item;
-      } else if (rect.top < this.scrollTop + this.viewport.height) {
+      } else if (rect.top <= this.scrollTop + this.viewport.height) {
         this.bottom = item;
       } else {
         break;
