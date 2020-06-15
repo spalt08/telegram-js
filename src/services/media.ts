@@ -1,11 +1,9 @@
 import { BehaviorSubject, Observable } from 'rxjs';
 import client from 'client/client';
-import { Document, Peer, StickerSet, MessagesFilter, MessagesMessages, MessagesSavedGifs } from 'mtproto-js';
+import { Document, Peer, StickerSet, MessagesFilter, MessagesSavedGifs } from 'mtproto-js';
 import { el } from 'core/dom';
-import { peerToInputPeer } from 'cache/accessors';
-import { chatCache, messageCache, userCache, stickerSetCache } from 'cache';
-import { peerToId } from 'helpers/api';
-import { getDocumentLocation, getAttributeAudio } from 'helpers/files';
+import { stickerSetCache } from 'cache';
+import { getAttributeAudio } from 'helpers/files';
 import { stream } from 'client/media';
 import { TaskQueue } from 'client/workers/extensions/quene';
 import { stickerSetToInput } from 'helpers/photo';
@@ -44,12 +42,17 @@ export default class MediaService {
   /** Attached files for sending */
   attachedFiles = new BehaviorSubject<FileList | undefined>(undefined);
 
+  main: MainService;
+
   private currentAudioSource?: HTMLSourceElement;
   private currentAudio?: HTMLAudioElement;
   private docPlaying?: Document.document;
   private audioPlayingTimer: any;
 
-  constructor() {
+
+  constructor(main: MainService) {
+    this.main = main;
+
     this.#stickerSetLoadQueue = new TaskQueue<StickerSet>({
       process: async (set, complete) => {
         // don't overload thread with requests
@@ -139,63 +142,6 @@ export default class MediaService {
     this.#stickerSetLoadQueue.register(set);
   }
 
-  async loadMedia(peer: Peer, filterType: MessagesFilter['_'], offsetMessageId = 0) {
-    const peerId = peerToId(peer);
-    if (!this.mediaLoading[peerId]) {
-      this.mediaLoading[peerId] = {};
-    }
-    if (this.mediaLoading[peerId][filterType]) return;
-
-    const chunk = 40;
-    const filter = { _: filterType };
-    const payload = {
-      peer: peerToInputPeer(peer),
-      q: '',
-      filter,
-      min_date: 0,
-      max_date: 0,
-      offset_id: offsetMessageId || 0,
-      add_offset: 0,
-      limit: chunk,
-      max_id: 0,
-      min_id: 0,
-      hash: 0,
-    };
-
-    let index: typeof messageCache.indices.photoVideos;
-    switch (filterType) {
-      case 'inputMessagesFilterPhotoVideo':
-        index = messageCache.indices.photoVideos;
-        break;
-      case 'inputMessagesFilterDocument':
-        index = messageCache.indices.documents;
-        break;
-      case 'inputMessagesFilterUrl':
-        index = messageCache.indices.links;
-        break;
-      default:
-        throw Error('Unknown filter');
-    }
-
-    this.mediaLoading[peerId][filterType] = true;
-
-    let res: MessagesMessages | undefined;
-    try {
-      res = await client.call('messages.search', payload);
-    } catch (err) {
-      // todo: handle the error
-    } finally {
-      this.mediaLoading[peerId][filterType] = false;
-    }
-    if (res && res._ !== 'messages.messagesNotModified') {
-      userCache.put(res.users);
-      chatCache.put(res.chats);
-      index.putMediaMessages(peer, res.messages);
-    }
-  }
-
-  isMediaLoading(peer: Peer, filterType: MessagesFilter['_']) {
-    return !!this.mediaLoading[peerToId(peer)]?.[filterType];
   /**
    * Makes an object that loads, caches and provides history for specific media messages.
    *
@@ -309,7 +255,7 @@ export default class MediaService {
     // });
   }
 
-  downloadAudio(doc: Document.document) {
+  downloadAudio(_doc: Document.document) {
     // const location = getDocumentLocation(doc);
     // let state = this.getPlaybackState(doc);
     // state.next({ downloadProgress: 0, playProgress: 0, status: MediaPlaybackStatus.Downloading });
