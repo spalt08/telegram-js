@@ -43,9 +43,8 @@ export default class MainService {
     this.popup.next('');
   };
 
-  openSidebar(state: 'sharedMedia', ctx: Peer): void;
-  openSidebar(state: 'info', ctx: Peer): void;
-  openSidebar(state: 'messageSearch', ctx: Peer): void;
+  openSidebar(state: 'searchStickers'): void;
+  openSidebar(state: 'sharedMedia' | 'info' | 'messageSearch', ctx: Peer): void;
   openSidebar(state: 'pollResults', ctx: { peer: Peer, messageId: number }): void;
   openSidebar(state: SidebarState, ctx?: any): void {
     this.rightSidebarCtx = ctx;

@@ -1,0 +1,16 @@
+.searchStickers {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: 100%;
+
+  &__query {
+    flex: 1 50%;
+    margin-right: 16px;
+  }
+
+  &__content {
+    height: auto;
+    flex: 1 50%;
+  }
+}
