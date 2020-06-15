@@ -5,11 +5,14 @@ import { el } from 'core/dom';
 import { peerToInputPeer } from 'cache/accessors';
 import { chatCache, messageCache, userCache, stickerSetCache } from 'cache';
 import { peerToId } from 'helpers/api';
-import { getAttributeAudio } from 'helpers/files';
+import { getDocumentLocation, getAttributeAudio } from 'helpers/files';
 import { stream } from 'client/media';
 import { TaskQueue } from 'client/workers/extensions/quene';
 import { stickerSetToInput } from 'helpers/photo';
 import type MainService from './main';
+import makeMessageChunk from './message/message_chunk';
+import { MessageFilterType } from './message/types';
+import messageFilters from './message/message_filters';
 
 export const enum MediaPlaybackStatus {
   NotStarted,
@@ -41,16 +44,12 @@ export default class MediaService {
   /** Attached files for sending */
   attachedFiles = new BehaviorSubject<FileList | undefined>(undefined);
 
-  main: MainService;
-
   private currentAudioSource?: HTMLSourceElement;
   private currentAudio?: HTMLAudioElement;
   private docPlaying?: Document.document;
   private audioPlayingTimer: any;
 
-  constructor(main: MainService) {
-    this.main = main;
-
+  constructor() {
     this.#stickerSetLoadQueue = new TaskQueue<StickerSet>({
       process: async (set, complete) => {
         // don't overload thread with requests
@@ -197,6 +196,16 @@ export default class MediaService {
 
   isMediaLoading(peer: Peer, filterType: MessagesFilter['_']) {
     return !!this.mediaLoading[peerToId(peer)]?.[filterType];
+  /**
+   * Makes an object that loads, caches and provides history for specific media messages.
+   *
+   * Don't forget to call destroy() when you don't need the object anymore.
+   *
+   * Set messageId to Infinity to get the chunk of the newest messages.
+   */
+  getMediaMessagesChunk(peer: Peer, type: MessageFilterType, messageId: Exclude<number, 0> = Infinity) {
+    const { cacheIndex, apiFilter } = messageFilters[type];
+    return makeMessageChunk(peer, messageId, cacheIndex, apiFilter);
   }
 
   attachFiles = (files: FileList) => {

@@ -50,6 +50,7 @@ export default function sidebar({ initial, className, onTransitionStart }: Props
   const popState = () => {
     // just close sidebar
     if (stack.length <= 1) {
+      main.rightSidebarDelegate.next(undefined);
       if (onTransitionStart) onTransitionStart(false);
       container.classList.add('-hidden');
       return;

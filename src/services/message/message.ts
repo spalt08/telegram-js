@@ -7,6 +7,7 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import { first } from 'rxjs/operators';
 import makeMessageChunk, { MessageChunkService, MessageHistoryChunk } from './message_chunk';
 import { Direction } from './types';
+import messageFilters from './message_filters';
 
 const emptyHistory: MessageHistoryChunk = { ids: [] };
 
@@ -15,6 +16,19 @@ export type PeerScrollTarget
   | 'firstUnread' // Scroll to the first unread message; if there is no last read message id, then to the bottom
   | 'none' // Don't scroll (stay as is);
   | number; // Message sequential id to stroll to; Infinity to go to the newest; -Infinity to go to the oldest.
+
+function makeMainHistoryChunk(peer: Peer, messageId: number) {
+  return makeMessageChunk(
+    peer,
+    messageId!,
+    messageCache.indices.history,
+    undefined,
+
+    // This argument is very optional. It makes so that messages loaded for the main history will get to the filtered history indices.
+    // If you remove it, the main history API responses will be processed a bit faster, but the filtered indices will load the data by themselves.
+    Object.values(messageFilters),
+  );
+}
 
 /**
  * Singleton service class for handling messages stuff
@@ -133,7 +147,7 @@ export default class MessagesService {
             if (this.nextChunk) {
               this.nextChunk.destroy();
             }
-            const nextChunk = makeMessageChunk(peer, messageId!);
+            const nextChunk = makeMainHistoryChunk(peer, messageId!);
             this.nextChunk = nextChunk;
             this.loadingNextChunk.next(true);
 
@@ -169,7 +183,7 @@ export default class MessagesService {
           if (this.currentChunk) {
             this.currentChunk.destroy();
           }
-          this.setCurrentChunk(makeMessageChunk(peer, messageId || Infinity), messageId, focusedMessageDirection);
+          this.setCurrentChunk(makeMainHistoryChunk(peer, messageId || Infinity), messageId, focusedMessageDirection);
         }
       } else {
         // No peer – no chunks
@@ -216,6 +230,13 @@ export default class MessagesService {
       messages.forEach((message) => {
         if (message._ !== 'messageEmpty') {
           messageCache.indices.history.putNewestMessages([message]);
+
+          // Automatically put the new message to all message filter indices
+          Object.values(messageFilters).forEach(({ cacheIndex, runtimeFilter }) => {
+            if (runtimeFilter(message)) {
+              cacheIndex.putNewestMessages([message]);
+            }
+          });
         }
       });
     });

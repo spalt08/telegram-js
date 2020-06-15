@@ -4,7 +4,6 @@ import { considerMinItemMerger } from './fastStorages/dictionary';
 import Collection, { GetId, makeGetIdFromProp } from './fastStorages/collection';
 import orderBy from './fastStorages/indices/orderBy';
 import messageHistory from './fastStorages/indices/messageHistory';
-import sharedMediaIndex from './fastStorages/indices/sharedMediaIndex';
 import listIndex from './fastStorages/indices/list';
 import pollsIndex from './fastStorages/indices/pollsIndex';
 import { getDatabase } from './persistentStorages/database';
@@ -49,9 +48,11 @@ export const messageCache = new Collection({
   getId: messageToId as GetId<Message, string>,
   indices: {
     history: messageHistory,
-    photoVideos: sharedMediaIndex,
-    documents: sharedMediaIndex,
-    links: sharedMediaIndex,
+    photoVideosHistory: messageHistory,
+    documentsHistory: messageHistory,
+    linksHistory: messageHistory,
+    voiceHistory: messageHistory,
+    musicHistory: messageHistory,
     polls: pollsIndex,
   },
 });
