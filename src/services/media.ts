@@ -33,8 +33,6 @@ export default class MediaService {
   savedGifsMap = new Map<string, Document.document>();
   savedGifsIds = new BehaviorSubject<string[]>([]);
 
-  mediaLoading: Record<string /* peerId */, Partial<Record<MessagesFilter['_'], boolean>>> = {};
-
   /** Hash values for sticker sync */
   #recentStickersHash = 0;
   #stickerSetLoadQueue: TaskQueue<StickerSet>;
