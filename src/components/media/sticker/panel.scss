@@ -28,8 +28,8 @@
   &__list {
     flex: auto;
 
-    .sticker-set {
-      margin: 0 10px;
+    & > .list__wrapper > .sticker-set {
+      padding: 8px;
     }
   }
 
