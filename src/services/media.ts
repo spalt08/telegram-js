@@ -1,17 +1,19 @@
 /* eslint-disable no-param-reassign */
 import { BehaviorSubject, Observable } from 'rxjs';
 import client from 'client/client';
-import { Document, Peer, StickerSet, MessagesSavedGifs, StickerSetCovered } from 'mtproto-js';
+import { Document, Peer, StickerSet, MessagesSavedGifs, StickerSetCovered, InputUser } from 'mtproto-js';
 import { el } from 'core/dom';
-import { stickerSetCache } from 'cache';
+import { stickerSetCache, userCache } from 'cache';
 import { getAttributeAudio } from 'helpers/files';
 import { stream } from 'client/media';
+import { peerToInputUser } from 'cache/accessors';
 import { TaskQueue } from 'client/workers/extensions/quene';
 import { stickerSetToInput } from 'helpers/photo';
 import type MainService from './main';
 import makeMessageChunk from './message/message_chunk';
 import { MessageFilterType } from './message/types';
 import messageFilters from './message/message_filters';
+import { userIdToPeer } from 'helpers/api';
 
 export const enum MediaPlaybackStatus {
   NotStarted,
@@ -40,9 +42,19 @@ export default class MediaService {
 
   /** Sticker Search */
   isStickerSearching = new BehaviorSubject(false);
+  searchStickerPending = '';
   featuredStickers: StickerSetCovered[] = [];
   foundStickers = new BehaviorSubject<string[]>([]);
   foundStickersMap = new Map<string, StickerSetCovered>();
+
+  /** Gif Search */
+  isGifSearching = new BehaviorSubject(false);
+  searchGifPending?: string;
+  searchGifCurrent?: string;
+  searchGifNextOffset?: string;
+  searchGifBot?: InputUser | undefined;
+  foundGifs = new BehaviorSubject<string[]>([]);
+  foundGifsMap = new Map<string, Document.document>();
 
   /** Attached files for sending */
   attachedFiles = new BehaviorSubject<FileList | undefined>(undefined);
@@ -168,7 +180,10 @@ export default class MediaService {
   }
 
   async searchStickerSets(q: string) {
-    if (this.isStickerSearching.value) return;
+    if (this.isStickerSearching.value) {
+      this.searchStickerPending = q;
+      return;
+    }
 
     this.isStickerSearching.next(true);
 
@@ -180,6 +195,11 @@ export default class MediaService {
     }
 
     this.isStickerSearching.next(false);
+
+    if (this.searchStickerPending) {
+      this.searchStickerSets(this.searchStickerPending);
+      this.searchStickerPending = '';
+    }
   }
 
   async loadFeaturedStickers() {
@@ -203,6 +223,71 @@ export default class MediaService {
     }
 
     this.isStickerSearching.next(false);
+  }
+
+  async searchGifsRequest(query: string, offset: string, ids: string[]) {
+    if (!this.searchGifBot) {
+      const { peer, users } = await client.call('contacts.resolveUsername', { username: 'gif' });
+      userCache.put(users);
+      this.searchGifBot = peerToInputUser(peer as Peer.peerUser);
+    }
+
+    try {
+      const { results, next_offset } = await client.call('messages.getInlineBotResults', {
+        bot: this.searchGifBot,
+        peer: { _: 'inputPeerEmpty' },
+        query,
+        offset,
+      });
+
+      results.forEach((result) => {
+        if (result._ === 'botInlineMediaResult' && result.document) {
+          ids.push(result.document.id);
+          this.foundGifsMap.set(result.document.id, result.document as Document.document);
+        }
+      });
+
+      return next_offset;
+    } catch (err) {
+      throw new Error(JSON.stringify(err));
+    }
+  }
+
+  async searchGifs(query: string) {
+    if (this.isGifSearching.value) {
+      this.searchGifPending = query;
+      return;
+    }
+
+    this.isGifSearching.next(true);
+
+    const ids: string[] = [];
+    this.searchGifNextOffset = await this.searchGifsRequest(query, '', ids);
+    this.searchGifCurrent = query;
+    this.foundGifs.next(ids);
+    this.isGifSearching.next(false);
+
+    if (this.searchGifPending) {
+      this.searchGifs(this.searchGifPending);
+      this.searchGifPending = undefined;
+    }
+  }
+
+  async searchGifsMore() {
+    if (!this.searchGifNextOffset || this.searchGifCurrent === undefined) return;
+    if (this.isGifSearching.value) return;
+
+    const ids = this.foundGifs.value.slice(0);
+
+    this.isGifSearching.next(true);
+    this.searchGifNextOffset = await this.searchGifsRequest(this.searchGifCurrent, this.searchGifNextOffset, ids);
+    this.foundGifs.next(ids);
+    this.isGifSearching.next(false);
+
+    if (this.searchGifPending) {
+      this.searchGifs(this.searchGifPending);
+      this.searchGifPending = undefined;
+    }
   }
 
   async addStickerSet(set: StickerSet) {

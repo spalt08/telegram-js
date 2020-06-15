@@ -198,6 +198,7 @@ export default function stickMojiPanel({ onSelectEmoji, onSelectSticker, onClose
 
   listen(searchIcon, 'click', () => {
     if (activePanelIndex === 1) main.openSidebar('searchStickers');
+    if (activePanelIndex === 2) main.openSidebar('searchGifs');
   });
 
   return container;
