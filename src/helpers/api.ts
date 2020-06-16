@@ -97,15 +97,15 @@ export function compareSamePeerMessageIds(id1: string, id2: string): number {
   return id1 < id2 ? -1 : 1;
 }
 
-export function userIdToPeer(id: number): Peer {
+export function userIdToPeer(id: number): Peer.peerUser {
   return { _: 'peerUser', user_id: id };
 }
 
-export function chatIdToPeer(id: number): Peer {
+export function chatIdToPeer(id: number): Peer.peerChat {
   return { _: 'peerChat', chat_id: id };
 }
 
-export function channelIdToPeer(id: number): Peer {
+export function channelIdToPeer(id: number): Peer.peerChannel {
   return { _: 'peerChannel', channel_id: id };
 }
 

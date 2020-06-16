@@ -1,4 +1,5 @@
 import AuthService from './auth';
+import BotsService from './bots';
 import DialogService from './dialog/dialog';
 import FolderService from './folder/folder';
 import GlobalSearchService from './global_search';
@@ -27,3 +28,4 @@ export const topUsers = new TopUsersService(message, auth);
 export const globalSearch = new GlobalSearchService(topUsers);
 export const polls = new PollsService();
 export const folder = new FolderService(auth, dialog);
+export const bots = new BotsService();

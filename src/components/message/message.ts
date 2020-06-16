@@ -76,11 +76,11 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
     datetime({ timestamp: msg.date, date: false }),
   );
 
-  let replyMarkup;
+  let replyMarkup: ReturnType<typeof replyMarkupRenderer> | undefined;
   let replyHeight = 0;
   if (msg.reply_markup) {
     replyMarkup = replyMarkupRenderer(msg, msg.out ? 'message__reply-markup-out' : 'message__reply-markup');
-    replyHeight = getInterface(replyMarkup).height + 2;
+    replyHeight = getInterface(replyMarkup).height + 4;
   }
 
   let content = messageMediaImmutable(msg);
@@ -118,7 +118,7 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
   );
 
   if (replyHeight > 0) {
-    wrapper.style.marginBottom = `${replyHeight + 2}px`;
+    wrapper.style.marginBottom = `${replyHeight}px`;
   }
 
   info.title = getMessageTooltipTitle(msg);
@@ -172,6 +172,7 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
    * Update Contents Strategy
    */
   messageCache.useWatchItem(container, id, (next: Message.message) => {
+    if (msg === next) return;
     if (!next) return;
 
     // message text
@@ -224,6 +225,20 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
       mediaLower = messageMediaLower(next);
 
       if (mediaLower && bubbleContent) mount(bubbleContent, mediaLower);
+    }
+
+    if (next.reply_markup) {
+      if (replyMarkup) unmount(replyMarkup);
+      replyMarkup = replyMarkupRenderer(next, next.out ? 'message__reply-markup-out' : 'message__reply-markup');
+      replyHeight = getInterface(replyMarkup).height + 2;
+
+      if (replyMarkup && content) {
+        mount(content, replyMarkup);
+      }
+      wrapper.style.marginBottom = `${replyHeight}px`;
+    } else {
+      if (replyMarkup) unmount(replyMarkup);
+      wrapper.style.removeProperty('margin-bottom');
     }
 
     // update className

@@ -1,6 +1,7 @@
 import { mount } from 'core/dom';
-import { a, code, em, fragment, pre, span, strong, text } from 'core/html';
+import { a, code, em, fragment, pre, strong, text } from 'core/html';
 import { Message, MessageEntity, PollResults } from 'mtproto-js';
+import { message } from 'services';
 import { hiddenUrlClickHandler } from 'services/click_handlers';
 
 interface TreeNode {
@@ -84,7 +85,7 @@ function nodeToHtml(node: TreeNode, result: Node[]) {
         result.push(createAnchor(`internal:user-id//${node.entity.user_id}`, text(node.value)));
         break;
       case 'messageEntityBotCommand':
-        result.push(a({ href: '#' }, text(node.value)));
+        result.push(a({ href: '', onClick: (e: Event) => { e.preventDefault(); message.sendMessage(node.value ?? ''); } }, text(node.value)));
         break;
       case 'messageEntityHashtag':
         result.push(createAnchor(node.value, text(node.value)));
@@ -98,23 +99,15 @@ function nodeToHtml(node: TreeNode, result: Node[]) {
   }
 }
 
-export function highlightLinks(message: string) {
-  return span(text(message));
-}
-
-export function formattedMessage(message: Message.message | PollResults | string) {
-  if (typeof message === 'string') {
-    return highlightLinks(message);
-  }
-
+export function formattedMessage(msg: Message.message | PollResults) {
   let str;
   let entities;
-  if (message._ === 'message') {
-    str = message.message;
-    entities = message.entities;
+  if (msg._ === 'message') {
+    str = msg.message;
+    entities = msg.entities;
   } else {
-    str = message.solution || '';
-    entities = message.solution_entities;
+    str = msg.solution || '';
+    entities = msg.solution_entities;
   }
   const root = createTreeNode(str);
   if (entities) {

@@ -7,6 +7,7 @@
   } 
 
   &__button {
+    position: relative;
     background: rgba(0, 0, 0, 0.3);
     color: #fff;
     cursor: pointer;
@@ -22,8 +23,32 @@
     overflow-wrap: break-word;
     overflow: hidden;
   
+    .ripple__effect {
+      background-color: rgba(0, 0, 0, 0.1);
+    }
+  
     &:last-child {
       margin-right: 0;
+    }
+
+    &.-external::before {
+      content: '';
+      background: url('~assets/reply_button_url@2x.png') top left / cover no-repeat;
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 12px;
+      height: 12px;
+    }
+
+    &.-share::before {
+      content: '';
+      background: url('~assets/reply_button_forward@2x.png') top left / cover no-repeat;
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 12px;
+      height: 12px;
     }
   }
 }

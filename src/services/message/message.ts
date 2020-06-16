@@ -5,10 +5,11 @@ import { arePeersSame, getDialogLastReadMessageId, getUserMessageId, peerMessage
 import { ChannelsGetMessages, Dialog, InputMedia, Message, MessagesGetMessages, MessagesMessages, MessagesSendMedia, MethodDeclMap, Peer, User } from 'mtproto-js';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { first } from 'rxjs/operators';
-import { main } from 'services'; // TODO: Fix circular dependency
 import makeMessageChunk, { MessageChunkService, MessageHistoryChunk } from './message_chunk';
-import { Direction } from './types';
 import messageFilters from './message_filters';
+import { Direction } from './types';
+
+const { bots, main } = require('services');
 
 const emptyHistory: MessageHistoryChunk = { ids: [] };
 
@@ -218,7 +219,7 @@ export default class MessagesService {
     this.replyToMessageID.next('');
   }
 
-  async openPeerByName(username: string, msgId: number, startToken: string | null, clickFromMessageId: string) {
+  async openPeerByName(username: string, msgId: number, startToken: string | undefined, clickFromMessageId: string) {
     const resolved = await client.call('contacts.resolveUsername', { username });
     userCache.put(resolved.users);
     chatCache.put(resolved.chats);
@@ -231,9 +232,7 @@ export default class MessagesService {
 
     if (msgId === showAtProfileMsgId && peer._ !== 'peerChannel') {
       if (user && user.bot && !user.bot_nochats && startToken) {
-        console.error(user);
-        // peer.botInfo.startGroupToken = startToken;
-        // AddBotToGroupBoxController::Start(_controller, peer->asUser());
+        bots.setStartGroupToken(user, startToken);
         main.openSidebar('addBotToGroup', peer);
       } else if (user && user.bot) {
         // Always open bot chats, even from mention links.
@@ -247,7 +246,7 @@ export default class MessagesService {
         msgId = showAtUnreadMsgId;
       }
       if (user && user.bot) {
-        // user.botInfo.startToken = startToken;
+        bots.setStartGroupToken(user, startToken);
         // if (peer == _history -> peer()) {
         //   _history -> updateControlsVisibility();
         //   _history -> updateControlsGeometry();

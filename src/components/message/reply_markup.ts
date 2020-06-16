@@ -1,15 +1,18 @@
+import { ripple } from 'components/ui';
 import { listen } from 'core/dom';
 import { useInterface } from 'core/hooks';
 import { div, nothing, text } from 'core/html';
 import { KeyboardButton, Message } from 'mtproto-js';
-import { activateBotCommand } from 'services/bots';
+import { bots } from 'services';
 import './reply_markup.scss';
 
 function markupButton(msg: Message.message, button: KeyboardButton, row: number, column: number) {
-  const buttonEl = div`.reply-markup__button`(text(button.text));
-  // buttonEl.title = JSON.stringify(button);
+  const isExternal = button._ === 'keyboardButtonUrl' || button._ === 'keyboardButtonUrlAuth';
+  const isShare = button._ === 'keyboardButtonSwitchInline';
+  const className = `reply-markup__button ${isExternal ? '-external' : ''} ${isShare ? '-share' : ''}`;
+  const buttonEl = ripple({ className }, [text(button.text)]);
   listen(buttonEl, 'click', () => {
-    activateBotCommand(msg, row, column);
+    bots.activateBotCommand(msg, row, column);
   });
   return buttonEl;
 }

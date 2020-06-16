@@ -17,10 +17,10 @@ function resolveUsername(match: RegExpMatchArray, context: any) {
     return false;
   }
   let start = 'start';
-  let startToken = params.get(start);
+  let startToken = params.get('start') ?? undefined;
   if (!startToken) {
     start = 'startgroup';
-    startToken = params.get(start);
+    startToken = params.get(start) ?? undefined;
     if (!startToken) {
       start = '';
     }
