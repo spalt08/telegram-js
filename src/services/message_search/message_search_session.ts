@@ -4,10 +4,10 @@ import { chatCache, messageCache, userCache } from 'cache';
 import { Peer, MessagesSearch, MessagesFilter, MessagesMessages } from 'mtproto-js';
 import { peerToInputPeer } from 'cache/accessors';
 import { mergeOrderedArrays } from 'helpers/data';
-import debounceWithQueue from '../../helpers/debounceWithQueue';
+import SearchDriver from 'helpers/searchDriver';
+import { map } from 'rxjs/operators';
 
 const LOAD_CHUNK_LENGTH = 20;
-const SEARCH_REQUEST_DEBOUNCE = 250;
 
 export type SearchRequest = string; // It may get other filter in future (e.g. date)
 
@@ -30,15 +30,14 @@ export interface SearchSession {
   readonly isLoadingMore: BehaviorSubject<boolean>;
   search(request: SearchRequest): void;
   loadMore(): void;
-  destroy(): void;
 }
 
 export function areSearchRequestsEqual(request1: SearchRequest, request2: SearchRequest): boolean {
-  return request1 === request2;
+  return request1.trim() === request2.trim();
 }
 
 export function isSearchRequestEmpty(request: SearchRequest): boolean {
-  return request.length === 0;
+  return request.trim().length === 0;
 }
 
 async function makeSearchRequest(
@@ -109,103 +108,38 @@ const emptySearchResponse: SearchResponse = {
 export const emptySearchResult = responseToResult(emptySearchRequest, emptySearchResponse);
 
 export default function makeSearchSession(peer: Peer): SearchSession {
-  let isDestroyed = false;
-  const isSearching = new BehaviorSubject(false); // Includes the debounce time too
-  const isLoadingMore = new BehaviorSubject(false);
-  const result = new BehaviorSubject(emptySearchResult);
+  const resultSubject = new BehaviorSubject<SearchResult>(responseToResult(emptySearchRequest, emptySearchResponse));
 
-  const debouncedSearch = debounceWithQueue<SearchRequest, SearchResponse>({
-    initialInput: emptySearchRequest,
-    debounceTime: SEARCH_REQUEST_DEBOUNCE,
-    performOnInit: false,
-    shouldPerform(prevRequest, nextRequest) {
-      return !areSearchRequestsEqual(prevRequest, nextRequest);
-    },
-    async perform(request) {
-      if (isSearchRequestEmpty(request)) {
-        return emptySearchResponse;
+  const searchDriver = new SearchDriver<SearchRequest, Omit<SearchResponse, 'isEnd'>>({
+    isRequestEmpty: isSearchRequestEmpty,
+    areRequestEqual: areSearchRequestsEqual,
+    async performSearch(request, pageAfter?) {
+      let ids = pageAfter?.ids;
+      const response = await makeSearchRequest(peer, request, ids ? ids[ids.length - 1] : null);
+      if (ids) {
+        mergeOrderedArrays(ids, response.ids, (id1, id2) => id2 - id1);
+      } else {
+        ids = response.ids;
       }
-      const response = await makeSearchRequest(peer, request, null);
-      return response;
-    },
-    onStart() {
-      isSearching.next(true);
-    },
-    onOutput(request, response, isDebounceComplete) {
-      // Ignore the results that come before the final result that matches the latest request
-      if (!isDebounceComplete) {
-        return;
-      }
-
-      result.next(responseToResult(request, response));
-      isSearching.next(false);
-      isLoadingMore.next(false);
+      return {
+        result: {
+          ids,
+          count: response.count || pageAfter?.count || 0,
+        },
+        isEnd: response.isEnd,
+      };
     },
   });
 
-  function search(request: SearchRequest) {
-    if (isDestroyed) {
-      if (process.env.NODE_ENV !== 'production') {
-        // eslint-disable-next-line no-console
-        console.error('Called `search` on a destroyed search session. Ignoring the call.');
-      }
-      return;
-    }
+  searchDriver.result
+    .pipe(map(([request, result = emptySearchResponse, isEnd]) => responseToResult(request, { ...result, isEnd })))
+    .subscribe(resultSubject);
 
-    debouncedSearch.run(request, isSearchRequestEmpty(request));
-  }
-
-  async function loadMore() {
-    if (isDestroyed) {
-      if (process.env.NODE_ENV !== 'production') {
-        // eslint-disable-next-line no-console
-        console.error('Called `loadMore` on a destroyed search session. Ignoring the call.');
-      }
-      return;
-    }
-
-    const { isFull, ids: startIds, request: startRequest } = result.value;
-
-    if (
-      isFull
-      || !startIds.length
-      || isSearching.value // If the search process has started, it'll always lead to replacing the results list, so loading more is meaningless
-      || isLoadingMore.value
-    ) {
-      return;
-    }
-
-    isLoadingMore.next(true);
-
-    const { ids: loadedIds, count: loadedCount, isEnd: isSearchEnd } = await makeSearchRequest(peer, startRequest, startIds[startIds.length - 1]);
-    if (isDestroyed) {
-      return;
-    }
-    const { ids: endIds, count: endCount, request: endRequest } = result.value;
-    if (areSearchRequestsEqual(startRequest, endRequest)) {
-      mergeOrderedArrays(endIds, loadedIds, (id1, id2) => id2 - id1);
-      result.next({
-        request: endRequest,
-        ids: endIds,
-        count: loadedCount || endCount,
-        isFull: isSearchEnd,
-      });
-      isLoadingMore.next(false);
-    }
-  }
-
-  function destroy() {
-    if (isDestroyed) {
-      if (process.env.NODE_ENV !== 'production') {
-        // eslint-disable-next-line no-console
-        console.error('Called `destroy` on a destroyed search session. Ignoring the call.');
-      }
-      return;
-    }
-
-    isDestroyed = true;
-    debouncedSearch.destroy();
-  }
-
-  return { result, isSearching, isLoadingMore, search, loadMore, destroy };
+  return {
+    search: searchDriver.search.bind(searchDriver),
+    loadMore: searchDriver.loadMore.bind(searchDriver),
+    result: resultSubject,
+    isSearching: searchDriver.isSearching,
+    isLoadingMore: searchDriver.isLoadingMore,
+  };
 }
