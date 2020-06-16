@@ -2,7 +2,8 @@ import * as icons from 'components/icons';
 import { contextMenu, heading, tabsPanel } from 'components/ui';
 import { mount } from 'core/dom';
 import { getInterface } from 'core/hooks';
-import { div, nothing } from 'core/html';
+import { div } from 'core/html';
+import { MaybeObservable } from 'core/types';
 import { Peer } from 'mtproto-js';
 import docsPanel from '../panels/documents';
 import infoPanel from '../panels/info';
@@ -12,7 +13,7 @@ import './info.scss';
 
 type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
-export default function info({ onBack }: SidebarComponentProps, peer: Peer) {
+export default function info({ onBack }: SidebarComponentProps, peer: MaybeObservable<Peer>) {
   let container: HTMLElement;
 
   const moreContextMenu = contextMenu({
@@ -38,13 +39,13 @@ export default function info({ onBack }: SidebarComponentProps, peer: Peer) {
         { icon: icons.more, position: 'right', onClick: toggleContextMenu },
       ],
     }),
-    peer ? infoPanel(peer) : nothing,
-    peer ? tabsPanel({ className: 'infoSidebar__panels', headerAlign: 'space-between' }, [
+    infoPanel(peer),
+    tabsPanel({ className: 'infoSidebar__panels', headerAlign: 'space-between' }, [
       // to do: members panel,
       { key: 'media', title: 'Media', content: () => mediaPanel(peer) },
       { key: 'docs', title: 'Docs', content: () => docsPanel(peer) },
       { key: 'links', title: 'Links', content: () => linksPanel(peer) },
-    ]) : nothing,
+    ]),
   );
 
   // todo prevent scrolling shared media

@@ -1,17 +1,16 @@
 .reply-markup {
-  width: 100%;
-  padding-bottom: 5px;
 
   &__row {
     display: flex;
     justify-content: space-between;
-    margin-top: 2px;
+    margin-bottom: 2px;
   } 
 
   &__button {
+    position: relative;
     background: rgba(0, 0, 0, 0.3);
     color: #fff;
-    cursor: not-allowed;
+    cursor: pointer;
     height: 38px;
     flex: 1 20%;
     display: flex;
@@ -24,8 +23,32 @@
     overflow-wrap: break-word;
     overflow: hidden;
   
+    .ripple__effect {
+      background-color: rgba(0, 0, 0, 0.1);
+    }
+  
     &:last-child {
       margin-right: 0;
+    }
+
+    &.-external::before {
+      content: '';
+      background: url('~assets/reply_button_url@2x.png') top left / cover no-repeat;
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 12px;
+      height: 12px;
+    }
+
+    &.-share::before {
+      content: '';
+      background: url('~assets/reply_button_forward@2x.png') top left / cover no-repeat;
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 12px;
+      height: 12px;
     }
   }
 }

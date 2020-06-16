@@ -197,11 +197,11 @@ export function peerToInitials(peer: Peer): [string, Observable<string>] {
 }
 
 export function textToColorCode(text: string) {
-  return text && text.length > 0 ? (Math.abs(text.charCodeAt(0)) % 8) + 1 : 1;
+  return text && text.length > 0 ? (Math.abs(text.charCodeAt(0)) % 7) + 1 : 1;
 }
 
 export function idToColorCode(id: number) {
-  return (Math.abs(id) % 8) + 1;
+  return (Math.abs(id) % 7) + 1;
 }
 
 export function peerToColorCode(peer: Peer) {

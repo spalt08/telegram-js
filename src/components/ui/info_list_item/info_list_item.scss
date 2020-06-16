@@ -36,8 +36,8 @@
 
   &__value {
     white-space: pre-wrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
+    margin-right: 15px;
   }
 
   & a {

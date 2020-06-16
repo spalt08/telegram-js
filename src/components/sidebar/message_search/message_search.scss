@@ -30,8 +30,7 @@
 
   &__messages {
     flex: auto;
-    display: flex;
-    flex-direction: column;
+    position: relative;
     mask-image: linear-gradient(to bottom, transparent, #000 8px);
   }
 }
