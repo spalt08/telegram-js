@@ -20,6 +20,7 @@
     position: sticky;
     top: 0;
     z-index: 3;
+    mask-image: linear-gradient(to top, transparent, #000 8px);
   }
 
   &__voters-list {

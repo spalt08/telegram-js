@@ -1,7 +1,7 @@
 import { mount } from 'core/dom';
 import { a, code, em, fragment, pre, strong, text } from 'core/html';
 import { Message, MessageEntity, PollResults } from 'mtproto-js';
-import { click, message } from 'services';
+import { click, message, main } from 'services';
 
 interface TreeNode {
   children: TreeNode[];
@@ -84,10 +84,22 @@ function nodeToHtml(node: TreeNode, result: Node[]) {
         result.push(createAnchor(`internal:user-id//${node.entity.user_id}`, text(node.value)));
         break;
       case 'messageEntityBotCommand':
-        result.push(a({ href: '', onClick: (e: Event) => { e.preventDefault(); message.sendMessage(node.value ?? ''); } }, text(node.value)));
+        result.push(a({
+          href: '',
+          onClick: (e: Event) => {
+            e.preventDefault();
+            message.sendMessage(node.value ?? '');
+          },
+        }, text(node.value)));
         break;
       case 'messageEntityHashtag':
-        result.push(createAnchor(node.value, text(node.value)));
+        result.push(a({
+          href: '',
+          onClick: (e: Event) => {
+            e.preventDefault();
+            main.openSidebar('messageSearch', { peer: message.activePeer.value!, query: node.value });
+          },
+        }, text(node.value)));
         break;
       default:
         result.push(text(node.value));

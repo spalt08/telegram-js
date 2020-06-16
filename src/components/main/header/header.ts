@@ -76,7 +76,7 @@ export default function header({ onBackToContacts }: Props) {
       roundButton({
         className: 'header__search',
         onClick: () => {
-          main.openSidebar('messageSearch', peer);
+          main.openSidebar('messageSearch', { peer });
         },
       }, icons.search()),
       roundButton({

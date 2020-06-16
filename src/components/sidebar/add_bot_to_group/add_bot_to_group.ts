@@ -3,7 +3,10 @@ import { chatToTitle, userToTitle } from 'cache/accessors';
 import client from 'client/client';
 import * as icons from 'components/icons';
 import { heading, list } from 'components/ui';
+import { mount, unmount } from 'core/dom';
+import { useMaybeObservable } from 'core/hooks';
 import { div } from 'core/html';
+import { MaybeObservable } from 'core/types';
 import { channelIdToPeer, chatIdToPeer, peerIdToPeer, peerToId } from 'helpers/api';
 import { Peer } from 'mtproto-js';
 import { BehaviorSubject } from 'rxjs';
@@ -13,7 +16,7 @@ import './add_bot_to_group.scss';
 
 type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
-function confirmAddBot(botPeer: Peer.peerUser, chatPeer: Peer, closeSidebar: (() => void) | undefined) {
+function confirmAddBot(botPeer: Peer.peerUser, chatPeer: Peer) {
   if (chatPeer._ === 'peerChat' || chatPeer._ === 'peerChannel') {
     const chat = chatCache.get(chatPeer._ === 'peerChat' ? chatPeer.chat_id : chatPeer.channel_id);
     const bot = userCache.get(botPeer.user_id);
@@ -26,7 +29,7 @@ function confirmAddBot(botPeer: Peer.peerUser, chatPeer: Peer, closeSidebar: (()
           confirmCallback: () => {
             bots.sendBotStart(bot, chatPeer);
             // client.call('messages.addChatUser', { chat_id: chat.id, user_id: peerToInputUser(botPeer), fwd_limit: 1 });
-            if (closeSidebar) closeSidebar();
+            main.closeSidebar();
             message.selectPeer(chatPeer);
           },
         },
@@ -59,14 +62,7 @@ function refreshGroupList() {
   }
 }
 
-export default function addBotToGroup({ onBack }: SidebarComponentProps, botPeer: Peer.peerUser) {
-  const groupList = list({
-    items: groups,
-    renderer(id) {
-      const chatPeer = peerIdToPeer(id);
-      return contact({ peer: chatPeer, clickMiddleware: () => confirmAddBot(botPeer, chatPeer, onBack) });
-    },
-  });
+export default function addBotToGroup({ onBack }: SidebarComponentProps, botPeer: MaybeObservable<Peer.peerUser>) {
   const rootEl = div`.addBotToGroup`(
     heading({
       title: 'Select a group',
@@ -74,10 +70,24 @@ export default function addBotToGroup({ onBack }: SidebarComponentProps, botPeer
         { icon: icons.close, position: 'left', onClick: () => onBack && onBack() },
       ],
     }),
-    div`.addBotToGroup__content`(groupList),
   );
 
-  refreshGroupList();
+  let content: Element | undefined;
+  useMaybeObservable(rootEl, botPeer, true, (newBotPeer) => {
+    if (content) {
+      unmount(content);
+    }
+    content = div`.addBotToGroup__content`(list({
+      items: groups,
+      renderer(id) {
+        const chatPeer = peerIdToPeer(id);
+        return contact({ peer: chatPeer, clickMiddleware: () => confirmAddBot(newBotPeer, chatPeer) });
+      },
+    }));
+    mount(rootEl, content);
+
+    refreshGroupList();
+  });
 
   return rootEl;
 }
