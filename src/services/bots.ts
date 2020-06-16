@@ -3,20 +3,16 @@ import { peerToInputPeer, peerToInputUser } from 'cache/accessors';
 import client, { fetchUpdates } from 'client/client';
 import { peerMessageToId, userIdToPeer } from 'helpers/api';
 import { KeyboardButton, Message, Peer, User } from 'mtproto-js';
-import { hiddenUrlClickHandler, urlClickHandler } from './click_handlers';
-
-const { message } = require('services');
+import ClickService from './click';
+import MessagesService from './message/message';
 
 export default class BotsService {
-  #botStartTokens = new Map<number, string | undefined>();
-  #botStartGroupTokens = new Map<number, string | undefined>();
+  #message: MessagesService;
+  #click: ClickService;
 
-  setStartToken(bot: User.user, token?: string) {
-    this.#botStartTokens.set(bot.id, token);
-  }
-
-  setStartGroupToken(bot: User.user, token?: string) {
-    this.#botStartGroupTokens.set(bot.id, token);
+  constructor(message: MessagesService, click: ClickService) {
+    this.#message = message;
+    this.#click = click;
   }
 
   sendBotCommand(peer: Peer, botId: number, cmd: string, replyTo: number) {
@@ -29,8 +25,8 @@ export default class BotsService {
     if (!replyTo && cmd.indexOf('@') < 2 && bot.username) {
       toSend += `@${bot.username}`;
     }
-    message.replyToMessageID.next(peerMessageToId(peer, replyTo));
-    message.sendMessage(toSend);
+    this.#message.replyToMessageID.next(peerMessageToId(peer, replyTo));
+    this.#message.sendMessage(toSend);
   }
 
   private sendBotCallback(button: KeyboardButton.keyboardButtonCallback, msg: Message.message) {
@@ -42,7 +38,7 @@ export default class BotsService {
   }
 
   sendBotStart(bot: User.user, chat?: Peer) {
-    const token = chat ? this.#botStartGroupTokens.get(bot.id) : this.#botStartTokens.get(bot.id);
+    const token = chat ? this.#click.getStartGroupToken(bot) : this.#click.getStartToken(bot);
     if (!token && chat) {
       this.sendBotCommand(chat, bot.id, '/start', 0);
       return;
@@ -79,14 +75,13 @@ export default class BotsService {
         const bot = msg.from_id ? userCache.get(msg.from_id) : undefined;
         const skipConfirmation = bot?._ === 'user' && bot.verified;
         if (skipConfirmation) {
-          urlClickHandler(url);
+          this.#click.urlClickHandler(url);
         } else {
-          hiddenUrlClickHandler(url);
+          this.#click.hiddenUrlClickHandler(url);
         }
         break;
       }
       default:
     }
   }
-
 }

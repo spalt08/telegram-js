@@ -1,8 +1,7 @@
 import { mount } from 'core/dom';
 import { a, code, em, fragment, pre, strong, text } from 'core/html';
 import { Message, MessageEntity, PollResults } from 'mtproto-js';
-import { message } from 'services';
-import { hiddenUrlClickHandler } from 'services/click_handlers';
+import { click, message } from 'services';
 
 interface TreeNode {
   children: TreeNode[];
@@ -44,7 +43,7 @@ function fixUrl(url: string) {
 export function createAnchor(url: string, ...children: Node[]) {
   const onClick = (e: Event) => {
     e.preventDefault();
-    hiddenUrlClickHandler(url);
+    click.hiddenUrlClickHandler(url);
   };
 
   return a({ href: url, onClick }, ...children);

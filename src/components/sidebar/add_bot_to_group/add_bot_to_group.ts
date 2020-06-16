@@ -7,8 +7,7 @@ import { div } from 'core/html';
 import { channelIdToPeer, chatIdToPeer, peerIdToPeer, peerToId } from 'helpers/api';
 import { Peer } from 'mtproto-js';
 import { BehaviorSubject } from 'rxjs';
-import { bots, message } from 'services';
-import { showConfirmation } from 'services/click_handlers';
+import { bots, main, message } from 'services';
 import contact from '../contact/contact';
 import './add_bot_to_group.scss';
 
@@ -19,12 +18,19 @@ function confirmAddBot(botPeer: Peer.peerUser, chatPeer: Peer, closeSidebar: (()
     const chat = chatCache.get(chatPeer._ === 'peerChat' ? chatPeer.chat_id : chatPeer.channel_id);
     const bot = userCache.get(botPeer.user_id);
     if (chat && (chat._ === 'chat' || chat._ === 'channel') && bot && bot._ === 'user' && bot.bot) {
-      showConfirmation(`Do you want to add «${userToTitle(bot)}» to the group «${chatToTitle(chat)}»?`, 'Add bot', () => {
-        bots.sendBotStart(bot, chatPeer);
-        // client.call('messages.addChatUser', { chat_id: chat.id, user_id: peerToInputUser(botPeer), fwd_limit: 1 });
-        if (closeSidebar) closeSidebar();
-        message.selectPeer(chatPeer);
-      });
+      main.showPopup(
+        'confirmation',
+        {
+          body: `Do you want to add «${userToTitle(bot)}» to the group «${chatToTitle(chat)}»?`,
+          title: 'Add bot',
+          confirmCallback: () => {
+            bots.sendBotStart(bot, chatPeer);
+            // client.call('messages.addChatUser', { chat_id: chat.id, user_id: peerToInputUser(botPeer), fwd_limit: 1 });
+            if (closeSidebar) closeSidebar();
+            message.selectPeer(chatPeer);
+          },
+        },
+      );
     }
   }
 }
