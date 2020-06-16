@@ -2,13 +2,14 @@ import { messageCache } from 'cache';
 import { messageToSenderPeer, peerToColorCode } from 'cache/accessors';
 import { profileAvatar, profileTitle } from 'components/profile';
 import { bubble, bubbleClassName, datetime, formattedMessage } from 'components/ui';
-import { mount, unmount, unmountChildren } from 'core/dom';
+import { listen, mount, unmount, unmountChildren } from 'core/dom';
 import { getInterface, useObservable } from 'core/hooks';
 import { div, nothing, text } from 'core/html';
 import { getDayOffset, getMessageTooltipTitle } from 'helpers/message';
 import { formatNumber } from 'helpers/other';
 import { Message, Peer } from 'mtproto-js';
 import { BehaviorSubject } from 'rxjs';
+import { click } from 'services';
 import './message.scss';
 import { enhanceClassName, hasMediaChanged, hasMediaToMask, messageMediaImmutable, messageMediaLower, messageMediaUpper } from './message_media';
 import messageReply from './reply';
@@ -37,6 +38,12 @@ function messageTitle(peer: Peer) {
   return div`.message__title${`color-${peerToColorCode(peer)}`}`(profileTitle(peer));
 }
 
+function createAvatar(msg: Message.message, peer: Peer) {
+  const avatar = profileAvatar(peer);
+  listen(avatar, 'click', () => click.urlClickHandler(`internal:user-id//${msg.from_id}`));
+  return avatar;
+}
+
 export default function message(id: string, siblings: BehaviorSubject<[MessageSibling, MessageSibling]>, unreadMark?: boolean) {
   const cached = messageCache.get(id);
 
@@ -60,7 +67,7 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
   const masked = hasMediaToMask(msg);
 
   let wrapper: HTMLDivElement;
-  let avatar = (isChat && !msg.out && isLast) ? profileAvatar(senderPeer) : undefined;
+  let avatar = isChat && !msg.out && isLast ? createAvatar(msg, senderPeer) : undefined;
   let reply = msg.reply_to_msg_id ? messageReply(msg.reply_to_msg_id, msg) : undefined;
   let title = (isChat && isFirst && !msg.out && !masked) ? messageTitle(senderPeer) : undefined;
   let textEl = msg.message ? div`.message__text${msg.out ? '.message__text-out' : ''}`(formattedMessage(msg)) : undefined;
@@ -137,7 +144,7 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
 
     // display or remove avatar
     if (isChat && !msg.out && isLast) {
-      if (!avatar || !avatar.parentElement) mount(wrapper, avatar = profileAvatar(senderPeer), content);
+      if (!avatar || !avatar.parentElement) mount(wrapper, avatar = createAvatar(msg, senderPeer), content);
     } else if (avatar) {
       unmount(avatar);
       avatar = undefined;
