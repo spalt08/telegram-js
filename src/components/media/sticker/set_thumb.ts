@@ -1,7 +1,7 @@
 import { div, img } from 'core/html';
 import { getStickerSetThumbLocation, getSize, getPhotoLocation } from 'helpers/photo';
 import { file } from 'client/media';
-import { mount, watchVisibility, listen } from 'core/dom';
+import { mount, watchVisibility, listen, isMounted } from 'core/dom';
 import * as icons from 'components/icons';
 import './set_thumb.scss';
 import { stickerSetCache } from 'cache';

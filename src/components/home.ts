@@ -2,7 +2,7 @@
 import { withContextMenu } from 'components/global_context_menu';
 import sidebar from 'components/sidebar/sidebar';
 import { listen } from 'core/dom';
-import { getInterface, useObservable } from 'core/hooks';
+import { getInterface, useObservable, useOnMount } from 'core/hooks';
 import { div } from 'core/html';
 import { BehaviorSubject } from 'rxjs';
 import { main, message } from 'services';

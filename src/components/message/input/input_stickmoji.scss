@@ -36,7 +36,7 @@ $sticker-panel-height-mobile: 282px;
 
   &.-closing {
     opacity: 0;
-    transform: scale(0);
+    transform: scale(0.1);
 
     @include respond-to(small) {
       opacity: 1;
@@ -55,6 +55,7 @@ $sticker-panel-height-mobile: 282px;
     justify-content: center;
     align-items: center;
     box-shadow: 0px 0px 3px 0px #a5a5a5;
+    position: relative;
   }
 
   &__tab {
@@ -73,7 +74,7 @@ $sticker-panel-height-mobile: 282px;
       fill: #8e979d;
     }
 
-    &.-active > .ic_fill {
+    &.-active > .ic_fill, &:hover > .ic_fill {
       fill: #4EA4F5;
     }
   }
@@ -88,6 +89,18 @@ $sticker-panel-height-mobile: 282px;
     height: 100%;
     width: 100%;
     top: 0;
+  }
+
+  &__search {
+    position: absolute;
+    height: 46px;
+    width: 46px;
+    left: 0;
+    top: 0;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
   }
 }
 
@@ -104,6 +117,6 @@ $sticker-panel-height-mobile: 282px;
 @keyframes stickmojiShow {
   from {
     opacity: 0;
-    transform: scale(0);
+    transform: scale(0.1);
   }
 }

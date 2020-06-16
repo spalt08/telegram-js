@@ -44,8 +44,8 @@ export default class MainService {
     this.popup.next('');
   };
 
-  openSidebar(state: 'sharedMedia', ctx: Peer): void;
-  openSidebar(state: 'info', ctx: Peer): void;
+  openSidebar(state: 'searchStickers' | 'searchGifs'): void;
+  openSidebar(state: 'sharedMedia' | 'info', ctx: Peer): void;
   openSidebar(state: 'messageSearch', ctx: { peer: Peer, query?: string }): void;
   openSidebar(state: 'pollResults', ctx: { peer: Peer, messageId: number }): void;
   openSidebar(state: 'addBotToGroup', ctx: Peer): void;

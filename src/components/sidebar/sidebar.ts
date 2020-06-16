@@ -12,6 +12,8 @@ import newGroup from './new_group/new_group';
 import pollResults from './poll_results/poll_results';
 import settings from './settings/settings';
 import sharedMedia from './shared_media/shared_media';
+import searchStickers from './search_stickers/search_stickers';
+import searchGifs from './search_gifs/search_gifs';
 import './sidebar.scss';
 import wrapper from './wrapper/wrapper';
 
@@ -25,6 +27,8 @@ const elements = {
   messageSearch,
   sharedMedia,
   pollResults,
+  searchStickers,
+  searchGifs,
   addBotToGroup,
 };
 

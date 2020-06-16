@@ -8,6 +8,7 @@ import { Document } from 'mtproto-js';
 import { div } from 'core/html';
 import * as icons from 'components/icons';
 import { useOutsideEvent } from 'core/hooks';
+import { main } from 'services';
 
 type Props = {
   onSelectEmoji: (emoji: string) => void,
@@ -35,11 +36,14 @@ export default function stickMojiPanel({ onSelectEmoji, onSelectSticker, onClose
     icons.gifs({ className: 'stickmoji-panel__icon' }),
   ];
 
+  const searchIcon = div`.stickmoji-panel__search`(icons.search({ className: 'stickmoji-panel__icon' }));
+
   const container = div`.stickmoji-panel`(
     panelContainer = div`.stickmoji-panel__panel`(
       panels[activePanelIndex = 0],
     ),
     div`.stickmoji-panel__tabs`(
+      searchIcon,
       ...tabs.map((tab) => div`.stickmoji-panel__tab`(tab)),
     ),
   );
@@ -102,6 +106,9 @@ export default function stickMojiPanel({ onSelectEmoji, onSelectSticker, onClose
 
       activePanelIndex = nextPanelIndex;
       nextPanelIndex = undefined;
+
+      if (activePanelIndex > 0) searchIcon.style.display = 'flex';
+      else searchIcon.style.display = '';
 
       isLocked = false;
     });
@@ -187,6 +194,11 @@ export default function stickMojiPanel({ onSelectEmoji, onSelectSticker, onClose
   useOutsideEvent(container, 'click', () => {
     container.classList.add('-closing');
     onClose();
+  });
+
+  listen(searchIcon, 'click', () => {
+    if (activePanelIndex === 1) main.openSidebar('searchStickers');
+    if (activePanelIndex === 2) main.openSidebar('searchGifs');
   });
 
   return container;

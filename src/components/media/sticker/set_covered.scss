@@ -1,0 +1,65 @@
+@import '~styles/variables.scss';
+
+.st-set-covered {
+  background-color: #FFFFFF;
+
+  &__heading {
+    padding: 8px 16px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  &__title {
+    font-weight: 500;
+    color: #000;
+    font-size: 18px;
+    line-height: 150%;
+  }
+
+  &__subtitle {
+    color: #72777b;
+    font-size: 14px;
+  }
+
+  &__addbtn {
+    appearance: none;
+    background-color: #4fa2e9;
+    color: #ffffff;
+    line-height: 30px;
+    height: 30px;
+    font-weight: 500;
+    border-radius: 15px;
+    border: none;
+    padding: 0 12px;
+    outline: none;
+
+    &.-disabled {
+      background-color: #f0f3f4;
+      color: #707479;
+    }
+  }
+
+  &__items {
+    padding: 0px 8px 8px;
+    display: flex;
+    justify-content: space-between;
+    overflow-y: hidden;
+    overflow-x: scroll;
+
+    @include hide-scrollbar();
+  }
+
+  &__item {
+    display: inline-block;
+    width: 70px;
+    height: 70px;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: background-color .15s ease-out;
+    padding: 0px;
+
+    &:hover {
+      background-color: rgba(#707579, 0.08);
+    }
+  }
+}
