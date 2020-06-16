@@ -1,8 +1,6 @@
+import { useMaybeObservable } from 'core/hooks';
 import { div, text } from 'core/html';
 import { MaybeObservable } from 'core/types';
-import { useMaybeObservable } from 'core/hooks';
-import { mount, unmountChildren } from 'core/dom';
-import { highlightLinks } from '../formatted_message';
 import ripple from '../ripple/ripple';
 import './info_list_item.scss';
 
@@ -24,9 +22,7 @@ export default function infoListItem({ icon, label, value }: Props) {
   );
 
   useMaybeObservable(container, value, true, (next) => {
-    unmountChildren(valueContainer);
-    if (next) mount(valueContainer, highlightLinks(next));
-
+    valueContainer.textContent = next;
     container.classList.toggle('hidden', !next);
   });
 

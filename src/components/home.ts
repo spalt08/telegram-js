@@ -40,8 +40,10 @@ export default function home() {
     rightSidebarFade,
   );
 
-  useObservable(container, main.rightSidebarDelegate, true, (state) => {
-    if (state) getInterface(rightSidebar).pushState(state);
+  useObservable(container, main.rightSidebarDelegate, false, (state) => {
+    const sidebarInterface = getInterface(rightSidebar);
+    if (state) sidebarInterface.pushState(state);
+    else sidebarInterface.close();
   });
 
   useObservable(container, message.activePeer, true, (peer) => {

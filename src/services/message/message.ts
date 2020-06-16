@@ -1,13 +1,13 @@
 import { dialogCache, messageCache } from 'cache';
 import { peerToInputChannel, peerToInputPeer } from 'cache/accessors';
 import client, { fetchUpdates } from 'client/client';
-import { arePeersSame, peerToDialogId, getDialogLastReadMessageId, getUserMessageId, peerMessageToId, shortChatMessageToMessage, shortMessageToMessage } from 'helpers/api';
+import { arePeersSame, getDialogLastReadMessageId, getUserMessageId, peerMessageToId, peerToDialogId, shortChatMessageToMessage, shortMessageToMessage } from 'helpers/api';
 import { ChannelsGetMessages, Dialog, InputMedia, Message, MessagesGetMessages, MessagesMessages, MessagesSendMedia, MethodDeclMap, Peer } from 'mtproto-js';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { first } from 'rxjs/operators';
 import makeMessageChunk, { MessageChunkService, MessageHistoryChunk } from './message_chunk';
-import { Direction } from './types';
 import messageFilters from './message_filters';
+import { Direction } from './types';
 
 const emptyHistory: MessageHistoryChunk = { ids: [] };
 
@@ -352,11 +352,12 @@ export default class MessagesService {
   };
 
   sendMessage = async (message: string) => {
-    if (!this.activePeer.value || !message) return;
+    const peer = this.activePeer.value;
+    if (!peer || !message) return;
 
     const randId = Math.ceil(Math.random() * 0xFFFFFF).toString(16) + Math.ceil(Math.random() * 0xFFFFFF).toString(16);
     const params: MethodDeclMap['messages.sendMessage']['req'] = {
-      peer: peerToInputPeer(this.activePeer.value),
+      peer: peerToInputPeer(peer),
       message,
       random_id: randId,
     };
@@ -372,7 +373,7 @@ export default class MessagesService {
       id: 0,
       out: true,
       from_id: client.getUserID(),
-      to_id: this.activePeer.value,
+      to_id: peer,
       date: Math.floor(Date.now() / 1000),
       reply_to_msg_id: params.reply_to_msg_id,
       media: {

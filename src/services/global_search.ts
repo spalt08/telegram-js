@@ -1,7 +1,7 @@
 import { BehaviorSubject, combineLatest, Subscription } from 'rxjs';
 import { first } from 'rxjs/operators';
-import debounceWithQueue from 'helpers/debounceWithQueue';
 import { arePeersSame, messageToDialogPeer, peerMessageToId, peerToId } from 'helpers/api';
+import SearchDriver from 'helpers/searchDriver';
 import client from 'client/client';
 import { ContactsFound, Message, MessagesMessages, Peer } from 'mtproto-js';
 import { chatCache, messageCache, persistentCache, userCache } from 'cache';
@@ -10,17 +10,11 @@ import TopUsersService from './top_users';
 
 const loadMessagesChunkLength = 20;
 const contactsSearchMaxCount = 10;
-const searchRequestDebounce = 250;
 const maxRecentPeersCount = 20;
 
 export type SearchRequest = string;
 
-interface EmptyQueryResponse {
-  type: SearchResultType.ForEmptyQuery;
-}
-
 interface FilledQueryResponse {
-  type: SearchResultType.ForFilledQuery;
   contactPeers: readonly Peer[];
   globalPeers: readonly Peer[];
   messageIds: readonly string[];
@@ -28,31 +22,31 @@ interface FilledQueryResponse {
   isMessageListFull: boolean;
 }
 
-type SearchResponse = EmptyQueryResponse | FilledQueryResponse;
-
 export const enum SearchResultType {
   ForEmptyQuery,
   ForFilledQuery,
 }
 
-export interface EmptyQueryResult extends EmptyQueryResponse {
+export interface EmptyQueryResult {
+  type: SearchResultType.ForEmptyQuery;
   request: SearchRequest;
   topUsers: readonly Peer[],
   recentPeers: readonly Peer[],
 }
 
 export interface FilledQueryResult extends FilledQueryResponse {
+  type: SearchResultType.ForFilledQuery;
   request: SearchRequest;
 }
 
 export type SearchResult = EmptyQueryResult | FilledQueryResult;
 
 export function areSearchRequestsEqual(request1: SearchRequest, request2: SearchRequest): boolean {
-  return request1 === request2;
+  return request1.trim() === request2.trim();
 }
 
 export function isSearchRequestEmpty(request: SearchRequest): boolean {
-  return request.length === 0;
+  return request.trim().length === 0;
 }
 
 async function searchPeers(request: SearchRequest) {
@@ -122,7 +116,41 @@ async function searchMessages(request: SearchRequest, offsetMessage: Exclude<Mes
   return { ids, count, isEnd };
 }
 
+async function search(request: SearchRequest): Promise<FilledQueryResponse> {
+  const [peers, messages] = await Promise.all([
+    searchPeers(request),
+    searchMessages(request, null),
+  ]);
+  return {
+    contactPeers: peers.contacts,
+    globalPeers: peers.global,
+    messageIds: messages.ids,
+    messageTotalCount: messages.count,
+    isMessageListFull: messages.isEnd,
+  };
+}
+
+async function loadMore(request: SearchRequest, previousResponse: Pick<FilledQueryResponse, 'messageIds'>) {
+  const { messageIds } = previousResponse;
+  let lastMessage: Exclude<Message, Message.messageEmpty> | null = null;
+
+  for (let i = messageIds.length - 1; i >= 0; --i) {
+    const message = messageCache.get(messageIds[i]);
+    if (message && message._ !== 'messageEmpty') {
+      lastMessage = message;
+      break;
+    }
+  }
+
+  return searchMessages(request, lastMessage);
+}
+
+// private members with # don't work in this class for some reason
 export default class GlobalSearch {
+  readonly isSearching = new BehaviorSubject(false);
+
+  readonly isLoadingMore = new BehaviorSubject(false);
+
   readonly result = new BehaviorSubject<Readonly<SearchResult>>({
     type: SearchResultType.ForEmptyQuery,
     request: '',
@@ -132,13 +160,50 @@ export default class GlobalSearch {
 
   readonly recentPeers = new BehaviorSubject<readonly Peer[]>([]);
 
-  readonly isSearching = new BehaviorSubject(false);
+  private searchDriver: SearchDriver<SearchRequest, Omit<FilledQueryResponse, 'isMessageListFull'>>;
 
-  readonly isLoadingMore = new BehaviorSubject(false);
-
-  protected sourceSubscriptions: Subscription[] = [];
+  private sourceSubscriptions: Subscription[] = [];
 
   constructor(protected topUsers: TopUsersService) {
+    this.searchDriver = new SearchDriver<SearchRequest, Omit<FilledQueryResponse, 'isMessageListFull'>>({
+      isRequestEmpty: isSearchRequestEmpty,
+      areRequestEqual: areSearchRequestsEqual,
+      performSearch: async (request, pageAfter?) => {
+        if (!pageAfter) {
+          const { isMessageListFull: isEnd, ...result } = await search(request);
+          return { result, isEnd };
+        }
+
+        const response = await loadMore(request, pageAfter);
+        return {
+          result: {
+            ...pageAfter,
+            messageIds: [...pageAfter.messageIds, ...response.ids],
+            messageTotalCount: response.count || pageAfter.messageTotalCount,
+          },
+          isEnd: response.isEnd,
+        };
+      },
+    });
+
+    this.searchDriver.result.subscribe(([request, result, isMessageListFull]) => {
+      this.unwatchSources();
+
+      if (result) {
+        this.result.next({
+          type: SearchResultType.ForFilledQuery,
+          request,
+          ...result,
+          isMessageListFull,
+        });
+      } else {
+        this.watchEmptySearchSources(request);
+      }
+    });
+
+    this.searchDriver.isSearching.subscribe(this.isSearching);
+    this.searchDriver.isLoadingMore.subscribe(this.isLoadingMore);
+
     persistentCache.isRestored
       .pipe(first((isRestored) => isRestored))
       .subscribe(() => {
@@ -148,43 +213,11 @@ export default class GlobalSearch {
   }
 
   search(request: SearchRequest) {
-    this.debouncedSearch.run(request, isSearchRequestEmpty(request));
+    this.searchDriver.search(request);
   }
 
-  async loadMore() {
-    const startResult = this.result.value;
-
-    if (
-      startResult.type !== SearchResultType.ForFilledQuery
-      || startResult.isMessageListFull
-      || !startResult.messageIds.length
-      || this.isSearching.value // If the search process has started, it'll always lead to replacing the results list, so loading more is meaningless
-      || this.isLoadingMore.value
-    ) {
-      return;
-    }
-
-    const lastMessage = messageCache.get(startResult.messageIds[startResult.messageIds.length - 1]);
-    if (!lastMessage || lastMessage._ === 'messageEmpty') {
-      return;
-    }
-
-    this.isLoadingMore.next(true);
-
-    const loadedMessages = await searchMessages(startResult.request, lastMessage);
-    const endResult = this.result.value;
-    if (
-      areSearchRequestsEqual(startResult.request, endResult.request)
-      && endResult.type === SearchResultType.ForFilledQuery
-    ) {
-      this.result.next({
-        ...endResult,
-        messageIds: [...endResult.messageIds, ...loadedMessages.ids],
-        messageTotalCount: loadedMessages.count || endResult.messageTotalCount,
-        isMessageListFull: loadedMessages.isEnd,
-      });
-      this.isLoadingMore.next(false);
-    }
+  loadMore() {
+    this.searchDriver.loadMore();
   }
 
   addRecentPeer(peer: Peer) {
@@ -205,73 +238,7 @@ export default class GlobalSearch {
     ]);
   }
 
-  protected async performSearch(request: SearchRequest): Promise<SearchResponse> {
-    if (isSearchRequestEmpty(request)) {
-      await this.topUsers.updateIfRequired();
-      return { type: SearchResultType.ForEmptyQuery };
-    }
-
-    const [peers, messages] = await Promise.all([
-      searchPeers(request),
-      searchMessages(request, null),
-    ]);
-    return {
-      type: SearchResultType.ForFilledQuery,
-      contactPeers: peers.contacts,
-      globalPeers: peers.global,
-      messageIds: messages.ids,
-      messageTotalCount: messages.count,
-      isMessageListFull: messages.isEnd,
-    };
-  }
-
-  protected handleSearchResponse(request: SearchRequest, response: SearchResponse) {
-    this.unwatchSources();
-
-    switch (response.type) {
-      case SearchResultType.ForEmptyQuery:
-        this.watchEmptySearchSources(request);
-        break;
-      case SearchResultType.ForFilledQuery:
-        this.result.next({ request, ...response });
-        break;
-      default:
-    }
-
-    this.isSearching.next(false);
-    this.isLoadingMore.next(false);
-  }
-
-  protected debouncedSearch = debounceWithQueue<SearchRequest | null, SearchResponse | null>({
-    initialInput: null,
-    debounceTime: searchRequestDebounce,
-    performOnInit: false,
-    shouldPerform(prevRequest, nextRequest) {
-      if (prevRequest === null || nextRequest === null) {
-        return prevRequest !== nextRequest;
-      }
-      return !areSearchRequestsEqual(prevRequest, nextRequest);
-    },
-    perform: async (request) => {
-      if (request === null) {
-        return null;
-      }
-      return this.performSearch(request);
-    },
-    onStart: () => {
-      this.isSearching.next(true);
-    },
-    onOutput: (request, response, isDebounceComplete) => {
-      // Ignore the results that come before the final result that matches the latest request
-      if (isDebounceComplete) {
-        if (request !== null && response !== null) {
-          this.handleSearchResponse(request, response);
-        }
-      }
-    },
-  });
-
-  protected watchEmptySearchSources(request: SearchRequest) {
+  private watchEmptySearchSources(request: SearchRequest) {
     this.sourceSubscriptions.push(
       combineLatest([
         this.topUsers.topUsers,
@@ -291,12 +258,12 @@ export default class GlobalSearch {
     );
   }
 
-  protected unwatchSources() {
+  private unwatchSources() {
     this.sourceSubscriptions.forEach((subscription) => subscription.unsubscribe());
     this.sourceSubscriptions.splice(0);
   }
 
-  protected addOldRecentPeers(peers: readonly Peer[]) {
+  private addOldRecentPeers(peers: readonly Peer[]) {
     const existingPeers = new Set<string>();
     const newRecentPeers = [...this.recentPeers.value];
 

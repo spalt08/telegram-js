@@ -21,7 +21,7 @@ export default class MainService {
   /** Right Sidebar Delegate */
   rightSidebarDelegate = new BehaviorSubject<SidebarState | undefined>(undefined);
 
-  rightSidebarCtx: any = {};
+  #rightSidebarContexts = new Map<string, BehaviorSubject<any>>();
 
   constructor() {
     client.on('networkChanged', (state: string) => {
@@ -33,6 +33,7 @@ export default class MainService {
   showPopup(type: 'stickerSet', ctx: InputStickerSet): void;
   showPopup(type: 'photo', ctx: { rect: DOMRect, options: PhotoOptions, photo: Photo, peer: Peer, message: Message }): void;
   showPopup(type: 'video', ctx: { rect: DOMRect, video: Document.document, peer?: Peer, message?: Message }): void;
+  showPopup(type: 'confirmation', ctx: { body: string, title?: string, confirmCallback: () => void }): void;
   showPopup(type: string, ctx?: any): void {
     this.popupCtx = ctx;
     this.popup.next(type);
@@ -44,10 +45,26 @@ export default class MainService {
   };
 
   openSidebar(state: 'searchStickers' | 'searchGifs'): void;
-  openSidebar(state: 'sharedMedia' | 'info' | 'messageSearch', ctx: Peer): void;
+  openSidebar(state: 'sharedMedia' | 'info', ctx: Peer): void;
+  openSidebar(state: 'messageSearch', ctx: { peer: Peer, query?: string }): void;
   openSidebar(state: 'pollResults', ctx: { peer: Peer, messageId: number }): void;
+  openSidebar(state: 'addBotToGroup', ctx: Peer): void;
   openSidebar(state: SidebarState, ctx?: any): void {
-    this.rightSidebarCtx = ctx;
+    let contextSubject = this.#rightSidebarContexts.get(state);
+    if (!contextSubject) {
+      contextSubject = new BehaviorSubject(ctx);
+      this.#rightSidebarContexts.set(state, contextSubject);
+    } else {
+      contextSubject.next(ctx);
+    }
     this.rightSidebarDelegate.next(state);
+  }
+
+  closeSidebar() {
+    this.rightSidebarDelegate.next(undefined);
+  }
+
+  getSidebarCtx(state: SidebarState) {
+    return this.#rightSidebarContexts.get(state)!;
   }
 }

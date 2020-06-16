@@ -20,7 +20,6 @@ export default class MessageSearchService {
 
   public setPeer(peer: Peer | undefined) {
     if (this.session) {
-      this.session.destroy();
       this.sessionSubscriptions.forEach((subscription) => subscription.unsubscribe());
     }
 

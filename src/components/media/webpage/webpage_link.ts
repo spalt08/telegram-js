@@ -1,9 +1,9 @@
-import { WebPage, Message } from 'mtproto-js';
-import { div, text, a, nothing } from 'core/html';
-import { newWindowLinkAttributes } from 'const';
-import { ripple, formattedMessage } from 'components/ui';
 import { messageToSenderPeer, textToColorCode } from 'cache/accessors';
 import { profileAvatar, profileTitle } from 'components/profile';
+import { formattedMessage, ripple } from 'components/ui';
+import { createAnchor } from 'components/ui/formatted_message';
+import { div, nothing, text } from 'core/html';
+import { Message, WebPage } from 'mtproto-js';
 import photoRenderer from '../photo/photo';
 import './webpage_link.scss';
 
@@ -42,7 +42,7 @@ export default function webpageLink(msg: Message.message) {
         div`.webpageLink__info`(
           div`.webpageLink__title`(text(msg.media.webpage.title ?? '')),
           div`.webpageLink__description`(text(msg.media.webpage.description ?? '')),
-          div`.webpageLink__link`(a({ ...newWindowLinkAttributes, href: msg.media.webpage.url ?? '#' }, text(msg.media.webpage.display_url ?? ''))),
+          div`.webpageLink__link`(createAnchor(msg.media.webpage.url ?? '#', text(msg.media.webpage.display_url ?? ''))),
         ),
       ),
     ],

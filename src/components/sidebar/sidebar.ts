@@ -1,7 +1,8 @@
-import { listen, mount, unmount } from 'core/dom';
+import { listen, mount, unmount, unmountChildren } from 'core/dom';
 import { useInterface } from 'core/hooks';
 import { div } from 'core/html';
 import { main } from 'services';
+import addBotToGroup from './add_bot_to_group/add_bot_to_group';
 import archive from './archived_dialogs/archived_dialogs';
 import contacts from './contacts_list/contacts_list';
 import dialogs from './dialogs_screen/dialogs_screen';
@@ -28,6 +29,7 @@ const elements = {
   pollResults,
   searchStickers,
   searchGifs,
+  addBotToGroup,
 };
 
 type SidebarRendererMap = typeof elements;
@@ -49,18 +51,18 @@ export type SidebarComponentProps = {
  */
 export default function sidebar({ initial, className, onTransitionStart }: Props) {
   const container = div`.sidebar${className}`();
-  const stack: HTMLElement[] = [];
+  const wrappersMap = new Map<SidebarState, HTMLElement>();
 
   const popState = () => {
     // just close sidebar
-    if (stack.length <= 1) {
+    if (container.children.length <= 1) {
       main.rightSidebarDelegate.next(undefined);
       if (onTransitionStart) onTransitionStart(false);
       container.classList.add('-hidden');
       return;
     }
 
-    let element = stack.pop();
+    const element = container.children[container.children.length - 1] as HTMLElement;
 
     if (element) {
       container.classList.add('-popping-state');
@@ -69,37 +71,53 @@ export default function sidebar({ initial, className, onTransitionStart }: Props
         container.classList.remove('-popping-state');
         if (element) {
           unmount(element);
-          element = undefined;
         }
       };
     }
   };
 
   const pushState = (state: SidebarState) => {
-    const element = wrapper(
-      elements[state]({
-        onNavigate: pushState,
-        onBack: popState,
-      },
-      main.rightSidebarCtx),
-    );
+    let element = wrappersMap.get(state);
+    if (!element) {
+      element = wrapper(
+        elements[state](
+          {
+            onNavigate: pushState,
+            onBack: popState,
+          },
+          main.getSidebarCtx(state)),
+      );
+      wrappersMap.set(state, element);
+    }
 
-    mount(container, element);
-    stack.push(element);
+    if (container.children[container.children.length - 1] !== element) {
+      mount(container, element);
+    }
 
     if (container.classList.contains('-hidden') && onTransitionStart) onTransitionStart(true);
     container.classList.remove('-hidden');
   };
 
+  const close = () => {
+    wrappersMap.clear();
+    if (onTransitionStart) onTransitionStart(false);
+    container.classList.add('-hidden');
+    container.ontransitionend = () => {
+      if (wrappersMap.size === 0) {
+        unmountChildren(container);
+      }
+    };
+  };
+
   // unmount after closing
   listen(container, 'transitionend', () => {
     if (container.classList.contains('-hidden')) {
-      const element = stack.pop();
+      const element = container.children[container.childElementCount - 1];
       if (element) unmount(element);
     }
   });
 
   if (initial) pushState(initial);
 
-  return useInterface(container, { pushState, popState });
+  return useInterface(container, { pushState, popState, close });
 }

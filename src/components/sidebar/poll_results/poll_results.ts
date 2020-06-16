@@ -1,8 +1,10 @@
 import { messageCache } from 'cache';
 import * as icons from 'components/icons';
 import { heading } from 'components/ui';
-import { getInterface } from 'core/hooks';
+import { mount, unmount } from 'core/dom';
+import { getInterface, useMaybeObservable } from 'core/hooks';
 import { div, text } from 'core/html';
+import { MaybeObservable } from 'core/types';
 import { messageToId, peerMessageToId } from 'helpers/api';
 import { isPollMessage } from 'helpers/message';
 import { Message, Peer, Poll } from 'mtproto-js';
@@ -13,9 +15,8 @@ type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
 const decoder = new TextDecoder();
 
-export default function pollResults({ onBack }: SidebarComponentProps, context: { peer: Peer, messageId: number }) {
-  const messageId = peerMessageToId(context.peer, context.messageId);
-  const message = messageCache.get(messageId);
+function pollResultsContent(peer: Peer, messageId: number) {
+  const message = messageCache.get(peerMessageToId(peer, messageId));
   if (!isPollMessage(message)) {
     throw new Error('message media must be of type "messageMediaPoll"');
   }
@@ -25,17 +26,9 @@ export default function pollResults({ onBack }: SidebarComponentProps, context: 
     const optionKey = decoder.decode(answer.option);
     return [optionKey, pollResultOption(message, answer.option)];
   }));
-  const rootEl = div`.pollResults`(
-    heading({
-      title: 'Results',
-      buttons: [
-        { icon: icons.close, position: 'left', onClick: () => onBack && onBack() },
-      ],
-    }),
-    div`.pollResults__content`(
-      div`.pollResults__question`(text(poll.question)),
-      div`.pollResults__options`(...optionsMap.values()),
-    ),
+  const rootEl = div`.pollResults__content`(
+    div`.pollResults__question`(text(poll.question)),
+    div`.pollResults__options`(...optionsMap.values()),
   );
 
   const updateOptions = (msg?: Message) => {
@@ -50,8 +43,30 @@ export default function pollResults({ onBack }: SidebarComponentProps, context: 
     }
   };
 
-  messageCache.useItemBehaviorSubject(rootEl, messageToId(message)).subscribe((msg) => {
+  messageCache.useWatchItem(rootEl, messageToId(message), (msg) => {
     updateOptions(msg);
+  });
+
+  return rootEl;
+}
+
+export default function pollResults({ onBack }: SidebarComponentProps, context: MaybeObservable<{ peer: Peer, messageId: number }>) {
+  const rootEl = div`.pollResults`(
+    heading({
+      title: 'Results',
+      buttons: [
+        { icon: icons.close, position: 'left', onClick: () => onBack && onBack() },
+      ],
+    }),
+  );
+
+  let content: Element | undefined;
+  useMaybeObservable(rootEl, context, true, (newContext) => {
+    if (content) {
+      unmount(content);
+    }
+    content = pollResultsContent(newContext.peer, newContext.messageId);
+    mount(rootEl, content);
   });
 
   return rootEl;

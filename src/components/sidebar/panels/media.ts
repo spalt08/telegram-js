@@ -1,17 +1,18 @@
-import { Peer } from 'mtproto-js';
-import { div } from 'core/html';
+import { messageCache } from 'cache';
+import photoPreview from 'components/media/photo/preview';
+import videoPreview from 'components/media/video/preview';
 import { VirtualizedList } from 'components/ui';
+import { mount, unmount, unmountChildren } from 'core/dom';
+import { useMaybeObservable, useWhileMounted } from 'core/hooks';
+import { div } from 'core/html';
+import { MaybeObservable } from 'core/types';
+import { peerMessageToId } from 'helpers/api';
+import { getAttributeVideo } from 'helpers/files';
+import { Peer } from 'mtproto-js';
 import { BehaviorSubject } from 'rxjs';
 import { media } from 'services';
 import { MessageChunkService } from 'services/message/message_chunk';
 import { Direction } from 'services/message/types';
-import { messageCache } from 'cache';
-import { useWhileMounted } from 'core/hooks';
-import { mount, unmount } from 'core/dom';
-import photoPreview from 'components/media/photo/preview';
-import { getAttributeVideo } from 'helpers/files';
-import { peerMessageToId } from 'helpers/api';
-import videoPreview from 'components/media/video/preview';
 import { panelLoader } from './loader';
 import './media.scss';
 
@@ -49,52 +50,50 @@ const mediaRowRenderer = (ids: string, peer: Peer): HTMLDivElement => {
 };
 
 function groupIds(peer: Peer, ids: readonly number[]): string[] {
-  const grouppedIds: string[] = [];
+  const groupedIds: string[] = [];
   for (let i = 0; i < ids.length; i += 3) {
-    grouppedIds.push(`${
-      peerMessageToId(peer, ids[i])
-    }+${
-      peerMessageToId(peer, ids[i + 1])
-    }+${
-      peerMessageToId(peer, ids[i + 2])
-    }`);
+    groupedIds.push(`${peerMessageToId(peer, ids[i])}+${peerMessageToId(peer, ids[i + 1])}+${peerMessageToId(peer, ids[i + 2])}`);
   }
-  return grouppedIds;
+  return groupedIds;
 }
 
-export default function mediaPanel(peer: Peer) {
-  const items = new BehaviorSubject<string[]>([]);
-  let mediaChunkService: MessageChunkService | undefined;
+export default function mediaPanel(peer: MaybeObservable<Peer>) {
+  const container = div`.mediaPanel`();
+  useMaybeObservable(container, peer, true, (newPeer) => {
+    unmountChildren(container);
+    const items = new BehaviorSubject<string[]>([]);
+    let mediaChunkService: MessageChunkService | undefined;
 
-  const list = new VirtualizedList({
-    items,
-    pivotBottom: false,
-    onReachBottom: () => mediaChunkService?.loadMore(Direction.Older),
-    renderer: (id: string) => mediaRowRenderer(id, peer),
-  });
-  let loader: HTMLElement | undefined;
-  const container = div`.mediaPanel`(list.container);
-
-  useWhileMounted(container, () => {
-    const chunkService = media.getMediaMessagesChunk(peer, 'photoVideo', Infinity);
-    mediaChunkService = chunkService;
-
-    const historySubscription = chunkService.history.subscribe((history) => {
-      items.next(groupIds(peer, history.ids));
-
-      const showLoader = history.ids.length === 0 && history.loadingOlder;
-      if (!showLoader && loader) {
-        unmount(loader);
-        loader = undefined;
-      } else if (showLoader && !loader) {
-        mount(container, loader = panelLoader());
-      }
+    const list = new VirtualizedList({
+      items,
+      pivotBottom: false,
+      onReachBottom: () => mediaChunkService?.loadMore(Direction.Older),
+      renderer: (id: string) => mediaRowRenderer(id, newPeer),
     });
+    mount(container, list.container);
+    let loader: HTMLElement | undefined;
 
-    return () => {
-      chunkService.destroy();
-      historySubscription.unsubscribe();
-    };
+    useWhileMounted(list.container, () => {
+      const chunkService = media.getMediaMessagesChunk(newPeer, 'photoVideo', Infinity);
+      mediaChunkService = chunkService;
+
+      const historySubscription = chunkService.history.subscribe((history) => {
+        items.next(groupIds(newPeer, history.ids));
+
+        const showLoader = history.ids.length === 0 && history.loadingOlder;
+        if (!showLoader && loader) {
+          unmount(loader);
+          loader = undefined;
+        } else if (showLoader && !loader) {
+          mount(container, loader = panelLoader());
+        }
+      });
+
+      return () => {
+        chunkService.destroy();
+        historySubscription.unsubscribe();
+      };
+    });
   });
 
   return container;

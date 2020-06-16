@@ -1,18 +1,20 @@
 import { messageCache } from 'cache';
-import { BehaviorSubject } from 'rxjs';
 import { messageToSenderPeer, peerToColorCode } from 'cache/accessors';
 import { profileAvatar, profileTitle } from 'components/profile';
-import { bubble, formattedMessage, datetime, bubbleClassName } from 'components/ui';
-import { mount, unmountChildren, unmount } from 'core/dom';
+import { bubble, bubbleClassName, datetime, formattedMessage } from 'components/ui';
+import { listen, mount, unmount, unmountChildren } from 'core/dom';
+import { getInterface, useObservable } from 'core/hooks';
 import { div, nothing, text } from 'core/html';
-import { useObservable } from 'core/hooks';
 import { getDayOffset, getMessageTooltipTitle } from 'helpers/message';
 import { formatNumber } from 'helpers/other';
 import { Message, Peer } from 'mtproto-js';
+import { BehaviorSubject } from 'rxjs';
+import { click } from 'services';
 import './message.scss';
+import { enhanceClassName, hasMediaChanged, hasMediaToMask, messageMediaImmutable, messageMediaLower, messageMediaUpper } from './message_media';
 import messageReply from './reply';
-import messageSerivce from './service';
-import { messageMediaUpper, messageMediaLower, enhanceClassName, hasMediaToMask, messageMediaImmutable, hasMediaChanged } from './message_media';
+import replyMarkupRenderer from './reply_markup';
+import messageService from './service';
 
 export type MessageSibling = undefined | {
   id: string;
@@ -36,6 +38,12 @@ function messageTitle(peer: Peer) {
   return div`.message__title${`color-${peerToColorCode(peer)}`}`(profileTitle(peer));
 }
 
+function createAvatar(msg: Message.message, peer: Peer) {
+  const avatar = profileAvatar(peer);
+  listen(avatar, 'click', () => click.urlClickHandler(`internal:user-id//${msg.from_id}`));
+  return avatar;
+}
+
 export default function message(id: string, siblings: BehaviorSubject<[MessageSibling, MessageSibling]>, unreadMark?: boolean) {
   const cached = messageCache.get(id);
 
@@ -46,7 +54,7 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
       return div();
 
     case 'messageService':
-      return messageSerivce(cached);
+      return messageService(cached);
 
     default:
   }
@@ -59,7 +67,7 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
   const masked = hasMediaToMask(msg);
 
   let wrapper: HTMLDivElement;
-  let avatar = (isChat && !msg.out && isLast) ? profileAvatar(senderPeer) : undefined;
+  let avatar = isChat && !msg.out && isLast ? createAvatar(msg, senderPeer) : undefined;
   let reply = msg.reply_to_msg_id ? messageReply(msg.reply_to_msg_id, msg) : undefined;
   let title = (isChat && isFirst && !msg.out && !masked) ? messageTitle(senderPeer) : undefined;
   let textEl = msg.message ? div`.message__text${msg.out ? '.message__text-out' : ''}`(formattedMessage(msg)) : undefined;
@@ -75,16 +83,34 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
     datetime({ timestamp: msg.date, date: false }),
   );
 
-  let content: HTMLElement | undefined = messageMediaImmutable(msg);
+  let replyMarkup: ReturnType<typeof replyMarkupRenderer> | undefined;
+  let replyHeight = 0;
+  if (msg.reply_markup) {
+    replyMarkup = replyMarkupRenderer(msg, msg.out ? 'message__reply-markup-out' : 'message__reply-markup');
+    replyHeight = getInterface(replyMarkup).height + 4;
+  }
+
+  let content = messageMediaImmutable(msg);
 
   if (!content) {
-    content = bubble({ media: masked, out: msg.out, isFirst, isLast, className: enhanceClassName(msg, textEl), setRef: (el) => bubbleContent = el },
+    content = bubble(
+      {
+        media: masked,
+        out: msg.out,
+        isFirst,
+        isLast,
+        className: enhanceClassName(msg, textEl),
+        setRef: (el) => bubbleContent = el,
+      },
       title || nothing,
       reply || nothing,
       mediaUpper || nothing,
       textEl || nothing,
       mediaLower || nothing,
     );
+    if (replyMarkup) {
+      mount(content, replyMarkup);
+    }
   } else if (reply) {
     mount(content, reply, content.firstChild || undefined);
   }
@@ -97,6 +123,10 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
       content,
     ),
   );
+
+  if (replyHeight > 0) {
+    wrapper.style.marginBottom = `${replyHeight}px`;
+  }
 
   info.title = getMessageTooltipTitle(msg);
   if (textEl && !mediaLower) mount(textEl, info);
@@ -114,7 +144,7 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
 
     // display or remove avatar
     if (isChat && !msg.out && isLast) {
-      if (!avatar || !avatar.parentElement) mount(wrapper, avatar = profileAvatar(senderPeer), content);
+      if (!avatar || !avatar.parentElement) mount(wrapper, avatar = createAvatar(msg, senderPeer), content);
     } else if (avatar) {
       unmount(avatar);
       avatar = undefined;
@@ -149,6 +179,7 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
    * Update Contents Strategy
    */
   messageCache.useWatchItem(container, id, (next: Message.message) => {
+    if (msg === next) return;
     if (!next) return;
 
     // message text
@@ -201,6 +232,20 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
       mediaLower = messageMediaLower(next);
 
       if (mediaLower && bubbleContent) mount(bubbleContent, mediaLower);
+    }
+
+    if (next.reply_markup) {
+      if (replyMarkup) unmount(replyMarkup);
+      replyMarkup = replyMarkupRenderer(next, next.out ? 'message__reply-markup-out' : 'message__reply-markup');
+      replyHeight = getInterface(replyMarkup).height + 2;
+
+      if (replyMarkup && content) {
+        mount(content, replyMarkup);
+      }
+      wrapper.style.marginBottom = `${replyHeight}px`;
+    } else {
+      if (replyMarkup) unmount(replyMarkup);
+      wrapper.style.removeProperty('margin-bottom');
     }
 
     // update className

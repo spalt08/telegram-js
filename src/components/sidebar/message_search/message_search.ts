@@ -2,7 +2,7 @@ import * as icons from 'components/icons';
 import { foundMessage } from 'components/sidebar';
 import { roundButton, searchInput, VirtualizedList } from 'components/ui';
 import { mount } from 'core/dom';
-import { useToBehaviorSubject } from 'core/hooks';
+import { useToBehaviorSubject, useMaybeObservable, getInterface } from 'core/hooks';
 import { div, text } from 'core/html';
 import { peerMessageToId } from 'helpers/api';
 import { pluralize } from 'helpers/other';
@@ -11,13 +11,13 @@ import { map } from 'rxjs/operators';
 import { message, messageSearch } from 'services';
 import { isSearchRequestEmpty } from 'services/message_search/message_search_session';
 import './message_search.scss';
+import { MaybeObservable } from 'core/types';
 
 type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
-export default function messageSearchSidebar({ onBack }: SidebarComponentProps, peer: Peer) {
-  messageSearch.setPeer(peer);
-
+export default function messageSearchSidebar({ onBack }: SidebarComponentProps, context?: MaybeObservable<{ peer: Peer, query?: string }>) {
   const rootEl = div`.messagesSearch`();
+
   const [resultIdsSubject] = useToBehaviorSubject(
     rootEl,
     messageSearch.result.pipe(map((result) => result.ids.map((id) => peerMessageToId(message.activePeer.value!, id)))),
@@ -34,6 +34,14 @@ export default function messageSearchSidebar({ onBack }: SidebarComponentProps, 
     },
   });
 
+  useMaybeObservable(rootEl, context!, true, (ctx) => {
+    messageSearch.setPeer(ctx.peer);
+    if (ctx.query) {
+      getInterface(searchInputEl).value = ctx.query;
+      messageSearch.search(ctx.query);
+    }
+  });
+
   // If the element isn't in layout, the focus call will be ignored
   // temp: blocks sidebar transition
   // to do: fix later
@@ -45,7 +53,6 @@ export default function messageSearchSidebar({ onBack }: SidebarComponentProps, 
   // });
 
   const resultList = new VirtualizedList({
-    className: 'messagesSearch__messages',
     items: resultIdsSubject,
     threshold: 2,
     pivotBottom: false,
@@ -76,7 +83,7 @@ export default function messageSearchSidebar({ onBack }: SidebarComponentProps, 
       return `${result.count} ${pluralize(result.count, 'message', 'messages')} found`;
     }))),
   ));
-  mount(rootEl, resultList.container);
+  mount(rootEl, div`.messagesSearch__messages`(resultList.container));
 
   return rootEl;
 }

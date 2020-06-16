@@ -62,6 +62,7 @@ $messageBubblePadding: 7PX $messageSidePadding;
     margin-right: -5PX;
     margin-bottom: 3PX;
     font-size: 13PX;
+    cursor: pointer;
   }
 }
 
@@ -154,7 +155,7 @@ $messageBubblePadding: 7PX $messageSidePadding;
   background-position: right center;
   right: 16px;
 
-  &.-unreaded {
+  &.-unread {
     background-image: url(~assets/statuses/unread@2x.png);
   }
 }
@@ -305,6 +306,18 @@ $messageBubblePadding: 7PX $messageSidePadding;
   margin-bottom: 8px;
 }
 
+.message__reply-markup {
+  position: absolute;
+  left: 9px;
+  right: 2px;
+}
+
+.message__reply-markup-out {
+  position: absolute;
+  left: 2px;
+  right: 9px;
+}
+
 /**
   Complex Styles
 */
@@ -344,7 +357,7 @@ $messageBubblePadding: 7PX $messageSidePadding;
     padding-right: 20px;
   }
 
-  & > .message__info-out.-unreaded {
+  & > .message__info-out.-unread {
     background-image: url(~assets/statuses/unread-white@2x.png);
   }
 }
