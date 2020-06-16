@@ -134,7 +134,7 @@ export default function recordSendButton({
   onFinishRecording,
 }: Props) {
   const sendIcon = icons.send({ className: 'msgRecordSend__ic-send' });
-  const recordIcon = icons.microphone({
+  const recordIcon = icons.microphone2({
     className: 'msgRecordSend__ic-record',
   });
   const cancelIcon = icons.del({ className: 'msgRecordSend__ic-cancel' });

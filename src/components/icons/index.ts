@@ -176,6 +176,9 @@ export const message = /*#__PURE__*/svgCodeToComponent(messageCode);
 import microphoneCode from './microphone.svg?raw';
 export const microphone = /*#__PURE__*/svgCodeToComponent(microphoneCode);
 
+import microphone2Code from './microphone2.svg?raw';
+export const microphone2 = /*#__PURE__*/svgCodeToComponent(microphone2Code);
+
 import moreCode from './more.svg?raw';
 export const more = /*#__PURE__*/svgCodeToComponent(moreCode);
 
@@ -286,3 +289,9 @@ export const user = /*#__PURE__*/svgCodeToComponent(userCode);
 
 import usernameCode from './username.svg?raw';
 export const username = /*#__PURE__*/svgCodeToComponent(usernameCode);
+
+import gifsCode from './gifs.svg?raw';
+export const gifs = /*#__PURE__*/svgCodeToComponent(gifsCode);
+
+import stickersCode from './stickers.svg?raw';
+export const stickers = /*#__PURE__*/svgCodeToComponent(stickersCode);

@@ -211,6 +211,9 @@ export function locationToURL(location: InputFileLocation, _options?: DownloadOp
     case 'inputDocumentFileLocation':
       return `${SERVICE_WORKER_SCOPE}documents/${location.id}_${location.thumb_size}`;
 
+    case 'inputStickerSetThumb':
+      return `${SERVICE_WORKER_SCOPE}documents/sticker_set_thumb_${location.volume_id}_${location.local_id}`;
+
     default:
       // if (ext) filename += `.${ext}`;
   }
