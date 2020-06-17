@@ -23,6 +23,7 @@ export default function dialogsList(dialogList: MaybeObservable<DialogListIndex 
     threshold: 2,
     batch: 20,
     pivotBottom: false,
+    topReached: true,
     renderer(id) {
       return dialog(
         id,
