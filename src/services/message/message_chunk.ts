@@ -1,6 +1,8 @@
 import { BehaviorSubject } from 'rxjs';
 import { IdsChunk, MessageHistoryIndex, MessagesChunk } from 'cache/fastStorages/indices/messageHistory';
-import { MessagesFilter, Peer } from 'mtproto-js';
+import { MessagesFilter, Peer, Message } from 'mtproto-js';
+import { messageCache } from 'cache';
+import { peerMessageToId } from 'helpers/api';
 import { Direction, MessageFilterData } from './types';
 import { LOAD_CHUNK_LENGTH, loadContinuousMessages } from './helpers';
 
@@ -24,6 +26,9 @@ export interface MessageChunkService {
    */
   getNewerId(id: number, offset?: number): number | undefined | false;
   getOlderId(id: number, offset?: number): number | undefined | false;
+
+  getNewerMessage(id: number, offset?: number): Message.message | undefined;
+  getOlderMessage(id: number, offset?: number): Message.message | undefined;
 
   loadMore(direction: Direction.Newer | Direction.Older): void;
 
@@ -213,6 +218,18 @@ export default function makeMessageChunk(
     },
     getOlderId(id, offset = 1) {
       return getSiblingId(id, offset);
+    },
+    getNewerMessage(id, offset = 1) {
+      const siblingId = getSiblingId(id, -offset);
+      const siblingMessage = siblingId ? messageCache.get(peerMessageToId(peer, siblingId)) : undefined;
+      if (siblingMessage && siblingMessage._ === 'message') return siblingMessage;
+      return undefined;
+    },
+    getOlderMessage(id, offset = 1) {
+      const siblingId = getSiblingId(id, offset);
+      const siblingMessage = siblingId ? messageCache.get(peerMessageToId(peer, siblingId)) : undefined;
+      if (siblingMessage && siblingMessage._ === 'message') return siblingMessage;
+      return undefined;
     },
     destroy,
   };

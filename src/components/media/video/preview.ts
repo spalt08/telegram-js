@@ -1,12 +1,12 @@
 import { Document, Peer, Message } from 'mtproto-js';
 import { div, text } from 'core/html';
-import { listen } from 'core/dom';
-import { getInterface } from 'core/hooks';
 import { getAttributeVideo, getReadableDuration, getAttributeAnimated } from 'helpers/files';
 import { main } from 'services';
 import { PhotoOptions } from 'helpers/other';
-import photoRenderer from '../photo/photo';
 import './preview.scss';
+import { listen } from 'core/dom';
+import { getInterface } from 'core/hooks';
+import photoRenderer from '../photo/photo';
 
 export default function videoPreview(video: Document.document, photoOptions: PhotoOptions = {}, peer?: Peer, message?: Message.message) {
   const thumbnail = photoRenderer(video, { ...photoOptions, className: '' });
@@ -25,11 +25,8 @@ export default function videoPreview(video: Document.document, photoOptions: Pho
   );
 
   listen(container, 'click', () => {
-    if (!(thumbnail instanceof HTMLElement)) return;
-
-    const rect = getInterface(thumbnail).rect();
-
-    if (rect) main.showPopup('video', { rect, peer, video, message });
+    if (!(thumbnail instanceof HTMLElement) || !message) return;
+    main.showPopup('gallery', { opener: getInterface(thumbnail).open(), message });
   });
 
   return container;

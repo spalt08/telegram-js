@@ -175,3 +175,58 @@ export function fetchRequest(url: string, resolve: (res: Response) => void, get:
   fileEvents[url].push(resolve);
   putDownloadQueue(url, get, cache, progress);
 }
+
+/**
+ * Loop for getting file parts from network
+ */
+export function streamLoop(info: FileInfo, controller: ReadableStreamDefaultController, get: FilePartResolver, offset = 0) {
+  const limit = DOWNLOAD_CHUNK_LIMIT;
+
+  get(info.location, offset, limit, info.options, (ab) => {
+    controller.enqueue(new Uint8Array(ab));
+
+    if (ab.byteLength < limit) controller.close();
+    else streamLoop(info, controller, get, offset + limit);
+  });
+}
+
+export function download(url: string, filename: string, get: FilePartResolver) {
+  const info = files.get(url);
+
+  const headers: Record<string, string> = {
+    'Content-Disposition': `attachment; filename="${filename}"`,
+  };
+
+  if (!info) return new Response(null, { status: 404 });
+
+  if (info.options.size) headers['Content-Length'] = info.options.size.toString();
+  if (info.options.mime_type) headers['Content-Type'] = info.options.mime_type;
+
+  // eslint-disable-next-line compat/compat
+  const stream = new ReadableStream({
+    start(controller: ReadableStreamDefaultController) {
+      streamLoop(info, controller, get);
+    },
+  });
+
+  const response = new Response(
+    stream,
+    { headers },
+  );
+
+  return response;
+}
+
+export function blobLoop(url: string, location: InputFileLocation, options: DownloadOptions, get: FilePartResolver, ready: (blob: Blob) => void,
+  progress: ProgressResolver, offset = 0, chunks: ArrayBuffer[] = []) {
+  const limit = DOWNLOAD_CHUNK_LIMIT;
+
+  get(location, offset, limit, options, (ab) => {
+    if (options.progress && options.size) progress(url, offset + ab.byteLength, options.size);
+
+    chunks.push(ab);
+
+    if (ab.byteLength < limit) ready(new Blob(chunks));
+    else blobLoop(url, location, options, get, ready, progress, offset + limit, chunks);
+  });
+}

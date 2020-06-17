@@ -1,14 +1,16 @@
 import { file, hasCached } from 'client/media';
-import { mount, unmount } from 'core/dom';
-import { useInterface } from 'core/hooks';
+import { mount, unmount, listen } from 'core/dom';
 import { div, img, nothing } from 'core/html';
 import { usePhotoSize } from 'helpers/files';
 import { PhotoOptions } from 'helpers/other';
 import { getPhotoLocation, getSize, getThumbnail } from 'helpers/photo';
 import { Document, Photo } from 'mtproto-js';
 import './photo.scss';
+import { useInterface } from 'core/hooks';
 
-export default function photoRenderer(photo: Photo.photo | Document.document, options: PhotoOptions) {
+type OpenProps = { rect: DOMRect, thumb: string };
+
+export default function photoRenderer(photo: Photo.photo | Document.document, options: PhotoOptions, onOpen?: (props: OpenProps) => void) {
   if (photo?._ !== 'photo' && photo?._ !== 'document') return nothing;
 
   const size = getSize((photo._ === 'photo' ? photo.sizes : photo.thumbs) ?? [], options.width, options.height, options.fit);
@@ -34,6 +36,7 @@ export default function photoRenderer(photo: Photo.photo | Document.document, op
   // diplay thumbnail
   if (thumb) {
     if (typeof thumb === 'string') {
+      thumbSrc = thumb;
       thumbnail = img({ className: 'photo__thumbnail', src: thumb, alt: 'Message photo' });
       mount(container, thumbnail);
     } else {
@@ -57,23 +60,23 @@ export default function photoRenderer(photo: Photo.photo | Document.document, op
     if (width && minHeight && width / dim < minHeight) container.style.height = `${minHeight}px`;
   }
 
+  let isLoaded = false;
+
   image.onload = () => {
+    isLoaded = true;
     if (thumbnail) {
-      // thumbnail.classList.add('removed');
-      // listenOnce(thumbnail, 'animationend', () => thumbnail && unmount(thumbnail));
       unmount(thumbnail);
     }
   };
 
-  // interfaces
-  const rect = () => fit === 'cover' ? container.getBoundingClientRect() : (image || thumbnail || container).getBoundingClientRect();
-  const setThumb = (url: string) => {
-    if (thumbnail) {
-      thumbnail.src = url;
-      thumbnail.classList.add('no-blur');
-    }
+  const open = () => {
+    const rect = fit === 'cover' ? container.getBoundingClientRect() : (image || container).getBoundingClientRect();
+    return { rect, thumb: isLoaded ? src : (thumbSrc || '') };
   };
-  const getImageSrc = () => image.src;
 
-  return useInterface(container, { rect, setThumb, getImageSrc });
+  if (onOpen) {
+    listen(container, 'click', () => onOpen(open()));
+  }
+
+  return useInterface(container, { open });
 }

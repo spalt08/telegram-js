@@ -16,7 +16,6 @@
     cursor: pointer;
 
     &::before {
-      content: '';
       position: absolute;
       right: 0;
       top: 0;
@@ -26,12 +25,13 @@
       background-position: center;
       background-size: 18px auto;
       background-repeat: no-repeat;
-      display: none;
+      display: block;
       z-index: 2;
+      animation: iconAppear .2s ease-out;
     };
 
     &:hover::before {
-      display: block;
+      content: '';
     }
   }
 
@@ -65,20 +65,16 @@
       position: absolute;
       right: 0;
       top: 0;
-      border-right: 8PX solid var(--bubble-background);
-      border-top: 8PX solid var(--bubble-background);
-      border-bottom: 8PX solid var(--accent-color);
-      border-left: 8PX solid var(--accent-color);
+      border-right: 8PX solid #FFFFFF;
+      border-top: 8PX solid #FFFFFF;
+      border-bottom: 8PX solid #0071b5;
+      border-left: 8PX solid #0071b5;
       border-bottom-left-radius: 6px;
       transition: .2s ease-out;
     }
 
-    .message.out & { background: #429f47; }
-    .message &::after {
-      border-bottom-color: #0071b5;
-      border-left-color: #0071b5;
-    }
-    .message.out &::after {
+    .message-out & { background: #429f47; }
+    .message-out &::after {
       border-bottom-color: #1b7a21;
       border-left-color: #1b7a21;
     }
@@ -136,7 +132,7 @@
   &__size {
     color: #1DA1F1;
 
-    .message.out & { color: #429f47; }
+    .message-out & { color: #429f47; }
   }
 
   &__progress {
@@ -154,5 +150,11 @@
       background: #1DA1F1;
       transition: width .2s linear;
     }
+  }
+}
+
+@keyframes iconAppear {
+  from {
+    transform: scale(.5);
   }
 }

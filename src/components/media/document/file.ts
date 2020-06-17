@@ -1,11 +1,13 @@
-import { cached as getCached, file } from 'client/media';
+import { file, useProgress } from 'client/media';
 import { materialSpinner } from 'components/icons';
 import { datetime } from 'components/ui';
-import { listen, mount, unmountChildren } from 'core/dom';
+import { listen, mount, unmountChildren, unmount } from 'core/dom';
 import { div, text } from 'core/html';
 import { getAttributeFilename, getDocumentLocation, getReadableSize } from 'helpers/files';
-import { downloadByUrl } from 'helpers/other';
+import { downloadForm, downloadLink } from 'helpers/other';
 import { Document, Message } from 'mtproto-js';
+import { isSafari } from 'helpers/browser';
+import { request } from 'client/context';
 import photoRenderer from '../photo/photo';
 import './file.scss';
 
@@ -29,7 +31,7 @@ export default function documentFile(document: Document.document, message?: Mess
 
   let icon: HTMLElement;
   if (document.thumbs && document.thumbs.length > 0) {
-    icon = div`.document-file__thumb`(photoRenderer(document, { fit: 'cover', width: 50, height: 50, showLoader: false }));
+    icon = div`.document-file__thumb`(photoRenderer(document, { fit: 'cover', width: 50, height: 50 }));
   } else icon = div`.document-file__icon`(div`.document-file__ext`(text(filename.split('.').pop() || '')));
 
   const sizeEl = div`.document-file__size`(...renderMeta(document, message));
@@ -45,44 +47,39 @@ export default function documentFile(document: Document.document, message?: Mess
   let progress: HTMLDivElement | undefined;
   let isDownloading = false;
 
+  const { dc_id, size, mime_type } = document;
+  const location = getDocumentLocation(document);
+  const options = { dc_id, size, mime_type, progress: isSafari };
+  const src = file(location, options);
+
   listen(icon, 'click', () => {
-    if (isDownloading) return;
+    if (isSafari) {
+      if (isDownloading) return;
+      isDownloading = true;
 
-    const cached = getCached(getDocumentLocation(document, ''));
+      container.classList.add('downloading');
+      if (!progress) progress = div`.document-file__circleprogress`(materialSpinner());
+      mount(icon, progress);
+      unmountChildren(sizeEl);
+      sizeEl.textContent = '0%';
 
-    if (cached) {
-      downloadByUrl(filename, cached);
-      return;
+      useProgress(container, src, (downloaded) => {
+        if (downloaded < size) sizeEl.textContent = `${((downloaded / size) * 100).toFixed(1)}%`;
+        else {
+          sizeEl.textContent = getReadableSize(document.size);
+          isDownloading = false;
+        }
+      });
+
+      request('download', { url: src, location, options }, ({ url }) => {
+        downloadLink(filename, url);
+        URL.revokeObjectURL(url);
+        if (progress) unmount(progress);
+        sizeEl.textContent = getReadableSize(document.size);
+      });
+    } else {
+      downloadForm(filename, src);
     }
-
-    isDownloading = true;
-
-    container.classList.add('downloading');
-    if (!progress) progress = div`.document-file__circleprogress`(materialSpinner());
-    mount(icon, progress);
-    unmountChildren(sizeEl);
-    sizeEl.textContent = '0%';
-
-    downloadByUrl(filename, file(getDocumentLocation(document, ''), { dc_id: document.dc_id, size: document.size, mime_type: document.mime_type }));
-
-    // download(
-    //   getDocumentLocation(document, ''),
-    //   { dc_id: document.dc_id, size: document.size, mime_type: document.mime_type },
-
-    //   // ready
-    //   (src: string) => {
-    //     downloadByUrl(filename, src);
-
-    //     sizeEl.textContent = getReadableSize(document.size);
-    //     if (progress) unmount(progress);
-    //     container.classList.remove('downloading');
-    //   },
-
-    //   // progress
-    //   (downloaded: number, total: number) => {
-    //     sizeEl.textContent = `${((downloaded / total) * 100).toFixed(1)}%`;
-    //   },
-    // );
   });
 
   return container;

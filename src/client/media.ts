@@ -1,10 +1,9 @@
-import { InputFileLocation, Document } from 'mtproto-js';
+import { InputFileLocation, Document, Photo, PhotoSize } from 'mtproto-js';
 import { BehaviorSubject } from 'rxjs';
 import { locationToURL, getStreamServiceURL, getDocumentLocation } from 'helpers/files';
 import { useObservable } from 'core/hooks';
 import { task, listenMessage } from './context';
-import { UploadResolver, UploadProgressResolver, DownloadResolver,
-  DownloadProgressResolver, DownloadOptions } from './types';
+import { UploadResolver, UploadProgressResolver, DownloadOptions } from './types';
 
 type FileID = string;
 
@@ -89,10 +88,40 @@ export function useProgress(base: Node, url: string, onProgress: (downloaded: nu
   useObservable(base, fileProgress[url], true, onProgress);
 }
 
-/**
- * To do: remmove
- */
-export function cached(_location: InputFileLocation): string | undefined {
-  return undefined;
+export function thumb(entity: Photo.photo | Document.document): string {
+  let sizes: PhotoSize[] | undefined;
+
+  switch (entity._) {
+    case 'photo':
+      sizes = entity.sizes;
+      break;
+
+    case 'document':
+      sizes = entity.thumbs;
+      break;
+
+    default:
+  }
+
+  if (!sizes) return '';
+
+  const kind = entity._;
+
+  for (let i = 0; i < sizes.length; i += 1) {
+    const size = sizes[i];
+
+    if (size._ === 'photoStrippedSize') {
+      const url = `/stripped/${kind}/${entity.id}.jpg`;
+      task('thumb', { url, bytes: size.bytes });
+      return url;
+    }
+
+    if (size._ === 'photoCachedSize') {
+      const url = `/cached/${kind}/${entity.id}.jpg`;
+      task('thumb', { url, bytes: size.bytes });
+      return url;
+    }
+  }
+
+  return '';
 }
-export function download(_location: InputFileLocation, _options: DownloadOptions, _ready: DownloadResolver, _progress?: DownloadProgressResolver) {}

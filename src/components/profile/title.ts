@@ -9,7 +9,7 @@ export default function profileTitle(peer: Peer, isForDialogList = false) {
   const textNode = text(firstTitle);
 
   useObservable(textNode, titleObservable, true, (title) => {
-    textNode.textContent = title;
+    if (title !== textNode.textContent) textNode.textContent = title;
   });
 
   return textNode;

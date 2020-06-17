@@ -27,7 +27,9 @@ export default function home() {
     onTransitionStart: (opened) => {
       historyEl.classList.toggle('-popping', opened);
 
-      rightSidebarFade.style.display = 'block';
+      if (opened) rightSidebarFade.style.display = 'block';
+      else rightSidebarFade.style.display = '';
+
       requestAnimationFrame(() => rightSidebarFade.classList.toggle('-opening', opened));
     },
   });

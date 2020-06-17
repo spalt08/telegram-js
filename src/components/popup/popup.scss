@@ -1,3 +1,5 @@
+@import '~styles/variables.scss';
+
 .opaco {
   display: none;
   flex-direction: column;
@@ -16,6 +18,10 @@
     display: flex;
     animation: popupFade .2s  ease-out;
     background-color: rgba(0, 0, 0, .9);
+
+    @include respond-to(small) {
+      background-color: rgba(0, 0, 0, 1);
+    }
   }
 
   &.opened.closing {

@@ -1,6 +1,6 @@
 import {
   Transports, ClientError, TransportState, AuthKey, MethodDeclMap, InputFile, AccountPassword,
-  InputCheckPasswordSRP, Update, User, Chat, Updates, InputFileLocation } from 'mtproto-js';
+  InputCheckPasswordSRP, Update, Updates, InputFileLocation } from 'mtproto-js';
 
 export type APICallHeaders = {
   dc?: number,
@@ -22,15 +22,20 @@ export interface TaskPayloadMap {
     location: InputFileLocation,
     options: DownloadOptions,
   },
+  'webp_loaded': {
+    url: string,
+    blob: Blob,
+  },
+  'thumb': {
+    url: string,
+    bytes: ArrayBuffer,
+  }
+
   // storybook
   'url_map': {
     url: string,
     map: string,
   },
-  'webp_loaded': {
-    url: string,
-    blob: Blob,
-  }
 }
 
 /**
@@ -47,6 +52,11 @@ export interface RequestPayloadMap {
     password: string,
   },
   'authorize': number,
+  'download': {
+    url: string,
+    location: InputFileLocation,
+    options: DownloadOptions,
+  },
 }
 
 export type TaskType = keyof TaskPayloadMap;
@@ -95,7 +105,7 @@ export interface NotificationPayloadMap {
   'webp': {
     url: string,
     data: ArrayBuffer,
-  };
+  },
 }
 
 /**
@@ -108,6 +118,9 @@ export interface ResponsePayloadMap {
   };
   'password_kdf': InputCheckPasswordSRP.inputCheckPasswordSRP,
   'authorization_complete': AuthKey,
+  'download_prepared': {
+    url: string,
+  },
 }
 
 export type NotificationType = keyof NotificationPayloadMap;
@@ -131,6 +144,7 @@ export interface RequestResponseMap {
   'call': 'rpc_result',
   'password_kdf': 'password_kdf',
   'authorize': 'authorization_complete',
+  'download': 'download_prepared',
 }
 
 /**
