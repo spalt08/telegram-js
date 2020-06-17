@@ -22,8 +22,10 @@ export default function messageInput() {
   let wrapper: HTMLElement;
 
   const btn = recordSendButton({
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    onMessage: () => message.sendMessage(textarea.value),
+    onMessage: () => {
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      getInterface(textarea).send();
+    },
     onAudio: ({ blob, duration, waveform }) => {
       upload(blob, (file) => {
         message.sendMediaMessage({
