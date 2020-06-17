@@ -7,8 +7,8 @@ import { UploadResolver, UploadProgressResolver, DownloadOptions } from './types
 
 type FileID = string;
 
-const uploadResovers: Record<FileID, UploadResolver> = {};
-const uploadProgressResovers: Record<FileID, UploadProgressResolver> = {};
+const uploadResolvers: Record<FileID, UploadResolver> = {};
+const uploadProgressResolvers: Record<FileID, UploadProgressResolver> = {};
 const fileProgress: Record<string, BehaviorSubject<number>> = {};
 
 let cache: Cache | undefined;
@@ -17,11 +17,11 @@ caches.open('files').then((c) => cache = c);
 /**
  * Request for file uploading
  */
-export function upload(f: File, ready: UploadResolver, progress?: UploadProgressResolver) {
+export function upload(f: File | Blob, ready: UploadResolver, progress?: UploadProgressResolver) {
   const id = (Math.floor(Math.random() * 0xFFFFFFFF).toString(16) + Math.floor(Math.random() * 0xFFFFFFFF).toString(16)).slice(-8);
 
-  uploadResovers[id] = ready;
-  if (progress) uploadProgressResovers[id] = progress;
+  uploadResolvers[id] = ready;
+  if (progress) uploadProgressResolvers[id] = progress;
   task('upload', { id, file: f });
 }
 
@@ -29,7 +29,7 @@ export function upload(f: File, ready: UploadResolver, progress?: UploadProgress
  * Resolve uploading progress
  */
 listenMessage('upload_progress', ({ id, uploaded, total }) => {
-  const resolver = uploadProgressResovers[id];
+  const resolver = uploadProgressResolvers[id];
   if (resolver) resolver(uploaded, total);
 });
 
@@ -37,11 +37,11 @@ listenMessage('upload_progress', ({ id, uploaded, total }) => {
  * Resolve downloading response
  */
 listenMessage('upload_ready', ({ id, inputFile }) => {
-  const resolver = uploadResovers[id];
+  const resolver = uploadResolvers[id];
   if (resolver) resolver(inputFile);
 
-  delete uploadResovers[id];
-  delete uploadProgressResovers[id];
+  delete uploadResolvers[id];
+  delete uploadProgressResolvers[id];
 });
 
 /**

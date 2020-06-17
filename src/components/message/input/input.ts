@@ -1,25 +1,30 @@
-import { div, input } from 'core/html';
-import { listen, unmountChildren, mount, animationFrameStart } from 'core/dom';
-import * as icons from 'components/icons';
-import { media, message } from 'services';
-import { getInterface, useListenWhileMounted, useObservable } from 'core/hooks';
-import { Document } from 'mtproto-js';
-import { bubble, contextMenu, quote } from 'components/ui';
-import { documentToInputMedia } from 'helpers/message';
-import { messageCache } from 'cache';
-import { upload } from 'client/media';
+import { chatCache, messageCache, userCache } from 'cache';
 import { messageToSenderPeer } from 'cache/accessors';
-import { profileTitle } from 'components/profile';
+import { upload } from 'client/media';
+import * as icons from 'components/icons';
 import photoRenderer from 'components/media/photo/photo';
+import { profileTitle } from 'components/profile';
+import { bubble, contextMenu, quote } from 'components/ui';
+import { animationFrameStart, listen, mount, unmountChildren } from 'core/dom';
+import { getInterface, useInterface, useListenWhileMounted, useMaybeObservable, useObservable } from 'core/hooks';
+import { div, input } from 'core/html';
+import { MaybeObservable } from 'core/types';
+import { peerToId } from 'helpers/api';
+import { documentToInputMedia } from 'helpers/message';
+import { Document, Peer } from 'mtproto-js';
+import { click, media, message } from 'services';
+import messageShort from '../short';
+import recordSendButton from './button';
+import './input.scss';
 import stickMojiPanel from './input_stickmoji';
 import messageTextarea from './input_textarea';
-import './input.scss';
-import recordSendButton from './button';
-import messageShort from '../short';
 
-export default function messageInput() {
+export default function messageInput(peer: MaybeObservable<Peer | null>) {
   let inner: HTMLElement;
   let wrapper: HTMLElement;
+  let currentPeer: Peer | undefined;
+  let currentPeerId: string | undefined;
+  const messageDrafts = new Map<string, string>();
 
   const btn = recordSendButton({
     onMessage: () => {
@@ -55,7 +60,13 @@ export default function messageInput() {
 
   const textarea = messageTextarea({
     onSend: message.sendMessage,
-    onChange: (value) => value ? btnI.message() : btnI.audio(),
+    onChange: (value) => {
+      if (currentPeerId) {
+        messageDrafts.set(currentPeerId, value);
+      }
+      if (value) btnI.message();
+      else btnI.audio();
+    },
     maxHeight: 400,
   });
 
@@ -181,5 +192,59 @@ export default function messageInput() {
     event.preventDefault();
   });
 
-  return container;
+  const hideIfNotAllowedToWrite = (newPeer: Peer | undefined) => {
+    let hide = true;
+    switch (newPeer?._) {
+      case 'peerUser': {
+        const user = userCache.get(newPeer.user_id);
+        if (user?._ === 'user' && !user.deleted && !(user.bot && click.getStartToken(user).value)) {
+          hide = false;
+        }
+        break;
+      }
+      case 'peerChat': {
+        const chat = chatCache.get(newPeer.chat_id);
+        if (chat?._ === 'chat') {
+          if ((!chat.default_banned_rights || !chat.default_banned_rights?.send_messages) && !chat.kicked && !chat.left) {
+            hide = false;
+          }
+        }
+        break;
+      }
+      case 'peerChannel': {
+        const channel = chatCache.get(newPeer.channel_id);
+        if (channel?._ === 'channel') {
+          const bannedRights = channel.banned_rights ?? channel.default_banned_rights;
+          if ((!bannedRights || !bannedRights?.send_messages) && !channel.broadcast && !channel.left) {
+            hide = false;
+          }
+        }
+        break;
+      }
+      default:
+    }
+
+    if (hide) {
+      container.style.display = 'none';
+    } else {
+      container.style.removeProperty('display');
+    }
+  };
+
+  useMaybeObservable(container, peer, true, (newPeer) => {
+    if (newPeer) {
+      hideIfNotAllowedToWrite(newPeer);
+      currentPeer = newPeer;
+      currentPeerId = peerToId(newPeer);
+      const draft = messageDrafts.get(currentPeerId);
+      textarea.value = draft ?? '';
+    } else {
+      textarea.value = '';
+      container.style.display = 'none';
+    }
+  });
+
+  return useInterface(container, {
+    updateVisibility: () => hideIfNotAllowedToWrite(currentPeer),
+  });
 }

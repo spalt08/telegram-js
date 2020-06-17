@@ -38,7 +38,9 @@ export default class BotsService {
   }
 
   sendBotStart(bot: User.user, chat?: Peer) {
-    const token = chat ? this.#click.getStartGroupToken(bot) : this.#click.getStartToken(bot);
+    const tokenSubj = chat?._ === 'peerUser' ? this.#click.getStartToken(bot) : this.#click.getStartGroupToken(bot);
+    const token = tokenSubj.value;
+    tokenSubj.next(undefined);
     if (!token && chat) {
       this.sendBotCommand(chat, bot.id, '/start', 0);
       return;

@@ -15,7 +15,7 @@ export interface TaskPayloadMap {
   'switch_dc': number,
   'upload': {
     id: string,
-    file: File,
+    file: File | Blob,
   },
   'location': {
     url: string,

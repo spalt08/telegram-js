@@ -1,13 +1,12 @@
 import { chatCache, messageCache, userCache } from 'cache';
 import client from 'client/client';
-import { User } from 'mtproto-js';
+import { channelIdToPeer, userIdToPeer } from 'helpers/api';
+import { Chat, Peer, User } from 'mtproto-js';
+import { BehaviorSubject } from 'rxjs';
 import MainService from './main';
-import MessagesService from './message/message';
+import MessagesService, { PeerScrollTarget } from './message/message';
 
 type UrlHandler = [RegExp, (regExp: RegExpMatchArray, context: any) => boolean];
-
-const showAtProfileMsgId = -0x3FFFFFFE;
-const showAtUnreadMsgId = 0;
 
 function urlRequiresConfirmation(url: string) {
   return !/(^|\.)(telegram\.org|telegra\.ph|telesco\.pe)$/i.test(url);
@@ -76,8 +75,8 @@ function isValidDomain(domain: string) {
 export default class ClickService {
   #main: MainService;
   #message: MessagesService;
-  #botStartTokens = new Map<number, string | undefined>();
-  #botStartGroupTokens = new Map<number, string | undefined>();
+  #botStartTokens = new Map<number, BehaviorSubject<string | undefined>>();
+  #botStartGroupTokens = new Map<number, BehaviorSubject<string | undefined>>();
 
   constructor(main: MainService, message: MessagesService) {
     this.#main = main;
@@ -102,7 +101,7 @@ export default class ClickService {
         start = '';
       }
     }
-    let post: number = start === 'startgroup' ? showAtProfileMsgId : showAtUnreadMsgId;
+    let post = start === 'startgroup' ? Infinity : 'firstUnread' as const;
     const postParam = params.get('post');
     if (postParam) {
       post = +postParam;
@@ -121,18 +120,38 @@ export default class ClickService {
     return true;
   };
 
-  #openPeerByName = async (username: string, msgId: number, startToken: string | undefined, clickFromMessageId: string) => {
-    const resolved = await client.call('contacts.resolveUsername', { username });
-    userCache.put(resolved.users);
-    chatCache.put(resolved.chats);
-    const { peer } = resolved;
+  #openPeerByName = async (username: string, scrollTarget: PeerScrollTarget, startToken: string | undefined, clickFromMessageId: string) => {
+    let userOrChannel: User.user | Chat.channel | undefined;
+    userOrChannel = userCache.indices.usernames.findByUsername(username) ?? chatCache.indices.usernames.findByUsername(username);
+    if (!userOrChannel) {
+      const resolved = await client.call('contacts.resolveUsername', { username });
+      userCache.put(resolved.users);
+      chatCache.put(resolved.chats);
+      const { peer } = resolved;
 
-    let user: User.user | undefined;
-    if (peer._ === 'peerUser') {
-      user = userCache.get(peer.user_id) as User.user;
+      if (peer._ === 'peerUser') {
+        userOrChannel = userCache.get(peer.user_id) as User.user;
+      } else if (peer._ === 'peerChannel') {
+        userOrChannel = chatCache.get(peer.channel_id) as Chat.channel;
+      }
     }
 
-    if (msgId === showAtProfileMsgId && peer._ !== 'peerChannel') {
+    let peer: Peer | undefined;
+    let user: User.user | undefined;
+    if (!userOrChannel) {
+      peer = undefined;
+    } else if (userOrChannel._ === 'user') {
+      peer = userIdToPeer(userOrChannel.id);
+      user = userOrChannel;
+    } else {
+      peer = channelIdToPeer(userOrChannel.id);
+    }
+
+    if (!peer) {
+      return;
+    }
+
+    if (scrollTarget === Infinity && (!peer || peer._ !== 'peerChannel')) {
       if (user && user.bot && !user.bot_nochats && startToken) {
         this.#setStartGroupToken(user, startToken);
         this.#main.openSidebar('addBotToGroup', peer);
@@ -143,9 +162,9 @@ export default class ClickService {
         this.#main.openSidebar('info', peer);
       }
     } else {
-      if (msgId === showAtProfileMsgId || peer._ !== 'peerChannel') { // show specific posts only in channels / supergroups
+      if (scrollTarget === Infinity || peer._ !== 'peerChannel') { // show specific posts only in channels / supergroups
         // eslint-disable-next-line no-param-reassign
-        msgId = showAtUnreadMsgId;
+        scrollTarget = 'firstUnread';
       }
       if (user && user.bot) {
         this.#setStartToken(user, startToken);
@@ -160,21 +179,32 @@ export default class ClickService {
           // pushReplyReturn(returnTo);
         }
       }
-      this.#message.selectPeer(peer, msgId);
+      this.#message.selectPeer(peer, scrollTarget);
     }
   };
 
   #setStartToken = (bot: User.user, token?: string) => {
-    this.#botStartTokens.set(bot.id, token);
+    this.#getTokenSubject(bot, this.#botStartTokens).next(token);
   };
 
   #setStartGroupToken = (bot: User.user, token?: string) => {
-    this.#botStartGroupTokens.set(bot.id, token);
+    this.#getTokenSubject(bot, this.#botStartGroupTokens).next(token);
   };
 
-  getStartToken = (bot: User.user) => this.#botStartTokens.get(bot.id);
+  getStartToken = (bot: User.user) => this
+    .#getTokenSubject(bot, this.#botStartTokens);
 
-  getStartGroupToken = (bot: User.user) => this.#botStartGroupTokens.get(bot.id);
+  getStartGroupToken = (bot: User.user) => this
+    .#getTokenSubject(bot, this.#botStartGroupTokens);
+
+  #getTokenSubject = (bot: User.user, map: Map<number, BehaviorSubject<string | undefined>>) => {
+    let tokenSubject = map.get(bot.id);
+    if (!tokenSubject) {
+      tokenSubject = new BehaviorSubject(undefined);
+      map.set(bot.id, tokenSubject);
+    }
+    return tokenSubject;
+  };
 
   #resolveUserId = (match: RegExpMatchArray) => {
     const id = +match[1];

@@ -11,6 +11,7 @@ import PersistentCache from './persistentCache';
 // eslint-disable-next-line import/no-cycle
 import { compareDialogs } from './accessors';
 import stickerSetStickersIndex from './fastStorages/indices/stickerSetStickersIndex';
+import usernameIndex from './fastStorages/indices/usernameIndex';
 
 /**
  * User repo
@@ -19,6 +20,9 @@ import stickerSetStickersIndex from './fastStorages/indices/stickerSetStickersIn
 export const userCache = new Collection({
   getId: makeGetIdFromProp('id') as GetId<User, number>,
   itemMerger: considerMinItemMerger,
+  indices: {
+    usernames: usernameIndex,
+  },
 });
 
 /**
@@ -37,6 +41,9 @@ export const chatCache = new Collection({
       return chat1;
     }
     return considerMinItemMerger<Chat>(chat1, chat2);
+  },
+  indices: {
+    usernames: usernameIndex,
   },
 });
 
