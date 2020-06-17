@@ -1,14 +1,16 @@
 import { file, hasCached } from 'client/media';
-import { mount, unmount } from 'core/dom';
-import { useInterface } from 'core/hooks';
+import { mount, unmount, listen } from 'core/dom';
 import { div, img, nothing } from 'core/html';
 import { usePhotoSize } from 'helpers/files';
 import { PhotoOptions } from 'helpers/other';
 import { getPhotoLocation, getSize, getThumbnail } from 'helpers/photo';
 import { Document, Photo } from 'mtproto-js';
 import './photo.scss';
+import { useInterface } from 'core/hooks';
 
-export default function photoRenderer(photo: Photo.photo | Document.document, options: PhotoOptions) {
+type OpenProps = { rect: DOMRect, thumb: string };
+
+export default function photoRenderer(photo: Photo.photo | Document.document, options: PhotoOptions, onOpen?: (props: OpenProps) => void) {
   if (photo?._ !== 'photo' && photo?._ !== 'document') return nothing;
 
   const size = getSize((photo._ === 'photo' ? photo.sizes : photo.thumbs) ?? [], options.width, options.height, options.fit);
@@ -65,15 +67,14 @@ export default function photoRenderer(photo: Photo.photo | Document.document, op
     }
   };
 
-  // interfaces
-  const rect = () => fit === 'cover' ? container.getBoundingClientRect() : (image || thumbnail || container).getBoundingClientRect();
-  const setThumb = (url: string) => {
-    if (thumbnail) {
-      thumbnail.src = url;
-      thumbnail.classList.add('no-blur');
-    }
+  const open = () => {
+    const rect = fit === 'cover' ? container.getBoundingClientRect() : (image || container).getBoundingClientRect();
+    return { rect, thumb: thumbSrc || src };
   };
-  const getImageSrc = () => image.src;
 
-  return useInterface(container, { rect, setThumb, getImageSrc });
+  if (onOpen) {
+    listen(container, 'click', () => onOpen(open()));
+  }
+
+  return useInterface(container, { open });
 }

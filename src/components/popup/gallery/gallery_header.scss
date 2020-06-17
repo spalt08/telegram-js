@@ -1,0 +1,114 @@
+@import '~styles/variables.scss';
+
+.galleryHeader {
+  user-select: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 12px 20px;
+  animation: appearGalleryHeader .2s;
+  transition: transform .2s;
+  z-index: 1;
+
+  @include respond-to(small) {
+    flex-direction: row-reverse;
+    padding: 10px 8px;
+
+    &__desktop {
+      display: none !important;
+    }
+  }
+
+  .gallery.-closing > & {
+    transform: translateY(-100%);
+  }
+
+  &__sender {
+    color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex: 1;
+  
+    & > .avatar {
+      width: 3.2rem;
+      height: 3.2rem;
+
+      @include respond-to(small) {
+        display: none;
+      }
+    }
+  }
+
+  &__info {
+    padding-left: 16px;
+  }
+  
+  &__date {
+    font-size: 14px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  &__actions {
+    display: flex;
+  }
+
+  &__title {
+    font-weight: 500;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  &__action, &__more {
+    width: 46px;
+    height: 46px;
+    border-radius: 100%;
+    background-color: rgba(255, 255, 255, 0);
+    cursor: pointer;
+    transition: .3s ease-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: 10px;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, .1);
+    }
+
+    @include respond-to(small) {
+      margin-left: 0;
+    }
+  }
+
+  &__more {
+    display: none;
+
+    @include respond-to(small) {
+      display: flex;
+      margin-left: 10px;
+    }
+  }
+
+  &__icon {
+    width: 24px;
+    height: 24px;
+
+    & > .ic_fill {
+      fill: rgba(255,255,255,0.5);
+    }
+  }
+}
+
+@keyframes appearGalleryHeader {
+  from {
+    transform: translateY(-100%);
+  }
+}

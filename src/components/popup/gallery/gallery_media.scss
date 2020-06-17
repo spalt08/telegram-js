@@ -1,0 +1,29 @@
+.galleryMedia {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate3d(0, 0, 0);
+  will-change: width, left, top, height;
+
+  &__transition {
+    position: absolute;
+    transition: .2s ease-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    
+    &-landscape {
+      width: 100%;
+    }
+    
+    &-portrait {
+      height: 100%;
+    }
+  }
+}

@@ -318,13 +318,32 @@ $messageBubblePadding: 7PX $messageSidePadding;
   right: 9px;
 }
 
+.message__photo {
+  max-width: 320px;
+  max-height: 320px;
+  min-width: 100px;
+  min-height: 80px;
+
+  @include respond-to(small) {
+    max-width: 75vw;
+    max-height: 75vw;
+    min-width: 100px;
+    min-height: 80px;
+  }
+}
+
 /**
   Complex Styles
 */
 
 .message__photo + .message__text, .message__photo-out + .message__text {
   width: 320px;
+
+  @include respond-to(small) {
+    width: 75vw;
+  }
 }
+
 .message__video-round,
 .message__video-round-out,
 .message__emoji-text3,

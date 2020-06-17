@@ -8,6 +8,7 @@ import './popup.scss';
 import SendMediaPopup from './send_media/send_media';
 import stickerSetPopup from './sticker_set/sticker_set';
 import videoPopup from './video/video';
+import { gallery } from './gallery/gallery';
 
 /**
  * Generic handler for popups
@@ -50,6 +51,11 @@ export default function popup() {
       case 'confirmation':
         wrapper.classList.add('opened');
         mount(wrapper, element = confirmationPopup(main.popupCtx));
+        break;
+
+      case 'gallery':
+        wrapper.classList.add('opened');
+        mount(wrapper, element = gallery(main.popupCtx));
         break;
 
       default:

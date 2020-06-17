@@ -18,17 +18,33 @@ export default class MainService {
   /** Popup Context */
   popupCtx: any = {};
 
+  /** Window Size */
+  window = { width: 0, height: 0 };
+
   /** Right Sidebar Delegate */
   rightSidebarDelegate = new BehaviorSubject<SidebarState | undefined>(undefined);
 
   #rightSidebarContexts = new Map<string, BehaviorSubject<any>>();
 
   constructor() {
+    this.window = {
+      width: window.innerWidth,
+      height: window.innerHeight,
+    };
+
+    window.addEventListener('resize', () => {
+      this.window = {
+        width: window.innerWidth,
+        height: window.innerHeight,
+      };
+    });
+
     client.on('networkChanged', (state: string) => {
       this.network.next(state);
     });
   }
 
+  showPopup(type: 'gallery', ctx: { opener?: { rect: DOMRect, thumb: string }, message: Message.message }): void;
   showPopup(type: 'sendMedia'): void;
   showPopup(type: 'stickerSet', ctx: InputStickerSet): void;
   showPopup(type: 'photo', ctx: { rect: DOMRect, options: PhotoOptions, photo: Photo, peer: Peer, message: Message }): void;

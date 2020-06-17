@@ -8,7 +8,7 @@ import { notify, respond } from './extensions/context';
 import { load, save } from './extensions/db';
 import { fetchRequest, respondDownload } from './extensions/files';
 import { fetchStreamRequest } from './extensions/stream';
-import { fetchCachedSize, fetchLocation, fetchSrippedSize, fetchTGS } from './extensions/utils';
+import { fetchLocation, fetchTGS, getThumb, fetchThumb } from './extensions/utils';
 import { uploadFile } from './extensions/uploads';
 
 type ExtendedWorkerScope = {
@@ -138,6 +138,12 @@ function processWindowMessage(msg: WindowMessage, source: Client | MessagePort |
       break;
     }
 
+    case 'thumb': {
+      const { url, bytes } = msg.payload;
+      fetchThumb(url, bytes);
+      break;
+    }
+
     default:
   }
 }
@@ -226,15 +232,10 @@ ctx.addEventListener('fetch', (event: FetchEvent): void => {
         break;
       }
 
+      case 'stripped':
       case 'cached': {
-        const [, bytes] = /\/cached\/(.*?).svg/.exec(url) || [];
-        event.respondWith(fetchCachedSize(bytes));
-        break;
-      }
-
-      case 'stripped': {
-        const [, bytes] = /\/stripped\/(.*?).svg/.exec(url) || [];
-        event.respondWith(fetchSrippedSize(bytes));
+        const bytes = getThumb(url) || null;
+        event.respondWith(new Response(bytes, { headers: { 'Content-Type': 'image/jpg' } }));
         break;
       }
 

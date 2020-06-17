@@ -13,6 +13,7 @@ import poll from 'components/media/poll/poll';
 import webpagePreview from 'components/media/webpage/preview';
 import videoPreview from 'components/media/video/preview';
 import { isEmoji } from 'helpers/message';
+import { PhotoOptions } from 'helpers/other';
 
 export function messageMediaImmutable(msg: Message.message): HTMLElement | undefined {
   if (!msg.media) return undefined;
@@ -61,6 +62,17 @@ export function messageMediaImmutable(msg: Message.message): HTMLElement | undef
 export function messageMediaUpper(msg: Message.message): Node | undefined {
   if (!msg.media) return undefined;
 
+  const { window } = main;
+  const size = window.width < 700 ? Math.round(window.width * 0.75) : 320;
+  const options: PhotoOptions = {
+    fit: 'contain',
+    width: size,
+    height: size,
+    minHeight: 60,
+    minWidth: msg.message ? size : undefined,
+    className: msg.out ? 'message__photo-out' : 'message__photo',
+  };
+
   switch (msg.media._) {
     case 'messageMediaEmpty':
     case 'messageMediaWebPage':
@@ -70,14 +82,7 @@ export function messageMediaUpper(msg: Message.message): Node | undefined {
       if (!msg.media.photo || msg.media.photo._ === 'photoEmpty') return undefined;
 
       return (
-        photoPreview(msg.media.photo, messageToSenderPeer(msg), msg, {
-          fit: 'contain',
-          width: 320,
-          height: 320,
-          minHeight: 60,
-          minWidth: msg.message ? 320 : undefined,
-          className: msg.out ? 'message__photo-out' : 'message__photo',
-        })
+        photoPreview(msg.media.photo, options, msg)
       ) || undefined;
     }
 
@@ -88,26 +93,12 @@ export function messageMediaUpper(msg: Message.message): Node | undefined {
       // video gif
       const gifAttr = getAttributeAnimated(document);
       if (gifAttr) {
-        return videoRenderer(document, {
-          fit: 'contain',
-          width: 320,
-          height: 320,
-          minHeight: 60,
-          minWidth: msg.message ? 320 : undefined,
-          className: msg.out ? 'message__photo-out' : 'message__photo',
-        });
+        return videoRenderer(document, options);
       }
 
       const videoAttr = getAttributeVideo(document);
       if (videoAttr && !videoAttr.round_message) {
-        return videoPreview(document, {
-          fit: 'contain',
-          width: 320,
-          height: 320,
-          minHeight: 60,
-          minWidth: msg.message ? 320 : undefined,
-          className: msg.out ? 'message__photo-out' : 'message__photo',
-        }, messageToSenderPeer(msg), msg);
+        return videoPreview(document, options, messageToSenderPeer(msg), msg);
       }
 
       // audio

@@ -1,6 +1,6 @@
 import {
   Transports, ClientError, TransportState, AuthKey, MethodDeclMap, InputFile, AccountPassword,
-  InputCheckPasswordSRP, Update, User, Chat, Updates, InputFileLocation } from 'mtproto-js';
+  InputCheckPasswordSRP, Update, Updates, InputFileLocation } from 'mtproto-js';
 
 export type APICallHeaders = {
   dc?: number,
@@ -22,15 +22,20 @@ export interface TaskPayloadMap {
     location: InputFileLocation,
     options: DownloadOptions,
   },
+  'webp_loaded': {
+    url: string,
+    blob: Blob,
+  }
+  'thumb': {
+    url: string,
+    bytes: ArrayBuffer,
+  }
+
   // storybook
   'url_map': {
     url: string,
     map: string,
   },
-  'webp_loaded': {
-    url: string,
-    blob: Blob,
-  }
 }
 
 /**
