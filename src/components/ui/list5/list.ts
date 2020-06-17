@@ -521,12 +521,12 @@ export class VirtualizedList {
     // keep first element visible
     if (this.cfg.pivotBottom === false) {
       nextFirstRendererd = this.firstRendered;
-      nextLastRendered = Math.min(this.firstRendered + visible.length - 1, next.length - 1);
+      nextLastRendered = Math.min(this.firstRendered + Math.max(visible.length - 1, this.cfg.batch), next.length - 1);
 
       // keep last element visible
     } else {
       nextLastRendered = Math.max(-1, next.length - (this.items.length - this.lastRendered - 1) - 1);
-      nextFirstRendererd = Math.max(nextLastRendered - (this.lastRendered - this.firstRendered), 0);
+      nextFirstRendererd = Math.max(nextLastRendered - Math.max(this.lastRendered - this.firstRendered, this.cfg.batch), 0);
     }
 
     const nextVisible = [];
