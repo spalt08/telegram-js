@@ -38,9 +38,9 @@ export default function audioPlayer() {
 
       if (audioAttribute) {
         if (audioAttribute.voice) {
-          title = datetime({ timestamp: currAudio.message.date, full: true }).textContent ?? '';
+          performer = datetime({ timestamp: currAudio.message.date, full: true }).textContent ?? '';
           const user = userCache.get(currAudio.message.from_id!);
-          performer = userToTitle(user);
+          title = userToTitle(user);
         } else if (audioAttribute.performer && audioAttribute.title) {
           title = audioAttribute.title;
           performer = audioAttribute.performer;

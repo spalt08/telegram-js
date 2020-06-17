@@ -16,10 +16,10 @@ import { panelLoader } from './loader';
 
 const audioRenderer = (id: string) => {
   const msg = messageCache.get(id) as Message.message;
-  return audio(msg);
+  return audio(msg, true);
 };
 
-export default function audioPanel(peer: MaybeObservable<Peer>) {
+export default function audioPanel(peer: MaybeObservable<Peer>, type: 'music' | 'voice') {
   const container = div`.linksPanel`();
   useMaybeObservable(container, peer, true, (newPeer) => {
     unmountChildren(container);
@@ -36,7 +36,7 @@ export default function audioPanel(peer: MaybeObservable<Peer>) {
     let loader: HTMLElement | undefined;
 
     useWhileMounted(list.container, () => {
-      const chunkService = media.getMediaMessagesChunk(newPeer, 'music', Infinity);
+      const chunkService = media.getMediaMessagesChunk(newPeer, type, Infinity);
       mediaChunkService = chunkService;
 
       const historySubscription = chunkService.history.subscribe((history) => {

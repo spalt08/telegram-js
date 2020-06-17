@@ -23,7 +23,8 @@ export default function sharedMedia({ onBack }: SidebarComponentProps, peer: May
       { key: 'media', title: 'Media', content: () => mediaPanel(peer) },
       { key: 'docs', title: 'Docs', content: () => docsPanel(peer) },
       { key: 'links', title: 'Links', content: () => linksPanel(peer) },
-      { key: 'audio', title: 'Audio', content: () => audioPanel(peer) },
+      { key: 'audio', title: 'Audio', content: () => audioPanel(peer, 'music') },
+      { key: 'voice', title: 'Voice Messages', content: () => audioPanel(peer, 'voice') },
     ]),
   );
 }

@@ -46,7 +46,8 @@ export default function info({ onBack }: SidebarComponentProps, peer: MaybeObser
       { key: 'media', title: 'Media', content: () => mediaPanel(peer) },
       { key: 'docs', title: 'Docs', content: () => docsPanel(peer) },
       { key: 'links', title: 'Links', content: () => linksPanel(peer) },
-      { key: 'audio', title: 'Audio', content: () => audioPanel(peer) },
+      { key: 'audio', title: 'Audio', content: () => audioPanel(peer, 'music') },
+      { key: 'voice', title: 'Voice Messages', content: () => audioPanel(peer, 'voice') },
     ]),
   );
 
