@@ -19,7 +19,7 @@ function renderGifForPanel(id: string) {
 
 export default function gifsPanel() {
   // gfs panel created only once, so it is legal
-  media.loadSavedGis();
+  media.loadSavedGifs();
 
   const scroll = new VirtualizedList({
     items: media.savedGifsIds,

@@ -1,7 +1,9 @@
-import { Document } from 'mtproto-js';
+import { listen, mount, svgEl } from 'core/dom';
+import { useObservable } from 'core/hooks';
 import { getAttributeAudio } from 'helpers/files';
-import { listen, svgEl, mount } from 'core/dom';
-import { useInterface } from 'core/hooks';
+import { Document } from 'mtproto-js';
+import { Observable } from 'rxjs';
+import { MediaPlaybackState } from 'services/audio';
 import './waveform.scss';
 
 // Ref: https://github.com/telegramdesktop/tdesktop/blob/0743e71ab6b928d2ee5bae1aed991849b1e2b291/Telegram/SourceFiles/data/data_document.cpp#L1018
@@ -48,7 +50,15 @@ function interpolateArray(data: number[], fitCount: number) {
   return newData;
 }
 
-export default function waveform(doc: Document.document, barsCount: number, seek?: (position: number) => void) {
+type Props = {
+  doc: Document.document;
+  barsCount: number;
+  audioInfo: Observable<MediaPlaybackState>;
+  onSeek?: (position: number) => void;
+  className?: string;
+};
+
+export default function waveform({ doc, barsCount, audioInfo, onSeek, className }: Props) {
   const info = getAttributeAudio(doc);
 
   let waveformDecoded = decodeWaveform(info && info.waveform ? new Uint8Array(info.waveform) : new Uint8Array(0));
@@ -61,10 +71,13 @@ export default function waveform(doc: Document.document, barsCount: number, seek
 
   const bars: SVGLineElement[] = [];
   const svg = svgEl('svg', { class: 'waveform', width: barsCount * 4, height: 23, viewBox: `0 0 ${barsCount * 4} 23` });
+  if (className) {
+    svg.classList.add(className);
+  }
 
-  if (seek) {
+  if (onSeek) {
     listen(svg, 'click', (e) => {
-      seek((e.clientX - svg.getBoundingClientRect().left) / svg.clientWidth);
+      onSeek((e.clientX - svg.getBoundingClientRect().left) / svg.clientWidth);
     });
   }
 
@@ -128,11 +141,11 @@ export default function waveform(doc: Document.document, barsCount: number, seek
     render();
   });
 
-  render();
-  return useInterface(svg, {
-    updateProgress: (progress: number) => {
-      playProgress = progress;
-      render();
-    },
+  useObservable(svg, audioInfo, true, (newInfo) => {
+    playProgress = newInfo.playProgress;
+    render();
   });
+
+  render();
+  return svg;
 }

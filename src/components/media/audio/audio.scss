@@ -1,26 +1,34 @@
+@import '~styles/variables.scss';
+
 .document-audio {
   display: flex;
+  overflow: hidden;
   transform: translateZ(0);
 
   &__play-button {
-    margin-right: 10PX;
-    margin-top: 1PX;
-    margin-bottom: 1PX;
+    margin: 9PX 8PX 9PX 10PX;
   }
 
   &__wave {
     display: flex;
     flex-direction: column;
-    margin-top: 4PX;
+    margin-top: 7PX;
+    margin-right: 10PX;
+    overflow: hidden;
+  }
+
+  &__track {
+    margin-top: 6.5PX;
   }
 
   &__title {
-    display: flex;
-    flex-direction: column;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }  
 
   &__timing {
-    color: var(--accent-color-inactive);
+    color: $accent-color-inactive;
     font-size: 14px;
     line-height: 2;
   }

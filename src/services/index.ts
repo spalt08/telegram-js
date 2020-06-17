@@ -13,6 +13,7 @@ import PollsService from './polls';
 import TopUsersService from './top_users';
 import UserService from './user';
 import UserTyping from './user_typing';
+import AudioService from './audio';
 
 export { AuthStage } from './auth';
 
@@ -24,6 +25,7 @@ export const message = new MessageService();
 export const peer = new PeerService(message);
 export const dialog = new DialogService(message, auth);
 export const media = new MediaService(main);
+export const audio = new AudioService(media);
 export const messageSearch = new MessageSearchService();
 export const topUsers = new TopUsersService(message, auth);
 export const globalSearch = new GlobalSearchService(topUsers);

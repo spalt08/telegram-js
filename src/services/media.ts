@@ -1,32 +1,15 @@
 /* eslint-disable no-param-reassign */
-import { BehaviorSubject, Observable } from 'rxjs';
-import client from 'client/client';
-import { Document, Peer, StickerSet, MessagesSavedGifs, StickerSetCovered, InputUser } from 'mtproto-js';
-import { el } from 'core/dom';
 import { stickerSetCache, userCache } from 'cache';
-import { getAttributeAudio } from 'helpers/files';
-import { stream } from 'client/media';
 import { peerToInputUser } from 'cache/accessors';
-import { TaskQueue } from 'client/workers/extensions/quene';
+import client from 'client/client';
+import { TaskQueue } from 'client/workers/extensions/queue';
 import { stickerSetToInput } from 'helpers/photo';
+import { Document, InputUser, MessagesSavedGifs, Peer, StickerSet, StickerSetCovered } from 'mtproto-js';
+import { BehaviorSubject } from 'rxjs';
 import type MainService from './main';
 import makeMessageChunk from './message/message_chunk';
-import { MessageFilterType } from './message/types';
 import messageFilters from './message/message_filters';
-import { userIdToPeer } from 'helpers/api';
-
-export const enum MediaPlaybackStatus {
-  NotStarted,
-  Downloading,
-  Playing,
-  Stopped,
-}
-
-export type MediaPlaybackState = {
-  downloadProgress: number,
-  playProgress: number,
-  status: MediaPlaybackStatus,
-};
+import { MessageFilterType } from './message/types';
 
 /**
  * Singleton service class for handling media-related queries
@@ -61,12 +44,6 @@ export default class MediaService {
 
   main: MainService;
 
-  private currentAudioSource?: HTMLSourceElement;
-  private currentAudio?: HTMLAudioElement;
-  private docPlaying?: Document.document;
-  private audioPlayingTimer: any;
-
-
   constructor(main: MainService) {
     this.main = main;
 
@@ -93,7 +70,7 @@ export default class MediaService {
    * Load saved gifs
    * Ref: https://core.telegram.org/method/messages.getAllStickers
    */
-  async loadSavedGis() {
+  async loadSavedGifs() {
     let result: MessagesSavedGifs;
     try {
       result = await client.call('messages.getSavedGifs', { hash: 0 });
@@ -316,113 +293,4 @@ export default class MediaService {
     this.attachedFiles.next(files);
     if (this.main.popup.value !== 'sendMedia') this.main.showPopup('sendMedia');
   };
-
-  private audioInfos: Record<string, BehaviorSubject<Readonly<MediaPlaybackState>>> = {};
-
-  private getPlaybackState(doc: Document.document) {
-    let info = this.audioInfos[doc.id];
-    if (!info) {
-      info = new BehaviorSubject<MediaPlaybackState>({ downloadProgress: 0, playProgress: 0, status: MediaPlaybackStatus.NotStarted });
-      this.audioInfos[doc.id] = info;
-    }
-    return info;
-  }
-
-  audioInfo(doc: Document.document): Observable<Readonly<MediaPlaybackState>> {
-    return this.getPlaybackState(doc);
-  }
-
-  play(doc: Document.document, url: string, position?: number) {
-    const audioAttribute = getAttributeAudio(doc)!;
-
-    const time = position !== undefined ? position * audioAttribute.duration : 0;
-    if (this.docPlaying) {
-      if (this.docPlaying.id === doc.id) {
-        this.currentAudio!.currentTime = time;
-        return;
-      }
-      const currentAudioAttribute = getAttributeAudio(this.docPlaying)!;
-      if (currentAudioAttribute.voice) {
-        this.stopAudio(this.docPlaying);
-      } else {
-        this.pauseAudio(this.docPlaying);
-      }
-    }
-
-    this.currentAudioSource!.src = url;
-    this.docPlaying = doc;
-    this.currentAudio!.load();
-    this.currentAudio!.currentTime = time;
-    this.currentAudio!.play();
-    this.getPlaybackState(doc).next({ downloadProgress: 1, playProgress: position ?? 0, status: MediaPlaybackStatus.Playing });
-    this.audioPlayingTimer = setInterval(() => {
-      const progress = Math.min(1, this.currentAudio!.currentTime / audioAttribute.duration);
-      if (this.currentAudio!.ended) {
-        this.getPlaybackState(doc).next({ downloadProgress: 1, playProgress: 0, status: MediaPlaybackStatus.Stopped });
-        clearInterval(this.audioPlayingTimer);
-        delete this.docPlaying;
-      } else {
-        this.getPlaybackState(doc).next({ downloadProgress: 1, playProgress: progress, status: MediaPlaybackStatus.Playing });
-      }
-    }, Math.min(100, audioAttribute.duration * 10));
-  }
-
-  stopAudio(doc: Document.document) {
-    if (this.currentAudio && doc.id === this.docPlaying?.id) {
-      clearInterval(this.audioPlayingTimer);
-      this.currentAudio.pause();
-      this.getPlaybackState(this.docPlaying!).next({ downloadProgress: 0, playProgress: 0, status: MediaPlaybackStatus.Stopped });
-      delete this.docPlaying;
-    }
-  }
-
-  pauseAudio(doc: Document.document) {
-    if (this.currentAudio && doc.id === this.docPlaying?.id) {
-      clearInterval(this.audioPlayingTimer);
-      this.currentAudio.pause();
-      const state = this.getPlaybackState(doc);
-      state.next({ ...state.value, status: MediaPlaybackStatus.Stopped });
-      delete this.docPlaying;
-    }
-  }
-
-  resumeAudio(doc: Document.document) {
-    const state = this.getPlaybackState(doc);
-    this.playAudio(doc, state.value.playProgress);
-  }
-
-  playAudio(doc: Document.document, position?: number) {
-    if (!this.currentAudio) {
-      this.currentAudioSource = el('source');
-      this.currentAudio = el('audio', undefined, [this.currentAudioSource]);
-    }
-
-    const state = this.getPlaybackState(doc);
-    if (state.value.status === MediaPlaybackStatus.NotStarted) {
-      state.next({ ...state.value, status: MediaPlaybackStatus.Playing });
-    }
-
-    this.play(
-      doc,
-      stream(doc),
-      position,
-    );
-    // }, (progress) => {
-    //   state = this.getPlaybackState(doc);
-    //   this.getPlaybackState(doc).next({ ...state.value, downloadProgress: progress / doc.size });
-    // });
-  }
-
-  downloadAudio(_doc: Document.document) {
-    // const location = getDocumentLocation(doc);
-    // let state = this.getPlaybackState(doc);
-    // state.next({ downloadProgress: 0, playProgress: 0, status: MediaPlaybackStatus.Downloading });
-    // download(location, { size: doc.size }, () => {
-    //   state.next({ downloadProgress: 1, playProgress: 0, status: MediaPlaybackStatus.Stopped });
-    // }, (progress) => {
-    //   console.log(progress, doc.size);
-    //   state = this.getPlaybackState(doc);
-    //   this.getPlaybackState(doc).next({ ...state.value, downloadProgress: progress / doc.size });
-    // });
-  }
 }

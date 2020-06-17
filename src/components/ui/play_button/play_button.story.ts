@@ -32,10 +32,5 @@ const doc: Document.document = {
 
 stories.add('Play Button', () => {
   const button = playButton(doc);
-  buttonKnob('Download', () => {
-    setTimeout(() => getInterface(button).download());
-  });
-  button.style.setProperty('--accent-color', '#4fae4f');
-  button.style.setProperty('--bubble-background', '#eeffde');
   return button;
 });
