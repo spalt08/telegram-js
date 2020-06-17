@@ -1,11 +1,8 @@
 import { Message } from 'mtproto-js';
-import { div } from 'core/html';
-import { getInterface, hasInterface } from 'core/hooks';
-import { useSwipe } from 'helpers/hooks';
-import { unmount, mount, listenOnce, animationFrameStart } from 'core/dom';
+import { div, nothing } from 'core/html';
+import { getInterface, hasInterface, useOnMount } from 'core/hooks';
+import { unmount, mount, listen } from 'core/dom';
 import { main, media } from 'services';
-import { messageCache } from 'cache';
-import { peerMessageToId } from 'helpers/api';
 import { galleryHeader } from './gallery_header';
 import { galleryFooter } from './gallery_footer';
 import './gallery.scss';
@@ -21,11 +18,20 @@ export function gallery({ message, opener }: Props) {
   const peer = message.to_id;
   const chunk = media.getMediaMessagesChunk(peer, 'photoVideo', message.id);
 
-  let activeId = message.id;
+  let olderMessage = chunk.getOlderMessage(message.id);
+  let newerMessage = chunk.getNewerMessage(message.id);
+
   let activeMedia = galleryMedia(message, opener);
-  let nextId: number | undefined;
-  let nextMedia: ReturnType<typeof galleryMedia> | undefined;
-  let nextMediaDirection: number | undefined;
+  let olderMedia = olderMessage ? galleryMedia(olderMessage) : undefined;
+  let newerMedia = newerMessage ? galleryMedia(newerMessage) : undefined;
+
+  const slider = div`.gallery__slider`(
+    olderMedia || nothing,
+    activeMedia,
+    newerMedia || nothing,
+  );
+
+  if (olderMedia) slider.scrollLeft = main.window.width;
 
   const container = div`.gallery`(
     galleryHeader(message, {
@@ -36,66 +42,44 @@ export function gallery({ message, opener }: Props) {
       },
     }),
     galleryFooter(message),
-    activeMedia,
+    slider,
   );
 
-  useSwipe(container, (dx: number, complete: boolean) => {
-    const direction = dx / Math.abs(dx);
+  listen(slider, 'scroll', () => {
+    if (slider.scrollLeft % main.window.width === 0) {
+      const activeSlide = Math.floor(slider.scrollLeft / main.window.width);
 
-    if (nextMediaDirection !== direction) {
-      if (nextMedia) unmount(nextMedia);
+      if (activeSlide === 0 && olderMedia && olderMessage) {
+        if (newerMedia) unmount(newerMedia);
+        newerMedia = activeMedia;
+        activeMedia = olderMedia;
 
-      nextMediaDirection = direction;
+        olderMessage = chunk.getOlderMessage(olderMessage.id);
+        olderMedia = olderMessage ? galleryMedia(olderMessage) : undefined;
 
-      nextId = (direction > 0 ? chunk.getOlderId(activeId) : chunk.getNewerId(activeId)) || undefined;
+        if (olderMedia) {
+          mount(slider, olderMedia, activeMedia);
+          slider.scrollLeft = main.window.width;
+        }
+      }
 
-      if (nextId) {
-        const nextMessage = messageCache.get(peerMessageToId(message.to_id, nextId));
+      if (activeSlide === 2 && newerMedia && newerMessage) {
+        if (olderMedia) unmount(olderMedia);
+        olderMedia = activeMedia;
+        activeMedia = newerMedia;
 
-        if (nextMessage && nextMessage._ === 'message') {
-          nextMedia = galleryMedia(nextMessage);
+        newerMessage = chunk.getNewerMessage(newerMessage.id);
+        newerMedia = newerMessage ? galleryMedia(newerMessage) : undefined;
 
-          if (direction > 0) {
-            nextMedia.style.left = '-100vw';
-            nextMedia.style.right = 'auto';
-          } else {
-            nextMedia.style.right = '-100vw';
-            nextMedia.style.left = 'auto';
-          }
-
-          mount(container, nextMedia);
+        if (newerMedia) {
+          mount(slider, newerMedia);
         }
       }
     }
+  });
 
-    if (complete) {
-      if (nextMedia) {
-        activeMedia.style.transition = '.15s ease-out';
-        nextMedia.style.transition = '.15s ease-out';
-
-        animationFrameStart().then(() => {
-          nextMedia!.style.transform = `translateX(${direction * 100}vw)`;
-          activeMedia.style.transform = `translateX(${direction * 100}vw)`;
-        });
-
-        listenOnce(activeMedia, 'transitionend', () => {
-          nextMedia!.style.transform = '';
-          nextMedia!.style.transition = '';
-          nextMedia!.style.left = '';
-          nextMedia!.style.right = '';
-          unmount(activeMedia);
-          activeMedia = nextMedia!;
-          activeId = nextId!;
-          nextMedia = undefined;
-          nextMediaDirection = undefined;
-        });
-      } else {
-        activeMedia.style.transform = '';
-      }
-    } else {
-      activeMedia.style.transform = `translateX(${dx}px)`;
-      if (nextMedia) nextMedia.style.transform = `translateX(${dx}px)`;
-    }
+  useOnMount(container, () => {
+    if (olderMedia) slider.scrollLeft = main.window.width;
   });
 
   return container;

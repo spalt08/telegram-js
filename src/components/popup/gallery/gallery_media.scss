@@ -1,7 +1,4 @@
 .galleryMedia {
-  position: absolute;
-  left: 0;
-  top: 0;
   width: 100%;
   height: 100%;
   display: flex;
@@ -9,6 +6,9 @@
   justify-content: center;
   transform: translate3d(0, 0, 0);
   will-change: width, left, top, height;
+  flex-shrink: 0;
+  position: relative;
+  scroll-snap-align: start;
 
   &__transition {
     position: absolute;

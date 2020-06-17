@@ -9,13 +9,14 @@
   justify-content: center;
   align-items: center;
   padding: 12px 20px;
-  animation: appearGalleryFooter .2s;
-  transition: transform .2s;
+  animation: appearGalleryFooter .2s ease-out;
+  transition: transform .2s ease-out;
+  transform: translate(0, 0);
   max-height: 10%;
   z-index: 1;
 
   .gallery.-closing > & {
-    transform: translateY(100%);
+    transform: translate(0, 100%);
   }
 
   &__message {
@@ -28,6 +29,9 @@
 
 @keyframes appearGalleryFooter {
   from {
-    transform: translateY(100%);
+    transform: translate(0, 100%);
+  }
+  to {
+    transform: translate(0, 0);
   }
 }

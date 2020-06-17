@@ -35,7 +35,7 @@ export default function profileAvatar(peer: Peer, message?: Message, isForDialog
 
     container.classList.add('-standard');
     container.classList.add(`-color-${peerToColorCode(peer)}`);
-    useObservable(container, peerToInitials(peer)[1], true, (initials) => container.textContent = initials);
+    useObservable(container, peerToInitials(peer)[1], true, (initials) => container.textContent !== initials && (container.textContent = initials));
   }
 
   return container;

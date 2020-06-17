@@ -28,9 +28,6 @@ export function galleryMedia(message: Message.message, opener?: GalleryMediaOpen
       fit: 'contain', width, height, className: 'galleryMedia__item', thumb: opener ? opener.thumb : '',
     }, !!opener);
   }
-
-  console.log(opener, !!opener);
-
   const container = div`.galleryMedia`();
 
   let close;
@@ -59,10 +56,10 @@ export function galleryMedia(message: Message.message, opener?: GalleryMediaOpen
       transitionEl.style.top = `${targetTop}px`;
     });
 
-    listenOnce(transitionEl, 'transitionend', () => {
-      mount(container, mediaElement || nothing);
-      unmount(transitionEl);
-    });
+    // listenOnce(transitionEl, 'transitionend', () => {
+    //   mount(container, mediaElement || nothing);
+    //   unmount(transitionEl);
+    // });
 
     mount(container, transitionEl);
 

@@ -11,8 +11,9 @@
   justify-content: space-between;
   align-items: flex-start;
   padding: 12px 20px;
-  animation: appearGalleryHeader .2s;
-  transition: transform .2s;
+  animation: appearGalleryHeader .2s ease-out;
+  transform: translate(0, 0);
+  transition: transform .2s ease-out;
   z-index: 1;
 
   @include respond-to(small) {
@@ -25,7 +26,7 @@
   }
 
   .gallery.-closing > & {
-    transform: translateY(-100%);
+    transform: translate(0, -100%);
   }
 
   &__sender {
@@ -109,6 +110,9 @@
 
 @keyframes appearGalleryHeader {
   from {
-    transform: translateY(-100%);
+    transform: translate(0, -100%);
+  }
+  to {
+    transform: translate(0, 0);
   }
 }
