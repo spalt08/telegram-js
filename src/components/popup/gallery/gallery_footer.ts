@@ -2,6 +2,7 @@
 import { Message } from 'mtproto-js';
 import { div, text } from 'core/html';
 import './gallery_footer.scss';
+import { useInterface } from 'core/hooks';
 
 export function galleryFooter(message: Message.message) {
   const messageNode = text(message.message || '');
@@ -9,5 +10,9 @@ export function galleryFooter(message: Message.message) {
     div`.galleryFooter__message`(messageNode),
   );
 
-  return container;
+  return useInterface(container, {
+    update(next: Message.message) {
+      messageNode.textContent = next.message || '';
+    },
+  });
 }

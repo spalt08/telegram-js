@@ -10,7 +10,7 @@ export type PhotoOptions = {
   height?: number,
   minWidth?: number,
   minHeight?: number,
-  thumb?: string,
+  thumb?: string | boolean,
   className?: string,
 };
 

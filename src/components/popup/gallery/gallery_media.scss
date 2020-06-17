@@ -20,10 +20,14 @@
     
     &-landscape {
       width: 100%;
+      flex: 1;
+      height: auto;
     }
     
     &-portrait {
       height: 100%;
+      width: auto;
+      flex: 1;
     }
   }
 }

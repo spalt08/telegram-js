@@ -2,15 +2,13 @@
 import { Message } from 'mtproto-js';
 import { div, nothing } from 'core/html';
 import { getInterface, hasInterface, useOnMount } from 'core/hooks';
-import { unmount, mount, listen, animationFrameStart } from 'core/dom';
+import { unmount, mount, listen } from 'core/dom';
 import { main, media } from 'services';
 import { galleryHeader } from './gallery_header';
 import { galleryFooter } from './gallery_footer';
 import './gallery.scss';
 import { galleryMedia, GalleryMediaOpener } from './gallery_media';
 import { PopupInterface } from '../interface';
-import { isSafari } from 'helpers/browser';
-import { list } from 'components/ui';
 
 type Props = {
   opener?: GalleryMediaOpener,
@@ -36,15 +34,17 @@ export function gallery({ message, opener }: Props) {
 
   if (olderMedia) slider.scrollLeft = main.window.width;
 
+  let header: ReturnType<typeof galleryHeader>; let footer: ReturnType<typeof galleryFooter>;
+
   const container = div`.gallery`(
-    galleryHeader(message, {
+    header = galleryHeader(message, {
       onClose: () => {
         if (hasInterface<PopupInterface>(container.parentElement)) getInterface(container.parentElement).fade();
         getInterface(activeMedia).close(() => main.closePopup());
         container.classList.add('-closing');
       },
     }),
-    galleryFooter(message),
+    footer = galleryFooter(message),
     slider,
   );
 
@@ -62,11 +62,12 @@ export function gallery({ message, opener }: Props) {
     const scrollValue = slider.scrollLeft;
 
     if (target && scrollValue !== target) {
-      slider.scrollLeft = target;
-      return;
+      if (Math.abs(scrollValue - target) < main.window.width - 1) target = undefined;
+      else {
+        slider.scrollLeft = target;
+        return;
+      }
     }
-
-    target = undefined;
 
     if (scrollValue % main.window.width === 0) {
       const activeSlide = Math.floor(scrollValue / main.window.width);
@@ -78,6 +79,9 @@ export function gallery({ message, opener }: Props) {
         activeMedia = olderMedia;
         message = olderMessage;
 
+        getInterface(header).update(message);
+        getInterface(footer).update(message);
+
         olderMessage = chunk.getOlderMessage(olderMessage.id);
         olderMedia = olderMessage ? galleryMedia(olderMessage) : undefined;
 
@@ -88,15 +92,14 @@ export function gallery({ message, opener }: Props) {
       }
 
       if (activeSlide === 2 && newerMedia && newerMessage) {
-        if (olderMedia) {
-          unmount(olderMedia);
-          setScroll(main.window.width);
-        }
+        if (olderMedia) unmount(olderMedia);
 
         olderMedia = activeMedia;
         olderMessage = message;
         activeMedia = newerMedia;
         message = newerMessage;
+
+        getInterface(header).update(message);
 
         newerMessage = chunk.getNewerMessage(newerMessage.id);
         newerMedia = newerMessage ? galleryMedia(newerMessage) : undefined;
@@ -104,6 +107,8 @@ export function gallery({ message, opener }: Props) {
         if (newerMedia) {
           mount(slider, newerMedia);
         }
+
+        setScroll(main.window.width);
       }
     }
   }, { capture: true });

@@ -20,12 +20,14 @@ export function galleryMedia(message: Message.message, opener?: GalleryMediaOpen
   let mediaElement: Node | undefined;
 
   if (media && media._ === 'messageMediaPhoto' && media.photo && media.photo._ === 'photo') {
-    mediaElement = photoRenderer(media.photo, { fit: 'contain', width, height, className: 'galleryMedia__item', thumb: opener ? opener.thumb : '' });
+    mediaElement = photoRenderer(media.photo, {
+      fit: 'contain', width, height, className: 'galleryMedia__item', thumb: opener ? opener.thumb : true
+    });
   }
 
   if (media && media._ === 'messageMediaDocument' && media.document && media.document._ === 'document') {
     mediaElement = videoStreamRenderer(media.document, {
-      fit: 'contain', width, height, className: 'galleryMedia__item', thumb: opener ? opener.thumb : '',
+      fit: 'contain', width, height, className: 'galleryMedia__item', thumb: opener ? opener.thumb : true,
     }, !!opener);
   }
   const container = div`.galleryMedia`();

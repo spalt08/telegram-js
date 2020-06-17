@@ -36,6 +36,7 @@ export default function photoRenderer(photo: Photo.photo | Document.document, op
   // diplay thumbnail
   if (thumb) {
     if (typeof thumb === 'string') {
+      thumbSrc = thumb;
       thumbnail = img({ className: 'photo__thumbnail', src: thumb, alt: 'Message photo' });
       mount(container, thumbnail);
     } else {
@@ -59,17 +60,18 @@ export default function photoRenderer(photo: Photo.photo | Document.document, op
     if (width && minHeight && width / dim < minHeight) container.style.height = `${minHeight}px`;
   }
 
+  let isLoaded = false;
+
   image.onload = () => {
+    isLoaded = true;
     if (thumbnail) {
-      // thumbnail.classList.add('removed');
-      // listenOnce(thumbnail, 'animationend', () => thumbnail && unmount(thumbnail));
       unmount(thumbnail);
     }
   };
 
   const open = () => {
     const rect = fit === 'cover' ? container.getBoundingClientRect() : (image || container).getBoundingClientRect();
-    return { rect, thumb: thumbSrc || src };
+    return { rect, thumb: isLoaded ? src : (thumbSrc || '') };
   };
 
   if (onOpen) {
