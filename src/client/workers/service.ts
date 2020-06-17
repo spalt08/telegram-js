@@ -6,7 +6,7 @@ import { parseRange } from 'helpers/stream';
 import { Client as NetworkHandler, InputFileLocation, MethodDeclMap } from 'mtproto-js';
 import { notify, respond } from './extensions/context';
 import { load, save } from './extensions/db';
-import { fetchRequest, respondDownload } from './extensions/files';
+import { fetchRequest, respondDownload, download, blobLoop } from './extensions/files';
 import { fetchStreamRequest } from './extensions/stream';
 import { fetchLocation, fetchTGS, getThumb, fetchThumb } from './extensions/utils';
 import { uploadFile } from './extensions/uploads';
@@ -144,6 +144,14 @@ function processWindowMessage(msg: WindowMessage, source: Client | MessagePort |
       break;
     }
 
+    case 'download': {
+      const { id, payload: { url, location, options } } = msg;
+      blobLoop(url, location, options, getFilePartRequest, (blob) => {
+        if (source) respond(source, id, 'download_prepared', { url: URL.createObjectURL(blob) });
+      }, fileProgress);
+      break;
+    }
+
     default:
   }
 }
@@ -207,18 +215,31 @@ ctx.addEventListener('fetch', (event: FetchEvent): void => {
       case 'documents':
       case 'photos':
       case 'profiles':
-        event.respondWith(
-          ctx.cache.match(url).then((cached) => {
-            if (cached) return cached;
-
-            return Promise.race([
-              timeout(59 * 1000), // safari fix
-              new Promise<Response>((resolve) => {
-                fetchRequest(url, resolve, getFilePartRequest, ctx.cache, fileProgress);
+        // direct download
+        if (event.request.method === 'POST') {
+          event.respondWith(// download(url, 'unknown file.txt', getFilePartRequest));
+            event.request.text()
+              .then((text) => {
+                const [, filename] = text.split('=');
+                return download(url, filename ? filename.toString() : 'unknown file', getFilePartRequest);
               }),
-            ]);
-          }),
-        );
+          );
+
+        // inline
+        } else {
+          event.respondWith(
+            ctx.cache.match(url).then((cached) => {
+              if (cached) return cached;
+
+              return Promise.race([
+                timeout(59 * 1000), // safari fix
+                new Promise<Response>((resolve) => {
+                  fetchRequest(url, resolve, getFilePartRequest, ctx.cache, fileProgress);
+                }),
+              ]);
+            }),
+          );
+        }
         break;
 
       case 'stream': {

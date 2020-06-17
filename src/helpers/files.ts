@@ -78,7 +78,7 @@ export function locationToString(location: InputFileLocation): string {
   throw new Error(`No location hash value for ${location}`);
 }
 
-export function getDocumentLocation(document: Document.document, size: string = 'y'): InputFileLocation {
+export function getDocumentLocation(document: Document.document, size: string = ''): InputFileLocation {
   return {
     _: 'inputDocumentFileLocation',
     id: document.id,

@@ -25,7 +25,7 @@ export interface TaskPayloadMap {
   'webp_loaded': {
     url: string,
     blob: Blob,
-  }
+  },
   'thumb': {
     url: string,
     bytes: ArrayBuffer,
@@ -52,6 +52,11 @@ export interface RequestPayloadMap {
     password: string,
   },
   'authorize': number,
+  'download': {
+    url: string,
+    location: InputFileLocation,
+    options: DownloadOptions,
+  },
 }
 
 export type TaskType = keyof TaskPayloadMap;
@@ -100,7 +105,7 @@ export interface NotificationPayloadMap {
   'webp': {
     url: string,
     data: ArrayBuffer,
-  };
+  },
 }
 
 /**
@@ -113,6 +118,9 @@ export interface ResponsePayloadMap {
   };
   'password_kdf': InputCheckPasswordSRP.inputCheckPasswordSRP,
   'authorization_complete': AuthKey,
+  'download_prepared': {
+    url: string,
+  },
 }
 
 export type NotificationType = keyof NotificationPayloadMap;
@@ -136,6 +144,7 @@ export interface RequestResponseMap {
   'call': 'rpc_result',
   'password_kdf': 'password_kdf',
   'authorize': 'authorization_complete',
+  'download': 'download_prepared',
 }
 
 /**

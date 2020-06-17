@@ -1,6 +1,6 @@
 /* eslint-disable no-lone-blocks */
 /* eslint-disable wrap-iife, func-names */
-import { a } from 'core/html';
+import { input, form, a } from 'core/html';
 
 export type PhotoFitMode = 'contain' | 'cover';
 
@@ -14,14 +14,17 @@ export type PhotoOptions = {
   className?: string,
 };
 
-export function downloadByUrl(filename: string, href: string) {
-  // const f = form({ action: href, method: 'POST' },
-  //   input({ type: 'text', value: filename, name: 'filename' }),
-  // );
+export function downloadForm(filename: string, href: string) {
+  const f = form({ action: href, method: 'POST' },
+    input({ type: 'text', value: filename, name: 'filename' }),
+  );
 
-  // document.body.appendChild(f);
-  // f.submit();
-  // f.remove();
+  document.body.appendChild(f);
+  f.submit();
+  f.remove();
+}
+
+export function downloadLink(filename: string, href: string) {
   const link = a({ download: filename, href, style: { display: 'none ' } });
   link.click();
 }
