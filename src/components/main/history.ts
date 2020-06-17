@@ -1,11 +1,11 @@
 import binarySearch from 'binary-search';
-import { chatCache, dialogCache, messageCache } from 'cache';
+import { dialogCache, messageCache } from 'cache';
 import * as icons from 'components/icons';
 import messageInput from 'components/message/input/input';
 import message, { MessageSibling } from 'components/message/message';
-import { sectionSpinner, VirtualizedList } from 'components/ui';
+import { keyboardInput, sectionSpinner, VirtualizedList } from 'components/ui';
 import { animationFrameStart, mount, unmount } from 'core/dom';
-import { useObservable } from 'core/hooks';
+import { getInterface, useObservable } from 'core/hooks';
 import { button, div, text } from 'core/html';
 import { compareSamePeerMessageIds, peerMessageToId, peerToId } from 'helpers/api';
 import { isiOS } from 'helpers/browser';
@@ -91,6 +91,7 @@ export default function history({ onBackToContacts }: Props) {
   let scroll: VirtualizedList;
 
   const itemsSubject = new BehaviorSubject<string[]>([]);
+  const peerSubject = new BehaviorSubject<Peer | null>(null);
   const showSpinnerObservable = combineLatest([service.history, service.loadingNextChunk])
     .pipe(map(([{ ids, loadingNewer, loadingOlder }, loadingNextChunk]) => (
       loadingNextChunk || ((loadingNewer || loadingOlder) && ids.length < 3)
@@ -177,8 +178,6 @@ export default function history({ onBackToContacts }: Props) {
     onClick: () => service.activePeer.value && service.selectPeer(service.activePeer.value, Infinity),
   }, icons.down());
 
-  const messageInputEl = messageInput();
-  const headerEl = header({ onBackToContacts });
   const historySection = div`.history__content`(scroll.container);
 
   mount(historySection, downButton);
@@ -194,28 +193,25 @@ export default function history({ onBackToContacts }: Props) {
     }
   });
 
+  const messageInputEl = messageInput(peerSubject);
+  const keyboardInputEl = keyboardInput(peerSubject, () => getInterface(messageInputEl).updateVisibility());
+  const headerEl = header({ onBackToContacts });
+
+  mount(container, headerEl);
+  mount(container, historySection);
+  mount(container, messageInputEl);
+  mount(container, keyboardInputEl);
+
   useObservable(container, service.activePeer, true, (next) => {
+    peerSubject.next(next);
     if (next) {
       messageDayMap.clear();
       messageSiblingsMap.clear();
+      getInterface(messageInputEl).updateVisibility();
       lastUnreadMessage = undefined;
 
       if (welcome.parentElement) unmount(welcome);
-      if (!headerEl.parentElement) mount(container, headerEl);
-      if (!historySection.parentElement) mount(container, historySection);
-      else scroll.clear();
-
-      if (!messageInputEl.parentElement) mount(container, messageInputEl);
-
-      if (next && next._ === 'peerChannel') {
-        const chat = chatCache.get(next.channel_id);
-        if (chat && chat._ === 'channel' && !chat.megagroup) {
-          unmount(messageInputEl);
-          return;
-        }
-      }
-
-      if (!messageInputEl.parentElement) mount(container, messageInputEl);
+      scroll.clear();
     }
   });
 

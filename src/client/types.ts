@@ -1,6 +1,6 @@
 import {
   Transports, ClientError, TransportState, AuthKey, MethodDeclMap, InputFile, AccountPassword,
-  InputCheckPasswordSRP, Update, User, Chat, Updates, InputFileLocation } from 'mtproto-js';
+  InputCheckPasswordSRP, Update, Updates, InputFileLocation } from 'mtproto-js';
 
 export type APICallHeaders = {
   dc?: number,
@@ -15,7 +15,7 @@ export interface TaskPayloadMap {
   'switch_dc': number,
   'upload': {
     id: string,
-    file: File,
+    file: File | Blob,
   },
   'location': {
     url: string,

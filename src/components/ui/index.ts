@@ -28,3 +28,4 @@ export { default as tgs, preloadTgsAssets } from './tgs/tgs';
 export { default as typingIndicator } from './typing_indicator/typing_indicator';
 export { default as virtualScrollBar } from './virtual_scroll_bar/virtual_scroll_bar';
 export { default as waveform } from './waveform/waveform';
+export { default as keyboardInput } from './keyboard_input/keyboard_input';
