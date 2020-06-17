@@ -104,7 +104,7 @@ export function messageMediaUpper(msg: Message.message): Node | undefined {
       // audio
       const audioAttr = getAttributeAudio(document);
       if (audioAttr) {
-        return audio(document);
+        return audio(msg);
       }
 
       // file attachment

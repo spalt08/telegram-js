@@ -9,6 +9,7 @@ import { div } from 'core/html';
 import { peerToId } from 'helpers/api';
 import { main, message } from 'services';
 import './header.scss';
+import audioPlayer from 'components/audio_player/audio_player';
 
 type Props = {
   onBackToContacts: () => void,
@@ -46,6 +47,8 @@ export default function header({ onBackToContacts }: Props) {
 
     const pinnedMessage = div`.header__pinned`();
     mount(container, pinnedMessage);
+    const player = div`.header__audio-player`(audioPlayer());
+    mount(container, player);
 
     pinnedMessageCache.useWatchItem(container, peerToId(peer), (msg) => {
       unmountChildren(pinnedMessage);

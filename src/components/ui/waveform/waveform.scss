@@ -1,9 +1,11 @@
+@import '~styles/variables.scss';
+
 .waveform {
   cursor: pointer;
   line {
-    stroke: var(--voice-message-bar-transparent);
+    stroke: $voice-message-bar-transparent;
   }
   line.active {
-    stroke: var(--voice-message-bar);
+    stroke: $voice-message-bar;
   }
 }

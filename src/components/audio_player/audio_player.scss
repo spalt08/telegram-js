@@ -1,0 +1,48 @@
+@import '~styles/variables.scss';
+
+.audioPlayer {
+  display: flex;
+  height: 52px;
+  opacity: 1;
+  transition: opacity 0.2s;
+
+  &.-hidden {
+    opacity: 0;
+  }
+
+  &__content {
+    margin-left: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  &__title {
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__performer {
+    font-size: 14px;
+    color: #707579;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__playButton {
+    display: flex;
+    align-items: center;
+
+    >.playButton {
+      background-color: initial !important;
+
+      path {
+        fill: $accent-color !important;
+      }
+    }
+  }
+}

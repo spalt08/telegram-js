@@ -1,23 +1,43 @@
-import { Document } from 'mtproto-js';
-import { div, text, nothing, strong, span } from 'core/html';
-import { getAttributeAudio, getReadableDuration, getAttributeFilename } from 'helpers/files';
-import { playButton, audioSeekbar, waveform } from 'components/ui';
-import { getInterface, useObservable } from 'core/hooks';
-import { media as mediaService } from 'services';
-import { MediaPlaybackStatus } from 'services/media';
+import { audioSeekbar, playButton, waveform } from 'components/ui';
+import { useObservable } from 'core/hooks';
+import { div, nothing, span, strong, text } from 'core/html';
+import { getMessageDocument } from 'helpers/api';
+import { getAttributeAudio, getAttributeFilename, getReadableDuration } from 'helpers/files';
+import { Message, DocumentAttribute, Document } from 'mtproto-js';
+import { audio as audioService } from 'services';
+import { MediaPlaybackStatus, MediaPlaybackState } from 'services/audio';
 import './audio.scss';
+import { Observable } from 'rxjs';
+import { userCache } from 'cache';
+import { userToTitle } from 'cache/accessors';
 
-export default function audio(doc: Document.document) {
-  const button = playButton(doc);
+function createTrack(
+  audioAttribute: DocumentAttribute.documentAttributeAudio,
+  doc: Document.document,
+  audioInfo: Observable<MediaPlaybackState>,
+  onSeek: (seek: number) => void) {
+  return audioAttribute.waveform
+    ? waveform({ doc, barsCount: 48, audioInfo, onSeek, className: 'document-audio__waveform' })
+    : audioSeekbar({ audioInfo, onSeek, className: 'document-audio__track' });
+}
+
+export default function audio(message: Message.message, noTrack = false) {
+  const button = playButton(message);
+  const doc = getMessageDocument(message);
+  if (doc?._ !== 'document') {
+    throw new Error('Message must contain document.');
+  }
   const audioAttribute = getAttributeAudio(doc)!;
   const duration = getReadableDuration(audioAttribute.duration);
   const timing = text(duration);
-  const onSeek = (seek: number) => mediaService.playAudio(doc, seek);
-  const track = audioAttribute.waveform
-    ? waveform(doc, 48, onSeek)
-    : audioSeekbar(onSeek);
+  const onSeek = (seek: number) => audioService.play(message, seek);
+  const audioInfo = audioService.audioInfo(message);
+  const track = noTrack ? nothing : createTrack(audioAttribute, doc, audioInfo, onSeek);
   let header: Node | undefined;
-  if (audioAttribute.performer || audioAttribute.title) {
+  if (audioAttribute.voice) {
+    const user = userCache.get(message.from_id!);
+    header = text(userToTitle(user));
+  } else if (audioAttribute.performer || audioAttribute.title) {
     if (audioAttribute.performer && audioAttribute.title) {
       header = span(strong(text(audioAttribute.performer)), text(` \u2014 ${audioAttribute.title}`));
     } else {
@@ -40,13 +60,13 @@ export default function audio(doc: Document.document) {
     ));
 
 
-  useObservable(container, mediaService.audioInfo(doc), true, (info) => {
-    getInterface(track).updateProgress(info.playProgress);
+  useObservable(container, audioInfo, true, (info) => {
     const progress = info.status === MediaPlaybackStatus.Playing ? info.playProgress * audioAttribute.duration : audioAttribute.duration;
-    if (info.status === MediaPlaybackStatus.Playing) {
-      timing.textContent = `${getReadableDuration(progress)} / ${getReadableDuration(audioAttribute.duration)}`;
-    } else {
-      timing.textContent = getReadableDuration(audioAttribute.duration);
+    const newContent = info.status === MediaPlaybackStatus.Playing
+      ? `${getReadableDuration(progress)} / ${getReadableDuration(audioAttribute.duration)}`
+      : getReadableDuration(audioAttribute.duration);
+    if (timing.textContent !== newContent) {
+      timing.textContent = newContent;
     }
   });
 

@@ -1,4 +1,4 @@
-import { listen, mount, unmount, unmountChildren } from 'core/dom';
+import { listen, mount, unmount } from 'core/dom';
 import { useInterface } from 'core/hooks';
 import { div } from 'core/html';
 import { main } from 'services';
@@ -99,14 +99,8 @@ export default function sidebar({ initial, className, onTransitionStart }: Props
   };
 
   const close = () => {
-    wrappersMap.clear();
     if (onTransitionStart) onTransitionStart(false);
     container.classList.add('-hidden');
-    container.ontransitionend = () => {
-      if (wrappersMap.size === 0) {
-        unmountChildren(container);
-      }
-    };
   };
 
   // unmount after closing
