@@ -10,6 +10,7 @@ import infoPanel from '../panels/info';
 import linksPanel from '../panels/links';
 import mediaPanel from '../panels/media';
 import './info.scss';
+import audioPanel from '../panels/audio';
 
 type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
@@ -19,8 +20,8 @@ export default function info({ onBack }: SidebarComponentProps, peer: MaybeObser
   const moreContextMenu = contextMenu({
     className: 'infoSidebar__context-menu',
     options: [
-      { icon: icons.mute, label: 'Mute', onClick: () => {} },
-      { icon: icons.del, label: 'Delete and Leave', onClick: () => {} },
+      { icon: icons.mute, label: 'Mute', onClick: () => { } },
+      { icon: icons.del, label: 'Delete and Leave', onClick: () => { } },
     ],
   });
 
@@ -45,6 +46,7 @@ export default function info({ onBack }: SidebarComponentProps, peer: MaybeObser
       { key: 'media', title: 'Media', content: () => mediaPanel(peer) },
       { key: 'docs', title: 'Docs', content: () => docsPanel(peer) },
       { key: 'links', title: 'Links', content: () => linksPanel(peer) },
+      { key: 'audio', title: 'Audio', content: () => audioPanel(peer) },
     ]),
   );
 

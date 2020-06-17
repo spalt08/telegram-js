@@ -7,6 +7,7 @@ import docsPanel from '../panels/documents';
 import linksPanel from '../panels/links';
 import mediaPanel from '../panels/media';
 import './shared_media.scss';
+import audioPanel from '../panels/audio';
 
 type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
@@ -22,6 +23,7 @@ export default function sharedMedia({ onBack }: SidebarComponentProps, peer: May
       { key: 'media', title: 'Media', content: () => mediaPanel(peer) },
       { key: 'docs', title: 'Docs', content: () => docsPanel(peer) },
       { key: 'links', title: 'Links', content: () => linksPanel(peer) },
+      { key: 'audio', title: 'Audio', content: () => audioPanel(peer) },
     ]),
   );
 }
