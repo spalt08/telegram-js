@@ -1,13 +1,16 @@
+/* eslint-disable no-param-reassign */
 import { Message } from 'mtproto-js';
 import { div, nothing } from 'core/html';
 import { getInterface, hasInterface, useOnMount } from 'core/hooks';
-import { unmount, mount, listen } from 'core/dom';
+import { unmount, mount, listen, animationFrameStart } from 'core/dom';
 import { main, media } from 'services';
 import { galleryHeader } from './gallery_header';
 import { galleryFooter } from './gallery_footer';
 import './gallery.scss';
 import { galleryMedia, GalleryMediaOpener } from './gallery_media';
 import { PopupInterface } from '../interface';
+import { isSafari } from 'helpers/browser';
+import { list } from 'components/ui';
 
 type Props = {
   opener?: GalleryMediaOpener,
@@ -45,28 +48,55 @@ export function gallery({ message, opener }: Props) {
     slider,
   );
 
+  let target: number | undefined;
+  const setScroll = (value: number) => {
+    slider.scrollLeft = target = value;
+  };
+
+  listen(slider, 'wheel', (event: WheelEvent) => {
+    if ((slider.scrollLeft === 0 && event.deltaX < 0)
+    || (slider.scrollLeft === (slider.scrollWidth - main.window.width) && event.deltaX > 0)) event.preventDefault();
+  });
+
   listen(slider, 'scroll', () => {
-    if (slider.scrollLeft % main.window.width === 0) {
-      const activeSlide = Math.floor(slider.scrollLeft / main.window.width);
+    const scrollValue = slider.scrollLeft;
+
+    if (target && scrollValue !== target) {
+      slider.scrollLeft = target;
+      return;
+    }
+
+    target = undefined;
+
+    if (scrollValue % main.window.width === 0) {
+      const activeSlide = Math.floor(scrollValue / main.window.width);
 
       if (activeSlide === 0 && olderMedia && olderMessage) {
         if (newerMedia) unmount(newerMedia);
         newerMedia = activeMedia;
+        newerMessage = message;
         activeMedia = olderMedia;
+        message = olderMessage;
 
         olderMessage = chunk.getOlderMessage(olderMessage.id);
         olderMedia = olderMessage ? galleryMedia(olderMessage) : undefined;
 
         if (olderMedia) {
           mount(slider, olderMedia, activeMedia);
-          slider.scrollLeft = main.window.width;
+          setScroll(main.window.width);
         }
       }
 
       if (activeSlide === 2 && newerMedia && newerMessage) {
-        if (olderMedia) unmount(olderMedia);
+        if (olderMedia) {
+          unmount(olderMedia);
+          setScroll(main.window.width);
+        }
+
         olderMedia = activeMedia;
+        olderMessage = message;
         activeMedia = newerMedia;
+        message = newerMessage;
 
         newerMessage = chunk.getNewerMessage(newerMessage.id);
         newerMedia = newerMessage ? galleryMedia(newerMessage) : undefined;
@@ -76,7 +106,7 @@ export function gallery({ message, opener }: Props) {
         }
       }
     }
-  });
+  }, { capture: true });
 
   useOnMount(container, () => {
     if (olderMedia) slider.scrollLeft = main.window.width;

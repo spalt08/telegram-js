@@ -216,6 +216,9 @@ export default function makeMessageChunk(
     getNewerId(id, offset = 1) {
       return getSiblingId(id, -offset);
     },
+    getOlderId(id, offset = 1) {
+      return getSiblingId(id, offset);
+    },
     getNewerMessage(id, offset = 1) {
       const siblingId = getSiblingId(id, -offset);
       const siblingMessage = siblingId ? messageCache.get(peerMessageToId(peer, siblingId)) : undefined;
@@ -227,9 +230,6 @@ export default function makeMessageChunk(
       const siblingMessage = siblingId ? messageCache.get(peerMessageToId(peer, siblingId)) : undefined;
       if (siblingMessage && siblingMessage._ === 'message') return siblingMessage;
       return undefined;
-    },
-    getOlderId(id, offset = 1) {
-      return getSiblingId(id, offset);
     },
     destroy,
   };

@@ -5,24 +5,26 @@ import { promisifyTransaction } from 'helpers/indexedDb';
 const META_STORE_NAME = 'meta';
 
 // Increment it when you change the schema below
-const SCHEMA_VERSION = 5;
+const SCHEMA_VERSION = 6;
 
 function makeSchema(db: IDBDatabase) {
   db.createObjectStore('cache');
 }
 
-function actualizeSchema(db: IDBDatabase, oldVersion: number, _newVersion: number) {
-  if (oldVersion === 0) {
+function actualizeSchema(db: IDBDatabase, _oldVersion: number, _newVersion: number) {
+  const stores = db.objectStoreNames;
+
+  if (!stores.contains(META_STORE_NAME)) {
     db.createObjectStore(META_STORE_NAME);
   }
 
-  const stores = db.objectStoreNames;
-  for (let i = 0; i < stores.length; ++i) {
-    if (stores[i] !== META_STORE_NAME) { // not removed to not loose the session during development
-      db.deleteObjectStore(stores[i]);
-    }
-  }
+  // for (let i = 0; i < stores.length; ++i) {
+  //   if (stores[i] !== META_STORE_NAME) { // not removed to not loose the session during development
+  //     db.deleteObjectStore(stores[i]);
+  //   }
+  // }
 
+  db.deleteObjectStore('cache');
   makeSchema(db);
 }
 

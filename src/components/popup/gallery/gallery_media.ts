@@ -56,10 +56,10 @@ export function galleryMedia(message: Message.message, opener?: GalleryMediaOpen
       transitionEl.style.top = `${targetTop}px`;
     });
 
-    // listenOnce(transitionEl, 'transitionend', () => {
-    //   mount(container, mediaElement || nothing);
-    //   unmount(transitionEl);
-    // });
+    listenOnce(transitionEl, 'transitionend', () => {
+      mount(container, mediaElement || nothing);
+      unmount(transitionEl);
+    });
 
     mount(container, transitionEl);
 
