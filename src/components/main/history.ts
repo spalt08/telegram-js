@@ -197,7 +197,6 @@ export default function history({ onBackToContacts }: Props) {
   const keyboardInputEl = keyboardInput(peerSubject, () => getInterface(messageInputEl).updateVisibility());
   const headerEl = header({ onBackToContacts });
 
-  mount(container, headerEl);
   mount(container, historySection);
   mount(container, messageInputEl);
   mount(container, keyboardInputEl);
@@ -210,6 +209,7 @@ export default function history({ onBackToContacts }: Props) {
       getInterface(messageInputEl).updateVisibility();
       lastUnreadMessage = undefined;
 
+      if (!headerEl.parentElement) mount(container, headerEl, historySection);
       if (welcome.parentElement) unmount(welcome);
       scroll.clear();
     }

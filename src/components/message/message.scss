@@ -58,6 +58,12 @@ $messageBubblePadding: 7PX $messageSidePadding;
   & > .message__align { justify-content: flex-end; }
 }
 
+.message-out-last {
+  & > .message__align {
+    padding-bottom: 4px;
+  }
+}
+
 .message__align {
   width: 100%;
   max-width: 740px;

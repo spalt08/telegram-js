@@ -116,7 +116,7 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
   }
 
   const container = div(
-    { className: msg.out ? 'message-out' : `message${isChat ? '-chat' : ''}${isLast ? '-last' : ''}` },
+    { className: msg.out ? `message-out${isLast ? ' message-out-last' : ''}` : `message${isChat ? '-chat' : ''}${isLast ? '-last' : ''}` },
     unreadMark ? div`.message__unread-mark`(text('Unread Messages')) : nothing,
     wrapper = div`.message__align`(
       avatar || nothing,

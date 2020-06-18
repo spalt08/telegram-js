@@ -73,8 +73,10 @@
       transition: .2s ease-out;
     }
 
-    .message-out & { background: #429f47; }
-    .message-out &::after {
+    .message__attachment-out > & { background: #429f47; }
+    .message__attachment-out > &::after {
+      border-right-color: #eeffde;
+      border-top-color: #eeffde;
       border-bottom-color: #1b7a21;
       border-left-color: #1b7a21;
     }
