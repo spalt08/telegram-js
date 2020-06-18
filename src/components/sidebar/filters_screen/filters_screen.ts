@@ -10,9 +10,9 @@ import './filters_screen.scss';
 
 type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
-function renderListItem(item: string) {
+function renderListItem(item: string, onNavigate: SidebarComponentProps['onNavigate']) {
   if (item === 'info') {
-    return filtersInfo();
+    return filtersInfo(onNavigate);
   }
 
   if (item === 'filtersHeader') {
@@ -28,7 +28,7 @@ function renderListItem(item: string) {
   }
 
   if (item.startsWith('filter_')) {
-    return addedFilterPreview(Number(item.slice(7)));
+    return addedFilterPreview(Number(item.slice(7)), onNavigate);
   }
 
   if (item.startsWith('suggestedFilter_')) {
@@ -42,7 +42,7 @@ function renderListItem(item: string) {
   return div();
 }
 
-export default function filtersScreen({ onBack }: SidebarComponentProps) {
+export default function filtersScreen({ onBack, onNavigate }: SidebarComponentProps) {
   const listItems = new BehaviorSubject<string[]>([]);
   const listDriver = new VirtualizedList({
     items: listItems,
@@ -51,7 +51,7 @@ export default function filtersScreen({ onBack }: SidebarComponentProps) {
     pivotBottom: false,
     topReached: true,
     className: 'filtersScreen__body',
-    renderer: renderListItem,
+    renderer: (id) => renderListItem(id, onNavigate),
   });
 
   const element = (

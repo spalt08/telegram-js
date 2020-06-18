@@ -5,7 +5,9 @@ import foldersSticker from 'assets/folders1.tgs';
 import { getInterface, useOnMount } from 'core/hooks';
 import './filters_info.scss';
 
-export default function filtersInfo() {
+type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
+
+export default function filtersInfo(onNavigate: SidebarComponentProps['onNavigate']) {
   const image = tgs({
     className: 'filtersInfo__image -hidden',
     src: foldersSticker,
@@ -27,7 +29,7 @@ export default function filtersInfo() {
     }
   });
 
-  const handleAddClick = () => console.log('Todo add filter');
+  const handleAddClick = () => onNavigate?.('filterForm', undefined);
 
   return (
     div`.filtersInfo`(

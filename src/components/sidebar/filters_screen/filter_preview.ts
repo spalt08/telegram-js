@@ -8,6 +8,8 @@ import { pluralize } from 'helpers/other';
 import { userCache } from 'cache';
 import './filter_preview.scss';
 
+type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
+
 interface Button {
   text: string;
   onClick(): void;
@@ -160,7 +162,7 @@ function makeFilterDescription(dialogFilter: DialogFilter) {
   return itemsString[0].toUpperCase() + itemsString.slice(1);
 }
 
-export function addedFilterPreview(id: number) {
+export function addedFilterPreview(id: number, onNavigate: SidebarComponentProps['onNavigate']) {
   const filterObservable = folderService.filters.pipe(
     map((filters) => filters?.get(id)?.filter),
     filter((dialogFilter): dialogFilter is DialogFilter => !!dialogFilter),
@@ -170,7 +172,7 @@ export function addedFilterPreview(id: number) {
   return filterPreview(
     filterObservable.pipe(map((dialogFilter) => dialogFilter.title)),
     filterObservable.pipe(map(makeFilterDescription)),
-    () => console.log('Todo filter settings'),
+    () => onNavigate?.('filterForm', folderService.filters.value?.get(id)?.filter),
   );
 }
 

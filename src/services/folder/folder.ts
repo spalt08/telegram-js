@@ -156,14 +156,19 @@ export default class FolderService {
   }
 
   createFilter(filter: DialogFilter) {
-    const filterId = this.getIdForNewFilter();
+    const filterWithId = {
+      ...filter,
+      id: this.getIdForNewFilter(),
+    };
 
-    /* no await */client.call('messages.updateDialogFilter', { id: filterId, filter })
+    // todo: Handle fail responses from the API here and next
+    /* no await */client.call('messages.updateDialogFilter', { id: filterWithId.id, filter: filterWithId })
       // Server puts the new filter to the start by default so we need to move it to the end explicitly
       .then(() => client.call('messages.updateDialogFiltersOrder', {
-        order: [...(this.filters.value?.keys() ?? []), filterId], // Just in case, duplicates are ok and the latest of a duplicate will stay
+        // Just in case, duplicates are ok and the latest of a duplicate will stay
+        order: [...(this.filters.value?.keys() ?? []), filterWithId.id],
       }));
-    this.pushNewFilterLocally(filter);
+    this.pushNewFilterLocally(filterWithId);
   }
 
   changeFilter(filter: DialogFilter) {
@@ -177,7 +182,8 @@ export default class FolderService {
   }
 
   removeFilter(filterId: number) {
-    /* no await */client.call('messages.updateDialogFilter', { id: filterId });
+    /* no await */client.call('messages.updateDialogFilter', { id: filterId })
+      .then(() => this.loadSuggestedFilters());
 
     if (this.filters.value) {
       const newFilters: DialogFilter[] = [];
