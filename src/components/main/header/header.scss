@@ -1,34 +1,58 @@
 @import '~styles/variables.scss';
 
-.header {
-  background: #FFFFFF;
-  height: $main-header-height;
-  padding: 5px $content-padding 5px $content-padding;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-direction: row;
-  position: relative;
-  box-shadow: 0px 0px 3px 0px #828282;
-  z-index: 2;
-  border-left: 1px solid $common-border-color;
-  border-right: 1px solid $common-border-color;
+$header-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.4);
 
-  &.hidden {
-    display: none;
-  }
+.header {
+  // &__wrapper {
+  //   background: #FFFFFF;
+  //   height: $main-header-height;
+  //   display: flex;
+  //   justify-content: space-between;
+  //   align-items: center;
+  //   flex-direction: row;
+  //   position: relative;
+  //   box-shadow: 0px 0px 3px 0px #828282;
+  //   z-index: 2;
+  //   border-left: 1px solid $common-border-color;
+  //   border-right: 1px solid $common-border-color;
+  //   display: flex;
+  //   justify-content: space-between;
+  //   flex-wrap: wrap;
+  //   position: relative;
+
+  //   @include respond-to(small) {
+  //     box-shadow: none;
+  //     border: none;
+  //   }
+  // }
 
   &__profile {
-    flex: 2;
+    padding: 5px $content-padding;
+    height: $main-header-height;
+    flex: 1.5;
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
     overflow: hidden;
+    align-items: center;
+    background-color: #FFFFFF;
+    width: 100%;
+    max-width: 100%;
+    min-width: 100%;
+    box-shadow: $header-shadow;
+    position: relative;
+    z-index: 3;
+    border-left: 1px solid $common-border-color;
 
     & .avatar {
       width: 40px;
       height: 40px;
       font-size: 16px;
+    }
+
+    @include respond-to(small) {
+      padding-left: 56px;
+      border-right-width: 0px;
     }
   }
 
@@ -54,9 +78,40 @@
   &__pinned {
     $ripple-padding: 7px 7px;
 
-    flex: 1 0;
+    position: absolute;
+    right: 110px;
+    top: 0;
+    padding: 5px 0;
     min-width: 0; // To let it shrink when there is little space
     max-width: (250px + nth($ripple-padding, 2));
+    display: none;
+    z-index: 4;
+
+    @include respond-to(small) {
+      height: 54px;
+      transition: transform .2s ease-out;
+      padding: 0px 12px;
+      width: 100%;
+      max-width: 100%;
+      min-width: 100%;
+      box-shadow: $header-shadow;
+      background-color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      z-index: 2;
+      position: absolute;
+      left: 0;
+      top: 0;
+      transform: translateY(0);
+    }
+
+    &.-visible {
+      display: flex;
+
+      @include respond-to(small) {
+        transform: translateY($main-header-height);
+      }
+    }
 
     &_ripple {
       padding: $ripple-padding;
@@ -70,14 +125,38 @@
     }
   }
 
-  &__audio-player {
-    width: 220px;
+  & > .audioPlayer {
+    border-left: 1px solid $common-border-color;
+    width: 100%;
+    position: absolute;
+    transform: translateY($main-header-height);
+    left: 0;
+    top: 0;
+    background-color: #FFFFFF;
+    z-index: 1;
+    height: 40px;
+    box-shadow: $header-shadow;
+    transition: transform .3s ease-out;
+    padding: 0 $content-padding;
+
+    &.-hidden {
+      transform: translateY(0);
+    }
+  }
+
+  @include respond-to(small) {
+    &__pinned.-visible + .audioPlayer {
+      transform: translateY($main-header-height + 54px);
+    }
   }
 
   &__actions {
     flex: none;
     display: flex;
-    margin-right: -9px;
+    position: absolute;
+    right: 11px;
+    top: 5px;
+    z-index: 4;
   }
 
   &__typing-indicator {
@@ -102,8 +181,11 @@
 
   &__back {
     flex: none;
-    margin: 0 8px 0 -9px;
     display: none;
+    position: absolute;
+    left: 4px;
+    top: 5px;
+    z-index: 4;
   }
 
   @include respond-to(small) {
