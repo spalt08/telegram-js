@@ -32,15 +32,16 @@ export const userCache = new Collection({
 export const chatCache = new Collection({
   getId: makeGetIdFromProp('id') as GetId<Chat, number>,
   itemMerger(chat1, chat2) {
+    const result = considerMinItemMerger<Chat>(chat1, chat2);
     // Sometimes server returns channel objects with participants_count value wrongly equal to 0 (for example, in _='messages. ' responses)
     // This is a workaround to not loose the participants information
     if (
-      !(chat1._ === 'channel' && chat1.participants_count === undefined)
-      && chat2._ === 'channel' && chat2.participants_count === undefined
+      chat1._ === 'channel' && chat1.participants_count !== undefined
+      && result._ === 'channel' && result.participants_count === undefined
     ) {
-      return chat1;
+      return { ...result, participants_count: chat1.participants_count };
     }
-    return considerMinItemMerger<Chat>(chat1, chat2);
+    return result;
   },
   indices: {
     usernames: usernameIndex,

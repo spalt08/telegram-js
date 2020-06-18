@@ -46,7 +46,7 @@ export default function messageService(msg: Message.messageService) {
       break;
 
     case 'messageActionChatAddUser': {
-      if (msg.action.users.length === 1 && peer._ === 'peerUser' && peer.user_id === msg.action.users[0]) {
+      if (msg.action.users.length === 1 && msg.from_id === msg.action.users[0]) {
         innerContent = [
           strong(profileTitle(peer)),
           text(' joined the group'),
@@ -63,7 +63,7 @@ export default function messageService(msg: Message.messageService) {
       break;
     }
     case 'messageActionChatDeleteUser':
-      if (peer === originalPeer) {
+      if (msg.from_id === msg.action.user_id) {
         innerContent = [
           strong(profileTitle(peer)),
           text(' left the group'),
