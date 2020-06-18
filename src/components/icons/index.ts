@@ -130,6 +130,9 @@ export const eye2 = /*#__PURE__*/svgCodeToComponent(eye2Code);
 import flagCode from './flag.svg?raw';
 export const flag = /*#__PURE__*/svgCodeToComponent(flagCode);
 
+import folderCode from './folder.svg?raw';
+export const folder = /*#__PURE__*/svgCodeToComponent(folderCode);
+
 import forwardCode from './forward.svg?raw';
 export const forward = /*#__PURE__*/svgCodeToComponent(forwardCode);
 

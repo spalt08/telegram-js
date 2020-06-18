@@ -48,6 +48,7 @@ export default function dialogsScreen({ onNavigate }: SidebarComponentProps) {
       { icon: icons.archive, label: 'Archived', badge: archiveBadge, onClick: () => onNavigate?.('archive') },
       { icon: icons.savedmessages, label: 'Saved', onClick: () => onNavigate?.('contacts') },
       { icon: icons.settings, label: 'Settings', onClick: () => onNavigate?.('settings') },
+      { icon: icons.folder, label: 'Chat Folders', onClick: () => onNavigate?.('filters') },
       { icon: icons.help, label: 'Help', onClick: () => onNavigate?.('contacts') },
     ],
   });

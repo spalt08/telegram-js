@@ -14,6 +14,7 @@ import settings from './settings/settings';
 import sharedMedia from './shared_media/shared_media';
 import searchStickers from './search_stickers/search_stickers';
 import searchGifs from './search_gifs/search_gifs';
+import filters from './filters_screen/filters_screen';
 import './sidebar.scss';
 import wrapper from './wrapper/wrapper';
 
@@ -30,6 +31,7 @@ const elements = {
   searchStickers,
   searchGifs,
   addBotToGroup,
+  filters,
 };
 
 type SidebarRendererMap = typeof elements;
