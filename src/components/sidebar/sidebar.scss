@@ -10,8 +10,10 @@ $sidebar-max: 400px;
   min-width: $sidebar-min;
   background-color: #FFFFFF;
   height: 100%;
-  position: relative;
+  position: absolute;
   overflow: hidden;
+  transform: translateX(0);
+  z-index: 5;
 
   & > .sidebarWrapper {
     flex: none;
@@ -44,10 +46,7 @@ $sidebar-max: 400px;
     @include respond-to(widescreen) {
       border-right: 1px solid $common-border-color;
     }
-      // performance tweak
-    will-change: width;
-    z-index: 0;
-    transition: .2s ease-out;
+    transition: $animation-sidebar;
 
     @include respond-to(medium) {
       transition: transform $animation-sidebar;
@@ -106,9 +105,7 @@ $sidebar-max: 400px;
     border-right: none;
 
     @include respond-to(desktop) {
-      transform: none;
-      width: 0;
-      min-width: 0;
+      transform: translateX(100%);
     }
   }
 }

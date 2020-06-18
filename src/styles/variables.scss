@@ -11,6 +11,7 @@ $user-bg-colors: (
 
 $break-small: 720px;
 $break-medium: 1024px;
+$break-message-wrap: 1480px;
 $break-widescreen: 1680px;
 $common-border-color: #DADCE0;
 $main-header-height: 56px;
@@ -26,6 +27,10 @@ $main-header-height: 56px;
 
   @if $media == small-medium {
     @media only screen and (max-width: $break-medium) { @content; }
+  }
+
+  @if $media == message-wrap {
+    @media only screen and (min-width: $break-small + 1) and (max-width: $break-message-wrap) { @content; }
   }
 
   @if $media == desktop {
@@ -76,7 +81,7 @@ $accent-color: #1da1f1;
 $voice-message-bar: #1da1f1;
 $voice-message-bar-transparent: rgba(112, 117, 121, 0.35);
 $accent-color-inactive: #707579;
-$animation-sidebar: .3s ease-in-out;
+$animation-sidebar: 0.3s ease-in-out;
 
 // @include respond-to(small) {
 //   $content-padding: 12px;

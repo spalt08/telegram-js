@@ -91,7 +91,7 @@ export default function videoPopup({ rect, video, peer, message }: Props) {
 
   let appeared = false;
 
-  const animateApppear = (timestamp: number) => {
+  const animateAppear = (timestamp: number) => {
     if (!start) start = timestamp;
 
     const progress = timestamp - start;
@@ -104,7 +104,7 @@ export default function videoPopup({ rect, video, peer, message }: Props) {
     }
 
     if (percentage < 1) {
-      requestAnimationFrame(animateApppear);
+      requestAnimationFrame(animateAppear);
     } else {
       appeared = true;
       start = undefined;
@@ -115,7 +115,7 @@ export default function videoPopup({ rect, video, peer, message }: Props) {
     }
   };
 
-  requestAnimationFrame(animateApppear);
+  requestAnimationFrame(animateAppear);
 
   const remove = () => {
     if (hasInterface<PopupInterface>(element.parentElement)) {

@@ -55,6 +55,7 @@ $messageBubblePadding: 7PX $messageSidePadding;
   display: flex;
   justify-content: flex-start;
   align-items: flex-end;
+  transition: max-width $animation-sidebar;
 
   & > .avatar {
     width: 33PX;

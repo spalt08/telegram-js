@@ -31,6 +31,19 @@ export class Router {
       this.fetchLocation();
     });
 
+    // fix for virtual keyboard in iOS.
+    const { visualViewport } = window as any;
+    if (visualViewport) {
+      useListenWhileMounted(this.element, visualViewport, 'resize', () => {
+        this.element.style.marginTop = `${visualViewport.pageTop}px`;
+        this.element.style.height = `${visualViewport.height}px`;
+        // in some cases we must update scrollTop position,
+        // even though it is already equal to visualViewport.pageTop
+        // This is probably some bug in Safari.
+        document.documentElement.scrollTop = visualViewport.pageTop;
+      });
+    }
+
     useOnMount(this.element, () => this.fetchLocation());
 
     useObservable(

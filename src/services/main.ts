@@ -49,7 +49,7 @@ export default class MainService {
   showPopup(type: 'stickerSet', ctx: InputStickerSet): void;
   showPopup(type: 'photo', ctx: { rect: DOMRect, options: PhotoOptions, photo: Photo, peer: Peer, message: Message }): void;
   showPopup(type: 'video', ctx: { rect: DOMRect, video: Document.document, peer?: Peer, message?: Message }): void;
-  showPopup(type: 'confirmation', ctx: { body: string, title?: string, confirmCallback: () => void }): void;
+  showPopup(type: 'confirmation', ctx: { body: string | Node, title?: string, confirmCallback: () => void }): void;
   showPopup(type: string, ctx?: any): void {
     this.popupCtx = ctx;
     this.popup.next(type);
