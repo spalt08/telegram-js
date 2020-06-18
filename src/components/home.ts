@@ -4,8 +4,7 @@ import sidebar from 'components/sidebar/sidebar';
 import { listen } from 'core/dom';
 import { getInterface, useObservable } from 'core/hooks';
 import { div } from 'core/html';
-import { BehaviorSubject } from 'rxjs';
-import { main, message } from 'services';
+import { main } from 'services';
 import './home.scss';
 import history from './main/history';
 
@@ -13,13 +12,11 @@ import history from './main/history';
  * Handler for route /
  */
 export default function home() {
-  const isChatOpened = new BehaviorSubject<boolean | null>(null);
-
   const leftSidebarFade = div`.home__left-sidebar-fade`();
   const rightSidebarFade = div`.home__right-sidebar-fade`();
 
   const historyEl = history({
-    onBackToContacts: () => isChatOpened.next(false),
+    onBackToContacts: () => main.isChatOpened.next(false),
   });
   const leftSidebar = sidebar({ initial: { state: 'dialogs', ctx: undefined }, className: '-left' });
   const rightSidebar = sidebar({
@@ -49,11 +46,7 @@ export default function home() {
     else sidebarInterface.close();
   });
 
-  useObservable(container, message.activePeer, true, (peer) => {
-    if (peer !== null) isChatOpened.next(true);
-  });
-
-  useObservable(container, isChatOpened, true, (opened) => {
+  useObservable(container, main.isChatOpened, true, (opened) => {
     if (opened !== null) {
       leftSidebar.classList.toggle('-popping', opened);
       historyEl.classList.toggle('-visible', opened);

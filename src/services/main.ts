@@ -20,6 +20,9 @@ export default class MainService {
   /** Popup Context */
   popupCtx: any = {};
 
+  /** Is Chat Opened */
+  isChatOpened = new BehaviorSubject<boolean | null>(null);
+
   /** Window Size */
   window = { width: 0, height: 0 };
 

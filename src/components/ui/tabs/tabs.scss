@@ -11,10 +11,11 @@
     min-height: 44px;
     display: flex;
     border-bottom: 1px solid #dedfe2;
+    position: relative;
     width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
-    padding: 0 $content-padding;mask-image: linear-gradient(to left, transparent, #000 9px);
+    padding: 0 $content-padding;mask-image: linear-gradient(to left, transparent, #000 12px);
   
     @include hide-scrollbar();
 
@@ -49,7 +50,7 @@
     &::after {
       content: '';
       position: absolute;
-      bottom: 0;
+      bottom: 1px;
       left: 0;
       right: 0;
       height: 3px;
