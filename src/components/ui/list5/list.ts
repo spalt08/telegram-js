@@ -287,35 +287,33 @@ export class VirtualizedList {
     if (!this.viewport) this.viewport = this.container.getBoundingClientRect();
     this.lock();
 
+    let appendCount = Math.min(this.cfg.batchService, this.items.length);
+    const focusIndex = this.shouldFocus ? this.items.indexOf(this.shouldFocus) : -1;
+
+    if (appendCount > 0) {
+      if (focusIndex > -1 && focusIndex !== this.items.length - 1) {
+        this.firstRendered = Math.max(0, focusIndex - this.cfg.batchService / 2);
+        appendCount = Math.min(this.cfg.batchService, this.items.length - this.firstRendered - 1);
+      } else this.firstRendered = this.cfg.pivotBottom ? Math.max(0, this.items.length - this.cfg.batchService) : 0;
+      this.lastRendered = this.firstRendered - 1;
+    }
+
+    // render {appendCount} elements
+    for (let i = 0; i < appendCount; i += 1) this.mount(this.items[++this.lastRendered]);
+
+    // set initial scroll position
+    if (this.shouldFocus && focusIndex > -1) {
+      this.container.scrollTop = this.scrollTop = this.getScrollToValue(this.shouldFocus) - (this.cfg.groupPadding || 0);
+      this.shouldFocus = undefined;
+    } else if (this.cfg.pivotBottom) this.container.scrollTop = this.cfg.forcePadding + 9999;
+    else this.scrollTop = 0;
+
+    // set initial values
     animationFrameStart().then(() => {
-      let appendCount = Math.min(this.cfg.batchService, this.items.length);
-      const focusIndex = this.shouldFocus ? this.items.indexOf(this.shouldFocus) : -1;
-
-      if (appendCount > 0) {
-        if (focusIndex > -1 && focusIndex !== this.items.length - 1) {
-          this.firstRendered = Math.max(0, focusIndex - this.cfg.batchService / 2);
-          appendCount = Math.min(this.cfg.batchService, this.items.length - this.firstRendered - 1);
-        } else this.firstRendered = this.cfg.pivotBottom ? Math.max(0, this.items.length - this.cfg.batchService) : 0;
-        this.lastRendered = this.firstRendered - 1;
-      }
-
-      // render {appendCount} elements
-      for (let i = 0; i < appendCount; i += 1) this.mount(this.items[++this.lastRendered]);
-
-      // set initial scroll position
-      if (this.shouldFocus && focusIndex > -1) {
-        this.container.scrollTop = this.scrollTop = this.getScrollToValue(this.shouldFocus) - (this.cfg.groupPadding || 0);
-        this.shouldFocus = undefined;
-      } else if (this.cfg.pivotBottom) this.container.scrollTop = this.cfg.forcePadding + 9999;
-      else this.scrollTop = 0;
-
-      // set initial values
-      animationFrameStart().then(() => {
-        this.viewport = this.container.getBoundingClientRect();
-        this.scrollHeight = this.container.scrollHeight;
-        this.scrollTop = this.container.scrollTop;
-        this.unlock();
-      });
+      this.viewport = this.container.getBoundingClientRect();
+      this.scrollHeight = this.container.scrollHeight;
+      this.scrollTop = this.container.scrollTop;
+      this.unlock();
     });
   }
 
@@ -766,6 +764,7 @@ export class VirtualizedList {
       this.shouldFocusDirection = undefined;
       this.scrollHeight = this.container.scrollHeight;
       this.scrollTop = this.container.scrollTop;
+      this.positions = {};
       this.trace();
       this.unlock();
       this.element(item).classList.remove('-focused');
