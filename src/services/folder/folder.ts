@@ -155,8 +155,8 @@ export default class FolderService {
     }
   }
 
-  saveFilter(id: number | undefined, filter: DialogFilter) {
-    const filterId = id ?? this.getIdForNewFilter();
+  createFilter(filter: DialogFilter) {
+    const filterId = this.getIdForNewFilter();
 
     /* no await */client.call('messages.updateDialogFilter', { id: filterId, filter })
       // Server puts the new filter to the start by default so we need to move it to the end explicitly
@@ -166,12 +166,36 @@ export default class FolderService {
     this.pushNewFilterLocally(filter);
   }
 
+  changeFilter(filter: DialogFilter) {
+    /* no await */client.call('messages.updateDialogFilter', { id: filter.id, filter });
+
+    if (this.filters.value) {
+      const newFilters: DialogFilter[] = [];
+      this.filters.value.forEach((record) => newFilters.push(record.filter.id === filter.id ? filter : record.filter));
+      this.setNewFiltersLocally(newFilters);
+    }
+  }
+
+  removeFilter(filterId: number) {
+    /* no await */client.call('messages.updateDialogFilter', { id: filterId });
+
+    if (this.filters.value) {
+      const newFilters: DialogFilter[] = [];
+      this.filters.value.forEach((record) => {
+        if (record.filter.id !== filterId) {
+          newFilters.push(record.filter);
+        }
+      });
+      this.setNewFiltersLocally(newFilters);
+    }
+  }
+
   addSuggesterFilter(filterId: number) {
     const filter = this.suggestedFilters.value?.get(filterId)?.filter;
     if (!filter) {
       return;
     }
-    this.saveFilter(undefined, filter);
+    this.createFilter(filter);
     this.removeSuggestedFilterLocally(filterId);
   }
 
