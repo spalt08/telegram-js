@@ -67,10 +67,12 @@ export default function sidebar({ initial, className, onTransitionStart }: Props
     if (element) {
       container.classList.add('-popping-state');
 
-      element.ontransitionend = () => {
-        container.classList.remove('-popping-state');
-        if (element) {
-          unmount(element);
+      element.ontransitionend = (event) => {
+        if (event.target === event.currentTarget) {
+          container.classList.remove('-popping-state');
+          if (element) {
+            unmount(element);
+          }
         }
       };
     }
@@ -104,10 +106,12 @@ export default function sidebar({ initial, className, onTransitionStart }: Props
   };
 
   // unmount after closing
-  listen(container, 'transitionend', () => {
-    if (container.classList.contains('-hidden')) {
-      const element = container.children[container.childElementCount - 1];
-      if (element) unmount(element);
+  listen(container, 'transitionend', (event) => {
+    if (event.target === event.currentTarget) {
+      if (container.classList.contains('-hidden')) {
+        const element = container.children[container.childElementCount - 1];
+        if (element) unmount(element);
+      }
     }
   });
 
