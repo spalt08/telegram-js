@@ -8,7 +8,7 @@ import { listen } from 'core/dom';
 import { getInterface } from 'core/hooks';
 import photoRenderer from '../photo/photo';
 
-export default function videoPreview(video: Document.document, photoOptions: PhotoOptions = {}, peer?: Peer, message?: Message.message) {
+export default function videoPreview(video: Document.document, photoOptions: PhotoOptions = {}, message?: Message.message) {
   const thumbnail = photoRenderer(video, { ...photoOptions, className: '' });
 
   const videoAttribute = getAttributeVideo(video);

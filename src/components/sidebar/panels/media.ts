@@ -4,83 +4,97 @@ import videoPreview from 'components/media/video/preview';
 import { VirtualizedList } from 'components/ui';
 import { mount, unmount, unmountChildren } from 'core/dom';
 import { useMaybeObservable, useWhileMounted } from 'core/hooks';
-import { div } from 'core/html';
+import { div, text } from 'core/html';
 import { MaybeObservable } from 'core/types';
 import { peerMessageToId } from 'helpers/api';
-import { getAttributeVideo } from 'helpers/files';
 import { Peer } from 'mtproto-js';
 import { BehaviorSubject } from 'rxjs';
-import { media } from 'services';
+import { media as service } from 'services';
 import { MessageChunkService } from 'services/message/message_chunk';
 import { Direction } from 'services/message/types';
 import { panelLoader } from './loader';
 import './media.scss';
 
-const mediaRowRenderer = (ids: string, peer: Peer): HTMLDivElement => {
-  const messages = ids.split('+');
-  const container = div`.mediaPanel__row`();
+function renderer(id: string): HTMLElement {
+  const message = messageCache.get(id);
+  if (!message || message._ !== 'message') return div`.mediaPanel__item`();
+  const { media } = message;
 
-  for (let i = 0; i < messages.length; i++) {
-    const message = messageCache.get(messages[i]);
-    if (message?._ !== 'message') {
-      continue;
-    }
-
-    const element = div`.mediaPanel__item`();
-
-    // photo
-    if (message.media?._ === 'messageMediaPhoto' && message.media.photo?._ === 'photo') {
-      const photo = photoPreview(message.media.photo, peer, message, { fit: 'cover', width: 120, height: 120 });
-      if (photo) mount(element, photo);
-    }
-
-    // video
-    if (
-      message.media?._ === 'messageMediaDocument'
-      && message.media.document?._ === 'document'
-      && getAttributeVideo(message.media.document)) {
-      const photo = videoPreview(message.media.document, { fit: 'cover', width: 120, height: 120 });
-      if (photo) mount(element, photo);
-    }
-
-    mount(container, element);
+  // photo
+  if (media && media._ === 'messageMediaPhoto' && media.photo && media.photo._ === 'photo') {
+    return div`.mediaPanel__item`(
+      photoPreview(media.photo, { fit: 'cover', width: 240, height: 240, className: 'mediaPanel__photo' }, message),
+    );
   }
 
-  return container;
-};
-
-function groupIds(peer: Peer, ids: readonly number[]): string[] {
-  const groupedIds: string[] = [];
-  for (let i = 0; i < ids.length; i += 3) {
-    groupedIds.push(`${peerMessageToId(peer, ids[i])}+${peerMessageToId(peer, ids[i + 1])}+${peerMessageToId(peer, ids[i + 2])}`);
+  // video
+  if (media && media._ === 'messageMediaDocument' && media.document && media.document._ === 'document') {
+    return div`.mediaPanel__item`(
+      videoPreview(media.document, { fit: 'cover', width: 240, height: 240, className: 'mediaPanel__photo' }, message),
+    );
   }
-  return groupedIds;
+
+  return div`.mediaPanel__item`();
+}
+
+function renderGroup(code: string): HTMLElement {
+  const [month, year] = code.split('_');
+  const date = new Date(+year, +month, 1);
+
+  return div`.mediaPanel__day`(
+    div`.mediaPanel__daylabel`(text(date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }))),
+  );
+}
+
+function getMessageMonth(map: Map<string, string>, id: string) {
+  let day = map.get(id);
+
+  if (!day) {
+    const message = messageCache.get(id);
+    if (message && message._ !== 'messageEmpty') {
+      const date = new Date(message.date * 1000);
+      map.set(id, day = `${date.getMonth()}_${date.getFullYear()}`);
+    }
+  }
+
+  return day || '0';
 }
 
 export default function mediaPanel(peer: MaybeObservable<Peer>) {
   const container = div`.mediaPanel`();
+  const monthMap = new Map<string, string>();
+
   useMaybeObservable(container, peer, true, (newPeer) => {
     unmountChildren(container);
+    monthMap.clear();
+
     const items = new BehaviorSubject<string[]>([]);
-    let mediaChunkService: MessageChunkService | undefined;
+
+    let mediaChunkService: MessageChunkService;
 
     const list = new VirtualizedList({
       items,
       pivotBottom: false,
-      onReachBottom: () => mediaChunkService?.loadMore(Direction.Older),
-      renderer: (id: string) => mediaRowRenderer(id, newPeer),
+      topReached: true,
+      renderer,
+      renderGroup,
+      selectGroup: (id: string) => getMessageMonth(monthMap, id),
+      groupPadding: 30,
+      onReachBottom: () => mediaChunkService.loadMore(Direction.Older),
     });
+
     mount(container, list.container);
+
     let loader: HTMLElement | undefined;
 
     useWhileMounted(list.container, () => {
-      const chunkService = media.getMediaMessagesChunk(newPeer, 'photoVideo', Infinity);
-      mediaChunkService = chunkService;
+      mediaChunkService = service.getMediaMessagesChunk(newPeer, 'photoVideo', Infinity);
 
-      const historySubscription = chunkService.history.subscribe((history) => {
-        items.next(groupIds(newPeer, history.ids));
+      const subscription = mediaChunkService.history.subscribe(({ ids, loadingOlder }) => {
+        items.next(ids.map((id) => peerMessageToId(newPeer, id)));
 
-        const showLoader = history.ids.length === 0 && history.loadingOlder;
+        const showLoader = ids.length === 0 && loadingOlder;
+
         if (!showLoader && loader) {
           unmount(loader);
           loader = undefined;
@@ -90,8 +104,8 @@ export default function mediaPanel(peer: MaybeObservable<Peer>) {
       });
 
       return () => {
-        chunkService.destroy();
-        historySubscription.unsubscribe();
+        mediaChunkService.destroy();
+        subscription.unsubscribe();
       };
     });
   });

@@ -1,30 +1,59 @@
 .mediaPanel {
   height: 100%;
   width: 100%;
+  background: #fff;
 
-  &__row {
+  &__day {
     display: flex;
     justify-content: flex-start;
-    align-items: center;
-    padding: 6px 6px 0px;
+    flex-wrap: wrap;
+    padding: 6PX;
+  }
 
-    &:last-child {
-      padding-bottom: 6px;
-    }
+  &__daylabel {
+    padding: 0 2PX;
+    height: 30px;
+    line-height: 30px;
+    width: 100%;
+    color: #7b8083;
+    text-transform: uppercase;
+    font-weight: 500;
+    font-size: 14PX;
+    position: -webkit-sticky;
+    position: sticky;
+    background: #fff;
+    top: 0;
+    z-index: 3;
   }
 
   &__item {
-    width: 32%;
-    margin-right: 6px;
+    flex: 1 25%;
+    max-width: calc(33.3% - 4PX);
+    padding-top: 33%;
+    margin: 2PX;
     overflow: hidden;
-    border-radius: 4px;
-    background: #fff;
+    border-radius: 2PX;
     cursor: pointer;
+    position: relative;
+  }
 
-    &:last-child { margin-right: 0; }
+  &__photo {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    height: 100% !important;
 
-    & .photo {
+    & > .video-preview__playbtn {
+      width: 30px;
+      height: 30px;
+      background-size: 10px auto;
+    }
+
+    & > .photo {
       width: 100% !important;
+      height: 100% !important;
+      object-fit: cover;
     }
   }
 }

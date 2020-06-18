@@ -98,7 +98,7 @@ export function messageMediaUpper(msg: Message.message): Node | undefined {
 
       const videoAttr = getAttributeVideo(document);
       if (videoAttr && !videoAttr.round_message) {
-        return videoPreview(document, options, messageToSenderPeer(msg), msg);
+        return videoPreview(document, options, msg);
       }
 
       // audio

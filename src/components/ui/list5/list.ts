@@ -284,7 +284,6 @@ export class VirtualizedList {
   init() {
     // already initied
     if (this.firstRendered + this.lastRendered >= 0) return;
-    if (!this.viewport) this.viewport = this.container.getBoundingClientRect();
     this.lock();
 
     let appendCount = Math.min(this.cfg.batchService, this.items.length);
@@ -589,7 +588,11 @@ export class VirtualizedList {
       nextVisible.push(nextItem);
     }
 
+    console.log('first', this.firstRendered, '->', nextFirstRendererd);
+    console.log('last', this.lastRendered, '->', nextLastRendered);
+    console.log(this.scrollHeight - this.container.scrollHeight);
     this.container.scrollTop = this.scrollTop -= (this.scrollHeight - this.container.scrollHeight);
+
     this.scrollHeight = this.container.scrollHeight;
 
     // get position of nextVisible elements
