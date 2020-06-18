@@ -5,7 +5,7 @@ import * as icons from 'components/icons';
 import { heading, list } from 'components/ui';
 import { mount, unmount } from 'core/dom';
 import { useMaybeObservable } from 'core/hooks';
-import { div } from 'core/html';
+import { div, span, text, strong } from 'core/html';
 import { MaybeObservable } from 'core/types';
 import { channelIdToPeer, chatIdToPeer, peerIdToPeer, peerToId } from 'helpers/api';
 import { Peer } from 'mtproto-js';
@@ -24,7 +24,7 @@ function confirmAddBot(botPeer: Peer.peerUser, chatPeer: Peer) {
       main.showPopup(
         'confirmation',
         {
-          body: `Do you want to add «${userToTitle(bot)}» to the group «${chatToTitle(chat)}»?`,
+          body: span(text('Do you want to add '), strong(text(userToTitle(bot))), text(' to the group '), strong(text(chatToTitle(chat))), text('?')),
           title: 'Add bot',
           confirmCallback: () => {
             bots.sendBotStart(bot, chatPeer);

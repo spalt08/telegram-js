@@ -1,5 +1,6 @@
 import { chatCache, messageCache, userCache } from 'cache';
 import client from 'client/client';
+import { div, text } from 'core/html';
 import { channelIdToPeer, userIdToPeer } from 'helpers/api';
 import { Chat, Peer, User } from 'mtproto-js';
 import { BehaviorSubject } from 'rxjs';
@@ -299,7 +300,7 @@ export default class ClickService {
       this.#main.showPopup(
         'confirmation',
         {
-          body: `Open this link?\n\n${local}`,
+          body: div(div(text('Open this link?')), div(text(local))),
           title: 'Open',
           confirmCallback: open,
         },
