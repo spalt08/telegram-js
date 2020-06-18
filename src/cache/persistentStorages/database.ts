@@ -24,7 +24,9 @@ function actualizeSchema(db: IDBDatabase, _oldVersion: number, _newVersion: numb
   //   }
   // }
 
-  db.deleteObjectStore('cache');
+  if (stores.contains('cache')) {
+    db.deleteObjectStore('cache');
+  }
   makeSchema(db);
 }
 
