@@ -43,6 +43,7 @@
     right: 0;
     top: 0;
     bottom: 0;
+    will-change: right;
     transition: right $animation-sidebar;
 
     &.-right-sidebar {
@@ -52,7 +53,9 @@
     &.-right-sidebar &__list {
       transform: translateX(#{'calc(-1 * min(200PX, max(160PX, 12.5vw)))'});
     }
+  }
 
+  @include respond-to(message-wrap) {
     &.-right-sidebar .message__align {
       max-width: #{'min(740PX, 100vw - min(400PX, max(320PX, 25vw)) - min(400PX, max(320PX, 25vw)))'};
     }
