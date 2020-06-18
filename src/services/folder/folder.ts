@@ -1,7 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import { first } from 'rxjs/operators';
 import client from 'client/client';
-import { DialogFilter } from 'mtproto-js';
+import { DialogFilter, DialogFilterSuggested } from 'mtproto-js';
 import { persistentCache } from 'cache';
 import { ARCHIVE_FOLDER_ID, ROOT_FOLDER_ID } from 'const/api';
 import AuthService, { AuthStage } from '../auth';
@@ -12,10 +12,16 @@ import { FilterRecord } from './commonTypes';
 
 export type Filters = ReadonlyMap<number, FilterRecord>;
 
+export type SuggestedFilters = ReadonlyMap<number, DialogFilterSuggested>;
+
 const startLoadDelay = 500;
 
 function loadFilters() {
   return client.call('messages.getDialogFilters', {});
+}
+
+function loadSuggestedFilters() {
+  return client.call('messages.getSuggestedDialogFilters', {});
 }
 
 /**
@@ -26,6 +32,8 @@ function loadFilters() {
 export default class FolderService {
   readonly isLoadingFilters = new BehaviorSubject(false);
 
+  readonly isLoadingSuggestedFilters = new BehaviorSubject(false);
+
   readonly allIndex = makeFolderIndex(ROOT_FOLDER_ID);
 
   readonly archiveIndex = makeFolderIndex(ARCHIVE_FOLDER_ID);
@@ -33,9 +41,13 @@ export default class FolderService {
   /**
    * A.k.a. folders
    *
+   * `undefined` means "not loaded yet".
+   *
    * @ignore Don't write directly, use this.setNewFilters instead
    */
-  readonly filters = new BehaviorSubject<Filters>(new Map());
+  readonly filters = new BehaviorSubject<Filters | undefined>(undefined);
+
+  readonly suggestedFilters = new BehaviorSubject<SuggestedFilters | undefined>(undefined);
 
   #areRealFiltersLoaded = false;
 
@@ -52,9 +64,13 @@ export default class FolderService {
         }
 
         this.filters.subscribe((filters) => {
-          persistentCache.filters = [...filters.values()].map((record) => record.filter);
+          if (filters) {
+            persistentCache.filters = [...filters.values()].map((record) => record.filter);
+          }
         });
       });
+
+    client.call('messages.getSuggestedDialogFilters', {}).then((result) => console.log('Suggested filters', result));
 
     client.updates.on('updateDialogFilters', () => {
       this.loadFilters();
@@ -64,16 +80,18 @@ export default class FolderService {
       const newFilters: DialogFilter[] = [];
       let isUpdatedFilterFound = false;
 
-      this.filters.value.forEach(({ filter }, id) => {
-        if (update.id !== id) {
-          newFilters.push(filter);
-        } else if (update.filter) {
-          newFilters.push(update.filter);
-          isUpdatedFilterFound = true;
-        } else {
-          // Otherwise the filter is removed
-        }
-      });
+      if (this.filters.value) {
+        this.filters.value.forEach(({ filter }, id) => {
+          if (update.id !== id) {
+            newFilters.push(filter);
+          } else if (update.filter) {
+            newFilters.push(update.filter);
+            isUpdatedFilterFound = true;
+          } else {
+            // Otherwise the filter is removed
+          }
+        });
+      }
 
       if (!isUpdatedFilterFound && update.filter) {
         newFilters.push(update.filter);
@@ -85,7 +103,7 @@ export default class FolderService {
     client.updates.on('updateDialogFilterOrder', (update) => {
       const newFilters: DialogFilter[] = [];
       update.order.forEach((id) => {
-        const filter = this.filters.value.get(id)?.filter;
+        const filter = this.filters.value?.get(id)?.filter;
         if (filter) {
           newFilters.push(filter);
         }
@@ -121,13 +139,39 @@ export default class FolderService {
     }
   }
 
+  async loadSuggestedFilters() {
+    if (this.isLoadingSuggestedFilters.value) {
+      this.isLoadingSuggestedFilters.pipe(first((loading) => !loading)).toPromise();
+    }
+
+    try {
+      this.isLoadingSuggestedFilters.next(true);
+
+      const filters = await loadSuggestedFilters();
+      const newSuggestedFilters = new Map<number, DialogFilterSuggested>();
+
+      filters.forEach((suggestion) => {
+        newSuggestedFilters.set(suggestion.filter.id, suggestion);
+      });
+
+      this.suggestedFilters.next(newSuggestedFilters);
+    } catch (error) {
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load suggested filters', error);
+      }
+    } finally {
+      this.isLoadingSuggestedFilters.next(false);
+    }
+  }
+
   private setNewFilters(filters: readonly Readonly<DialogFilter>[]) {
     const oldFilters = this.filters.value;
     const newFilters = new Map<number, FilterRecord>();
 
     filters.forEach((filter) => {
       const { id } = filter;
-      const oldRecord = oldFilters.get(id);
+      const oldRecord = oldFilters?.get(id);
       const index = oldRecord && filter === oldRecord.filter ? oldRecord.index : makeFilterIndex(filter, this.dialogService);
       newFilters.set(id, { filter, index });
     });

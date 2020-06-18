@@ -1,5 +1,5 @@
 import { distinctUntilChanged, filter, map } from 'rxjs/operators';
-import { DialogFilter, InputPeer, User } from 'mtproto-js';
+import { DialogFilter, DialogFilterSuggested, InputPeer, User } from 'mtproto-js';
 import { div, nothing, text } from 'core/html';
 import { folder as folderService } from 'services';
 import { ripple } from 'components/ui';
@@ -162,7 +162,7 @@ function makeFilterDescription(dialogFilter: DialogFilter) {
 
 export function addedFilterPreview(id: number) {
   const filterObservable = folderService.filters.pipe(
-    map((filters) => filters.get(id)?.filter),
+    map((filters) => filters?.get(id)?.filter),
     filter((dialogFilter): dialogFilter is DialogFilter => !!dialogFilter),
     distinctUntilChanged(),
   );
@@ -171,5 +171,20 @@ export function addedFilterPreview(id: number) {
     filterObservable.pipe(map((dialogFilter) => dialogFilter.title)),
     filterObservable.pipe(map(makeFilterDescription)),
     () => console.log('Todo filter settings'),
+  );
+}
+
+export function suggestedFilterPreview(id: number) {
+  const filterObservable = folderService.suggestedFilters.pipe(
+    map((filters) => filters?.get(id)),
+    filter((suggestion): suggestion is DialogFilterSuggested => !!suggestion),
+    distinctUntilChanged(),
+  );
+
+  return filterPreview(
+    filterObservable.pipe(map((suggestion) => suggestion.filter.title)),
+    filterObservable.pipe(map((suggestion) => suggestion.description)),
+    undefined,
+    [{ text: 'Add', onClick: () => console.log('Todo add suggested filter') }],
   );
 }

@@ -27,7 +27,7 @@ const allTab = {
 
 function makeFilterDialogsList(id: number) {
   const indexObservable = folderService.filters.pipe(
-    map((filters) => filters.get(id)?.index),
+    map((filters) => filters?.get(id)?.index),
     distinctUntilChanged(),
   );
   return dialogsList(indexObservable, 'dialogsTabs__tab');
@@ -57,9 +57,9 @@ export default function dialogsTabs({ className }: Props = {}) {
       {
         className: 'dialogsTabs__tabs',
         headerAlign: 'stretch',
-        hideHeader: folderService.filters.pipe(map((filters) => filters.size === 0)),
+        hideHeader: folderService.filters.pipe(map((filters) => !filters || filters.size === 0)),
       },
-      folderService.filters.pipe(map((filters) => filtersToTabs([...filters.values()]))),
+      folderService.filters.pipe(map((filters) => filtersToTabs(filters ? [...filters.values()] : []))),
     ),
   );
 }
