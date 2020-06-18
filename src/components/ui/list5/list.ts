@@ -302,7 +302,7 @@ export class VirtualizedList {
 
     // set initial scroll position
     if (this.shouldFocus && focusIndex > -1) {
-      this.container.scrollTop = this.scrollTop = this.getScrollToValue(this.shouldFocus) - (this.cfg.groupPadding || 0);
+      this.container.scrollTop = this.scrollTop = this.getScrollToValue(this.shouldFocus);
       this.shouldFocus = undefined;
     } else if (this.cfg.pivotBottom) this.container.scrollTop = this.cfg.forcePadding + 9999;
     else this.scrollTop = 0;
@@ -588,9 +588,6 @@ export class VirtualizedList {
       nextVisible.push(nextItem);
     }
 
-    console.log('first', this.firstRendered, '->', nextFirstRendererd);
-    console.log('last', this.lastRendered, '->', nextLastRendered);
-    console.log(this.scrollHeight - this.container.scrollHeight);
     this.container.scrollTop = this.scrollTop -= (this.scrollHeight - this.container.scrollHeight);
 
     this.scrollHeight = this.container.scrollHeight;
@@ -664,10 +661,11 @@ export class VirtualizedList {
     this.viewport = this.container.getBoundingClientRect();
     const rect = this.element(item).getBoundingClientRect();
 
-    this.scrollHeight = Math.round(this.container.scrollHeight - Math.abs(translate));
     this.scrollTop = this.container.scrollTop;
 
-    if (translate < 0) this.scrollHeight += this.cfg.initialPaddingBottom;
+    // this.scrollHeight = Math.round(this.container.scrollHeight - Math.abs(translate));
+    // if (translate < 0) this.scrollHeight += this.cfg.initialPaddingBottom;
+    this.scrollHeight = this.wrapper.getBoundingClientRect().height;
 
     let scrollValue = rect.top - this.viewport.top + this.scrollTop + translate;
 
@@ -709,11 +707,11 @@ export class VirtualizedList {
       if (percentage < 1) {
         requestAnimationFrame(animateScroll);
       } else {
-        elm.classList.remove('-focused');
+        setTimeout(() => elm.classList.remove('-focused'), 250);
         this.scrollTop = this.container.scrollTop;
         this.scrollHeight = this.container.scrollHeight;
-        this.trace();
         this.unlock();
+        this.trace();
 
         if (dy > 0) this.onScrollDown();
         if (dy < 0) this.onScrollUp();
@@ -759,7 +757,7 @@ export class VirtualizedList {
     }
 
     this.container.scrollTop = this.scrollTop = this.getScrollToValue(item, -translate);
-    animationFrameStart().then(() => this.container.scrollTop = this.scrollTop); // chrome fix
+    // animationFrameStart().then(() => this.container.scrollTop = this.scrollTop); // chrome fix
 
     // on animation end
     const finishScroll = () => {
@@ -767,10 +765,9 @@ export class VirtualizedList {
       this.shouldFocusDirection = undefined;
       this.scrollHeight = this.container.scrollHeight;
       this.scrollTop = this.container.scrollTop;
-      this.positions = {};
-      this.trace();
+      setTimeout(() => this.element(item).classList.remove('-focused'), 250);
       this.unlock();
-      this.element(item).classList.remove('-focused');
+      this.trace();
     };
 
     // animate new elements
