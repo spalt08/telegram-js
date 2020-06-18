@@ -43,22 +43,22 @@ export default function dialogsScreen({ onNavigate }: SidebarComponentProps) {
   const buttonMenu = contextMenu({
     className: 'dialogsScreen__button-menu',
     options: [
-      { icon: icons.group, label: 'New Group', onClick: () => onNavigate?.('newGroup') },
-      { icon: icons.user, label: 'Contacts', onClick: () => onNavigate?.('contacts') },
-      { icon: icons.archive, label: 'Archived', badge: archiveBadge, onClick: () => onNavigate?.('archive') },
-      { icon: icons.savedmessages, label: 'Saved', onClick: () => onNavigate?.('contacts') },
-      { icon: icons.settings, label: 'Settings', onClick: () => onNavigate?.('settings') },
-      { icon: icons.folder, label: 'Chat Folders', onClick: () => onNavigate?.('filters') },
-      { icon: icons.help, label: 'Help', onClick: () => onNavigate?.('contacts') },
+      { icon: icons.group, label: 'New Group', onClick: () => onNavigate?.('newGroup', undefined) },
+      { icon: icons.user, label: 'Contacts', onClick: () => onNavigate?.('contacts', undefined) },
+      { icon: icons.archive, label: 'Archived', badge: archiveBadge, onClick: () => onNavigate?.('archive', undefined) },
+      { icon: icons.savedmessages, label: 'Saved', onClick: () => onNavigate?.('contacts', undefined) },
+      { icon: icons.settings, label: 'Settings', onClick: () => onNavigate?.('settings', undefined) },
+      { icon: icons.folder, label: 'Chat Folders', onClick: () => onNavigate?.('filters', undefined) },
+      { icon: icons.help, label: 'Help', onClick: () => onNavigate?.('contacts', undefined) },
     ],
   });
 
   const newMessageMenu = contextMenu({
     className: 'dialogsScreen__new-message-menu',
     options: [
-      { icon: icons.channel, label: 'New Channel', onClick: () => onNavigate?.('newGroup') },
-      { icon: icons.group, label: 'New Group', onClick: () => onNavigate?.('newGroup') },
-      { icon: icons.user, label: 'New Private Chat', onClick: () => onNavigate?.('newGroup') },
+      { icon: icons.channel, label: 'New Channel', onClick: () => onNavigate?.('newGroup', undefined) },
+      { icon: icons.group, label: 'New Group', onClick: () => onNavigate?.('newGroup', undefined) },
+      { icon: icons.user, label: 'New Private Chat', onClick: () => onNavigate?.('newGroup', undefined) },
     ],
   });
 
