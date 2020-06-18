@@ -1,9 +1,9 @@
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, combineLatest } from 'rxjs';
 import { div, text } from 'core/html';
-import { heading, VirtualizedList } from 'components/ui';
+import { heading, VirtualizedList, sectionSpinner } from 'components/ui';
 import * as icons from 'components/icons';
 import { folder as folderService } from 'services';
-import { useObservable } from 'core/hooks';
+import { useObservable, useOnMount } from 'core/hooks';
 import filtersInfo from './filters_info';
 import { addedFilterPreview } from './filter_preview';
 import './filters_screen.scss';
@@ -21,6 +21,10 @@ function renderListItem(item: string) {
 
   if (item === 'recommendedFiltersHeader') {
     return div`.filtersScreen__header`(text('Recommended folders'));
+  }
+
+  if (item === 'loading') {
+    return div`.filtersScreen__loading`(sectionSpinner());
   }
 
   if (item.startsWith('filter_')) {
@@ -53,12 +57,23 @@ export default function filtersScreen({ onBack }: SidebarComponentProps) {
     )
   );
 
-  useObservable(element, folderService.filters, true, (filters) => {
+  useOnMount(element, () => {
+    folderService.loadFiltersIfRequired();
+  });
+
+  const dataObservable = combineLatest([
+    folderService.filters,
+    folderService.isLoadingFilters,
+  ]);
+
+  useObservable(element, dataObservable, true, ([filters, isLoadingFilters]) => {
     const items = ['info'];
 
     if (filters.size > 0) {
       items.push('filtersHeader');
       filters.forEach((filter, filterId) => items.push(`filter_${filterId}`));
+    } else if (isLoadingFilters) {
+      items.push('loading');
     }
 
     listItems.next(items);

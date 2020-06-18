@@ -24,7 +24,7 @@ function loadFilters() {
  * @link https://core.telegram.org/api/folders
  */
 export default class FolderService {
-  readonly isLoading = new BehaviorSubject(false);
+  readonly isLoadingFilters = new BehaviorSubject(false);
 
   readonly allIndex = makeFolderIndex(ROOT_FOLDER_ID);
 
@@ -42,7 +42,7 @@ export default class FolderService {
   constructor(authService: AuthService, private dialogService: DialogsService) {
     authService.state
       .pipe(first((state) => state === AuthStage.Authorized))
-      .subscribe(() => setTimeout(() => this.load(), startLoadDelay));
+      .subscribe(() => setTimeout(() => this.loadFilters(), startLoadDelay));
 
     persistentCache.isRestored
       .pipe(first((restored) => restored))
@@ -57,7 +57,7 @@ export default class FolderService {
       });
 
     client.updates.on('updateDialogFilters', () => {
-      this.load();
+      this.loadFilters();
     });
 
     client.updates.on('updateDialogFilter', (update) => {
@@ -94,13 +94,13 @@ export default class FolderService {
     });
   }
 
-  async load() {
-    if (this.isLoading.value) {
-      this.isLoading.pipe(first((loading) => !loading)).toPromise();
+  async loadFilters() {
+    if (this.isLoadingFilters.value) {
+      this.isLoadingFilters.pipe(first((loading) => !loading)).toPromise();
     }
 
     try {
-      this.isLoading.next(true);
+      this.isLoadingFilters.next(true);
 
       const filters = await loadFilters();
       this.#areRealFiltersLoaded = true;
@@ -111,7 +111,13 @@ export default class FolderService {
         console.error('Failed to load filters', error);
       }
     } finally {
-      this.isLoading.next(false);
+      this.isLoadingFilters.next(false);
+    }
+  }
+
+  async loadFiltersIfRequired() {
+    if (!this.#areRealFiltersLoaded) {
+      await this.loadFilters();
     }
   }
 

@@ -26,13 +26,15 @@ export default function filtersInfo() {
     }
   });
 
+  const handleAddClick = () => console.log('Todo add filter');
+
   return (
     div`.filtersInfo`(
       image,
       div`.filtersInfo__text`(
         text('Create folders for different groups of chats and quickly switch between them.'),
       ),
-      ripple({ tag: 'button', className: 'filtersInfo__add', contentClass: 'filtersInfo__add_content' }, [
+      ripple({ tag: 'button', className: 'filtersInfo__add', contentClass: 'filtersInfo__add_content', onClick: handleAddClick }, [
         icons.add({ class: 'filtersInfo__add_icon' }),
         text('Create Folder'),
       ]),
