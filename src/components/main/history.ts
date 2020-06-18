@@ -149,7 +149,7 @@ export default function history({ onBackToContacts }: Props) {
     pivotBottom: true,
     threshold: 2,
     batch: 20, // navigator.userAgent.indexOf('Safari') > -1 ? 5 : 20,
-    initialPaddingBottom: 10,
+    initialPaddingBottom: 0,
     forcePadding: isiOS ? 100000 : 0,
     renderer: (id: string) => message(id, messageSiblingsMap.get(id)!, id === lastUnreadMessage),
     selectGroup: (id: string) => messageDayMap.get(id) || '0',
