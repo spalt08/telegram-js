@@ -1,7 +1,9 @@
+import { BehaviorSubject } from 'rxjs';
 import { listen, mount, unmount } from 'core/dom';
 import { useInterface } from 'core/hooks';
 import { div } from 'core/html';
 import { main } from 'services';
+import { MaybeObservableValue } from 'core/types';
 import addBotToGroup from './add_bot_to_group/add_bot_to_group';
 import archive from './archived_dialogs/archived_dialogs';
 import contacts from './contacts_list/contacts_list';
@@ -34,15 +36,17 @@ const elements = {
 
 type SidebarRendererMap = typeof elements;
 export type SidebarState = keyof SidebarRendererMap;
+export type SidebarContext<TState extends SidebarState> = MaybeObservableValue<Parameters<SidebarRendererMap[TState]>[1]>;
+export type SidebarStateAndCtx = { [K in SidebarState]: { state: K, ctx: SidebarContext<K> } }[SidebarState];
 
 type Props = {
-  initial?: SidebarState,
+  initial?: SidebarStateAndCtx,
   className?: string,
   onTransitionStart?: (opening: boolean) => void,
 };
 
 export type SidebarComponentProps = {
-  onNavigate?: (state: SidebarState) => void;
+  onNavigate?: <K extends SidebarState>(state: K, ctx: SidebarContext<K>) => void;
   onBack?: () => void;
 };
 
@@ -52,6 +56,19 @@ export type SidebarComponentProps = {
 export default function sidebar({ initial, className, onTransitionStart }: Props) {
   const container = div`.sidebar${className}`();
   const wrappersMap = new Map<SidebarState, HTMLElement>();
+  const contextSubjects = new Map<SidebarState, BehaviorSubject<any>>();
+
+  const getContext = <K extends SidebarState>(state: K) => contextSubjects.get(state) as BehaviorSubject<SidebarContext<K>> | undefined;
+
+  const setContext = <K extends SidebarState>(state: K, ctx: SidebarContext<K>) => {
+    let contextSubject = contextSubjects.get(state);
+    if (!contextSubject) {
+      contextSubject = new BehaviorSubject(ctx);
+      contextSubjects.set(state, contextSubject);
+    } else {
+      contextSubject.next(ctx);
+    }
+  };
 
   const popState = () => {
     // just close sidebar
@@ -67,25 +84,29 @@ export default function sidebar({ initial, className, onTransitionStart }: Props
     if (element) {
       container.classList.add('-popping-state');
 
-      element.ontransitionend = () => {
-        container.classList.remove('-popping-state');
-        if (element) {
-          unmount(element);
+      element.ontransitionend = (event) => {
+        if (event.target === event.currentTarget) {
+          container.classList.remove('-popping-state');
+          if (element) {
+            unmount(element);
+          }
         }
       };
     }
   };
 
-  const pushState = (state: SidebarState) => {
+  const pushState = <K extends SidebarState>(state: K, ctx: SidebarContext<K>) => {
+    setContext(state, ctx);
+
     let element = wrappersMap.get(state);
     if (!element) {
       element = wrapper(
-        elements[state](
+        (elements[state])(
           {
             onNavigate: pushState,
             onBack: popState,
           },
-          main.getSidebarCtx(state)),
+          getContext(state)! as any), // TypeScript will give a combinatorial explosion if you remove `as any`
       );
       wrappersMap.set(state, element);
     }
@@ -104,14 +125,16 @@ export default function sidebar({ initial, className, onTransitionStart }: Props
   };
 
   // unmount after closing
-  listen(container, 'transitionend', () => {
-    if (container.classList.contains('-hidden')) {
-      const element = container.children[container.childElementCount - 1];
-      if (element) unmount(element);
+  listen(container, 'transitionend', (event) => {
+    if (event.target === event.currentTarget) {
+      if (container.classList.contains('-hidden')) {
+        const element = container.children[container.childElementCount - 1];
+        if (element) unmount(element);
+      }
     }
   });
 
-  if (initial) pushState(initial);
+  if (initial) pushState(initial.state, initial.ctx);
 
   return useInterface(container, { pushState, popState, close });
 }

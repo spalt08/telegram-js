@@ -30,6 +30,10 @@ function makeMainHistoryChunk(peer: Peer, messageId: number) {
   );
 }
 
+function isChunkLoaded(history: MessageHistoryChunk) {
+  return history.ids.length >= 3 || !(history.loadingNewer || history.loadingOlder);
+}
+
 /**
  * Singleton service class for handling messages stuff
  */
@@ -149,11 +153,15 @@ export default class MessagesService {
             }
             const nextChunk = makeMainHistoryChunk(peer, messageId!);
             this.nextChunk = nextChunk;
-            this.loadingNextChunk.next(true);
 
-            // Wait until the next chunk is loaded to make it the be the current chunk
+            // The condition can be removed (leaving the body). It's used to prevent a 1 frame loader on switching to a loaded chunk.
+            if (!isChunkLoaded(nextChunk.history.value)) {
+              this.loadingNextChunk.next(true);
+            }
+
+            // Wait until the next chunk is loaded to make it be the current chunk
             nextChunk.history
-              .pipe(first(({ ids, loadingNewer, loadingOlder }) => (ids.length >= 3 || !(loadingNewer || loadingOlder))))
+              .pipe(first(isChunkLoaded))
               .subscribe(() => {
                 if (nextChunk !== this.nextChunk) {
                   if (process.env.NODE_ENV !== 'production') {

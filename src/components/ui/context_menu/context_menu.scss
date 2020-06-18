@@ -34,6 +34,10 @@
     &:hover {
       background-color: #f2f3f4;
     }
+
+    &.-danger {
+      color: #df3f40;
+    }
   }
 
   &__icon {
@@ -45,12 +49,11 @@
     height: 100%;
 
     & path {
-      fill: #818689;
+      fill: currentColor;
     }
   }
 
   &__label {
-    color: #141515;
     font-weight: 400;
     -webkit-font-smoothing: subpixel-antialiased;
   }

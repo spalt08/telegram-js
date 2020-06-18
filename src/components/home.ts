@@ -2,7 +2,7 @@
 import { withContextMenu } from 'components/global_context_menu';
 import sidebar from 'components/sidebar/sidebar';
 import { listen } from 'core/dom';
-import { getInterface, useObservable, useOnMount } from 'core/hooks';
+import { getInterface, useObservable } from 'core/hooks';
 import { div } from 'core/html';
 import { BehaviorSubject } from 'rxjs';
 import { main, message } from 'services';
@@ -21,7 +21,7 @@ export default function home() {
   const historyEl = history({
     onBackToContacts: () => isChatOpened.next(false),
   });
-  const leftSidebar = sidebar({ initial: 'dialogs', className: '-left' });
+  const leftSidebar = sidebar({ initial: { state: 'dialogs', ctx: undefined }, className: '-left' });
   const rightSidebar = sidebar({
     className: '-right -hidden',
     onTransitionStart: (opened) => {
@@ -42,10 +42,10 @@ export default function home() {
     rightSidebarFade,
   );
 
-  useObservable(container, main.rightSidebarDelegate, false, (state) => {
+  useObservable(container, main.rightSidebarDelegate, false, (stateAndCtx) => {
     const sidebarInterface = getInterface(rightSidebar);
     historyEl.classList.toggle('-right-sidebar', !!state);
-    if (state) sidebarInterface.pushState(state);
+    if (stateAndCtx) sidebarInterface.pushState(stateAndCtx.state, stateAndCtx.ctx);
     else sidebarInterface.close();
   });
 

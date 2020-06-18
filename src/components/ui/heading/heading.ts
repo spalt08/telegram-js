@@ -1,4 +1,5 @@
 import { div, h3, text } from 'core/html';
+import { MaybeObservable } from 'core/types';
 import roundButton from '../round_button/round_button';
 import './heading.scss';
 
@@ -9,7 +10,7 @@ type HeadingIcon = {
 };
 
 type Props = {
-  title: string,
+  title: MaybeObservable<string>,
   element?: HTMLElement,
   buttons: HeadingIcon[],
   className?: string,

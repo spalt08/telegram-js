@@ -4,6 +4,8 @@ import { Document, InputStickerSet, Message, Peer, Photo } from 'mtproto-js';
 import { BehaviorSubject } from 'rxjs';
 
 type SidebarState = import('components/sidebar/sidebar').SidebarState;
+type SidebarContext<T> = import('components/sidebar/sidebar').SidebarContext<T>;
+type SidebarStateAndCtx = import('components/sidebar/sidebar').SidebarStateAndCtx;
 
 /**
  * Singleton service class for handling main thread
@@ -22,9 +24,7 @@ export default class MainService {
   window = { width: 0, height: 0 };
 
   /** Right Sidebar Delegate */
-  rightSidebarDelegate = new BehaviorSubject<SidebarState | undefined>(undefined);
-
-  #rightSidebarContexts = new Map<string, BehaviorSubject<any>>();
+  rightSidebarDelegate = new BehaviorSubject<SidebarStateAndCtx | undefined>(undefined);
 
   constructor() {
     this.window = {
@@ -60,27 +60,11 @@ export default class MainService {
     this.popup.next('');
   };
 
-  openSidebar(state: 'searchStickers' | 'searchGifs'): void;
-  openSidebar(state: 'sharedMedia' | 'info', ctx: Peer): void;
-  openSidebar(state: 'messageSearch', ctx: { peer: Peer, query?: string }): void;
-  openSidebar(state: 'pollResults', ctx: { peer: Peer, messageId: number }): void;
-  openSidebar(state: 'addBotToGroup', ctx: Peer): void;
-  openSidebar(state: SidebarState, ctx?: any): void {
-    let contextSubject = this.#rightSidebarContexts.get(state);
-    if (!contextSubject) {
-      contextSubject = new BehaviorSubject(ctx);
-      this.#rightSidebarContexts.set(state, contextSubject);
-    } else {
-      contextSubject.next(ctx);
-    }
-    this.rightSidebarDelegate.next(state);
+  openSidebar<K extends SidebarState>(state: K, ctx: SidebarContext<K>): void {
+    this.rightSidebarDelegate.next({ state, ctx } as any);
   }
 
   closeSidebar() {
     this.rightSidebarDelegate.next(undefined);
-  }
-
-  getSidebarCtx(state: SidebarState) {
-    return this.#rightSidebarContexts.get(state)!;
   }
 }

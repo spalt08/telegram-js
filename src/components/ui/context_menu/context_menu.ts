@@ -12,6 +12,7 @@ export type ContextMenuBadge = {
 export type ContextMenuOption = {
   icon: (props?: any) => Node,
   label: string,
+  type?: 'danger',
   badge?: MaybeObservable<ContextMenuBadge | undefined>,
   onClick: () => void,
 };
@@ -23,11 +24,15 @@ type Props = {
   options: ContextMenuOption[],
 };
 
-function contextMenuOption({ icon, label, badge, onClick }: ContextMenuOption) {
+function contextMenuOption({ icon, label, type, badge, onClick }: ContextMenuOption) {
   const element = div`.contextMenu__item`({ onClick },
     div`.contextMenu__icon`(icon()),
     div`.contextMenu__label`(text(label)),
   );
+
+  if (type) {
+    element.classList.add(`-${type}`);
+  }
 
   let badgeEl: HTMLElement | undefined;
 
