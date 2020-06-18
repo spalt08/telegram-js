@@ -44,6 +44,7 @@ export default function home() {
 
   useObservable(container, main.rightSidebarDelegate, false, (state) => {
     const sidebarInterface = getInterface(rightSidebar);
+    historyEl.classList.toggle('-right-sidebar', !!state);
     if (state) sidebarInterface.pushState(state);
     else sidebarInterface.close();
   });
