@@ -196,7 +196,13 @@ $messageBubblePadding: 7PX $messageSidePadding;
 }
 
 .bubble-media-last,
-.bubble-media-first-last,
+.bubble-media-first-last {
+  & > .bubble__content > .message__photo:last-child,
+  & > .bubble__content > .message__photo-out:last-child {
+    margin-left: -9px;
+  }
+}
+
 .bubble-media-out-last,
 .bubble-media-out-first-last {
   & > .bubble__content > .message__photo:last-child,
