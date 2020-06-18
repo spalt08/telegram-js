@@ -168,41 +168,29 @@ export default class FolderService {
         // Just in case, duplicates are ok and the latest of a duplicate will stay
         order: [...(this.filters.value?.keys() ?? []), filterWithId.id],
       }));
+
     this.pushNewFilterLocally(filterWithId);
   }
 
   changeFilter(filter: DialogFilter) {
     /* no await */client.call('messages.updateDialogFilter', { id: filter.id, filter });
 
-    if (this.filters.value) {
-      const newFilters: DialogFilter[] = [];
-      this.filters.value.forEach((record) => newFilters.push(record.filter.id === filter.id ? filter : record.filter));
-      this.setNewFiltersLocally(newFilters);
-    }
+    this.changeFilterLocally(filter);
   }
 
   removeFilter(filterId: number) {
     /* no await */client.call('messages.updateDialogFilter', { id: filterId })
       .then(() => this.loadSuggestedFilters());
 
-    if (this.filters.value) {
-      const newFilters: DialogFilter[] = [];
-      this.filters.value.forEach((record) => {
-        if (record.filter.id !== filterId) {
-          newFilters.push(record.filter);
-        }
-      });
-      this.setNewFiltersLocally(newFilters);
-    }
+    this.removeFilterLocally(filterId);
   }
 
   addSuggesterFilter(filterId: number) {
     const filter = this.suggestedFilters.value?.get(filterId)?.filter;
-    if (!filter) {
-      return;
+    if (filter) {
+      this.createFilter(filter);
+      this.removeSuggestedFilterLocally(filterId);
     }
-    this.createFilter(filter);
-    this.removeSuggestedFilterLocally(filterId);
   }
 
   private setNewFiltersLocally(filters: readonly Readonly<DialogFilter>[]) {
@@ -225,6 +213,26 @@ export default class FolderService {
     this.filters.value?.forEach((record) => newFilters.push(record.filter));
     newFilters.push(filter);
     this.setNewFiltersLocally(newFilters);
+  }
+
+  private changeFilterLocally(filter: Readonly<DialogFilter>) {
+    if (this.filters.value) {
+      const newFilters: DialogFilter[] = [];
+      this.filters.value.forEach((record) => newFilters.push(record.filter.id === filter.id ? filter : record.filter));
+      this.setNewFiltersLocally(newFilters);
+    }
+  }
+
+  private removeFilterLocally(filterId: number) {
+    if (this.filters.value) {
+      const newFilters: DialogFilter[] = [];
+      this.filters.value.forEach((record) => {
+        if (record.filter.id !== filterId) {
+          newFilters.push(record.filter);
+        }
+      });
+      this.setNewFiltersLocally(newFilters);
+    }
   }
 
   private removeSuggestedFilterLocally(filterId: number) {
