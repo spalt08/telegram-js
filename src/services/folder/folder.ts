@@ -16,14 +16,6 @@ export type SuggestedFilters = ReadonlyMap<number, DialogFilterSuggested>;
 
 const startLoadDelay = 500;
 
-function loadFilters() {
-  return client.call('messages.getDialogFilters', {});
-}
-
-function loadSuggestedFilters() {
-  return client.call('messages.getSuggestedDialogFilters', {});
-}
-
 /**
  * Watches dialog folders and filters
  *
@@ -43,7 +35,7 @@ export default class FolderService {
    *
    * `undefined` means "not loaded yet".
    *
-   * @ignore Don't write directly, use this.setNewFilters instead
+   * @ignore Don't write directly, use this.setNewFiltersLocally instead
    */
   readonly filters = new BehaviorSubject<Filters | undefined>(undefined);
 
@@ -60,7 +52,7 @@ export default class FolderService {
       .pipe(first((restored) => restored))
       .subscribe(() => {
         if (!this.#areRealFiltersLoaded && persistentCache.filters) {
-          this.setNewFilters(persistentCache.filters);
+          this.setNewFiltersLocally(persistentCache.filters);
         }
 
         this.filters.subscribe((filters) => {
@@ -69,8 +61,6 @@ export default class FolderService {
           }
         });
       });
-
-    client.call('messages.getSuggestedDialogFilters', {}).then((result) => console.log('Suggested filters', result));
 
     client.updates.on('updateDialogFilters', () => {
       this.loadFilters();
@@ -97,7 +87,7 @@ export default class FolderService {
         newFilters.push(update.filter);
       }
 
-      this.setNewFilters(newFilters);
+      this.setNewFiltersLocally(newFilters);
     });
 
     client.updates.on('updateDialogFilterOrder', (update) => {
@@ -108,7 +98,7 @@ export default class FolderService {
           newFilters.push(filter);
         }
       });
-      this.setNewFilters(newFilters);
+      this.setNewFiltersLocally(newFilters);
     });
   }
 
@@ -120,9 +110,9 @@ export default class FolderService {
     try {
       this.isLoadingFilters.next(true);
 
-      const filters = await loadFilters();
+      const filters = await client.call('messages.getDialogFilters', {});
       this.#areRealFiltersLoaded = true;
-      this.setNewFilters(filters);
+      this.setNewFiltersLocally(filters);
     } catch (error) {
       if (process.env.NODE_ENV !== 'production') {
         // eslint-disable-next-line no-console
@@ -147,7 +137,7 @@ export default class FolderService {
     try {
       this.isLoadingSuggestedFilters.next(true);
 
-      const filters = await loadSuggestedFilters();
+      const filters = await client.call('messages.getSuggestedDialogFilters', {});
       const newSuggestedFilters = new Map<number, DialogFilterSuggested>();
 
       filters.forEach((suggestion) => {
@@ -165,7 +155,19 @@ export default class FolderService {
     }
   }
 
-  private setNewFilters(filters: readonly Readonly<DialogFilter>[]) {
+  addSuggesterFilter(filterId: number) {
+    const filter = this.suggestedFilters.value?.get(filterId)?.filter;
+    if (!filter) {
+      return;
+    }
+    /* no await */client.call('messages.updateDialogFilter', { id: this.getIdForNewFilter(), filter });
+
+    // The server doesn't send updates in this case
+    this.unshiftNewFilterLocally(filter);
+    this.removeSuggestedFilterLocally(filterId);
+  }
+
+  private setNewFiltersLocally(filters: readonly Readonly<DialogFilter>[]) {
     const oldFilters = this.filters.value;
     const newFilters = new Map<number, FilterRecord>();
 
@@ -177,5 +179,39 @@ export default class FolderService {
     });
 
     this.filters.next(newFilters);
+  }
+
+  private unshiftNewFilterLocally(filter: Readonly<DialogFilter>) {
+    // Server puts the new filter to the top by default
+    const newFilters: DialogFilter[] = [filter];
+    // eslint-disable-next-line no-unused-expressions
+    this.filters.value?.forEach((record) => newFilters.push(record.filter));
+    this.setNewFiltersLocally(newFilters);
+  }
+
+  private removeSuggestedFilterLocally(filterId: number) {
+    const newSuggestedFilters = new Map<number, DialogFilterSuggested>();
+    // eslint-disable-next-line no-unused-expressions
+    this.suggestedFilters.value?.forEach((suggestion, id) => {
+      if (id !== filterId) {
+        newSuggestedFilters.set(id, suggestion);
+      }
+    });
+    this.suggestedFilters.next(newSuggestedFilters);
+  }
+
+  private getIdForNewFilter() {
+    // eslint-disable-next-line max-len
+    // Taken from https://github.com/TelegramMessenger/Telegram-iOS/blob/619fe5902784555b6947554119185f27c0742eeb/submodules/TelegramCore/Sources/ChatListFiltering.swift#L780
+
+    const filters = this.filters.value ? [...this.filters.value.values()] : [];
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const id = 2 + Math.random() * (255 - 2) | 0;
+      if (!filters.find(({ filter }) => filter.id === id)) {
+        return id;
+      }
+    }
   }
 }

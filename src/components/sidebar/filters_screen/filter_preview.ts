@@ -185,6 +185,6 @@ export function suggestedFilterPreview(id: number) {
     filterObservable.pipe(map((suggestion) => suggestion.filter.title)),
     filterObservable.pipe(map((suggestion) => suggestion.description)),
     undefined,
-    [{ text: 'Add', onClick: () => console.log('Todo add suggested filter') }],
+    [{ text: 'Add', onClick: () => folderService.addSuggesterFilter(id) }],
   );
 }
