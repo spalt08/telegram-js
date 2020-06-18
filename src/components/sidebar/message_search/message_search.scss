@@ -1,3 +1,5 @@
+@import '~styles/variables.scss';
+
 .messagesSearch {
   height: 100%;
   display: flex;
@@ -9,6 +11,10 @@
     display: flex;
     align-items: center;
     padding: 0 20px;
+
+    @include respond-to(small) {
+      padding: 0 9px;
+    }
   }
 
   &__close {

@@ -20,6 +20,11 @@
     padding: 0 $content-padding;
     position: relative;
 
+    @include respond-to(small) {
+      border-radius: 0;
+      padding: 9PX;
+    }
+
     &_button {
       flex: none;
       margin: 0 12px 0 -8px;

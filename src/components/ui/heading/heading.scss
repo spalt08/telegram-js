@@ -9,6 +9,10 @@
   padding: 0 0 0 12px;
   flex-shrink: 0;
 
+  @include respond-to(small) {
+    padding-left: 8px;
+  }
+
   & h3 {
     flex: 1 50%;
     margin: 0;
@@ -20,6 +24,10 @@
   &__icon-left {
     margin-right: 20px;
     flex-shrink: 0;
+
+    @include respond-to(small) {
+      margin-right: 8px;
+    }
   }
 
   &__icon-right {

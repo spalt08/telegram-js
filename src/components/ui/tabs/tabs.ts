@@ -1,7 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { div } from 'core/html';
-import { listenOnce, unmount, mount, animationFrameStart } from 'core/dom';
+import { listenOnce, unmount, mount, animationFrameStart, listen } from 'core/dom';
 import { useInterface, getInterface, useMaybeObservable } from 'core/hooks';
 import { MaybeObservable } from 'core/types';
 import simpleList from '../simple_list';
@@ -91,6 +91,14 @@ export default function tabsPanel({ className = '', headerAlign = 'center', hide
 
     mount(contentEl, appearingEl);
   };
+
+  if (headerAlign === 'stretch') {
+    listen(tabsHeader, 'wheel', (event: WheelEvent) => {
+      const delta = Math.abs(event.deltaY) > Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
+      tabsHeader.scrollLeft = Math.min(tabsHeader.scrollWidth - tabsHeader.offsetWidth, Math.max(0, tabsHeader.scrollLeft + delta));
+      event.preventDefault();
+    });
+  }
 
   useMaybeObservable(container, hideHeader, true, (isHidden) => {
     if (isHidden && tabsHeader.parentNode) {

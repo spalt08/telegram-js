@@ -30,7 +30,13 @@ $messageBubblePadding: 7PX $messageSidePadding;
 .message-chat {
   @include messageDefault();  
 
-  & >.message__align { padding-left: $content-message-padding + 28px; }
+  & >.message__align {
+    padding-left: $content-message-padding + 28px;
+
+    @include respond-to(small) {
+      padding-left: 32px;
+    }
+  }
 }
 
 .message-chat-last {
@@ -39,6 +45,10 @@ $messageBubblePadding: 7PX $messageSidePadding;
   & > .message__align {
     padding-left: $content-message-padding;
     padding-bottom: 4px;
+
+    @include respond-to(small) {
+      padding-left: 4px;
+    }
   }
 }
 
@@ -64,6 +74,10 @@ $messageBubblePadding: 7PX $messageSidePadding;
     margin-bottom: 3PX;
     font-size: 13PX;
     cursor: pointer;
+  }
+
+  @include respond-to(small) {
+    padding: 0 4px;
   }
 }
 
