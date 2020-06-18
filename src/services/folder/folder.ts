@@ -10,8 +10,8 @@ import makeFolderIndex from './folderIndex';
 import makeFilterIndex from './filterIndex';
 import { FilterRecord } from './commonTypes';
 
+// A key is a filter id
 export type Filters = ReadonlyMap<number, FilterRecord>;
-
 export type SuggestedFilters = ReadonlyMap<number, DialogFilterSuggested>;
 
 const startLoadDelay = 500;
@@ -204,12 +204,12 @@ export default class FolderService {
     // eslint-disable-next-line max-len
     // Taken from https://github.com/TelegramMessenger/Telegram-iOS/blob/619fe5902784555b6947554119185f27c0742eeb/submodules/TelegramCore/Sources/ChatListFiltering.swift#L780
 
-    const filters = this.filters.value ? [...this.filters.value.values()] : [];
+    const filters = this.filters.value;
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
       const id = 2 + Math.random() * (255 - 2) | 0;
-      if (!filters.find(({ filter }) => filter.id === id)) {
+      if (!filters?.has(id)) {
         return id;
       }
     }

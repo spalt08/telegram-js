@@ -9,6 +9,7 @@ export default function filtersInfo() {
   const image = tgs({
     className: 'filtersInfo__image -hidden',
     src: foldersSticker,
+    loop: false,
 
     // When the sticker is loaded during the screen appear animation, a freeze happens.
     // The play start is delayed to avoid the animation freeze.
