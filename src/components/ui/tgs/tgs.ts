@@ -142,9 +142,7 @@ export default function tgs({ src, className, autoplay = true, loop = false, pla
     play() {
       // console.log('playi');
       shouldPlay = true;
-      if (isVisible && animation) {
-        animation.play();
-      }
+      playAnimation();
     },
     pause() {
       shouldPlay = false;
