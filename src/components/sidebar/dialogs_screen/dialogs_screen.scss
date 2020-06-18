@@ -22,12 +22,16 @@
 
     @include respond-to(small) {
       border-radius: 0;
-      padding: 9PX;
+      padding: 0 12px;
     }
 
     &_button {
       flex: none;
       margin: 0 12px 0 -8px;
+
+      @include respond-to(small) {
+        margin-left: 0px;
+      }
     }
 
     &_search {
