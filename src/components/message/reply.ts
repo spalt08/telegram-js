@@ -23,7 +23,7 @@ export default function messageReply(id: number, original: Message.message) {
   const renderReply = (message: Message | undefined) => {
     if (replyQuote) return;
 
-    if (message && message._ !== 'messageEmpty') {
+    if (message && message._ !== 'messageEmpty' && message.from_id) {
       replyQuote = messageQuote(message);
       getInterface(contentElement).mountChild(replyQuote);
     }
