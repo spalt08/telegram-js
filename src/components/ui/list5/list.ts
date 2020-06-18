@@ -368,6 +368,7 @@ export class VirtualizedList {
         this.wrapper.style.paddingTop = `${this.paddingTop = Math.max(0, this.paddingTop - appendedHeight)}px`;
 
         if (newElementsHeight > 0) {
+          console.log('added new', newElementsHeight);
           // ios safari workaround
           if (isiOS) {
             this.wrapper.style.paddingTop = `${this.paddingTop += this.cfg.forcePadding}px`;
@@ -588,7 +589,8 @@ export class VirtualizedList {
       nextVisible.push(nextItem);
     }
 
-    this.container.scrollTop = this.scrollTop -= (this.scrollHeight - this.container.scrollHeight);
+    if (this.cfg.pivotBottom) this.container.scrollTop = this.scrollTop -= (this.scrollHeight - this.container.scrollHeight);
+    else this.container.scrollTop = this.scrollTop;
 
     this.scrollHeight = this.container.scrollHeight;
 

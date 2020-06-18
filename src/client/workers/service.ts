@@ -232,7 +232,7 @@ ctx.addEventListener('fetch', (event: FetchEvent): void => {
               if (cached) return cached;
 
               return Promise.race([
-                timeout(59 * 1000), // safari fix
+                timeout(45 * 1000), // safari fix
                 new Promise<Response>((resolve) => {
                   fetchRequest(url, resolve, getFilePartRequest, ctx.cache, fileProgress);
                 }),
