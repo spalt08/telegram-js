@@ -35,7 +35,8 @@ function buildRecentVoter(userId: number) {
 
 export default function poll(peer: Peer, message: Message.message, info: HTMLElement) {
   if (message.media?._ !== 'messageMediaPoll') {
-    throw new Error('message media must be of type "messageMediaPoll"');
+    // Message media must be of type "messageMediaPoll"
+    return div();
   }
   const resultsSubject = new BehaviorSubject<PollResults>(message.media.results);
   const { media } = message;
