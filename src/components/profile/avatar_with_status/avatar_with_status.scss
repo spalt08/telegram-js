@@ -19,6 +19,7 @@
     bottom: 1px;
     transform: scale(0);
     transform-origin: center;
+    will-change: transform;
     transition: transform 0.2s ease-in-out;
 
     &.-online {
