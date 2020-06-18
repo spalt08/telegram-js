@@ -155,15 +155,23 @@ export default class FolderService {
     }
   }
 
+  saveFilter(id: number | undefined, filter: DialogFilter) {
+    const filterId = id ?? this.getIdForNewFilter();
+
+    /* no await */client.call('messages.updateDialogFilter', { id: filterId, filter })
+      // Server puts the new filter to the start by default so we need to move it to the end explicitly
+      .then(() => client.call('messages.updateDialogFiltersOrder', {
+        order: [...(this.filters.value?.keys() ?? []), filterId], // Just in case, duplicates are ok and the latest of a duplicate will stay
+      }));
+    this.pushNewFilterLocally(filter);
+  }
+
   addSuggesterFilter(filterId: number) {
     const filter = this.suggestedFilters.value?.get(filterId)?.filter;
     if (!filter) {
       return;
     }
-    /* no await */client.call('messages.updateDialogFilter', { id: this.getIdForNewFilter(), filter });
-
-    // The server doesn't send updates in this case
-    this.unshiftNewFilterLocally(filter);
+    this.saveFilter(undefined, filter);
     this.removeSuggestedFilterLocally(filterId);
   }
 
@@ -181,11 +189,11 @@ export default class FolderService {
     this.filters.next(newFilters);
   }
 
-  private unshiftNewFilterLocally(filter: Readonly<DialogFilter>) {
-    // Server puts the new filter to the top by default
-    const newFilters: DialogFilter[] = [filter];
+  private pushNewFilterLocally(filter: Readonly<DialogFilter>) {
+    const newFilters: DialogFilter[] = [];
     // eslint-disable-next-line no-unused-expressions
     this.filters.value?.forEach((record) => newFilters.push(record.filter));
+    newFilters.push(filter);
     this.setNewFiltersLocally(newFilters);
   }
 
