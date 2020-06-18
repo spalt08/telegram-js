@@ -136,7 +136,7 @@ export default function dialogPreview(id: string, pinned: Observable<boolean> = 
     clickable.classList.toggle('-selected', selected);
   });
 
-  listen(clickable, 'mousedown', () => message.selectPeer(peer));
+  listen(clickable, 'mousedown', () => message.selectPeer(peer, 'auto'));
 
   return container;
 }

@@ -231,13 +231,14 @@ export default function history({ onBackToContacts }: Props) {
   });
 
   // Makes the list stick to bottom when it shows the newest messages
-  useObservable(container, service.history, true, ({ newestReached }) => {
+  useObservable(container, service.history, true, ({ newestReached, oldestReached, ids }) => {
     scroll.cfg.pivotBottom = newestReached ? true : undefined;
-  });
+    scroll.cfg.topReached = oldestReached;
 
-  useObservable(container, service.history, true, (data) => {
-    scroll.cfg.topReached = data.oldestReached;
-    itemsSubject.next(service.activePeer.value ? prepareIdsList(service.activePeer.value, data.ids) : []);
+    const nextIds = service.activePeer.value ? prepareIdsList(service.activePeer.value, ids) : [];
+    if (lastUnreadMessage && scroll.items.length === 0) scroll.shouldFocus = lastUnreadMessage;
+
+    itemsSubject.next(nextIds);
   });
 
   return container;
