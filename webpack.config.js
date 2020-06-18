@@ -13,7 +13,6 @@ const ServiceWorkerWebpackPlugin = require('serviceworker-webpack-plugin');
 
 const sourceDirectory = 'src';
 const destinationDirectory = 'dist';
-const publicPath = './';
 
 module.exports = (env, argv) => {
   const { analyze, mode = 'development' } = argv;
@@ -136,14 +135,13 @@ module.exports = (env, argv) => {
       contentBase: `./${destinationDirectory}`,
       port: 3000,
       host: '0.0.0.0',
-      publicPath,
+      publicPath: '/',
     },
 
     plugins: [
       new ServiceWorkerWebpackPlugin({
         entry: path.join(__dirname, 'src/client/workers/service.ts'),
         filename: 'sw.js',
-        publicPath,
         excludes: ['**/*'],
       }),
       new CleanWebpackPlugin(),
