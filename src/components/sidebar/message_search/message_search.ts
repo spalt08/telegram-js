@@ -1,6 +1,6 @@
 import * as icons from 'components/icons';
 import { foundMessage } from 'components/sidebar';
-import { roundButton, searchInput, VirtualizedList } from 'components/ui';
+import { heading, searchInput, VirtualizedList } from 'components/ui';
 import { mount } from 'core/dom';
 import { useToBehaviorSubject, useMaybeObservable, getInterface } from 'core/hooks';
 import { div, text } from 'core/html';
@@ -65,13 +65,12 @@ export default function messageSearchSidebar({ onBack }: SidebarComponentProps, 
     },
   });
 
-  mount(rootEl, div`.messagesSearch__header`(
-    roundButton({
-      className: 'messagesSearch__close',
-      onClick: onBack,
-    }, icons.close()),
-    searchInputEl,
-  ));
+  mount(rootEl, heading({
+    className: 'messagesSearch__header',
+    title: '',
+    element: searchInputEl,
+    buttons: [{ icon: icons.back, position: 'left', onClick: () => onBack?.() }],
+  }));
   mount(rootEl, div`.messagesSearch__summary`(
     text(messageSearch.result.pipe(map((result) => {
       if (isSearchRequestEmpty(result.request)) {

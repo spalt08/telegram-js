@@ -1,5 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
-import { listen, mount, unmount } from 'core/dom';
+import { animationFrameStart, listen, mount, unmount } from 'core/dom';
 import { useInterface } from 'core/hooks';
 import { div } from 'core/html';
 import { main } from 'services';
@@ -90,10 +90,12 @@ export default function sidebar({ initial, className, onTransitionStart }: Props
 
       element.ontransitionend = (event) => {
         if (event.target === event.currentTarget) {
-          container.classList.remove('-popping-state');
-          if (element) {
-            unmount(element);
-          }
+          animationFrameStart().then(() => {
+            container.classList.remove('-popping-state');
+            if (element) {
+              unmount(element);
+            }
+          });
         }
       };
     }
@@ -131,10 +133,12 @@ export default function sidebar({ initial, className, onTransitionStart }: Props
   // unmount after closing
   listen(container, 'transitionend', (event) => {
     if (event.target === event.currentTarget) {
-      if (container.classList.contains('-hidden')) {
-        const element = container.children[container.childElementCount - 1];
-        if (element) unmount(element);
-      }
+      animationFrameStart().then(() => {
+        if (container.classList.contains('-hidden')) {
+          const element = container.children[container.childElementCount - 1];
+          if (element) unmount(element);
+        }
+      });
     }
   });
 

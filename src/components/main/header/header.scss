@@ -158,9 +158,17 @@ $header-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.4);
     flex: none;
     display: flex;
     position: absolute;
-    right: 11px;
-    top: 5px;
+    right: 14px;
+    top: 9px;
     z-index: 4;
+
+    > * {
+      margin-right: 2px;
+    }
+
+    @include respond-to(small) {
+      right: 6px;
+    }
   }
 
   &__typing-indicator {
@@ -187,8 +195,8 @@ $header-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.4);
     flex: none;
     display: none;
     position: absolute;
-    left: 4px;
-    top: 5px;
+    left: 8px;
+    top: 9px;
     z-index: 4;
   }
 
@@ -216,11 +224,6 @@ $header-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.4);
     width: 100%;
     z-index: 5;
     background-color: #fff;
-    padding-right: 12px;
-
-    & > .searchInput {
-      flex: 1 50%;
-    }
   }
 
   &.-searching > &__pinned, &.-searching > .audioPlayer {

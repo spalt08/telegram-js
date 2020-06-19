@@ -36,7 +36,7 @@ export default function info({ onBack }: SidebarComponentProps, peer: MaybeObser
     heading({
       title: 'Info',
       buttons: [
-        { icon: icons.close, position: 'left', onClick: () => onBack && onBack() },
+        { icon: icons.back, position: 'left', onClick: () => onBack && onBack() },
         { icon: icons.more, position: 'right', onClick: toggleContextMenu },
       ],
     }),

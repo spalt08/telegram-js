@@ -27,11 +27,7 @@
 
     &_button {
       flex: none;
-      margin: 0 12px 0 -8px;
-
-      @include respond-to(small) {
-        margin-left: 0px;
-      }
+      margin: 0 16px 0 -4px;
     }
 
     &_search {

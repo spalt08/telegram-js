@@ -4,8 +4,8 @@
   border: none;
   padding: 0;
   margin: 0;
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   color: #707579;
   background: transparent;
   text-align: center;
@@ -22,7 +22,7 @@
     height: 24px;
   }
   path {
-    fill: #707579
+    fill: currentColor;
   }
 
   &:hover {
@@ -57,5 +57,13 @@
 
   &.loading &__spinner {
     display: block;
+  }
+
+  &.-accent {
+    color: #4EA4F5;
+  }
+
+  &.-danger {
+    color: #df3f40;
   }
 }

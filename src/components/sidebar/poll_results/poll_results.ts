@@ -56,7 +56,7 @@ export default function pollResults({ onBack }: SidebarComponentProps, context: 
     heading({
       title: 'Results',
       buttons: [
-        { icon: icons.close, position: 'left', onClick: () => onBack && onBack() },
+        { icon: icons.back, position: 'left', onClick: () => onBack && onBack() },
       ],
     }),
   );

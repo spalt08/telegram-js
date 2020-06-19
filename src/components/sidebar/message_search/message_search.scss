@@ -7,14 +7,6 @@
 
   &__header {
     flex: none;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-
-    @include respond-to(small) {
-      padding: 0 9px;
-    }
   }
 
   &__close {
@@ -35,8 +27,9 @@
   }
 
   &__messages {
-    flex: auto;
+    flex: 1;
     position: relative;
+    min-height: 0; // forces scroll
     mask-image: linear-gradient(to bottom, transparent, #000 8px);
   }
 }

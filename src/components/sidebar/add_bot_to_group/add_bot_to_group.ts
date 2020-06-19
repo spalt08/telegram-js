@@ -67,7 +67,7 @@ export default function addBotToGroup({ onBack }: SidebarComponentProps, botPeer
     heading({
       title: 'Select a group',
       buttons: [
-        { icon: icons.close, position: 'left', onClick: () => onBack && onBack() },
+        { icon: icons.back, position: 'left', onClick: () => onBack && onBack() },
       ],
     }),
   );
