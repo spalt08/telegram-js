@@ -12,11 +12,12 @@ import { inputPeerToPeer } from 'helpers/api';
 import { humanizeError } from 'helpers/humanizeError';
 import filterInfo from './filter_info';
 import filterListItem, { expandButtonFilterListItem, peerFilterListItem } from './filter_list_item';
+import { PeersType, typesInfos, typesToExclude, typesToInclude } from './constants';
 import './filter_screen.scss';
 
 type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
-interface FilterListData {
+interface ListState {
   readonly filter: Readonly<DialogFilter>;
   readonly expandIncluded: boolean;
   readonly expandExcluded: boolean;
@@ -39,17 +40,6 @@ const emptyFilter: Readonly<DialogFilter> = {
   pinned_peers: [],
   include_peers: [],
   exclude_peers: [],
-};
-
-const setsInfos = {
-  contacts: [icons.user, 'Contacts'] as const,
-  'non-contacts': [icons.noncontacts, 'Non-Contacts'] as const,
-  groups: [icons.group, 'Groups'] as const,
-  channels: [icons.channel, 'Channels'] as const,
-  bots: [icons.bots, 'Bots'] as const,
-  muted: [icons.mute, 'Muted'] as const,
-  archived: [icons.archive, 'Archived'] as const,
-  read: [icons.readchats, 'Read'] as const,
 };
 
 function stringifyInputPeer(peer: Readonly<InputPeer>) {
@@ -78,6 +68,22 @@ function makePeerListItems(peers: readonly Readonly<InputPeer>[], isExpanded: bo
   }
 
   return items;
+}
+
+function getFilterTypesSet(filter: Readonly<DialogFilter>, types: ReadonlyArray<PeersType>) {
+  const typesSet = new Set<PeersType>();
+  types.forEach((type) => {
+    if (filter[type]) {
+      typesSet.add(type);
+    }
+  });
+  return typesSet;
+}
+
+function makeFilterTypesSetRecord(typesToCheck: ReadonlyArray<PeersType>, typesSet: ReadonlySet<PeersType>) {
+  const record: Partial<DialogFilter> = {};
+  typesToCheck.forEach((type) => record[type] = typesSet.has(type) as any);
+  return record;
 }
 
 function renderHeader(isCreating: boolean, onBack?: () => void, onSave?: () => void, onDelete?: () => void) {
@@ -124,46 +130,68 @@ function renderHeader(isCreating: boolean, onBack?: () => void, onSave?: () => v
 
 function renderListItem(
   item: string,
-  filterListData: BehaviorSubject<FilterListData>,
+  listState: BehaviorSubject<ListState>,
   isCreating: MaybeObservable<boolean>,
   titleSubject: BehaviorSubject<string>,
   onNavigate: SidebarComponentProps['onNavigate'],
 ) {
-  if (item === 'info') {
-    return filterInfo(isCreating, titleSubject);
+  switch (item) {
+    case 'info':
+      return filterInfo(isCreating, titleSubject);
+
+    case 'includedHeader':
+      return div(
+        div`.filterScreen__header`(text('Included chats')),
+        filterListItem(icons.add(), 'Add Chats', true, () => {
+          const { filter } = listState.value;
+          // eslint-disable-next-line no-unused-expressions
+          onNavigate?.('filterPeers', {
+            // Pinned peers aren't added to included explicitly
+            peers: [...filter.pinned_peers, ...filter.include_peers],
+            typesFor: 'included',
+            types: getFilterTypesSet(filter, typesToInclude),
+          });
+        }),
+      );
+
+    case 'excludedHeader':
+      return div(
+        div`.filterScreen__header`(text('Excluded chats')),
+        filterListItem(icons.add(), 'Add Chats', true, () => {
+          const { filter } = listState.value;
+          // eslint-disable-next-line no-unused-expressions
+          onNavigate?.('filterPeers', {
+            // Pinned peers aren't added to included explicitly
+            peers: filter.exclude_peers,
+            typesFor: 'excluded',
+            types: getFilterTypesSet(filter, typesToExclude),
+          });
+        }),
+      );
+
+    case 'expandIncluded':
+      return expandButtonFilterListItem(
+        listState.pipe(map(({ filter, expandIncluded }) => ({
+          isExpanded: expandIncluded,
+          collapseCount: getCollapsedPeersCount(filter.include_peers.length + filter.pinned_peers.length) }),
+        )),
+        () => listState.next({ ...listState.value, expandIncluded: !listState.value.expandIncluded }),
+      );
+
+    case 'expandExcluded':
+      return expandButtonFilterListItem(
+        listState.pipe(map(({ filter, expandExcluded }) => ({
+          isExpanded: expandExcluded,
+          collapseCount: getCollapsedPeersCount(filter.exclude_peers.length) }),
+        )),
+        () => listState.next({ ...listState.value, expandExcluded: !listState.value.expandExcluded }),
+      );
+
+    default:
   }
 
-  if (item === 'includedHeader' || item === 'excludedHeader') {
-    return div(
-      div`.filterScreen__header`(
-        text(item === 'includedHeader' ? 'Included chats' : 'Excluded chats'),
-      ),
-      filterListItem(icons.add(), 'Add Chats', true, () => console.log('Todo edit peers list')),
-    );
-  }
-
-  if (item === 'expandIncluded') {
-    return expandButtonFilterListItem(
-      filterListData.pipe(map(({ filter, expandIncluded }) => ({
-        isExpanded: expandIncluded,
-        collapseCount: getCollapsedPeersCount(filter.include_peers.length + filter.pinned_peers.length) }),
-      )),
-      () => filterListData.next({ ...filterListData.value, expandIncluded: !filterListData.value.expandIncluded }),
-    );
-  }
-
-  if (item === 'expandExcluded') {
-    return expandButtonFilterListItem(
-      filterListData.pipe(map(({ filter, expandExcluded }) => ({
-        isExpanded: expandExcluded,
-        collapseCount: getCollapsedPeersCount(filter.exclude_peers.length) }),
-      )),
-      () => filterListData.next({ ...filterListData.value, expandExcluded: !filterListData.value.expandExcluded }),
-    );
-  }
-
-  if (item in setsInfos) {
-    const setInfo = setsInfos[item as keyof typeof setsInfos];
+  if (item in typesInfos) {
+    const setInfo = typesInfos[item as keyof typeof typesInfos];
     return filterListItem(setInfo[0](), setInfo[1]);
   }
 
@@ -185,7 +213,7 @@ function renderListItem(
 export default function filterScreen(
   { onBack, onNavigate }: SidebarComponentProps,
   filterSubject: BehaviorSubject<Readonly<DialogFilter> | undefined>,
-) {
+): HTMLElement {
   let header: HTMLElement | undefined;
 
   // A separate subject is used for title to not recheck the list on every letter input
@@ -193,7 +221,7 @@ export default function filterScreen(
 
   const isCreating = filterSubject.pipe(map((filter) => !filter), distinctUntilChanged());
 
-  const filterListData = new BehaviorSubject<FilterListData>({
+  const listState = new BehaviorSubject<ListState>({
     filter: emptyFilter,
     expandIncluded: false,
     expandExcluded: false,
@@ -209,7 +237,7 @@ export default function filterScreen(
     className: 'filterScreen__body',
     renderer: (id) => renderListItem(
       id,
-      filterListData,
+      listState,
       isCreating,
       titleSubject,
       onNavigate,
@@ -218,7 +246,7 @@ export default function filterScreen(
 
   async function saveFilter() {
     const filter = {
-      ...filterListData.value.filter,
+      ...listState.value.filter,
       title: titleSubject.value,
     };
     const isNew = !filterSubject.value;
@@ -261,13 +289,13 @@ export default function filterScreen(
   useObservable(content, filterSubject, false, (filter) => {
     listDriver.clear();
     titleSubject.next(filter ? filter.title : emptyFilter.title);
-    filterListData.next({
+    listState.next({
       filter: filter ?? emptyFilter,
       expandIncluded: false,
       expandExcluded: false,
     });
     if (filter) {
-      peerService.loadMissingPeers([...filter.include_peers, ...filter.pinned_peers, ...filter.exclude_peers]);
+      peerService.loadMissingPeers([...filter.pinned_peers, ...filter.include_peers, ...filter.exclude_peers]);
     }
   });
 
@@ -281,38 +309,24 @@ export default function filterScreen(
   });
 
   // Watches the list content
-  filterListData.subscribe(({ filter, expandIncluded, expandExcluded }) => {
+  listState.subscribe(({ filter, expandIncluded, expandExcluded }) => {
     const items = ['info', 'includedHeader'];
 
-    if (filter.contacts) {
-      items.push('contacts');
-    }
-    if (filter.non_contacts) {
-      items.push('non-contacts');
-    }
-    if (filter.groups) {
-      items.push('groups');
-    }
-    if (filter.broadcasts) {
-      items.push('channels');
-    }
-    if (filter.bots) {
-      items.push('bots');
-    }
+    typesToInclude.forEach((type) => {
+      if (filter[type]) {
+        items.push(type);
+      }
+    });
 
     // Pinned peers aren't added to included explicitly
     items.push(...makePeerListItems([...filter.pinned_peers, ...filter.include_peers], expandIncluded, 'expandIncluded'));
     items.push('excludedHeader');
 
-    if (filter.exclude_muted) {
-      items.push('muted');
-    }
-    if (filter.exclude_archived) {
-      items.push('archived');
-    }
-    if (filter.exclude_read) {
-      items.push('read');
-    }
+    typesToExclude.forEach((type) => {
+      if (filter[type]) {
+        items.push(type);
+      }
+    });
 
     items.push(...makePeerListItems(filter.exclude_peers, expandExcluded, 'expandExcluded'));
     listItems.next(items);

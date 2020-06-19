@@ -18,6 +18,7 @@ import searchStickers from './search_stickers/search_stickers';
 import searchGifs from './search_gifs/search_gifs';
 import filters from './filters_screen/filters_screen';
 import filterForm from './filters_screen/filter_screen';
+import filterPeers from './filters_screen/peers_screen';
 import './sidebar.scss';
 import wrapper from './wrapper/wrapper';
 
@@ -36,6 +37,7 @@ const elements = {
   addBotToGroup,
   filters,
   filterForm,
+  filterPeers,
 };
 
 type SidebarRendererMap = typeof elements;

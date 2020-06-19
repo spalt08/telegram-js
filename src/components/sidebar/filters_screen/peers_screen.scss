@@ -1,0 +1,29 @@
+@import '~styles/variables.scss';
+
+.filterPeersScreen {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  &__head,
+  &__input {
+    flex: none;
+  }
+
+  &__list {
+    flex: 1;
+    min-height: 0;
+  }
+
+  &__header {
+    font-size: 15px;
+    font-weight: 500;
+    color: #707579;
+    padding: 21px 16px 8px;
+    border-top: solid 1px $common-border-color;
+
+    &:first-child {
+      border: none;
+    }
+  }
+}

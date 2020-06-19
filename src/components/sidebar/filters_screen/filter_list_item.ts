@@ -36,7 +36,6 @@ export default function filterListItem(
 }
 
 export function peerFilterListItem(peer: Peer) {
-  // console.log('subscribe to title', peer);
   const [, title] = peerToTitle(peer, authService.userID);
   const icon = new BehaviorSubject<Node | undefined>(undefined);
 
