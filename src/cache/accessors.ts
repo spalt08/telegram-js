@@ -322,3 +322,44 @@ export function dialogPeerToInputDialogPeer(dialogPeer: DialogPeer): InputDialog
     folder_id: dialogPeer.folder_id,
   };
 }
+
+/**
+ * Calls the callback once when the peer details are loaded. You should load the details by yourself.
+ *
+ * @todo Make avatar watch the peer by itself and remove this function
+ */
+export function useWaitForPeerLoaded(base: Node, peer: Peer.peerUser, onLoad: (peerDetails: User) => void): () => void;
+export function useWaitForPeerLoaded(base: Node, peer: Peer.peerChat | Peer.peerChannel, onLoad: (peerDetails: Chat) => void): () => void;
+export function useWaitForPeerLoaded(base: Node, peer: Peer, onLoad: (peerDetails: User | Chat) => void): () => void;
+export function useWaitForPeerLoaded(base: Node, peer: Peer, onLoad: (peerDetails: any) => void): () => void {
+  let stopWatch: () => void;
+  let isLoaded = false;
+
+  function handleChange(details: object | undefined) {
+    if (details) {
+      isLoaded = true;
+      // eslint-disable-next-line no-unused-expressions
+      stopWatch?.();
+      onLoad(details);
+    }
+  }
+
+  switch (peer._) {
+    case 'peerUser':
+      stopWatch = userCache.useWatchItem(base, peer.user_id, handleChange);
+      break;
+    case 'peerChat':
+    case 'peerChannel':
+      stopWatch = chatCache.useWatchItem(base, peer._ === 'peerChat' ? peer.chat_id : peer.channel_id, handleChange);
+      break;
+    default:
+      throw new TypeError('Unknown peer type');
+  }
+
+  if (isLoaded) {
+    // eslint-disable-next-line no-unused-expressions
+    stopWatch?.();
+  }
+
+  return stopWatch;
+}

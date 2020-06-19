@@ -1,11 +1,13 @@
 import { chatCache, chatFullCache, pinnedMessageCache, userCache, userFullCache } from 'cache';
 import { peerToInputChannel, peerToInputUser } from 'cache/accessors';
 import client from 'client/client';
-import { peerToId } from 'helpers/api';
-import { Peer } from 'mtproto-js';
+import { inputPeerToInputChannel, inputPeerToInputUser, peerToId } from 'helpers/api';
+import { InputChannel, InputPeer, InputUser, Peer } from 'mtproto-js';
 import { EMPTY, timer } from 'rxjs';
 import { debounceTime, map, switchMap } from 'rxjs/operators';
 import MessageService from './message/message';
+import UsersService from './user';
+import ChatsService from './chat';
 
 const UPDATE_INTERVAL = 60 * 1000; // every minute
 
@@ -15,7 +17,13 @@ const UPDATE_INTERVAL = 60 * 1000; // every minute
 export default class PeerService {
   #lastUpdateTime = new Map<string, number>();
 
-  constructor(messageService: MessageService) {
+  #userService: UsersService;
+  #chatService: ChatsService;
+
+  constructor(messageService: MessageService, userService: UsersService, chatService: ChatsService) {
+    this.#userService = userService;
+    this.#chatService = chatService;
+
     messageService.activePeer
       .pipe(
         debounceTime(300), // Wait a bit to not interfere the messages loading
@@ -102,5 +110,39 @@ export default class PeerService {
         }
       }
     }
+  }
+
+  loadMissingPeers(inputPeers: InputPeer[]) {
+    const inputUsers: InputUser[] = [];
+    const inputChannels: InputChannel[] = [];
+    const chatIds: number[] = [];
+
+    let inputUser: InputUser | null;
+    let inputChannel: InputChannel | null;
+
+    inputPeers.forEach((peer) => {
+      if (peer._ === 'inputPeerChat') {
+        chatIds.push(peer.chat_id);
+        return;
+      }
+
+      inputUser = inputPeerToInputUser(peer);
+      if (inputUser) {
+        inputUsers.push(inputUser);
+        return;
+      }
+
+      inputChannel = inputPeerToInputChannel(peer);
+      if (inputChannel) {
+        inputChannels.push(inputChannel);
+        return; // eslint-disable-line no-useless-return
+      }
+    });
+
+    Promise.all([
+      this.#userService.loadMissingUsers(inputUsers),
+      this.#chatService.loadMissingChannels(inputChannels),
+      this.#chatService.loadMissingChats(chatIds),
+    ]);
   }
 }

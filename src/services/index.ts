@@ -14,15 +14,17 @@ import TopUsersService from './top_users';
 import UserService from './user';
 import UserTyping from './user_typing';
 import AudioService from './audio';
+import ChatsService from './chat';
 
 export { AuthStage } from './auth';
 
 export const main = new MainService();
 export const auth = new AuthService();
-export const user = new UserService();
+export const user = new UserService(auth);
 export const userTyping = new UserTyping();
 export const message = new MessageService(main);
-export const peer = new PeerService(message);
+export const chat = new ChatsService();
+export const peer = new PeerService(message, user, chat);
 export const dialog = new DialogService(message, auth);
 export const media = new MediaService(main);
 export const audio = new AudioService(media);

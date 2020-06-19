@@ -215,7 +215,8 @@ export default class Dictionary<TKey extends keyof any, TItem> {
     this.changesBatch.act([action, key, item]);
 
     if (this.itemsWatchers[key]) {
-      this.itemsWatchers[key].forEach((listener) => {
+      // The array is copied because a subscriber may unsubscribe during handling the notification and `forEach` wan't handle it.
+      [...this.itemsWatchers[key]].forEach((listener) => {
         try {
           listener(action === 'remove' ? undefined : item);
         } catch (error) {
