@@ -1,15 +1,23 @@
 import { lamp } from 'components/icons';
+import { listen } from 'core/dom';
 import { useMaybeObservable } from 'core/hooks';
 import { div } from 'core/html';
 import { MaybeObservable } from 'core/types';
 import { PollResults } from 'mtproto-js';
+import { main } from 'services';
 import './poll_solution.scss';
 
 export default function pollSolution(results: MaybeObservable<PollResults>) {
+  let pollResults: PollResults;
   const container = div`.pollSolution`(lamp());
   useMaybeObservable(container, results, true, (r) => {
     container.classList.toggle('-visible', !!r.solution);
-    container.title = r.solution ?? ''; // todo: show solution in popup
+    pollResults = r;
   });
+
+  listen(container, 'click', () => {
+    main.showQuizResults(pollResults);
+  });
+
   return container;
 }

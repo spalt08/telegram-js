@@ -1,5 +1,9 @@
 .video-preview {
   position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &__duration {
     position: absolute;
@@ -15,7 +19,7 @@
     line-height: 1;
   }
 
-  &__playbtn {
+  &__playbtn, &__downloadbtn {
     position: absolute;
     left: 50%;
     top: 50%;
@@ -29,5 +33,21 @@
     background-size: 15PX auto;
     border-radius: 25px;
     z-index: 2;
+  }
+
+  &__downloadbtn {
+    background-image: url(~assets/download-button@2x.png);
+    background-size: 18PX auto;
+    background-position: center;
+  }
+
+  &__thumb.-playing {
+    position: absolute;
+    z-index: 0;
+  }
+
+  &__player {
+    position: relative;
+    z-index: 1;
   }
 }
