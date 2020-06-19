@@ -155,37 +155,49 @@ export default class FolderService {
     }
   }
 
-  createFilter(filter: DialogFilter) {
+  async createFilter(filter: Readonly<DialogFilter>, isEager?: boolean) {
     const filterWithId = {
       ...filter,
       id: this.getIdForNewFilter(),
     };
 
-    // todo: Handle fail responses from the API here and next
-    /* no await */client.call('messages.updateDialogFilter', { id: filterWithId.id, filter: filterWithId })
+    // todo: Handle fail responses from the API here and further
+    const sendPromise = client.call('messages.updateDialogFilter', { id: filterWithId.id, filter: filterWithId })
       // Server puts the new filter to the start by default so we need to move it to the end explicitly
       .then(() => client.call('messages.updateDialogFiltersOrder', { order: [...(this.filters.value?.keys() ?? [])] }));
+
+    if (!isEager) {
+      await sendPromise;
+    }
 
     this.pushNewFilterLocally(filterWithId);
   }
 
-  changeFilter(filter: DialogFilter) {
-    /* no await */client.call('messages.updateDialogFilter', { id: filter.id, filter });
+  async changeFilter(filter: Readonly<DialogFilter>, isEager?: boolean) {
+    const sendPromise = client.call('messages.updateDialogFilter', { id: filter.id, filter });
+
+    if (!isEager) {
+      await sendPromise;
+    }
 
     this.changeFilterLocally(filter);
   }
 
-  removeFilter(filterId: number) {
-    /* no await */client.call('messages.updateDialogFilter', { id: filterId })
+  async removeFilter(filterId: number, isEager?: boolean) {
+    const sendPromise = client.call('messages.updateDialogFilter', { id: filterId })
       .then(() => this.loadSuggestedFilters());
+
+    if (!isEager) {
+      await sendPromise;
+    }
 
     this.removeFilterLocally(filterId);
   }
 
-  addSuggesterFilter(filterId: number) {
+  async addSuggesterFilter(filterId: number, isEager?: boolean) {
     const filter = this.suggestedFilters.value?.get(filterId)?.filter;
     if (filter) {
-      this.createFilter(filter);
+      await this.createFilter(filter, isEager);
       this.removeSuggestedFilterLocally(filterId);
     }
   }

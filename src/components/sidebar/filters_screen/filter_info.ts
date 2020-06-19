@@ -11,7 +11,7 @@ import './filter_info.scss';
 export default function filterInfo(isCreating: MaybeObservable<boolean>, title: BehaviorSubject<string>) {
   const titleInput = textInput({
     label: 'Folder Name',
-    maxLength: 25,
+    maxLength: 50,
     className: 'filterInfo__title',
     onChange(newTitle) {
       title.next(newTitle);

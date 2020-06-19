@@ -2,13 +2,14 @@ import { BehaviorSubject } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { DialogFilter, InputPeer } from 'mtproto-js';
 import { div, text } from 'core/html';
-import { contextMenu, heading, VirtualizedList } from 'components/ui';
+import { contextMenu, heading, HeadingIcon, VirtualizedList } from 'components/ui';
 import * as icons from 'components/icons';
 import { getInterface, useObservable } from 'core/hooks';
 import { mount, unmount } from 'core/dom';
 import { folder as folderService, peer as peerService } from 'services';
 import { MaybeObservable } from 'core/types';
 import { inputPeerToPeer } from 'helpers/api';
+import { humanizeError } from 'helpers/humanizeError';
 import filterInfo from './filter_info';
 import filterListItem, { expandButtonFilterListItem, peerFilterListItem } from './filter_list_item';
 import './filter_screen.scss';
@@ -21,7 +22,7 @@ interface FilterListData {
   readonly expandExcluded: boolean;
 }
 
-const maxShrinkPeersCount = 4;
+const maxShrinkPeersCount = 5;
 
 const emptyFilter: Readonly<DialogFilter> = {
   _: 'dialogFilter',
@@ -60,7 +61,7 @@ function parseInputPeer(str: string) {
 }
 
 function getCollapsedPeersCount(totalCount: number) {
-  const shownCount = totalCount <= maxShrinkPeersCount + 1 ? totalCount : Math.min(maxShrinkPeersCount, totalCount);
+  const shownCount = totalCount <= maxShrinkPeersCount ? totalCount : Math.min(maxShrinkPeersCount - 1, totalCount);
   return totalCount - shownCount;
 }
 
@@ -79,11 +80,16 @@ function makePeerListItems(peers: readonly Readonly<InputPeer>[], isExpanded: bo
   return items;
 }
 
-function renderHeader(isCreating: boolean, onBack?: () => void, onDelete?: () => void) {
+function renderHeader(isCreating: boolean, onBack?: () => void, onSave?: () => void, onDelete?: () => void) {
+  const commonButtons: HeadingIcon[] = [
+    { icon: icons.back, position: 'left', onClick: () => onBack?.() },
+    { icon: icons.check, position: 'right', color: 'accent', onClick: () => onSave?.() },
+  ];
+
   if (isCreating) {
     return heading({
       title: isCreating ? 'New Folder' : 'Edit Folder',
-      buttons: [{ icon: icons.back, position: 'left', onClick: () => onBack?.() }],
+      buttons: commonButtons,
       className: 'filterScreen__head',
     });
   }
@@ -93,7 +99,7 @@ function renderHeader(isCreating: boolean, onBack?: () => void, onDelete?: () =>
   const moreContextMenu = contextMenu({
     className: 'filterScreen__head_context-menu',
     options: [
-      { icon: icons.del, type: 'danger', label: 'Delete Folder', onClick: () => onDelete?.() },
+      { icon: icons.del, color: 'danger', label: 'Delete Folder', onClick: () => onDelete?.() },
     ],
   });
 
@@ -107,7 +113,7 @@ function renderHeader(isCreating: boolean, onBack?: () => void, onDelete?: () =>
   header = heading({
     title: isCreating ? 'New Folder' : 'Edit Folder',
     buttons: [
-      { icon: icons.back, position: 'left', onClick: () => onBack?.() },
+      ...commonButtons,
       { icon: icons.more, position: 'right', onClick: toggleContextMenu },
     ],
     className: 'filterScreen__head',
@@ -181,13 +187,6 @@ export default function filterScreen(
   filterSubject: BehaviorSubject<Readonly<DialogFilter> | undefined>,
 ) {
   let header: HTMLElement | undefined;
-  const deleteFilter = () => {
-    if (filterSubject.value) {
-      folderService.removeFilter(filterSubject.value.id);
-      // eslint-disable-next-line no-unused-expressions
-      onBack?.();
-    }
-  };
 
   // A separate subject is used for title to not recheck the list on every letter input
   const titleSubject = new BehaviorSubject<string>('');
@@ -217,14 +216,46 @@ export default function filterScreen(
     ),
   });
 
+  async function saveFilter() {
+    const filter = {
+      ...filterListData.value.filter,
+      title: titleSubject.value,
+    };
+
+    try {
+      if (filterSubject.value) {
+        await folderService.changeFilter(filter);
+      } else {
+        await folderService.createFilter(filter);
+      }
+    } catch (error) {
+      // todo: Replace with a beautiful alert
+      alert(humanizeError(error.message));
+      return;
+    }
+
+    // eslint-disable-next-line no-unused-expressions
+    onBack?.();
+  }
+
+  function deleteFilter() {
+    if (filterSubject.value) {
+      folderService.removeFilter(filterSubject.value.id);
+      // eslint-disable-next-line no-unused-expressions
+      onBack?.();
+    }
+  }
+
   const content = (
     div`.filterScreen`(
       listDriver.container,
     )
   );
 
-  // Reset the values when a new filter arrives
-  useObservable(content, filterSubject, true, (filter) => {
+  // Reset the values when a new filter arrives.
+  // The observable is marked as not pure to reset the form data when the screen is requested,
+  // otherwise you'll see the unsaved data when you reopen the same filter.
+  useObservable(content, filterSubject, false, (filter) => {
     listDriver.clear();
     titleSubject.next(filter ? filter.title : emptyFilter.title);
     filterListData.next({
@@ -242,7 +273,7 @@ export default function filterScreen(
     if (header) {
       unmount(header);
     }
-    header = renderHeader(creating, onBack, deleteFilter);
+    header = renderHeader(creating, onBack, saveFilter, deleteFilter);
     mount(content, header, content.firstChild ?? undefined);
   });
 

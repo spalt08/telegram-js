@@ -159,7 +159,7 @@ function makeFilterDescription(dialogFilter: DialogFilter) {
   items.push(...printPeerTypesCounts(excludeTypesCounts).map((item) => `exclude ${item}`));
 
   const itemsString = items.join(', ');
-  return itemsString[0].toUpperCase() + itemsString.slice(1);
+  return itemsString ? itemsString[0].toUpperCase() + itemsString.slice(1) : '';
 }
 
 export function addedFilterPreview(id: number, onNavigate: SidebarComponentProps['onNavigate']) {
@@ -187,6 +187,6 @@ export function suggestedFilterPreview(id: number) {
     filterObservable.pipe(map((suggestion) => suggestion.filter.title)),
     filterObservable.pipe(map((suggestion) => suggestion.description)),
     undefined,
-    [{ text: 'Add', onClick: () => folderService.addSuggesterFilter(id) }],
+    [{ text: 'Add', onClick: () => folderService.addSuggesterFilter(id, true) }],
   );
 }
