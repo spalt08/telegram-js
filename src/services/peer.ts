@@ -1,9 +1,10 @@
-import { debounceTime, switchMap, map } from 'rxjs/operators';
-import { timer } from 'rxjs';
-import client from 'client/client';
-import { userFullCache, chatCache, chatFullCache, userCache, pinnedMessageCache } from 'cache';
-import { Peer } from 'mtproto-js';
+import { chatCache, chatFullCache, pinnedMessageCache, userCache, userFullCache } from 'cache';
 import { peerToInputChannel, peerToInputUser } from 'cache/accessors';
+import client from 'client/client';
+import { peerToId } from 'helpers/api';
+import { Peer } from 'mtproto-js';
+import { EMPTY, timer } from 'rxjs';
+import { debounceTime, map, switchMap } from 'rxjs/operators';
 import MessageService from './message/message';
 
 const UPDATE_INTERVAL = 60 * 1000; // every minute
@@ -12,17 +13,26 @@ const UPDATE_INTERVAL = 60 * 1000; // every minute
  * Singleton service class for handling peers
  */
 export default class PeerService {
+  #lastUpdateTime = new Map<string, number>();
+
   constructor(messageService: MessageService) {
     messageService.activePeer
       .pipe(
         debounceTime(300), // Wait a bit to not interfere the messages loading
-        switchMap((peer) => timer(0, UPDATE_INTERVAL).pipe(map(() => peer))), // periodically update full info about the peer
+        switchMap((peer) => {
+          if (peer) {
+            const lastUpdateTime = this.#lastUpdateTime.get(peerToId(peer));
+            const dueTime = lastUpdateTime ? UPDATE_INTERVAL - (Date.now() - lastUpdateTime) : 0;
+            return timer(dueTime, UPDATE_INTERVAL).pipe(map(() => peer)); // periodically update full info about the peer
+          }
+          return EMPTY;
+        }),
       )
       .subscribe((peer) => this.loadFullInfo(peer));
   }
 
-  private async loadFullInfo(peer: Peer | null) {
-    switch (peer?._) {
+  private async loadFullInfo(peer: Peer) {
+    switch (peer._) {
       case 'peerChannel': {
         const channelFull = await client.call('channels.getFullChannel', {
           channel: peerToInputChannel(peer),
@@ -63,6 +73,8 @@ export default class PeerService {
       }
       default:
     }
+
+    this.#lastUpdateTime.set(peerToId(peer), Date.now());
   }
 
   private async loadPinnedMessage(peer: Peer, pinnedMessageId: number) {

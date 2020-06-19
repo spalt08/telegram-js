@@ -25,9 +25,14 @@ export default function audio(message: Message.message, noTrack = false) {
   const button = playButton(message);
   const doc = getMessageDocument(message);
   if (doc?._ !== 'document') {
-    throw new Error('Message must contain document.');
+    // Message must contain document.
+    return div();
   }
-  const audioAttribute = getAttributeAudio(doc)!;
+  const audioAttribute = getAttributeAudio(doc);
+  if (!audioAttribute) {
+    // Message must contain audio attribute.
+    return div();
+  }
   const duration = getReadableDuration(audioAttribute.duration);
   const timing = text(duration);
   const onSeek = (seek: number) => audioService.play(message, seek);

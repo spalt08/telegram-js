@@ -10,7 +10,7 @@
   background-image: url(~assets/chamomile-blurred.jpg);
   background-size: cover;
   background-position: center center;
-  background-attachment: fixed;
+  // background-attachment: fixed;
   flex: 1 50%;
   overflow: hidden;
 
@@ -38,17 +38,55 @@
   }
 
   @include respond-to(desktop) {
-    will-change: width;
+    position: absolute;
+    left: #{'min(400PX, max(320PX, 25vw))'};
+    right: 0;
+    top: 0;
+    bottom: 0;
+    will-change: right;
+    transition: right $animation-sidebar;
+
+    &.-right-sidebar {
+      right: #{'min(400PX, max(320PX, 25vw))'};
+    }
+
+    &.-right-sidebar &__list {
+      transform: translateX(#{'calc(-1 * min(200PX, max(160PX, 12.5vw)))'});
+    }
   }
+
+  @include respond-to(message-wrap) {
+    &.-right-sidebar .message__align {
+      max-width: #{'min(740PX, 100vw - min(400PX, max(320PX, 25vw)) - min(400PX, max(320PX, 25vw)))'};
+    }
+  }
+
+  @include respond-to(medium) {
+    position: absolute;
+    left: #{'min(400PX, max(320PX, 25vw))'};
+    right: 0;
+    top: 0;
+    bottom: 0;
+    transition: transform $animation-sidebar;
+
+    &.-right-sidebar {
+      transform: translateX(-100px);
+    }
+  }  
 
   &__list {
     display: flex;
     flex-direction: column;
     //  padding-bottom: 8PX;
+    @include respond-to(desktop) {
+      width: #{'calc(min(1680PX, 100vw) - min(400PX, max(320PX, 25vw)))'};
+      position: absolute;
+      transition: transform $animation-sidebar;
+    }
   }
 
   &__content {
-    mask-image: linear-gradient(to top, transparent, #000 12px);
+    mask-image: linear-gradient(to top, transparent, #000 6px);
     flex: 1;
     min-height: 0;
     position: relative;

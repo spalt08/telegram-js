@@ -10,7 +10,7 @@ import { BehaviorSubject } from 'rxjs';
 import { audio as audioService } from 'services';
 import './audio_player.scss';
 
-export default function audioPlayer() {
+export default function audioPlayer(onVisibilityChange: (visible: boolean) => void) {
   const titleSubj = new BehaviorSubject('');
   const performerSubj = new BehaviorSubject('');
   const playButtonHolder = div`.audioPlayer__playButton`();
@@ -24,6 +24,7 @@ export default function audioPlayer() {
 
   let lastDoc: Document.document;
   useObservable(container, audioService.currentAudio, true, (currAudio) => {
+    onVisibilityChange(currAudio);
     container.classList.toggle('-hidden', !currAudio);
     if (currAudio) {
       if (currAudio.doc !== lastDoc) {

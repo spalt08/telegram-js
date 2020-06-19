@@ -1,3 +1,5 @@
+@import '~styles/variables.scss';
+
 .foundMessage {
   $total-padding-horizontal: 17px;
   $total-padding-vertical: 11px;
@@ -8,6 +10,10 @@
   font-size: 16px;
   color: #707579;
 
+  @include respond-to(small) {
+    padding: 0;
+  }
+
   &__empty {
     padding: $total-padding-vertical $total-padding-horizontal;
   }
@@ -17,6 +23,11 @@
     border-radius: 10px;
     cursor: pointer;
     transition: background-color .2s ease;
+
+    @include respond-to(small) {
+      padding: 10px 12px;
+      border-radius: 0;
+    }
 
     &:hover {
       background-color: rgba(#707579, 0.08);

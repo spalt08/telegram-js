@@ -11,10 +11,17 @@
     min-height: 44px;
     display: flex;
     border-bottom: 1px solid #dedfe2;
+    position: relative;
     width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
-    @include scrollbar-width(4px);
+    padding: 0 $content-padding;mask-image: linear-gradient(to left, transparent, #000 12px);
+  
+    @include hide-scrollbar();
+
+    @include respond-to(small) {
+      padding: 0 12px;
+    }
 
     &.-center {
       justify-content: center;
@@ -26,6 +33,7 @@
   }
 
   &__tab {
+    position: relative;
     $transition-duration: 0.2s;
 
     flex-shrink: 0;
@@ -38,26 +46,30 @@
     cursor: pointer;
     transition: all $transition-duration;
 
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 1px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: #4EA4F5;
+      border-radius: 2px 2px 0 0;
+      opacity: 0;
+      transition: opacity $transition-duration ease-out;
+    }
+
+    &.-active::after {
+      opacity: 1;
+    }
+
     &_content {
       display: flex;
       align-items: center;
       text-align: center;
-      position: relative;
       font-weight: 500;
       font-size: 14px;
-
-      &::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: -12px;
-        right: -12px;
-        height: 3px;
-        background: #4EA4F5;
-        border-radius: 2px 2px 0 0;
-        opacity: 0;
-        transition: opacity $transition-duration ease-out;
-      }
     }
 
     &_badge {
@@ -85,15 +97,13 @@
     &.-active {
       color: #4EA4F5;
     }
-    &.-active > &_content::after {
-      opacity: 1;
-    }
   }
 
-  &__header.-stretch &__tab {
+  &__header.-stretch > &__tab {
     flex: 1 0 auto;
     padding-left: 8px;
     padding-right: 8px;
+    margin-right: 8px;
   }
 
   &__container {

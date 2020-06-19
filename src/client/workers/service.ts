@@ -3,8 +3,8 @@ import { DownloadOptions, WindowMessage } from 'client/types';
 import { CLIENT_CONFIG } from 'const/api';
 import { typeToMime } from 'helpers/files';
 import { parseRange } from 'helpers/stream';
-import { Client as NetworkHandler, InputFileLocation, MethodDeclMap } from 'mtproto-js';
-import { notify, respond } from './extensions/context';
+import { Client as NetworkHandler, InputFileLocation, MethodDeclMap, TransportState } from 'mtproto-js';
+import { notify, respond, notifySingle } from './extensions/context';
 import { load, save } from './extensions/db';
 import { fetchRequest, respondDownload, download, blobLoop } from './extensions/files';
 import { fetchStreamRequest } from './extensions/stream';
@@ -14,6 +14,7 @@ import { uploadFile } from './extensions/uploads';
 type ExtendedWorkerScope = {
   cache: Cache,
   network: NetworkHandler,
+  networkState: TransportState,
 };
 
 const ctx = self as any as ServiceWorkerGlobalScope & ExtendedWorkerScope;
@@ -25,11 +26,12 @@ const dbkey = CLIENT_CONFIG.test ? 'metatest' : 'meta';
 const initNetwork = () => load(dbkey).then((meta: any) => {
   if (ctx.network) return;
 
+  ctx.networkState = 'disconnected';
   ctx.network = new NetworkHandler({ ...CLIENT_CONFIG, meta, dc: meta.baseDC, autoConnect: true });
 
   ctx.network.on('metaChanged', (newMeta) => save(dbkey, newMeta));
   ctx.network.on('metaChanged', (state) => notify('authorization_updated', { dc: state.baseDC, user: state.userID || 0 }));
-  ctx.network.on('networkChanged', (state) => notify('network_updated', state));
+  ctx.network.on('networkChanged', (state) => notify('network_updated', ctx.networkState = state));
   ctx.network.updates.on((update) => notify('update', update));
   ctx.network.updates.fetch();
 
@@ -55,6 +57,13 @@ function getFilePartRequest(location: InputFileLocation, offset: number, limit: 
     // redirect to another dc
     if (err && err.message && err.message.indexOf('FILE_MIGRATE_') > -1) {
       getFilePartRequest(location, offset, limit, { ...options, dc_id: +err.message.slice(-1) }, ready);
+      return;
+    }
+
+    // wait
+    if (err && err.message && err.message.indexOf('FLOOD_WAIT_') > -1) {
+      const wait = +err.message.replace('FLOOD_WAIT_', '') + 0.3;
+      setTimeout(() => getFilePartRequest(location, offset, limit, options, ready), wait * 1000);
       return;
     }
 
@@ -141,6 +150,16 @@ function processWindowMessage(msg: WindowMessage, source: Client | MessagePort |
     case 'thumb': {
       const { url, bytes } = msg.payload;
       fetchThumb(url, bytes);
+      break;
+    }
+
+    case 'get_status': {
+      if (source) notifySingle(source, 'network_updated', ctx.networkState);
+      break;
+    }
+
+    case 'network_event': {
+      self.dispatchEvent(new Event(msg.payload));
       break;
     }
 
@@ -232,7 +251,7 @@ ctx.addEventListener('fetch', (event: FetchEvent): void => {
               if (cached) return cached;
 
               return Promise.race([
-                timeout(59 * 1000), // safari fix
+                timeout(45 * 1000), // safari fix
                 new Promise<Response>((resolve) => {
                   fetchRequest(url, resolve, getFilePartRequest, ctx.cache, fileProgress);
                 }),

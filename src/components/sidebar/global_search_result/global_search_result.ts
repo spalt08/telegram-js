@@ -129,9 +129,7 @@ function listItem(id: string, searchResult: Observable<SearchResult>, exit: () =
       },
     });
   }
-  return div`.globalSearchResult__sectionHeader`(
-    div(text(sectionHeaders[id] ?? id)),
-  );
+  return div`.globalSearchResult__sectionHeader`(text(sectionHeaders[id] ?? id));
 }
 
 export default function globalSearchResult({ className = '', exit, ...props }: Props) {

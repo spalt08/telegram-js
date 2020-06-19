@@ -1,8 +1,12 @@
 .typingIndicator {
+  &__typing {
+    position: relative;
+  }
+
   &__typing::after {
     overflow: hidden;
-    display: inline-block;
-    vertical-align: bottom;
+    position: absolute;
+    left: 100%;
     animation: ellipsis 1.5s steps(4, end) infinite;
     content: '...';
     width: 0;

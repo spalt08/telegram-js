@@ -1,7 +1,7 @@
 import { userCache } from 'cache';
-import { Message } from 'mtproto-js';
 import { getAttributeSticker } from 'helpers/files';
 import { todoAssertHasValue } from 'helpers/other';
+import { Message } from 'mtproto-js';
 
 const MAX_LENGTH = 200;
 
@@ -18,7 +18,10 @@ export default function messageShort(msg: Message) {
         case 'messageActionChatEditTitle': return `${userLabel} changed the group title`;
         case 'messageActionChatDeletePhoto': return `${userLabel} updated deleted photo`;
         case 'messageActionChatAddUser': return `${userLabel} joined the group`;
-        case 'messageActionChatDeleteUser': return `${userLabel} removed someone from the group`;
+        case 'messageActionChatDeleteUser':
+          return msg.from_id === msg.action.user_id
+            ? `${userLabel} left the group`
+            : `${userLabel} removed someone from the group`;
         case 'messageActionChannelCreate': return `${userLabel} created the channel`;
         case 'messageActionChatMigrateTo': return 'Group was converted to supergroup';
         case 'messageActionChannelMigrateFrom': return 'Channel was created from group';

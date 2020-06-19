@@ -5,7 +5,7 @@
   max-width: $bubble-max-width;
 
   @include respond-to(small) {
-    max-width: none;
+    max-width: 80vw;
   }
 }
 

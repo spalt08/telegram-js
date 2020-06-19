@@ -8,11 +8,11 @@
     width: auto;
     color: #FFFFFF;
     background: rgba(0, 0, 0, 0.20);
-    height: 26px;
     border-radius: 13px;
     line-height: 20px;
     padding: 3px 10px;
-    position: sticky;
+    min-height: 1.73333rem;
+    max-width: 90%;
   }
 
   strong {

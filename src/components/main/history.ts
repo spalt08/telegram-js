@@ -149,7 +149,7 @@ export default function history({ onBackToContacts }: Props) {
     pivotBottom: true,
     threshold: 2,
     batch: 20, // navigator.userAgent.indexOf('Safari') > -1 ? 5 : 20,
-    initialPaddingBottom: 10,
+    initialPaddingBottom: 0,
     forcePadding: isiOS ? 100000 : 0,
     renderer: (id: string) => message(id, messageSiblingsMap.get(id)!, id === lastUnreadMessage),
     selectGroup: (id: string) => messageDayMap.get(id) || '0',
@@ -197,7 +197,6 @@ export default function history({ onBackToContacts }: Props) {
   const keyboardInputEl = keyboardInput(peerSubject, () => getInterface(messageInputEl).updateVisibility());
   const headerEl = header({ onBackToContacts });
 
-  mount(container, headerEl);
   mount(container, historySection);
   mount(container, messageInputEl);
   mount(container, keyboardInputEl);
@@ -210,6 +209,7 @@ export default function history({ onBackToContacts }: Props) {
       getInterface(messageInputEl).updateVisibility();
       lastUnreadMessage = undefined;
 
+      if (!headerEl.parentElement) mount(container, headerEl, historySection);
       if (welcome.parentElement) unmount(welcome);
       scroll.clear();
     }

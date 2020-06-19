@@ -30,6 +30,8 @@ export interface TaskPayloadMap {
     url: string,
     bytes: ArrayBuffer,
   }
+  'get_status': {},
+  'network_event': string,
 
   // storybook
   'url_map': {

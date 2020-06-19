@@ -1,10 +1,13 @@
 import { dialogCache, messageCache } from 'cache';
 import { peerToInputChannel, peerToInputPeer } from 'cache/accessors';
 import client, { fetchUpdates } from 'client/client';
-import { arePeersSame, getDialogLastReadMessageId, getUserMessageId, peerMessageToId, peerToDialogId, shortChatMessageToMessage, shortMessageToMessage } from 'helpers/api';
-import { ChannelsGetMessages, Dialog, InputMedia, Message, MessagesGetMessages, MessagesMessages, MessagesSendMedia, MethodDeclMap, Peer } from 'mtproto-js';
+import { arePeersSame, getDialogLastReadMessageId, getUserMessageId, peerMessageToId, peerToDialogId, shortChatMessageToMessage,
+  shortMessageToMessage } from 'helpers/api';
+import { ChannelsGetMessages, Dialog, InputMedia, Message, MessagesGetMessages, MessagesMessages, MessagesSendMedia, MethodDeclMap,
+  Peer } from 'mtproto-js';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { first } from 'rxjs/operators';
+import type MainService from 'services/main';
 import makeMessageChunk, { MessageChunkService, MessageHistoryChunk } from './message_chunk';
 import messageFilters from './message_filters';
 import { Direction } from './types';
@@ -55,7 +58,11 @@ export default class MessagesService {
 
   readonly replyToMessageID = new BehaviorSubject('');
 
-  constructor() {
+  readonly main: MainService;
+
+  constructor(main: MainService) {
+    this.main = main;
+
     client.updates.on('updateNewMessage', (update) => {
       this.pushMessages([update.message]);
     });
@@ -220,6 +227,7 @@ export default class MessagesService {
     }
 
     this.replyToMessageID.next('');
+    this.main.isChatOpened.next(true);
   }
 
   loadMoreHistory(direction: Direction.Newer | Direction.Older) {

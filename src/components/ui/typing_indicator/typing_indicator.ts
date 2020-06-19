@@ -28,7 +28,7 @@ export default function typingIndicator(peer: Peer, className: string, ...childr
 
   const typings = userTyping.subscribe(peer);
 
-  useObservable(container, typings, true, (actions) => {
+  useObservable(container, typings, false, (actions) => {
     const activeUserIds = actions ? Object.keys(actions).map((id) => +id) : [];
     if (activeUserIds.length > 0) {
       unmountChildren(container);

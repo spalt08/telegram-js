@@ -1,13 +1,13 @@
-import { timer, combineLatest, Subject } from 'rxjs';
-import { distinctUntilChanged, map } from 'rxjs/operators';
-import { Peer, UserStatus } from 'mtproto-js';
-import { userCache, chatCache, chatFullCache } from 'cache';
+import { chatCache, chatFullCache, userCache } from 'cache';
 import { el, mount, unmountChildren } from 'core/dom';
-import { text, fragment } from 'core/html';
 import { useObservable, useWhileMounted } from 'core/hooks';
-import { auth as authService } from 'services';
-import { todoAssertHasValue, pluralize } from 'helpers/other';
+import { fragment, text } from 'core/html';
 import { areUserStatusesEqual } from 'helpers/api';
+import { pluralize, todoAssertHasValue } from 'helpers/other';
+import { Peer, UserStatus } from 'mtproto-js';
+import { combineLatest, Subject, timer } from 'rxjs';
+import { distinctUntilChanged, map, startWith } from 'rxjs/operators';
+import { auth as authService } from 'services';
 import './peer_status.scss';
 
 interface Props {
@@ -162,17 +162,18 @@ export function peerChatFullStatus(peer: Peer.peerChat, props?: Props) {
     distinctUntilChanged(),
   );
 
+  const cacheChangesObservable = userCache.changes.pipe(startWith(0));
+
   // todo: Counting users on every user cache update can slow the render. Also the user cache may omit no changes. Optimize it.
   useObservable(
     container,
-    combineLatest([countObservable, participantsObservable, userCache.changes]),
+    combineLatest([countObservable, participantsObservable, cacheChangesObservable]),
     false,
     ([participantsCount, participants]) => {
       if (participantsCount === undefined) {
         container.textContent = blankStatus;
         return;
       }
-
       let statusText = `${formatCount(participantsCount)} members`;
 
       if (participants) {

@@ -85,6 +85,7 @@ runtime.register({ scope: SERVICE_WORKER_SCOPE });
 
 navigator.serviceWorker.ready.then((registration) => {
   console.log('Service Worker Loaded With Scope:', registration.scope, navigator.serviceWorker.controller);
+  task('get_status', {});
   resendPending();
 });
 

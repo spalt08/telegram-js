@@ -2,6 +2,7 @@ import client from 'client/client';
 import { PhotoOptions } from 'helpers/other';
 import { Document, InputStickerSet, Message, Peer, Photo } from 'mtproto-js';
 import { BehaviorSubject } from 'rxjs';
+import { task } from 'client/context';
 
 type SidebarState = import('components/sidebar/sidebar').SidebarState;
 type SidebarContext<T> = import('components/sidebar/sidebar').SidebarContext<T>;
@@ -19,6 +20,9 @@ export default class MainService {
 
   /** Popup Context */
   popupCtx: any = {};
+
+  /** Is Chat Opened */
+  isChatOpened = new BehaviorSubject<boolean | null>(null);
 
   /** Window Size */
   window = { width: 0, height: 0 };
@@ -39,6 +43,9 @@ export default class MainService {
       };
     });
 
+    window.addEventListener('online', () => task('network_event', 'online'));
+    window.addEventListener('offline', () => task('network_event', 'offline'));
+
     client.on('networkChanged', (state: string) => {
       this.network.next(state);
     });
@@ -49,7 +56,7 @@ export default class MainService {
   showPopup(type: 'stickerSet', ctx: InputStickerSet): void;
   showPopup(type: 'photo', ctx: { rect: DOMRect, options: PhotoOptions, photo: Photo, peer: Peer, message: Message }): void;
   showPopup(type: 'video', ctx: { rect: DOMRect, video: Document.document, peer?: Peer, message?: Message }): void;
-  showPopup(type: 'confirmation', ctx: { body: string, title?: string, confirmCallback: () => void }): void;
+  showPopup(type: 'confirmation', ctx: { body: string | Node, title?: string, confirmCallback: () => void }): void;
   showPopup(type: string, ctx?: any): void {
     this.popupCtx = ctx;
     this.popup.next(type);

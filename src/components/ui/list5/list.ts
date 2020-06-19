@@ -248,7 +248,7 @@ export class VirtualizedList {
         count++;
       } else break;
 
-      if (rect.height === 0) throw new Error(`height cannot be zero: ${offset + count * direction}: ${this.firstRendered} ${this.lastRendered}`);
+      // if (rect.height === 0) throw new Error(`height cannot be zero: ${offset + count * direction}: ${this.firstRendered} ${this.lastRendered}`);
     }
 
     if (this.selectGroup && this.cfg.groupPadding && offset + count * direction > this.firstRendered
@@ -588,7 +588,8 @@ export class VirtualizedList {
       nextVisible.push(nextItem);
     }
 
-    this.container.scrollTop = this.scrollTop -= (this.scrollHeight - this.container.scrollHeight);
+    if (this.cfg.pivotBottom) this.container.scrollTop = this.scrollTop -= (this.scrollHeight - this.container.scrollHeight);
+    else this.container.scrollTop = this.scrollTop;
 
     this.scrollHeight = this.container.scrollHeight;
 

@@ -1,3 +1,5 @@
+@import '~styles/variables.scss';
+
 .contact {
   $total-padding-horizontal: 20px;
   $total-padding-vertical: 12px;
@@ -8,11 +10,20 @@
   font-size: 14px;
   color: #707579;
 
+  @include respond-to(small) {
+    padding: 0;
+  }
+
   &__ripple {
     padding: $click-padding-vertical $click-padding-horizontal;
     border-radius: 10px;
     cursor: pointer;
     transition: background-color .2s ease;
+
+    @include respond-to(small) {
+      padding: 10px 12px;
+      border-radius: 0;
+    }
 
     &:hover {
       background-color: rgba(#707579, 0.08);
