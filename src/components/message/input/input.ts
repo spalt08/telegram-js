@@ -59,7 +59,12 @@ export default function messageInput(peer: MaybeObservable<Peer | null>) {
   const btnI = getInterface(btn);
 
   const textarea = messageTextarea({
-    onSend: message.sendMessage,
+    onSend: (msg) => {
+      message.sendMessage(msg);
+      if (currentPeerId) {
+        messageDrafts.delete(currentPeerId);
+      }
+    },
     onChange: (value) => {
       if (currentPeerId) {
         messageDrafts.set(currentPeerId, value);
