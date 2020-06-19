@@ -164,10 +164,7 @@ export default class FolderService {
     // todo: Handle fail responses from the API here and next
     /* no await */client.call('messages.updateDialogFilter', { id: filterWithId.id, filter: filterWithId })
       // Server puts the new filter to the start by default so we need to move it to the end explicitly
-      .then(() => client.call('messages.updateDialogFiltersOrder', {
-        // Just in case, duplicates are ok and the latest of a duplicate will stay
-        order: [...(this.filters.value?.keys() ?? []), filterWithId.id],
-      }));
+      .then(() => client.call('messages.updateDialogFiltersOrder', { order: [...(this.filters.value?.keys() ?? [])] }));
 
     this.pushNewFilterLocally(filterWithId);
   }
