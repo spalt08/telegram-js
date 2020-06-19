@@ -6,7 +6,7 @@ import { contextMenu, heading, HeadingIcon, VirtualizedList } from 'components/u
 import * as icons from 'components/icons';
 import { getInterface, useObservable } from 'core/hooks';
 import { mount, unmount } from 'core/dom';
-import { folder as folderService, peer as peerService } from 'services';
+import { folder as folderService, peer as peerService, main as mainService } from 'services';
 import { MaybeObservable } from 'core/types';
 import { inputPeerToPeer } from 'helpers/api';
 import { humanizeError } from 'helpers/humanizeError';
@@ -221,16 +221,19 @@ export default function filterScreen(
       ...filterListData.value.filter,
       title: titleSubject.value,
     };
+    const isNew = !filterSubject.value;
 
     try {
-      if (filterSubject.value) {
-        await folderService.changeFilter(filter);
-      } else {
+      if (isNew) {
         await folderService.createFilter(filter);
+      } else {
+        await folderService.changeFilter(filter);
       }
     } catch (error) {
-      // todo: Replace with a beautiful alert
-      alert(humanizeError(error.message));
+      mainService.showPopup('alert', {
+        title: `Couldn't ${isNew ? 'create' : 'edit'} the folder`,
+        body: humanizeError(error.message),
+      });
       return;
     }
 
