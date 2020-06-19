@@ -25,7 +25,8 @@ export default function stickerSetThumb(setId: string, onClick: (item: string) =
       const size = getSize([set.thumb], 64, 64);
 
       if (size) {
-        image.src = file(getStickerSetThumbLocation(set, size.location.volume_id, size.location.local_id), { dc_id: set.thumb_dc_id });
+        image.src = file(getStickerSetThumbLocation(set, size.location.volume_id, size.location.local_id), { dc_id: set.thumb_dc_id,
+          mime_type: 'image/webp' });
         if (!image.parentElement) mount(container, image);
       }
     } else {
@@ -35,7 +36,7 @@ export default function stickerSetThumb(setId: string, onClick: (item: string) =
           if (first && first.thumbs) {
             const size = getSize(first.thumbs, 64, 64);
             if (size) {
-              image.src = file(getPhotoLocation(first, size.type), { dc_id: first.dc_id });
+              image.src = file(getPhotoLocation(first, size.type), { dc_id: first.dc_id, mime_type: 'image/webp' });
               if (!image.parentElement) mount(container, image);
             }
           }

@@ -122,11 +122,13 @@ export function useCacheRenderer(element: HTMLCanvasElement, sticker: Document.d
     if (!renderer) return;
 
     if (isVisible) {
-      if (!renderer.isCaching) cacheQuene.register(renderer);
+      if (!renderer.isCaching && !renderer.lastLoadedFrame) cacheQuene.register(renderer);
       renderer.currentFrame = 0;
       renderer.currentFrameRaw = 0;
     } else {
       cacheQuene.filter((item) => item.id !== id);
+      cacheFrameData.delete(sid);
+      renderer.lastLoadedFrame = undefined;
     }
   });
 
