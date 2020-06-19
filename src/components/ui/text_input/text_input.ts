@@ -42,7 +42,7 @@ export default function textInput({
   onChange,
   onFocus,
   onBlur,
-}: Props) {
+}: Props = {}) {
   const labelText = new BehaviorSubject(label);
   const inputEl = input`${inputClassName}`({
     type,
@@ -56,6 +56,13 @@ export default function textInput({
 
   let filled = false;
 
+  function handleValueChange(value: string) {
+    if (!!value !== filled) {
+      filled = !!value;
+      element.classList.toggle('filled', filled);
+    }
+  }
+
   listen(inputEl, 'focus', () => {
     element.classList.add('focused');
     if (onFocus) onFocus(inputEl.value);
@@ -68,17 +75,7 @@ export default function textInput({
 
   listen(inputEl, 'input', (event: Event) => {
     const value = (event.target instanceof HTMLInputElement) ? event.target.value : '';
-
-    if (value && !filled) {
-      element.classList.add('filled');
-      filled = true;
-    }
-
-    if (!value && filled) {
-      element.classList.remove('filled');
-      filled = false;
-    }
-
+    handleValueChange(value);
     if (onChange) onChange(value);
   });
 
@@ -93,6 +90,10 @@ export default function textInput({
   return useInterface(element, {
     getValue() {
       return inputEl.value;
+    },
+    setValue(value: string) {
+      inputEl.value = value;
+      handleValueChange(value);
     },
   });
 }
