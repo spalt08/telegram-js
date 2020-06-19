@@ -10,7 +10,6 @@ export { default as heading, HeadingIcon } from './heading/heading';
 export { makeTextMatchHighlightComponent, makeTextMatchHighlighter, telegramSearchWordSeparator } from './highlight_text_match';
 export { default as infoListItem } from './info_list_item/info_list_item';
 export { default as list, VirtualizedList } from './list5/list';
-export { default as messageInfo, MessageInfoInterface } from './message_info/message_info';
 export { default as passwordInput } from './password_input/password_input';
 export { peerFullStatus, peerSimpleStatus } from './peer_status/peer_status';
 export { default as phoneInput } from './phone_input/phone_input';
