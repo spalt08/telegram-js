@@ -14,6 +14,13 @@ export function notify<K extends NotificationType>(type: K, payload: Notificatio
 }
 
 /**
+ * Respond to request
+ */
+export function notifySingle<K extends NotificationType>(client: Client | ServiceWorker | MessagePort, type: K, payload: NotificationPayloadMap[K]) {
+  client.postMessage({ type, payload }, []);
+}
+
+/**
  * Send Worker Task
  */
 export function workerTask<K extends NotificationType>(type: K, payload: NotificationPayloadMap[K], transferable?: Transferable[]) {

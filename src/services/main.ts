@@ -2,6 +2,7 @@ import client from 'client/client';
 import { PhotoOptions } from 'helpers/other';
 import { Document, InputStickerSet, Message, Peer, Photo } from 'mtproto-js';
 import { BehaviorSubject } from 'rxjs';
+import { task } from 'client/context';
 
 type SidebarState = import('components/sidebar/sidebar').SidebarState;
 type SidebarContext<T> = import('components/sidebar/sidebar').SidebarContext<T>;
@@ -41,6 +42,9 @@ export default class MainService {
         height: window.innerHeight,
       };
     });
+
+    window.addEventListener('online', () => task('network_event', 'online'));
+    window.addEventListener('offline', () => task('network_event', 'offline'));
 
     client.on('networkChanged', (state: string) => {
       this.network.next(state);
