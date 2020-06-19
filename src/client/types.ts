@@ -180,3 +180,48 @@ export enum Priority {
   Lowest,
   Background = 32,
 }
+
+
+export type CanvasWorkerRequest = {
+  type: 'get_cached_frame',
+  id: string,
+  src: string,
+  frame: number,
+  width: number,
+} | {
+  type: 'set_cached_frame',
+  id: string,
+  frame: number,
+  data: Uint8ClampedArray,
+  header: {
+    totalFrames: number,
+    frameRate: number,
+    width: number,
+  }
+} | {
+  type: 'cache_sticker',
+  id: string,
+  src: string,
+  width: number,
+  priority?: number,
+};
+
+export type CanvasWorkerResponse = {
+  type: 'cached_frame',
+  id: string,
+  frame: number,
+  data: Uint8ClampedArray,
+  header: {
+    totalFrames: number,
+    frameRate: number,
+    width: number,
+  }
+} | {
+  type: 'cached_frame_missing',
+  id: string,
+  frame: number,
+  width: number,
+} | {
+  type: 'cache_complete',
+  id: string,
+};

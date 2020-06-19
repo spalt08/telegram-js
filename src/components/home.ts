@@ -5,6 +5,7 @@ import { listen } from 'core/dom';
 import { getInterface, useObservable } from 'core/hooks';
 import { div } from 'core/html';
 import { main } from 'services';
+import { handleStickerRendering } from 'components/media/sticker/player';
 import './home.scss';
 import history from './main/history';
 
@@ -63,6 +64,8 @@ export default function home() {
   listen(rightSidebarFade, 'transitionend', () => {
     rightSidebarFade.style.display = '';
   });
+
+  requestAnimationFrame(handleStickerRendering);
 
   return withContextMenu(container);
 }
