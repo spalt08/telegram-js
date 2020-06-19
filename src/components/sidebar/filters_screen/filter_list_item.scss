@@ -1,0 +1,66 @@
+.filterListItem {
+  display: flex;
+  align-items: center;
+  padding: 9px 12px;
+  font-size: 16px;
+
+  &__icon {
+    $size: 32px;
+    width: $size;
+    height: $size;
+    flex: none;
+    margin-right: 28px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    > .avatar {
+      width: $size;
+      height: $size;
+      min-width: $size;
+      min-height: $size;
+      font-size: $size / 2.8;
+    }
+
+    > svg {
+      width: 24px;
+      height: 24px;
+      transition: transform 0.2s ease-out;
+
+      path {
+        fill: #707579;
+      }
+
+      &.-reverse {
+        transform: rotate(-180deg);
+      }
+    }
+  }
+
+  &__title {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &.-clickable {
+    cursor: pointer;
+
+    &:hover {
+      background-color: #f2f3f4;
+    }
+  }
+
+  &.-highlight {
+    color: #4EA4F5;
+
+    &.-clickable:hover {
+      color: #4797E2;
+    }
+  }
+  &.-highlight &__icon > svg path {
+    fill: currentColor;
+  }
+}

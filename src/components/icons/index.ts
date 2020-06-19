@@ -55,6 +55,9 @@ export const avatarSavedmessages = /*#__PURE__*/svgCodeToComponent(avatarSavedme
 import backCode from './back.svg?raw';
 export const back = /*#__PURE__*/svgCodeToComponent(backCode);
 
+import botsCode from './bots.svg?raw';
+export const bots = /*#__PURE__*/svgCodeToComponent(botsCode);
+
 import cameraCode from './camera.svg?raw';
 export const camera = /*#__PURE__*/svgCodeToComponent(cameraCode);
 
@@ -203,6 +206,9 @@ export const newprivate = /*#__PURE__*/svgCodeToComponent(newprivateCode);
 import nextCode from './next.svg?raw';
 export const next = /*#__PURE__*/svgCodeToComponent(nextCode);
 
+import noncontactsCode from './noncontacts.svg?raw';
+export const noncontacts = /*#__PURE__*/svgCodeToComponent(noncontactsCode);
+
 import pauseCode from './pause.svg?raw';
 export const pause = /*#__PURE__*/svgCodeToComponent(pauseCode);
 
@@ -229,6 +235,9 @@ export const radiooff = /*#__PURE__*/svgCodeToComponent(radiooffCode);
 
 import radioonCode from './radioon.svg?raw';
 export const radioon = /*#__PURE__*/svgCodeToComponent(radioonCode);
+
+import readchatsCode from './readchats.svg?raw';
+export const readchats = /*#__PURE__*/svgCodeToComponent(readchatsCode);
 
 import recentCode from './recent.svg?raw';
 export const recent = /*#__PURE__*/svgCodeToComponent(recentCode);

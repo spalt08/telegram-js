@@ -24,7 +24,7 @@ export { default as selectAutoComplete } from './select/select_autocomplete';
 export { default as simpleList } from './simple_list';
 export { default as tabsPanel, TabItem } from './tabs/tabs';
 export { default as textInput } from './text_input/text_input';
-export { default as tgs, preloadTgsAssets } from './tgs/tgs';
+export { default as tgs, preloadTgsAssets, Props as TgsProps } from './tgs/tgs';
 export { default as typingIndicator } from './typing_indicator/typing_indicator';
 export { default as virtualScrollBar } from './virtual_scroll_bar/virtual_scroll_bar';
 export { default as waveform } from './waveform/waveform';

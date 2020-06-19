@@ -4,7 +4,7 @@ import { div } from 'core/html';
 import { useInterface, useOnMount, useOnUnmount } from 'core/hooks';
 import { watchVisibility, listen } from 'core/dom';
 
-interface Props {
+export interface Props {
   src: string,
   className?: string,
   autoplay?: boolean,
