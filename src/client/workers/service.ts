@@ -58,6 +58,14 @@ function getFilePartRequest(location: InputFileLocation, offset: number, limit: 
       return;
     }
 
+    // wait
+    if (err && err.message && err.message.indexOf('FLOOD_WAIT_') > -1) {
+      const wait = +err.message.replace('FLOOD_WAIT_', '') + 0.3;
+      console.log('waiting', wait * 1000);
+      setTimeout(() => getFilePartRequest(location, offset, limit, options, ready), wait * 1000);
+      return;
+    }
+
     // todo handling errors
     if (err || !result || result._ === 'upload.fileCdnRedirect') {
       throw new Error(`Error while downloading file: ${JSON.stringify(err)}`);

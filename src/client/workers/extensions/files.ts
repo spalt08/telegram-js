@@ -131,16 +131,10 @@ export function initDownload(url: FileURL | string, get: FilePartResolver, cache
   if (info && !info.processing) {
     info.processing = true;
     loopDownload(info, get, cache, progress);
+  } else {
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    processQueuedDownloads(get, cache, progress);
   }
-}
-
-/**
- * Memrise File Location for Future Use and Download if Requested
- */
-export function fetchFileLocation(url: FileURL | string, location: InputFileLocation, options: DownloadOptions, get: FilePartResolver,
-  cache: Cache, progress: ProgressResolver) {
-  if (!files.get(url)) files.set(url, { url, location, options, chunks: [] });
-  if (fileEvents[url] && fileEvents[url].length > 0) initDownload(url, get, cache, progress);
 }
 
 /**
@@ -165,6 +159,15 @@ export function putDownloadQueue(url: string, get: FilePartResolver, cache: Cach
   fileQueue.push(url);
   fileQueue.sort((left, right) => (files.get(right)!.options.priority || 0) - (files.get(left)!.options.priority || 0));
   processQueuedDownloads(get, cache, progress);
+}
+
+/**
+ * Memrise File Location for Future Use and Download if Requested
+ */
+export function fetchFileLocation(url: FileURL | string, location: InputFileLocation, options: DownloadOptions, get: FilePartResolver,
+  cache: Cache, progress: ProgressResolver) {
+  if (!files.get(url)) files.set(url, { url, location, options, chunks: [] });
+  if (fileEvents[url] && fileEvents[url].length > 0) putDownloadQueue(url, get, cache, progress); // initDownload(url, get, cache, progress);
 }
 
 /**
