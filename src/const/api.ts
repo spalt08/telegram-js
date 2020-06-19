@@ -19,3 +19,5 @@ export const CLIENT_CONFIG = {
   appVersion: APP_VERSION,
   langCode: 'en',
 };
+
+export const MAX_DIALOG_FILTER_TITLE_LENGTH = 12;

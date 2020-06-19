@@ -5,13 +5,14 @@ import { textInput } from 'components/ui';
 import { getInterface, useMaybeObservable, useObservable } from 'core/hooks';
 import { MaybeObservable } from 'core/types';
 import { mount, unmount } from 'core/dom';
+import { MAX_DIALOG_FILTER_TITLE_LENGTH } from 'const/api';
 import screenTgs from '../screen_tgs/screen_tgs';
 import './filter_info.scss';
 
 export default function filterInfo(isCreating: MaybeObservable<boolean>, title: BehaviorSubject<string>) {
   const titleInput = textInput({
     label: 'Folder Name',
-    maxLength: 50,
+    maxLength: MAX_DIALOG_FILTER_TITLE_LENGTH,
     className: 'filterInfo__title',
     onChange(newTitle) {
       title.next(newTitle);
