@@ -1,5 +1,16 @@
 import client from 'client/client';
-import { Dialog, DialogPeer, Document, InputDialogPeer, InputPeer, Message, Peer, Updates, UserStatus } from 'mtproto-js';
+import {
+  Dialog,
+  DialogPeer,
+  Document, InputChannel,
+  InputDialogPeer,
+  InputPeer,
+  InputUser,
+  Message,
+  Peer,
+  Updates,
+  UserStatus,
+} from 'mtproto-js';
 import { todoAssertHasValue } from './other';
 
 export function peerToId(peer: Peer): string {
@@ -232,4 +243,21 @@ export function getMessageDocument(message: Readonly<Message>): Document.documen
   if (message.media?._ !== 'messageMediaDocument') return undefined;
   if (message.media.document?._ !== 'document') return undefined;
   return message.media.document;
+}
+
+export function inputPeerToInputUser(inputPeer: InputPeer): InputUser | null {
+  switch (inputPeer._) {
+    case 'inputPeerSelf': return { _: 'inputUserSelf' };
+    case 'inputPeerUser': return { ...inputPeer, _: 'inputUser' };
+    case 'inputPeerUserFromMessage': return { ...inputPeer, _: 'inputUserFromMessage' };
+    default: return null;
+  }
+}
+
+export function inputPeerToInputChannel(inputPeer: InputPeer): InputChannel | null {
+  switch (inputPeer._) {
+    case 'inputPeerChannel': return { ...inputPeer, _: 'inputChannel' };
+    case 'inputPeerChannelFromMessage': return { ...inputPeer, _: 'inputChannelFromMessage' };
+    default: return null;
+  }
 }
