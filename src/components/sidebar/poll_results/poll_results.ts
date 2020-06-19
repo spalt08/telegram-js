@@ -18,7 +18,8 @@ const decoder = new TextDecoder();
 function pollResultsContent(peer: Peer, messageId: number) {
   const message = messageCache.get(peerMessageToId(peer, messageId));
   if (!isPollMessage(message)) {
-    throw new Error('message media must be of type "messageMediaPoll"');
+    // Message media must be of type "messageMediaPoll"
+    return div();
   }
 
   const poll = message.media.poll as Required<Poll>;
