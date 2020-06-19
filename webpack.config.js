@@ -136,6 +136,7 @@ module.exports = (env, argv) => {
       port: 3000,
       host: '0.0.0.0',
       publicPath: '/',
+      disableHostCheck: true,
     },
 
     plugins: [
