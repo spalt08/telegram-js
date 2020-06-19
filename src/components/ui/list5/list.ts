@@ -1,5 +1,5 @@
 import { animationFrameStart, listen, listenOnce, mount, unmount, unmountChildren } from 'core/dom';
-import { useMaybeObservable } from 'core/hooks';
+import { useMaybeObservable, useListenWhileMounted } from 'core/hooks';
 import { div } from 'core/html';
 import { MaybeObservable } from 'core/types';
 import { isiOS, isSafari } from 'helpers/browser';
@@ -160,6 +160,15 @@ export class VirtualizedList {
       if (prevOffset < offset) this.onScrollDown();
       else this.onScrollUp();
     }, { passive: true, capture: true });
+
+    // fix for virtual keyboard in iOS.
+    const { visualViewport } = window as any;
+    if (visualViewport) {
+      useListenWhileMounted(this.container, visualViewport, 'resize', () => {
+        this.wrapper.style.transform = `translateY(${-visualViewport.pageTop}px)`;
+        this.viewport = this.container.getBoundingClientRect();
+      });
+    }
   }
 
   // get element by index
