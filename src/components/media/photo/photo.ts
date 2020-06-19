@@ -14,24 +14,25 @@ export default function photoRenderer(photo: Photo.photo | Document.document, op
   if (photo?._ !== 'photo' && photo?._ !== 'document') return nothing;
 
   const size = getSize((photo._ === 'photo' ? photo.sizes : photo.thumbs) ?? [], options.width, options.height, options.fit);
-  if (!size) return nothing;
 
   let thumbnail: HTMLImageElement | undefined;
   let background: HTMLElement | undefined;
   let thumbSrc: string | null = null;
 
-  const { width, height, minHeight, minWidth, fit = 'contain', thumb = true } = options;
-  const dim = size.w / size.h;
-  const location = getPhotoLocation(photo, size.type);
+  const { minHeight, minWidth, fit = 'contain', thumb = true } = options;
+  const dim = size ? size.w / size.h : 0;
+  const location = size ? getPhotoLocation(photo, size.type) : undefined;
 
-  const src = file(location, {});
+  const src = location ? file(location, {}) : '';
   const image = img`.photo__content`({ src });
-  const container = div`.photo${options.className}`(image);
+  const container = div`.photo${options.className}`(src ? image : nothing);
 
   // apply classes
   if (options.fit) container.classList.add(options.fit);
-  usePhotoSize(container, size, options);
-  container.classList.add(size.w >= size.h ? 'landscape' : 'portrait');
+  if (size) {
+    usePhotoSize(container, size, options);
+    container.classList.add(size.w >= size.h ? 'landscape' : 'portrait');
+  }
 
   // diplay thumbnail
   if (thumb) {
@@ -51,13 +52,14 @@ export default function photoRenderer(photo: Photo.photo | Document.document, op
   }
 
   // show background
-  if (fit === 'contain' && ((width && minHeight && width / dim < minHeight) || (height && minWidth && height * dim < minWidth))) {
+  if (size && fit === 'contain' && ((minHeight && size.w / dim < minHeight) || (minWidth && size.h * dim < minWidth))) {
     if (!thumbSrc) thumbSrc = getThumbnail((photo._ === 'photo' ? photo.sizes : photo.thumbs) ?? []);
-    background = img({ className: 'photo__background', src: thumbSrc });
-    mount(container, background);
-
-    if (height && minWidth && height * dim < minWidth) container.style.width = `${minWidth}px`;
-    if (width && minHeight && width / dim < minHeight) container.style.height = `${minHeight}px`;
+    if (thumbSrc) {
+      background = img({ className: 'photo__background', src: thumbSrc });
+      mount(container, background);
+    }
+    if (minWidth && size.h * dim < minWidth) container.style.width = `${minWidth}px`;
+    if (minHeight && size.w / dim < minHeight) container.style.height = `${minHeight}px`;
   }
 
   let isLoaded = false;

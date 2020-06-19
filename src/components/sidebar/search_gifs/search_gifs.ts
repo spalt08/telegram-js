@@ -1,11 +1,12 @@
-import { media } from 'services';
+import { media, message } from 'services';
 import { div } from 'core/html';
 import { heading, searchInput, VirtualizedList } from 'components/ui';
 import * as icons from 'components/icons';
 import { useOnMount } from 'core/hooks';
+import gifPreview from 'components/media/video/gif';
 import './search_gifs.scss';
 import { getAttributeVideo } from 'helpers/files';
-import videoRenderer from 'components/media/video/video';
+import { documentToInputMedia } from 'helpers/message';
 
 type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
@@ -14,7 +15,12 @@ function renderGifForSearch(id: string) {
   const doc = media.foundGifsMap.get(id)!;
   const videoAttr = getAttributeVideo(doc)!;
   const { w, h } = videoAttr;
-  const element = videoRenderer(doc, { className: 'searchGifs__item' }) as HTMLElement;
+
+  const element = gifPreview(doc, { className: 'searchGifs__item', thumb: true, width: w, height: 100, fit: 'cover' }, undefined, (gif) => {
+    message.sendMediaMessage(documentToInputMedia(gif));
+  });
+  console.log(element);
+
   element.style.width = `${(w / h) * 100}px`;
 
   return element;
