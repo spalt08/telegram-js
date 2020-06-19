@@ -6,7 +6,7 @@ export { ContextMenuOption, default as contextMenu } from './context_menu/contex
 export { default as datetime } from './datetime/datetime';
 export { default as emoji } from './emoji/emoji';
 export { formattedMessage } from './formatted_message';
-export { default as heading } from './heading/heading';
+export { default as heading, HeadingIcon } from './heading/heading';
 export { makeTextMatchHighlightComponent, makeTextMatchHighlighter, telegramSearchWordSeparator } from './highlight_text_match';
 export { default as infoListItem } from './info_list_item/info_list_item';
 export { default as list, VirtualizedList } from './list5/list';
@@ -17,7 +17,7 @@ export { default as phoneInput } from './phone_input/phone_input';
 export { default as playButton } from './play_button/play_button';
 export { default as quote } from './quote/quote';
 export { default as ripple } from './ripple/ripple';
-export { default as roundButton } from './round_button/round_button';
+export { default as roundButton, Color as RoundButtonColor } from './round_button/round_button';
 export { default as searchInput } from './search_input/search_input';
 export { default as sectionSpinner } from './section_spinner/section_spinner';
 export { default as selectAutoComplete } from './select/select_autocomplete';
