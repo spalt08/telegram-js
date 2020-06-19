@@ -8,11 +8,9 @@
   font-size: 15PX;
 
   &__container {
-    position: relative;
     background: #FFFFFF;
-    border-radius: 10px;
-    padding: 1rem 0 1rem 14px;
-    height: 54px;
+    padding: 13px 0 13px 15px;
+    height: 50px;
     width: 100%;
     border: 1px solid #DEE0E3;
     border-radius: 10px;
@@ -29,12 +27,12 @@
     display: flex;
     align-items: center;
     font-size: 12px;
-    top: -10px;
+    top: -9px;
     left: 12px;
     height: 20px;
-    padding: 0 3px;
+    padding: 0 4px;
     border-radius: 10px;
-    color: #A2ACB4;
+    color: #707579;
     background: #FFFFFF;
     transition: .2s ease-out;
     user-select: none;
@@ -48,7 +46,7 @@
   }
 
   &.disabled &__prefix {
-    color: #5c5c5c;
+    color: #a2acb4;
   }
 
   &.focused,
@@ -94,7 +92,7 @@
     }
 
     &:disabled {
-      color: #5c5c5c;
+      color: #a2acb4;
     }
   }
 }

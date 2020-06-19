@@ -18,17 +18,17 @@
     height: 90%;
     height: calc(100% - 4px);
     border-radius: 10px;
-    color: #A2ACB4;
+    color: #707579;
     transition: .2s ease-out;
     user-select: none;
     z-index: 0;
   }
 
   &.filled &__label {
-    top: -10px;
+    top: -8px;
     left: 12px;
     height: 20px;
-    padding: 0 3px;
+    padding: 0 4px;
     font-size: 12px;
     background: #FFFFFF;
     z-index: 1;
@@ -36,8 +36,8 @@
 
   input {
     appearance: none;
-    padding: 1rem 14px;
-    height: 54px;
+    padding: 13px 15px;
+    height: 50px;
     width: 100%;
     border: 1px solid #DEE0E3;
     box-sizing: padding-box;
@@ -51,7 +51,7 @@
     box-sizing: border-box;
 
     &:disabled {
-      color: #5c5c5c;
+      color: #a2acb4;
     }
   }
 
