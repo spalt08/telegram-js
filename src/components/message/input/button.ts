@@ -108,11 +108,13 @@ async function startRecord(handler: Handler) {
     handleData();
   });
 
+  // eslint-disable-next-line arrow-body-style
   return () => {
     return new Promise((resolve, reject) => {
       handleData = () => {
         resolve({
           blob: new Blob(chunks, {
+            // audio/wav don't can be voice :(
             type: 'audio/mpeg',
           }),
           duration: Math.round((Date.now() - recordStartTime) / 1000),
