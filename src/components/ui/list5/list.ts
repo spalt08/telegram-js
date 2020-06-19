@@ -248,7 +248,7 @@ export class VirtualizedList {
         count++;
       } else break;
 
-      if (rect.height === 0) throw new Error(`height cannot be zero: ${offset + count * direction}: ${this.firstRendered} ${this.lastRendered}`);
+      // if (rect.height === 0) throw new Error(`height cannot be zero: ${offset + count * direction}: ${this.firstRendered} ${this.lastRendered}`);
     }
 
     if (this.selectGroup && this.cfg.groupPadding && offset + count * direction > this.firstRendered
@@ -368,7 +368,6 @@ export class VirtualizedList {
         this.wrapper.style.paddingTop = `${this.paddingTop = Math.max(0, this.paddingTop - appendedHeight)}px`;
 
         if (newElementsHeight > 0) {
-          console.log('added new', newElementsHeight);
           // ios safari workaround
           if (isiOS) {
             this.wrapper.style.paddingTop = `${this.paddingTop += this.cfg.forcePadding}px`;

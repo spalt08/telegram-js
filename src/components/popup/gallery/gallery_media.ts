@@ -21,7 +21,7 @@ export function galleryMedia(message: Message.message, opener?: GalleryMediaOpen
 
   if (media && media._ === 'messageMediaPhoto' && media.photo && media.photo._ === 'photo') {
     mediaElement = photoRenderer(media.photo, {
-      fit: 'contain', width, height, className: 'galleryMedia__item', thumb: opener ? opener.thumb : true
+      fit: 'contain', width, height, className: 'galleryMedia__item', thumb: opener ? opener.thumb : true,
     });
   }
 
