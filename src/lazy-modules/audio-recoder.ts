@@ -1,3 +1,3 @@
 export default function loadAudioRecorder() {
-  return import('audio-recorder-polyfill').then((module) => module.default);
+  return import('opus-media-recorder').then((module) => module.default);
 }
