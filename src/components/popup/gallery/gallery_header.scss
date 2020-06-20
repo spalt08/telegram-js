@@ -14,7 +14,7 @@
   animation: appearGalleryHeader .2s ease-out;
   transform: translate(0, 0);
   transition: transform .2s ease-out;
-  z-index: 1;
+  z-index: 2;
 
   @include respond-to(small) {
     flex-direction: row-reverse;

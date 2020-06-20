@@ -12,6 +12,7 @@ export function galleryFooter(message: Message.message) {
 
   return useInterface(container, {
     update(next: Message.message) {
+      console.log('update', next.message);
       messageNode.textContent = next.message || '';
     },
   });

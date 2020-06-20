@@ -20,4 +20,52 @@
   
     @include hide-scrollbar();
   }
+
+  &__goLeft {
+    position: absolute;
+    left: 0;
+    width: 60px;
+    height: 100%;
+    top: 0;
+    background-position: center;
+    background-size: 9px auto;
+    background-repeat: no-repeat;
+    background-color: rgba(255, 255, 255, 0);
+    transition: background-color .3s ease-out;
+    z-index: 1;
+    cursor: pointer;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      background-image: url(~assets/icon-left@2x.png);
+    }
+    
+    @include respond-to(small) {
+      display: none;
+    }
+  }
+
+  &__goRight {
+    position: absolute;
+    right: 0;
+    width: 60px;
+    height: 100%;
+    top: 0;
+    background-position: center;
+    background-size: 9px auto;
+    background-repeat: no-repeat;
+    background-color: rgba(255, 255, 255, 0);
+    transition: background-color .3s ease-out;
+    z-index: 1;
+    cursor: pointer;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      background-image: url(~assets/icon-right@2x.png);
+    }
+    
+    @include respond-to(small) {
+      display: none;
+    }
+  }
 }
