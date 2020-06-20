@@ -18,6 +18,7 @@ interface SearchResponse {
 }
 
 export interface SearchResult {
+  peer: Readonly<Peer>;
   request: SearchRequest; // For what request was this result obtained
   ids: number[]; // Message ids
   count: number; // Total found messages count
@@ -41,7 +42,7 @@ export function isSearchRequestEmpty(request: SearchRequest): boolean {
 }
 
 async function makeSearchRequest(
-  peer: Peer,
+  peer: Readonly<Peer>,
   request: SearchRequest,
   offsetMessageId: number | null,
 ): Promise<SearchResponse> {
@@ -88,8 +89,9 @@ async function makeSearchRequest(
   return { ids: messageIds, count, isEnd };
 }
 
-function responseToResult(request: SearchRequest, response: SearchResponse): SearchResult {
+function responseToResult(peer: Readonly<Peer>, request: SearchRequest, response: SearchResponse): SearchResult {
   return {
+    peer,
     request,
     ids: response.ids,
     count: response.count,
@@ -105,10 +107,10 @@ const emptySearchResponse: SearchResponse = {
   isEnd: true,
 };
 
-export const emptySearchResult = responseToResult(emptySearchRequest, emptySearchResponse);
+export const emptySearchResult = responseToResult({ _: 'peerUser', user_id: 0 }, emptySearchRequest, emptySearchResponse);
 
-export default function makeSearchSession(peer: Peer): SearchSession {
-  const resultSubject = new BehaviorSubject<SearchResult>(responseToResult(emptySearchRequest, emptySearchResponse));
+export default function makeSearchSession(peer: Readonly<Peer>): SearchSession {
+  const resultSubject = new BehaviorSubject<SearchResult>(responseToResult(peer, emptySearchRequest, emptySearchResponse));
 
   const searchDriver = new SearchDriver<SearchRequest, Omit<SearchResponse, 'isEnd'>>({
     isRequestEmpty: isSearchRequestEmpty,
@@ -132,7 +134,7 @@ export default function makeSearchSession(peer: Peer): SearchSession {
   });
 
   searchDriver.result
-    .pipe(map(([request, result = emptySearchResponse, isEnd]) => responseToResult(request, { ...result, isEnd })))
+    .pipe(map(([request, result = emptySearchResponse, isEnd]) => responseToResult(peer, request, { ...result, isEnd })))
     .subscribe(resultSubject);
 
   return {

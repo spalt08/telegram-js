@@ -748,7 +748,7 @@ export class VirtualizedList {
   scrollToVirtualized(item: string, direction: number = 0) {
     const indexOfItem = this.items.indexOf(item);
     const translate = this.viewport!.height * direction * -1;
-  
+
     if (indexOfItem === -1) return;
 
     this.lock();
