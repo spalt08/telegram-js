@@ -6,10 +6,10 @@ import { getInterface } from 'core/hooks';
 import client from 'client/client';
 import stickerSetFetched from 'components/media/sticker/set_fetched';
 import { pluralize } from 'helpers/other';
+import { media } from 'services';
+import { stickerSetCache } from 'cache';
 import popupCommon from '../popup_common';
 import './sticker_set.scss';
-import { stickerSetCache } from 'cache';
-import { media } from 'services';
 
 export default function stickerSetPopup(stickerset: InputStickerSet) {
   const loader = materialSpinner({ className: 'popup-sticker-set__loading' });
