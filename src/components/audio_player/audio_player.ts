@@ -1,13 +1,14 @@
+import { close } from 'components/icons';
 import { userCache } from 'cache';
 import { userToTitle } from 'cache/accessors';
-import { datetime, playButton } from 'components/ui';
-import { mount, unmountChildren } from 'core/dom';
+import { datetime, playButton, roundButton } from 'components/ui';
+import { mount, unmountChildren, listen } from 'core/dom';
 import { useObservable } from 'core/hooks';
 import { div, span, text } from 'core/html';
 import { getAttributeAudio, getAttributeFilename } from 'helpers/files';
-import { Document } from 'mtproto-js';
+import { Document, Message } from 'mtproto-js';
 import { BehaviorSubject } from 'rxjs';
-import { audio as audioService } from 'services';
+import { audio as audioService, message } from 'services';
 import './audio_player.scss';
 
 export default function audioPlayer(onVisibilityChange: (visible: boolean) => void) {
@@ -20,17 +21,31 @@ export default function audioPlayer(onVisibilityChange: (visible: boolean) => vo
       span`.audioPlayer__title`(text(titleSubj)),
       span`.audioPlayer__performer`(text(performerSubj)),
     ),
+    roundButton(
+      {
+        className: 'audioPlayer__close-button',
+        onClick: () => audioService.stop(),
+      },
+      close(),
+    ),
   );
 
-  let lastDoc: Document.document;
+  let lastAudio: { message: Message.message, doc: Document.document };
+
+  listen(container, 'click', (e) => {
+    if (e.target === e.currentTarget && lastAudio) {
+      message.selectPeer(lastAudio.message.to_id, lastAudio.message.id);
+    }
+  });
+
   useObservable(container, audioService.currentAudio, true, (currAudio) => {
-    onVisibilityChange(currAudio);
+    onVisibilityChange(!!currAudio);
     container.classList.toggle('-hidden', !currAudio);
     if (currAudio) {
-      if (currAudio.doc !== lastDoc) {
+      if (!lastAudio || currAudio.doc !== lastAudio.doc) {
         unmountChildren(playButtonHolder);
         mount(playButtonHolder, playButton(currAudio.message));
-        lastDoc = currAudio.doc;
+        lastAudio = currAudio;
       }
 
       let title: string | undefined;

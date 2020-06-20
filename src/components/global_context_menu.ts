@@ -22,31 +22,33 @@ export function withContextMenu(element: Node) {
 /**
  * Hook for clickable element
  */
-export function useContextMenu(element: Node, options: ContextMenuOption[]) {
+export function useContextMenu(element: Element, options: ContextMenuOption[]) {
   listen(element, 'contextmenu', (event: MouseEvent) => {
     if (menu) getInterface(menu).close();
 
     menu = contextMenu({ className: 'global', options });
     if (container) mount(container, menu);
 
-    // const rect = menu.getBoundingClientRect();
+    const x = event.pageX;
+    const y = event.pageY;
+
     const mw = 220;
     const mh = options.length * 56;
     let origin = 'left';
 
-    if (event.pageX + mw > vw) {
-      menu.style.left = `${event.pageX - mw}px`;
+    if (x + mw > vw) {
+      menu.style.left = `${x - mw}px`;
       origin = 'right';
     } else {
-      menu.style.left = `${event.pageX}px`;
+      menu.style.left = `${x}px`;
       origin = 'left';
     }
 
-    if (event.pageY + mh > vh) {
-      menu.style.top = `${event.pageY - mh}px`;
+    if (y + mh > vh) {
+      menu.style.top = `${y - mh}px`;
       origin += ' bottom';
     } else {
-      menu.style.top = `${event.pageY}px`;
+      menu.style.top = `${y}px`;
       origin += ' top';
     }
 

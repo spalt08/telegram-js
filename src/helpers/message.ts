@@ -29,7 +29,7 @@ export function isPollMessage(message?: any): message is MediaMessage<MessageMed
 const timezoneOffset = new Date().getTimezoneOffset() * 60;
 
 export function getDayOffset(msg: Message.message | Message.messageService) {
-  return Math.ceil((msg.date - timezoneOffset) / (3600 * 24)).toString();
+  return Math.floor((msg.date - timezoneOffset) / (3600 * 24)).toString();
 }
 
 export function getMessageTooltipTitle(msg: Message.message) {

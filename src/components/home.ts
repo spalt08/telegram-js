@@ -1,11 +1,9 @@
-
-import { withContextMenu } from 'components/global_context_menu';
+import { handleStickerRendering } from 'components/media/sticker/player';
 import sidebar from 'components/sidebar/sidebar';
 import { listen, animationFrameStart } from 'core/dom';
 import { getInterface, useObservable } from 'core/hooks';
 import { div } from 'core/html';
-import { main, message } from 'services';
-import { handleStickerRendering } from 'components/media/sticker/player';
+import { main } from 'services';
 import './home.scss';
 import history from './main/history';
 
@@ -90,5 +88,5 @@ export default function home() {
     window.history.go(1);
   };
 
-  return withContextMenu(container);
+  return container;
 }

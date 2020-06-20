@@ -5,6 +5,7 @@
   height: 52px;
   opacity: 1;
   transition: opacity 0.2s;
+  align-items: center;
 
   &.-hidden {
     opacity: 0;
@@ -44,5 +45,9 @@
         fill: $accent-color !important;
       }
     }
+  }
+
+  &__close-button {
+    margin-left: auto;
   }
 }
