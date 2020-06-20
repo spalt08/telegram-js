@@ -3,6 +3,7 @@
   overflow: visible;
 
   &__label {
+    pointer-events: none;
     position: sticky;
     z-index: 2;
     top: 0;

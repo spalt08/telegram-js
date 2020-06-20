@@ -131,6 +131,7 @@ function processWindowMessage(msg: WindowMessage, source: Client | MessagePort |
 
     case 'switch_dc': {
       ctx.network.cfg.dc = msg.payload;
+      ctx.network.dc.setBaseDC(msg.payload);
       notify('authorization_updated', { dc: msg.payload, user: ctx.network.dc.getUserID() || 0 });
       break;
     }

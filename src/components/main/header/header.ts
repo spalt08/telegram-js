@@ -1,16 +1,16 @@
 
-import { Peer } from 'mtproto-js';
 import { pinnedMessageCache } from 'cache';
+import audioPlayer from 'components/audio_player/audio_player';
 import * as icons from 'components/icons';
 import messageQuote from 'components/message/quote';
 import { profileAvatar, profileTitle } from 'components/profile';
-import { contextMenu, peerFullStatus, ripple, roundButton, typingIndicator, heading, searchInput } from 'components/ui';
-import { listen, mount, unmount } from 'core/dom';
-import { getInterface, useObservable } from 'core/hooks';
-import { div, nothing } from 'core/html';
-import { peerToId, arePeersSame } from 'helpers/api';
+import { contextMenu, formattedMessage, heading, peerFullStatus, ripple, roundButton, searchInput, typingIndicator } from 'components/ui';
+import { listen, mount, unmount, unmountChildren } from 'core/dom';
+import { getInterface, useMaybeObservable, useObservable } from 'core/hooks';
+import { div, nothing, text } from 'core/html';
+import { arePeersSame, peerToId } from 'helpers/api';
+import { Peer } from 'mtproto-js';
 import { main, message } from 'services';
-import audioPlayer from 'components/audio_player/audio_player';
 import './header.scss';
 
 type Props = {
@@ -116,6 +116,8 @@ export default function header({ onBackToContacts }: Props) {
     placeholder: 'Search Messages',
   });
 
+  const navigationSearchEl = div`.header__inline-navigation`(text('buttons here'));
+
   const inlineSearch = heading({
     title: '',
     className: 'header__inline-search',
@@ -127,6 +129,7 @@ export default function header({ onBackToContacts }: Props) {
         onClick: () => {
           container.classList.remove('-searching');
           unmount(inlineSearch);
+          unmount(navigationSearchEl);
           updateStickyOffset(pinned ? pinned.classList.contains('-visible') : false, isAudioActive);
         },
       },
@@ -149,15 +152,16 @@ export default function header({ onBackToContacts }: Props) {
           if (isMobile) {
             container.classList.add('-searching');
             mount(container, inlineSearch);
+            if (container.parentElement) mount(container.parentElement, navigationSearchEl);
             setStickyOffset(0);
           } else if (peer) {
             main.openSidebar('messageSearch', { peer });
           }
         },
       },
-      { icon: icons.mute, label: 'Mute', onClick: () => {} },
-      { icon: icons.archive, label: 'Archive', onClick: () => {} },
-      { icon: icons.del, label: 'Delete and Leave', onClick: () => {} },
+      { icon: icons.mute, label: 'Mute', onClick: () => { } },
+      { icon: icons.archive, label: 'Archive', onClick: () => { } },
+      { icon: icons.del, label: 'Delete and Leave', onClick: () => { } },
     ],
   });
 
@@ -175,10 +179,29 @@ export default function header({ onBackToContacts }: Props) {
     }, icons.more()),
   );
 
+  const solutionText = div();
+  const solution = div`.header__solution`(
+    icons.info2(),
+    solutionText,
+  );
+  let solutionTimeout: any;
+  useMaybeObservable(solution, main.quizResultsDelegate, false, (quizResult) => {
+    solution.classList.toggle('-visible', !!quizResult);
+    unmountChildren(solutionText);
+    if (quizResult) {
+      mount(solutionText, formattedMessage(quizResult));
+      clearTimeout(solutionTimeout);
+      solutionTimeout = setTimeout(() => {
+        solution.classList.remove('-visible');
+      }, 10000);
+    }
+  });
+
   container = div`.header`(
     backButton,
     pinned || nothing,
     player,
+    solution,
     profile || nothing,
     actions,
   );

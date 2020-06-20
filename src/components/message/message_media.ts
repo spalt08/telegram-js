@@ -2,7 +2,6 @@
 import { Message } from 'mtproto-js';
 import { div, text } from 'core/html';
 import photoPreview from 'components/media/photo/preview';
-import { messageToSenderPeer } from 'cache/accessors';
 import { getAttributeSticker, getAttributeAnimated, getAttributeAudio, getAttributeVideo } from 'helpers/files';
 import stickerRenderer from 'components/media/sticker/sticker';
 import { main } from 'services';
@@ -14,6 +13,7 @@ import webpagePreview from 'components/media/webpage/preview';
 import videoPreview from 'components/media/video/preview';
 import { isEmoji } from 'helpers/message';
 import { PhotoOptions } from 'helpers/other';
+import gifPreview from 'components/media/video/gif';
 
 export function messageMediaImmutable(msg: Message.message): HTMLElement | undefined {
   if (!msg.media) return undefined;
@@ -42,12 +42,12 @@ export function messageMediaImmutable(msg: Message.message): HTMLElement | undef
       const videoAttr = getAttributeVideo(document);
       if (videoAttr && videoAttr.round_message) {
         return div({ className: msg.out ? 'message__video-round-out' : 'message__video-round' },
-          videoRenderer(document, {
+          gifPreview(document, {
             fit: 'contain',
             width: 200,
             height: 200,
             className: 'video__round',
-          }, undefined, true),
+          }, undefined),
         );
       }
 
@@ -69,7 +69,7 @@ export function messageMediaUpper(msg: Message.message): Node | undefined {
     width: size,
     height: size,
     minHeight: 60,
-    minWidth: msg.message ? size : undefined,
+    minWidth: msg.message ? size : 160,
     className: msg.out ? 'message__photo-out' : 'message__photo',
   };
 
@@ -93,7 +93,7 @@ export function messageMediaUpper(msg: Message.message): Node | undefined {
       // video gif
       const gifAttr = getAttributeAnimated(document);
       if (gifAttr) {
-        return videoRenderer(document, options);
+        return gifPreview(document, options, msg);
       }
 
       const videoAttr = getAttributeVideo(document);

@@ -228,6 +228,7 @@ export default class MessagesService {
 
     this.replyToMessageID.next('');
     this.main.isChatOpened.next(true);
+    this.main.quizResultsDelegate.next(undefined);
   }
 
   loadMoreHistory(direction: Direction.Newer | Direction.Older) {

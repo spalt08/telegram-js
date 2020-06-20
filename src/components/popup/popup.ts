@@ -2,7 +2,7 @@ import { mount, unmount } from 'core/dom';
 import { useInterface, useObservable } from 'core/hooks';
 import { div } from 'core/html';
 import { main } from 'services';
-import confirmationPopup from './confirmation/confirmation';
+import { confirmationPopup, alertPopup } from './confirmation/confirmation';
 import photoPopup from './photo/photo';
 import './popup.scss';
 import SendMediaPopup from './send_media/send_media';
@@ -51,6 +51,11 @@ export default function popup() {
       case 'confirmation':
         wrapper.classList.add('opened');
         mount(wrapper, element = confirmationPopup(main.popupCtx));
+        break;
+
+      case 'alert':
+        wrapper.classList.add('opened');
+        mount(wrapper, element = alertPopup(main.popupCtx));
         break;
 
       case 'gallery':

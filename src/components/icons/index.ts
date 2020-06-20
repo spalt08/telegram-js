@@ -142,6 +142,9 @@ export const help = /*#__PURE__*/svgCodeToComponent(helpCode);
 import infoCode from './info.svg?raw';
 export const info = /*#__PURE__*/svgCodeToComponent(infoCode);
 
+import info2Code from './info2.svg?raw';
+export const info2 = /*#__PURE__*/svgCodeToComponent(info2Code);
+
 import lampCode from './lamp.svg?raw';
 export const lamp = /*#__PURE__*/svgCodeToComponent(lampCode);
 
