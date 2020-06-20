@@ -1,5 +1,5 @@
 import { file } from 'client/media';
-import { mount, unmount, listen } from 'core/dom';
+import { mount, unmount, listen, watchVisibility } from 'core/dom';
 import { div, img, nothing } from 'core/html';
 import { usePhotoSize } from 'helpers/files';
 import { PhotoOptions } from 'helpers/other';
@@ -24,8 +24,12 @@ export default function photoRenderer(photo: Photo.photo | Document.document, op
   const location = size ? getPhotoLocation(photo, size.type) : undefined;
 
   const src = location ? file(location, {}) : '';
-  const image = img`.photo__content`({ src });
+  const image = img`.photo__content`();
   const container = div`.photo${options.className}`(src ? image : nothing);
+
+  watchVisibility(container, (isVisible) => {
+    if (!image.src && isVisible) image.src = src;
+  });
 
   // apply classes
   if (options.fit) container.classList.add(options.fit);
