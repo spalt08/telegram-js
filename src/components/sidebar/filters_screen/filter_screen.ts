@@ -89,7 +89,7 @@ function makeFilterTypesSetRecord(typesToCheck: ReadonlyArray<PeersType>, typesS
 function renderHeader(isCreating: boolean, onBack?: () => void, onSave?: () => void, onDelete?: () => void) {
   const commonButtons: HeadingIcon[] = [
     { icon: icons.back, position: 'left', onClick: () => onBack?.() },
-    { icon: icons.check, position: 'right', color: 'accent', onClick: () => onSave?.() },
+    { icon: icons.check, position: 'right', color: 'accent', onClick: () => onSave?.() }, // todo: Handle mousedown to compensate the server save time
   ];
 
   if (isCreating) {
@@ -142,7 +142,7 @@ function renderListItem(
     case 'includedHeader':
       return div(
         div`.filterScreen__header`(text('Included chats')),
-        filterListItem(icons.add(), 'Add Chats', true, () => {
+        filterListItem(icons.add(), 'Add or remove Chats', true, () => {
           const { filter } = listState.value;
           // eslint-disable-next-line no-unused-expressions
           onNavigate?.('filterPeers', {
@@ -157,7 +157,7 @@ function renderListItem(
     case 'excludedHeader':
       return div(
         div`.filterScreen__header`(text('Excluded chats')),
-        filterListItem(icons.add(), 'Add Chats', true, () => {
+        filterListItem(icons.add(), 'Add or remove Chats', true, () => {
           const { filter } = listState.value;
           // eslint-disable-next-line no-unused-expressions
           onNavigate?.('filterPeers', {
@@ -305,7 +305,7 @@ export default function filterScreen(
       unmount(header);
     }
     header = renderHeader(creating, onBack, saveFilter, deleteFilter);
-    mount(content, header, content.firstChild ?? undefined);
+    mount(content, header, content.firstChild);
   });
 
   // Watches the list content

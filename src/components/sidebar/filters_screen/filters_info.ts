@@ -11,9 +11,10 @@ export default function filtersInfo(onNavigate: SidebarComponentProps['onNavigat
   return (
     div`.filtersInfo`(
       screenTgs({
-        className: 'filtersInfo__image',
         src: foldersSticker,
         loop: false,
+        width: 82,
+        height: 82,
       }),
       div`.filtersInfo__text`(
         text('Create folders for different groups of chats and quickly switch between them.'),

@@ -5,9 +5,25 @@
   display: flex;
   flex-direction: column;
 
-  &__head,
+  &__head {
+    flex: none;
+  }
+
   &__input {
     flex: none;
+    max-height: calc(50% - #{$main-header-height});
+    padding-top: 0;
+    margin-top: -4px;
+  }
+
+  &__shadow {
+    $size: 4px;
+    flex: none;
+    height: $size;
+    margin-bottom: -$size;
+    z-index: 1;
+    background: linear-gradient(to bottom, rgba(#000, 0.12), rgba(#000, 0));
+    pointer-events: none;
   }
 
   &__list {
@@ -16,10 +32,11 @@
   }
 
   &__header {
+    flex: none;
     font-size: 15px;
     font-weight: 500;
     color: #707579;
-    padding: 21px 16px 8px;
+    padding: 16px 16px 8px;
     border-top: solid 1px $common-border-color;
 
     &:first-child {

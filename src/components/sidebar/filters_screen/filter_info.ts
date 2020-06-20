@@ -30,6 +30,8 @@ export default function filterInfo(isCreating: MaybeObservable<boolean>, title: 
         className: 'filterInfo__image',
         src: foldersSticker,
         loop: false,
+        width: 85,
+        height: 85,
       }),
       titleInput,
     )

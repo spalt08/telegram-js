@@ -1,4 +1,4 @@
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { InputPeer } from 'mtproto-js';
 import { div, text } from 'core/html';
@@ -7,8 +7,9 @@ import * as icons from 'components/icons';
 import { useObservable } from 'core/hooks';
 import { inputPeerToPeer, peerToId } from 'helpers/api';
 import { PeersType, typesInfos, typesToExclude, typesToInclude } from './constants';
-import './peers_screen.scss';
 import peersListItem from './peers_list_item';
+import peersInput, { PeersInputItem } from './peers_input';
+import './peers_screen.scss';
 
 type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
@@ -55,6 +56,7 @@ function renderListItem(
 export default function peersScreen({ onBack }: SidebarComponentProps, ctxSubject: BehaviorSubject<ScreenCtx>) {
   const selectedPeers = new BehaviorSubject(new Map<string, InputPeer>());
   const selectedTypes = new BehaviorSubject(new Set<PeersType>());
+  const searchInput = new BehaviorSubject('');
 
   function submit() {
     // eslint-disable-next-line no-unused-expressions
@@ -93,6 +95,22 @@ export default function peersScreen({ onBack }: SidebarComponentProps, ctxSubjec
     selectedTypes.next(types);
   }
 
+  function removeType(type: PeersType) {
+    const types = selectedTypes.value;
+    if (types.has(type)) {
+      types.delete(type);
+      selectedTypes.next(types);
+    }
+  }
+
+  function removePeer(peerId: string) {
+    const peers = selectedPeers.value;
+    if (peers.has(peerId)) {
+      peers.delete(peerId);
+      selectedPeers.next(peers);
+    }
+  }
+
   const listItems = new BehaviorSubject<string[]>([]);
   const listDriver = new VirtualizedList({
     items: listItems,
@@ -114,6 +132,33 @@ export default function peersScreen({ onBack }: SidebarComponentProps, ctxSubjec
           { icon: icons.check, position: 'right', color: 'accent', onClick: submit },
         ],
       }),
+      peersInput({
+        className: 'filterPeersScreen__input',
+        items: combineLatest([selectedTypes, selectedPeers])
+          .pipe(map(([types, inputPeers]) => {
+            const items: PeersInputItem[] = [];
+
+            types.forEach((type) => items.push({ _: 'type', type }));
+
+            inputPeers.forEach((inputPeer) => {
+              const peer = inputPeerToPeer(inputPeer);
+              if (peer) {
+                items.push({ _: 'peer', peer });
+              }
+            });
+
+            return items;
+          })),
+        searchValue: searchInput,
+        onItemRemove(item) {
+          switch (item._) {
+            case 'type': removeType(item.type); break;
+            case 'peer': removePeer(peerToId(item.peer)); break;
+            default:
+          }
+        },
+      }),
+      div`.filterPeersScreen__shadow`(),
       listDriver.container,
     )
   );
