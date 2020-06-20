@@ -23,7 +23,7 @@ export default function screenTgs({ className = '', width, height, ...props }: O
     setTimeout(() => {
       getInterface(image).play();
       image.classList.remove('-hidden');
-    }, 300); // The number should be more than the sidebar transition duration
+    }, 350); // The number should be more than the sidebar transition duration
 
     if (unwatchMount) {
       unwatchMount();

@@ -37,9 +37,13 @@ export default function foundMessage(messageUniqueId: string, searchQuery: Maybe
     ripple({
       className: 'foundMessage__ripple',
       contentClass: 'foundMessage__ripple_content',
-      onClick() {
+      onClick(event) {
         messageService.selectPeer(dialogPeer, message.id);
-        mainService.closeSidebar(); // For mobile search results in the sidebar
+
+        // For mobile search results in the right sidebar
+        if ((event.currentTarget as HTMLElement).clientWidth > window.innerWidth * 0.8) {
+          mainService.closeSidebar();
+        }
       },
     }, [
       profileAvatar(senderPeer, message),
