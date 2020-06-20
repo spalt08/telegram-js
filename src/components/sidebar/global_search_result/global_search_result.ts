@@ -3,6 +3,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { distinctUntilChanged, filter, map } from 'rxjs/operators';
 import { div, text } from 'core/html';
 import { useObservable } from 'core/hooks';
+import * as icons from 'components/icons';
 import { globalSearch } from 'services';
 import { EmptyQueryResult, SearchResult, SearchResultType } from 'services/global_search';
 import { VirtualizedList } from 'components/ui';
@@ -20,7 +21,6 @@ const sectionHeaders: Record<string, string> = {
   globalPeersHeader: 'Global Search',
   messagesHeader: 'Messages',
   topUsersHeader: 'People',
-  recentPeersHeader: 'Recent',
   nothingFound: 'Nothing is found',
 };
 
@@ -128,6 +128,15 @@ function listItem(id: string, searchResult: Observable<SearchResult>, exit: () =
         addRecentPeer(peer);
       },
     });
+  }
+  if (id === 'recentPeersHeader') {
+    return div`.globalSearchResult__sectionHeader`(
+      text('Recent'),
+      icons.close({
+        className: 'globalSearchResult__sectionHeader_button',
+        onClick: () => globalSearch.clearRecentPeers(),
+      }),
+    );
   }
   return div`.globalSearchResult__sectionHeader`(text(sectionHeaders[id] ?? id));
 }
