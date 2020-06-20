@@ -1,5 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
-import { animationFrameStart, listen, mount, unmount } from 'core/dom';
+import { animationFrameStart, listen, mount, unmount, unmountChildren } from 'core/dom';
 import { useInterface } from 'core/hooks';
 import { div } from 'core/html';
 import { main } from 'services';
@@ -144,7 +144,18 @@ export default function sidebar({ initial, className, onTransitionStart }: Props
     }
   });
 
+  const clear = () => {
+    if (!container.classList.contains('-hidden')) {
+      container.style.transition = 'none';
+      container.classList.add('-hidden');
+
+      unmountChildren(container);
+
+      animationFrameStart().then(() => container.style.transition = '');
+    }
+  };
+
   if (initial) pushState(initial.state, initial.ctx);
 
-  return useInterface(container, { pushState, popState, close });
+  return useInterface(container, { pushState, popState, close, clear });
 }

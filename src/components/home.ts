@@ -1,10 +1,10 @@
 
 import { withContextMenu } from 'components/global_context_menu';
 import sidebar from 'components/sidebar/sidebar';
-import { listen } from 'core/dom';
+import { listen, animationFrameStart } from 'core/dom';
 import { getInterface, useObservable } from 'core/hooks';
 import { div } from 'core/html';
-import { main } from 'services';
+import { main, message } from 'services';
 import { handleStickerRendering } from 'components/media/sticker/player';
 import './home.scss';
 import history from './main/history';
@@ -39,6 +39,16 @@ export default function home() {
     leftSidebarFade,
     rightSidebarFade,
   );
+
+  useObservable(container, message.activePeer, true, (next) => {
+    if (next) getInterface(rightSidebar).clear();
+    if (historyEl.classList.contains('-right-sidebar')) {
+      historyEl.style.transition = 'none';
+      historyEl.classList.remove('-right-sidebar');
+
+      animationFrameStart().then(() => historyEl.style.transition = '');
+    }
+  });
 
   useObservable(container, main.rightSidebarDelegate, false, (stateAndCtx) => {
     const sidebarInterface = getInterface(rightSidebar);

@@ -52,7 +52,7 @@ function uploadFileChunkLoop(id: string, part: number, upload: UploadPartResolve
 /**
  * Upload file
  */
-export function uploadFile(id: string, file: File, upload: UploadPartResolver, notify: Notification) {
+export function uploadFile(id: string, file: File | Blob, upload: UploadPartResolver, notify: Notification) {
   let partSize = 262144; // 256 Kb
   if (file.size > 67108864) partSize = 524288;
   else if (file.size < 102400) partSize = 32768;
@@ -67,7 +67,7 @@ export function uploadFile(id: string, file: File, upload: UploadPartResolver, n
     uploading[id] = {
       data: new Uint8Array(reader.result as ArrayBuffer),
       size: file.size,
-      name: file.name,
+      name: (file as any).name || 'untitled',
       partSize,
       total: Math.ceil(file.size / partSize),
       big: file.size > 1024 * 1024 * 10,
