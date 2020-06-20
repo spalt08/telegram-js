@@ -299,10 +299,9 @@ export class VirtualizedList {
     const focusIndex = this.shouldFocus ? this.items.indexOf(this.shouldFocus) : -1;
 
     if (appendCount > 0) {
-      const halfBatch = Math.round(this.cfg.batchService / 2);
       if (focusIndex > -1 && focusIndex !== this.items.length - 1) {
-        this.firstRendered = Math.max(0, focusIndex - halfBatch);
-        appendCount = Math.min(this.cfg.batchService, this.items.length - this.firstRendered - 1);
+        this.firstRendered = Math.max(0, focusIndex - this.cfg.batchService);
+        appendCount = Math.min(Math.floor(this.cfg.batchService * 1.5), this.items.length - this.firstRendered - 1);
       } else this.firstRendered = this.cfg.pivotBottom ? Math.max(0, this.items.length - this.cfg.batchService) : 0;
       this.lastRendered = this.firstRendered - 1;
     }
