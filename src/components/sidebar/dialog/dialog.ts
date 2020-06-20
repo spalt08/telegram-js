@@ -1,17 +1,19 @@
+import { dialogCache, messageCache } from 'cache';
+import { useContextMenu } from 'components/global_context_menu';
+import { archive, pinnedchat } from 'components/icons';
+import { avatarWithStatus, profileTitle } from 'components/profile';
+import { datetime, ripple } from 'components/ui';
+import { ARCHIVE_FOLDER_ID } from 'const/api';
+import { listen, mount, unmount, unmountChildren } from 'core/dom';
+import { useObservable } from 'core/hooks';
+import { div } from 'core/html';
+import { dialogIdToPeer, isDialogInFolder, isDialogMuted, peerMessageToId, peerToId } from 'helpers/api';
+import { Dialog } from 'mtproto-js';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Dialog } from 'mtproto-js';
-import { div } from 'core/html';
-import { listen, mount, unmountChildren, unmount } from 'core/dom';
-import { useObservable } from 'core/hooks';
-import { dialogCache, messageCache } from 'cache';
-import { datetime, ripple } from 'components/ui';
 import { message } from 'services';
-import { pinnedchat } from 'components/icons';
-import { dialogIdToPeer, isDialogMuted, peerMessageToId, peerToId } from 'helpers/api';
-import { avatarWithStatus, profileTitle } from 'components/profile';
-import dialogMessage from './dialog_message';
 import './dialog.scss';
+import dialogMessage from './dialog_message';
 
 export default function dialogPreview(id: string, pinned: Observable<boolean> = new BehaviorSubject(false)) {
   const peer = dialogIdToPeer(id);
@@ -139,6 +141,16 @@ export default function dialogPreview(id: string, pinned: Observable<boolean> = 
   listen(clickable, 'mousedown', (e) => {
     if (e.button === 0) message.selectPeer(peer, 'auto');
   });
+
+  const dialog = dialogCache.get(id) as Dialog.dialog;
+
+  useContextMenu(container, [
+    {
+      icon: () => archive(),
+      label: isDialogInFolder(dialog, ARCHIVE_FOLDER_ID) ? 'Unarchive chat' : 'Archive chat',
+      onClick: () => {},
+    },
+  ]);
 
   return container;
 }
