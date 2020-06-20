@@ -8,7 +8,7 @@ import { getInterface, useObservable } from 'core/hooks';
 import { mount, unmount } from 'core/dom';
 import { folder as folderService, peer as peerService, main as mainService } from 'services';
 import { MaybeObservable } from 'core/types';
-import { inputPeerToPeer } from 'helpers/api';
+import { inputPeerToPeer, peerToId } from 'helpers/api';
 import { humanizeError } from 'helpers/humanizeError';
 import filterInfo from './filter_info';
 import filterListItem, { expandButtonFilterListItem, peerFilterListItem } from './filter_list_item';
@@ -86,6 +86,43 @@ function makeFilterTypesSetRecord(typesToCheck: ReadonlyArray<PeersType>, typesS
   return record;
 }
 
+function setPeersAndTypesToFilter(
+  filter: Readonly<DialogFilter>,
+  destination: 'included' | 'excluded',
+  peers: ReadonlyMap<string, InputPeer>,
+  types: ReadonlySet<PeersType>,
+): DialogFilter {
+  const newFilter = {
+    ...filter,
+    ...makeFilterTypesSetRecord(destination === 'included' ? typesToInclude : typesToExclude, types),
+  };
+
+  if (destination === 'included') {
+    const previousPinnedPeers = new Set();
+
+    filter.pinned_peers.forEach((inputPeer) => {
+      const peer = inputPeerToPeer(inputPeer);
+      if (peer) {
+        previousPinnedPeers.add(peerToId(peer));
+      }
+    });
+
+    const pinnedPeers: InputPeer[] = [];
+    const includePeers: InputPeer[] = [];
+
+    peers.forEach((inputPeer, peerId) => {
+      (previousPinnedPeers.has(peerId) ? pinnedPeers : includePeers).push(inputPeer);
+    });
+
+    newFilter.pinned_peers = pinnedPeers;
+    newFilter.include_peers = includePeers;
+  } else {
+    newFilter.exclude_peers = [...peers.values()];
+  }
+
+  return newFilter;
+}
+
 function renderHeader(isCreating: boolean, onBack?: () => void, onSave?: () => void, onDelete?: () => void) {
   const commonButtons: HeadingIcon[] = [
     { icon: icons.back, position: 'left', onClick: () => onBack?.() },
@@ -140,34 +177,31 @@ function renderListItem(
       return filterInfo(isCreating, titleSubject);
 
     case 'includedHeader':
-      return div(
-        div`.filterScreen__header`(text('Included chats')),
-        filterListItem(icons.add(), 'Add or remove Chats', true, () => {
-          const { filter } = listState.value;
-          // eslint-disable-next-line no-unused-expressions
-          onNavigate?.('filterPeers', {
-            // Pinned peers aren't added to included explicitly
-            peers: [...filter.pinned_peers, ...filter.include_peers],
-            typesFor: 'included',
-            types: getFilterTypesSet(filter, typesToInclude),
-          });
-        }),
-      );
+    case 'excludedHeader': {
+      const header = item === 'includedHeader' ? 'Included chats' : 'Excluded chats';
+      const typesFor = item === 'includedHeader' ? 'included' : 'excluded';
+      // Pinned peers aren't added to included explicitly
+      const getPeers = (filter: DialogFilter) => item === 'includedHeader' ? [...filter.pinned_peers, ...filter.include_peers] : filter.exclude_peers;
+      const allTypes = item === 'includedHeader' ? typesToInclude : typesToExclude;
 
-    case 'excludedHeader':
       return div(
-        div`.filterScreen__header`(text('Excluded chats')),
+        div`.filterScreen__header`(text(header)),
         filterListItem(icons.add(), 'Add or remove Chats', true, () => {
-          const { filter } = listState.value;
           // eslint-disable-next-line no-unused-expressions
           onNavigate?.('filterPeers', {
-            // Pinned peers aren't added to included explicitly
-            peers: filter.exclude_peers,
-            typesFor: 'excluded',
-            types: getFilterTypesSet(filter, typesToExclude),
+            peers: getPeers(listState.value.filter),
+            typesFor,
+            types: getFilterTypesSet(listState.value.filter, allTypes),
+            onSubmit(peers, types) {
+              listState.next({
+                ...listState.value,
+                filter: setPeersAndTypesToFilter(listState.value.filter, typesFor, peers, types),
+              });
+            },
           });
         }),
       );
+    }
 
     case 'expandIncluded':
       return expandButtonFilterListItem(
