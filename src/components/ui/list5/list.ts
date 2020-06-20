@@ -748,7 +748,7 @@ export class VirtualizedList {
   scrollToVirtualized(item: string, direction: number = 0) {
     const indexOfItem = this.items.indexOf(item);
     const translate = this.viewport!.height * direction * -1;
-
+  
     if (indexOfItem === -1) return;
 
     this.lock();
@@ -760,7 +760,7 @@ export class VirtualizedList {
     this.lastRendered = Math.min(this.items.length - 1, indexOfItem + halfBatch);
 
     if (this.firstRendered >= this.items.length - this.cfg.batchService) this.firstRendered -= halfBatch;
-    if (this.lastRendered <= this.cfg.batchService) this.firstRendered += halfBatch;
+    if (this.lastRendered <= this.cfg.batchService) this.lastRendered += halfBatch;
 
     if (this.cfg.highlightFocused) this.element(item).classList.add('-focused');
 
