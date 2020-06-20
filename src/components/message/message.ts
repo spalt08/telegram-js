@@ -9,8 +9,10 @@ import { getDayOffset, getMessageTooltipTitle } from 'helpers/message';
 import { formatNumber } from 'helpers/other';
 import { Message, Peer } from 'mtproto-js';
 import { BehaviorSubject } from 'rxjs';
-import { click } from 'services';
+import { click, message as service } from 'services';
 import { peerToDialogId } from 'helpers/api';
+import { useContextMenu } from 'components/global_context_menu';
+import * as icons from 'components/icons';
 import './message.scss';
 import { enhanceClassName, hasMediaChanged, hasMediaToMask, messageMediaImmutable, messageMediaLower, messageMediaUpper } from './message_media';
 import messageReply from './reply';
@@ -149,6 +151,9 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
   if (textEl && !mediaLower) mount(textEl, info);
   else mount(content, info);
 
+  useContextMenu(container, [
+    { icon: icons.reply, label: 'Reply', onClick: () => service.setMessageForReply(id) },
+  ]);
   /**
    * Position was updated inside scroll
    */
