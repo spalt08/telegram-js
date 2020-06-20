@@ -238,6 +238,10 @@ export default class GlobalSearch {
     ]);
   }
 
+  clearRecentPeers() {
+    this.recentPeers.next([]);
+  }
+
   private watchEmptySearchSources(request: SearchRequest) {
     this.sourceSubscriptions.push(
       combineLatest([
