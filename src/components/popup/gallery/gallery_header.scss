@@ -107,6 +107,14 @@
       fill: rgba(255,255,255,0.5);
     }
   }
+
+  &__more-menu {
+    position: absolute;
+    right: 12px;
+    top: 58px;
+    transform-origin: top right;
+    z-index: 5;
+  }
 }
 
 @keyframes appearGalleryHeader {
