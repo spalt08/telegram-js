@@ -30,7 +30,7 @@ $main-header-height: 56px;
   }
 
   @if $media == message-wrap {
-    @media only screen and (min-width: $break-small + 1) and (max-width: $break-message-wrap) { @content; }
+    @media only screen and (min-width: $break-medium + 1) and (max-width: $break-message-wrap) { @content; }
   }
 
   @if $media == desktop {

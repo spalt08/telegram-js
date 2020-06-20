@@ -24,7 +24,7 @@ export default function audioPlayer(onVisibilityChange: (visible: boolean) => vo
 
   let lastDoc: Document.document;
   useObservable(container, audioService.currentAudio, true, (currAudio) => {
-    onVisibilityChange(currAudio);
+    onVisibilityChange(!!currAudio);
     container.classList.toggle('-hidden', !currAudio);
     if (currAudio) {
       if (currAudio.doc !== lastDoc) {
