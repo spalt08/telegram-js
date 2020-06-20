@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import { getInterface } from 'core/hooks';
 import { listen, mount } from 'core/dom';
 import { isSafari, isAndroid } from 'helpers/browser';
@@ -57,7 +58,7 @@ let touchTimer: any;
 /**
  * Hook for clickable element
  */
-export function useContextMenu(element: Element, options: ContextMenuOption[]) {
+export function useContextMenu(element: HTMLElement, options: ContextMenuOption[]) {
   listen(element, 'contextmenu', (event: MouseEvent) => {
     const x = event.pageX;
     const y = event.pageY;
@@ -70,7 +71,7 @@ export function useContextMenu(element: Element, options: ContextMenuOption[]) {
     listen(element, 'touchstart', (event: TouchEvent) => {
       if (event.touches.length > 1) return;
       const touch = event.touches[0];
-      touchTimer = setTimeout(() => openMenu(touch.pageX, touch.pageY, options), 1000);
+      touchTimer = setTimeout(() => openMenu(touch.pageX, touch.pageY, options), 500);
     });
 
     listen(element, 'touchmove', () => touchTimer && clearTimeout(touchTimer));
