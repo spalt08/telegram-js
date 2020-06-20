@@ -2,7 +2,7 @@ import * as icons from 'components/icons';
 import { foundMessage } from 'components/sidebar';
 import { heading, searchInput, VirtualizedList } from 'components/ui';
 import { mount, unmount } from 'core/dom';
-import { useToBehaviorSubject, useMaybeObservable, getInterface } from 'core/hooks';
+import { useToBehaviorSubject, useMaybeObservable, getInterface, useOnUnmount } from 'core/hooks';
 import { div, text } from 'core/html';
 import { arePeersSame, peerMessageToId } from 'helpers/api';
 import { pluralize } from 'helpers/other';
@@ -91,6 +91,11 @@ export default function messageSearchSidebar({ onBack }: SidebarComponentProps, 
     onReachBottom() {
       messageSearch.loadMore();
     },
+  });
+
+  // Fixes: the list is blank when reopened with the same results
+  useOnUnmount(rootEl, () => {
+    resultList.clear();
   });
 
   mount(rootEl, div`.messagesSearch__summary`(
