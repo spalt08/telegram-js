@@ -67,5 +67,12 @@ export default function home() {
 
   requestAnimationFrame(handleStickerRendering);
 
+  window.history.pushState(null, '', document.location.href);
+  window.onpopstate = () => {
+    if (main.isChatOpened.value) main.isChatOpened.next(false);
+    leftSidebarFade.style.display = '';
+    window.history.go(1);
+  };
+
   return withContextMenu(container);
 }
