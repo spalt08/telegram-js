@@ -5,7 +5,7 @@ import { messageToDialogPeer } from 'helpers/api';
 import { profileAvatar, profileTitle } from 'components/profile';
 import { messageToSenderPeer } from 'cache/accessors';
 import { MaybeObservable } from 'core/types';
-import { message as messageService } from 'services';
+import { message as messageService, main as mainService } from 'services';
 import './found_message.scss';
 
 const messageHighlight = makeTextMatchHighlightComponent({
@@ -39,6 +39,7 @@ export default function foundMessage(messageUniqueId: string, searchQuery: Maybe
       contentClass: 'foundMessage__ripple_content',
       onClick() {
         messageService.selectPeer(dialogPeer, message.id);
+        mainService.closeSidebar(); // For mobile search results in the sidebar
       },
     }, [
       profileAvatar(senderPeer, message),

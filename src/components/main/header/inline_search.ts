@@ -4,7 +4,7 @@ import { heading, searchInput } from 'components/ui';
 import * as icons from 'components/icons';
 import { div, text } from 'core/html';
 import { getInterface, useObservable, useOnMount } from 'core/hooks';
-import { message as messageService, messageSearch } from 'services';
+import { message as messageService, messageSearch, main as mainService } from 'services';
 import { arePeersSame } from 'helpers/api';
 import {
   areSearchRequestsEqual,
@@ -30,6 +30,7 @@ export default function makeInlineSearch(onBack: () => void) {
 
   const canGoNewer = navigationState.pipe(map(({ position }) => position > 0));
   const canGoOlder = combineLatest([messageSearch.result, navigationState]).pipe(map(([{ count }, { position }]) => position < count - 1));
+  const canOpenResults = messageSearch.result.pipe(map(({ count }) => count > 0));
 
   function goNewer() {
     navigationState.next({ ...navigationState.value, position: navigationState.value.position - 1 });
@@ -39,7 +40,7 @@ export default function makeInlineSearch(onBack: () => void) {
     const { ids } = messageSearch.result.value;
     const state = navigationState.value;
 
-    // Switch the position only when there are loaded messages to go to
+    // Switch the position only when the older message is loaded
     if (state.position < ids.length - 1) {
       navigationState.next({ ...state, position: state.position + 1 });
     }
@@ -48,6 +49,11 @@ export default function makeInlineSearch(onBack: () => void) {
     if (state.position > ids.length - 10) {
       messageSearch.loadMore();
     }
+  }
+
+  function openResults() {
+    const { peer, request } = messageSearch.result.value;
+    mainService.openSidebar('messageSearch', { peer, query: request, disableInput: true });
   }
 
   const inlineSearch = heading({
@@ -60,7 +66,11 @@ export default function makeInlineSearch(onBack: () => void) {
   });
 
   const navigationSearchEl = div`.header__inline-navigation`(
-    div`.header__inline-navigation_status`(
+    div(
+      {
+        className: canOpenResults.pipe(map((can) => `header__inline-navigation_status ${can ? '' : '-disabled'}`)),
+        onClick: openResults,
+      },
       text(combineLatest([messageSearch.result, navigationState]).pipe(map(([{ request, count }, { position }]) => {
         if (isSearchRequestEmpty(request)) {
           return '';

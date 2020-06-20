@@ -319,6 +319,17 @@ $header-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.4);
     padding: 0 16px;
     color: #707579;
 
+    &_status {
+      &:active {
+        color: #909192;
+      }
+
+      &.-disabled {
+        color: #909192;
+        pointer-events: none;
+      }
+    }
+
     &_scroll {
       margin-left: auto;
       display: flex;
