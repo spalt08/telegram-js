@@ -132,6 +132,12 @@
     outline: none;
     transition: all 550ms cubic-bezier(.44,1.59,.53,1);
 
+    @include respond-to(small) {
+      width: 46px;
+      height: 46px;
+      right: 10px;
+    }
+
     > svg {
       $icon-size: 32px;
       width: $icon-size;
@@ -139,6 +145,13 @@
       position: absolute;
       top: (($size - $icon-size) / 2 + 2px);
       left: (($size - $icon-size) / 2);
+
+      @include respond-to(small) {
+        top: 11px;
+        left: 9px;
+        width: 28px;
+        height: 28px;
+      }
 
       path {
         fill: #4EA4F5;
