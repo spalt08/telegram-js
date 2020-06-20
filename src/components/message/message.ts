@@ -188,6 +188,11 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
       );
     }
 
+    const newclass = msg.out ? `message-out${isLastNow ? ' message-out-last' : ''}` : `message${isChat ? '-chat' : ''}${isLastNow ? '-last' : ''}`;
+    if (container.className !== newclass) {
+      container.className = newclass;
+    }
+
     isFirst = isFirstNow;
     isLast = isLastNow;
   });
