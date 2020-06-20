@@ -1,5 +1,6 @@
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
+import binarySearch from 'binary-search';
 import { heading, searchInput } from 'components/ui';
 import * as icons from 'components/icons';
 import { div, text } from 'core/html';
@@ -121,6 +122,18 @@ export default function makeInlineSearch(onBack: () => void) {
 
     if (ids[position] !== undefined) {
       messageService.selectPeer(peer, ids[position]);
+    }
+  });
+
+  // Change the position number when the user comes from the results screen
+  useObservable(navigationSearchEl, messageService.focusMessage, false, ({ id }) => {
+    const { peer, ids } = messageSearch.result.value;
+    if (!arePeersSame(peer, messageService.activePeer.value)) {
+      return;
+    }
+    const index = binarySearch(ids, id, (id1, id2) => id2 - id1);
+    if (index % 1 === 0 && index >= 0 && index < ids.length && index !== navigationState.value.position) {
+      navigationState.next({ ...navigationState.value, position: index });
     }
   });
 
