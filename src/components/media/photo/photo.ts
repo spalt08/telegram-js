@@ -1,4 +1,4 @@
-import { file, hasCached } from 'client/media';
+import { file } from 'client/media';
 import { mount, unmount, listen } from 'core/dom';
 import { div, img, nothing } from 'core/html';
 import { usePhotoSize } from 'helpers/files';

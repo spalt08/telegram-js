@@ -2,7 +2,7 @@ import { div, img } from 'core/html';
 import { Peer, Message } from 'mtproto-js';
 import { peerToInitials, peerToColorCode } from 'cache/accessors';
 import { getPeerPhotoInputLocation } from 'helpers/photo';
-import { mount } from 'core/dom';
+import { mount, listen } from 'core/dom';
 import { useObservable } from 'core/hooks';
 import { file } from 'client/media';
 import { savedmessages, avatarDeletedaccount } from 'components/icons';
@@ -30,7 +30,14 @@ export default function profileAvatar(peer: Peer, message?: Message, isForDialog
   } else {
     const location = getPeerPhotoInputLocation(peer, message);
     if (location) {
-      return img`.avatar.-picture`({ src: file(location, {}) });
+      const src = file(location, {});
+      const el = img`.avatar.-picture`({ src });
+      listen(el, 'error', () => {
+        el.src = '';
+        setTimeout(() => el.src = src, 1000);
+      });
+
+      return el;
     }
 
     container.classList.add('-standard');

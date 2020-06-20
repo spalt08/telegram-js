@@ -12,9 +12,9 @@ import { BehaviorSubject } from 'rxjs';
 import { media as service } from 'services';
 import { MessageChunkService } from 'services/message/message_chunk';
 import { Direction } from 'services/message/types';
+import { isiOS, isAndroid } from 'helpers/browser';
 import { panelLoader } from './loader';
 import './media.scss';
-import { isiOS, isAndroid } from 'helpers/browser';
 
 function renderer(id: string): HTMLElement {
   const message = messageCache.get(id);

@@ -19,7 +19,6 @@ function renderGifForSearch(id: string) {
   const element = gifPreview(doc, { className: 'searchGifs__item', thumb: true, width: w, height: 100, fit: 'cover' }, undefined, (gif) => {
     message.sendMediaMessage(documentToInputMedia(gif));
   });
-  console.log(element);
 
   element.style.width = `${(w / h) * 100}px`;
 
