@@ -37,6 +37,10 @@ function renderListItem(
     return div`.filterPeersScreen__header`(text('Chats'));
   }
 
+  if (item === 'peersTopPadding') {
+    return div`.filterPeersScreen__peersPadding`();
+  }
+
   if (item in typesInfos) {
     const setInfo = typesInfos[item as keyof typeof typesInfos];
     return peersListItem(
@@ -208,7 +212,9 @@ export default function peersScreen({ onBack }: SidebarComponentProps, ctxSubjec
     ([typesFor, { fromQuery, peers }]) => {
       const items: string[] = [];
 
-      if (!fromQuery) {
+      if (fromQuery) {
+        items.push('peersTopPadding');
+      } else {
         items.push(
           'typesHeader',
           ...(typesFor === 'excluded' ? typesToExclude : typesToInclude),
