@@ -1,4 +1,4 @@
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 // eslint-disable-next-line import/no-cycle
 import { chatCache, messageCache, userCache } from 'cache';
@@ -118,40 +118,44 @@ export function chatToTitle(chat: Chat | undefined) {
 
 // Pass myUserId to return "Saved messages" for the currently authorized user
 export function peerToTitle(peer: Peer, myUserId?: number): [string, Observable<string>] {
-  let currentValue: string;
-  let valueObservable: Observable<string>;
+  let getTitle: () => string;
+  let watchUpdates: (onChange: () => void) => () => void;
 
   switch (peer._) {
     case 'peerUser':
-      currentValue = userToTitle(userCache.get(peer.user_id), myUserId);
-      valueObservable = new Observable((subscriber) => {
-        subscriber.next(userToTitle(userCache.get(peer.user_id), myUserId));
-        return userCache.watchItem(peer.user_id, (user) => subscriber.next(userToTitle(user, myUserId)));
-      });
+      getTitle = () => userToTitle(userCache.get(peer.user_id), myUserId);
+      watchUpdates = (onChange) => userCache.watchItem(peer.user_id, onChange);
       break;
 
     case 'peerChat':
-      currentValue = chatToTitle(chatCache.get(peer.chat_id));
-      valueObservable = new Observable((subscriber) => {
-        subscriber.next(chatToTitle(chatCache.get(peer.chat_id)));
-        return chatCache.watchItem(peer.chat_id, (chat) => subscriber.next(chatToTitle(chat)));
-      });
+      getTitle = () => chatToTitle(chatCache.get(peer.chat_id));
+      watchUpdates = (onChange) => chatCache.watchItem(peer.chat_id, onChange);
       break;
 
     case 'peerChannel':
-      currentValue = chatToTitle(chatCache.get(peer.channel_id));
-      valueObservable = new Observable((subscriber) => {
-        subscriber.next(chatToTitle(chatCache.get(peer.channel_id)));
-        return chatCache.watchItem(peer.channel_id, (chat) => subscriber.next(chatToTitle(chat)));
-      });
+      getTitle = () => chatToTitle(chatCache.get(peer.channel_id));
+      watchUpdates = (onChange) => chatCache.watchItem(peer.channel_id, onChange);
       break;
 
     default:
-      currentValue = 'Unknown peer';
-      valueObservable = of(currentValue);
+      getTitle = () => 'Unknown peer';
+      watchUpdates = () => () => {};
   }
 
-  return [currentValue, valueObservable.pipe(distinctUntilChanged())];
+  return [
+    getTitle(),
+    new Observable((subscriber) => {
+      let lastTitle = getTitle();
+      subscriber.next(lastTitle);
+      return watchUpdates(() => {
+        const newTitle = getTitle();
+        if (newTitle !== lastTitle) {
+          lastTitle = newTitle;
+          subscriber.next(newTitle);
+        }
+      });
+    }),
+  ];
 }
 
 export function getPeerPhotoLocation(peer: Peer, big?: boolean): FileLocation | null {
