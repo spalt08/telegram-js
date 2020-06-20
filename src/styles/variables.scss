@@ -77,11 +77,13 @@ $content-padding: 20px;
 $content-message-padding: 11px;
 $bubble-max-width: 75%;
 $bubble-background: #FFFFFF;
-$accent-color: #1da1f1;
 $voice-message-bar: #1da1f1;
 $voice-message-bar-transparent: rgba(112, 117, 121, 0.35);
+$accent-color: #1da1f1;
 $accent-color-inactive: #707579;
-$animation-sidebar: 0.3s ease-in-out;
+$accent-color-out: #4fae4e;
+$accent-color-out-inactive: #4fae4ea0;
+$animation-sidebar: 0.2s ease-in-out;
 
 // @include respond-to(small) {
 //   $content-padding: 12px;

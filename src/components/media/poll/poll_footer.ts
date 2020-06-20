@@ -12,7 +12,7 @@ const voteText = 'VOTE';
 const viewResultsText = 'VIEW RESULTS';
 
 function pluralizeVoters(quiz: boolean, voters: number) {
-  return `${voters > 0 ? voters : 'No one'} ${quiz ? 'answered' : 'voted'}`;
+  return `${voters > 0 ? voters : 'Nobody'} ${quiz ? 'answered' : 'voted'}`;
 }
 
 function formatStateText(state: VoteButtonState, voters: number, quiz: boolean, publicVoters: boolean, multipleChoice: boolean) {
