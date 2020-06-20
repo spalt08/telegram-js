@@ -10,11 +10,11 @@
   background-image: url(~assets/chamomile-blurred.jpg);
   background-size: cover;
   background-position: center center;
-  // background-attachment: fixed;
   flex: 1 50%;
   overflow: hidden;
 
   @include respond-to(small) {
+    background-position-y: top;
     flex: none;
     left: 0;
     top: 0;
