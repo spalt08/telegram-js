@@ -7,25 +7,15 @@ import { useMaybeObservable, useWhileMounted } from 'core/hooks';
 import { div, text } from 'core/html';
 import { MaybeObservable } from 'core/types';
 import { peerMessageToId } from 'helpers/api';
-import { Peer, Message } from 'mtproto-js';
+import { isAndroid, isiOS } from 'helpers/browser';
+import { Peer } from 'mtproto-js';
 import { BehaviorSubject } from 'rxjs';
-import { media as service, message } from 'services';
+import { media as service } from 'services';
 import { MessageChunkService } from 'services/message/message_chunk';
 import { Direction } from 'services/message/types';
-import { isiOS, isAndroid } from 'helpers/browser';
+import contextMenu from './context_menu';
 import { panelLoader } from './loader';
 import './media.scss';
-import { useContextMenu } from 'components/global_context_menu';
-import { eye1 } from 'components/icons';
-
-function useGotoMessage(element: HTMLElement, msg: Message.message) {
-  useContextMenu(element, [{
-    icon: () => eye1(),
-    label: 'Go To Message',
-    onClick: () => message.selectPeer(msg.to_id, msg.id),
-  }]);
-  return element;
-}
 
 function renderer(id: string): HTMLElement {
   const msg = messageCache.get(id);
@@ -34,7 +24,7 @@ function renderer(id: string): HTMLElement {
 
   // photo
   if (media && media._ === 'messageMediaPhoto' && media.photo && media.photo._ === 'photo') {
-    return useGotoMessage(
+    return contextMenu(
       div`.mediaPanel__item`(photoPreview(media.photo, { fit: 'cover', width: 240, height: 240, className: 'mediaPanel__photo' }, msg)),
       msg,
     );
@@ -42,7 +32,7 @@ function renderer(id: string): HTMLElement {
 
   // video
   if (media && media._ === 'messageMediaDocument' && media.document && media.document._ === 'document') {
-    return useGotoMessage(
+    return contextMenu(
       div`.mediaPanel__item`(videoPreview(media.document, { fit: 'cover', width: 240, height: 240, className: 'mediaPanel__photo' }, msg)),
       msg,
     );

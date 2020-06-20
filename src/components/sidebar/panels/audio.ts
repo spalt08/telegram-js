@@ -1,6 +1,4 @@
 import { messageCache } from 'cache';
-import { useContextMenu } from 'components/global_context_menu';
-import { eye1 } from 'components/icons';
 import audio from 'components/media/audio/audio';
 import { VirtualizedList } from 'components/ui';
 import { mount, unmount, unmountChildren } from 'core/dom';
@@ -10,21 +8,16 @@ import { MaybeObservable } from 'core/types';
 import { peerMessageToId } from 'helpers/api';
 import { Message, Peer } from 'mtproto-js';
 import { BehaviorSubject } from 'rxjs';
-import { media, message } from 'services';
+import { media } from 'services';
 import { MessageChunkService } from 'services/message/message_chunk';
 import { Direction } from 'services/message/types';
 import './audio.scss';
+import contextMenu from './context_menu';
 import { panelLoader } from './loader';
 
 const audioRenderer = (id: string) => {
   const msg = messageCache.get(id) as Message.message;
-  const audioEl = audio(msg, true);
-  useContextMenu(audioEl, [{
-    icon: () => eye1(),
-    label: 'Go To Message',
-    onClick: () => message.selectPeer(msg.to_id, msg.id),
-  }]);
-  return audioEl;
+  return contextMenu(audio(msg, true), msg);
 };
 
 export default function audioPanel(peer: MaybeObservable<Peer>, type: 'music' | 'voice') {

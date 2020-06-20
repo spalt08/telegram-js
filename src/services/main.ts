@@ -27,6 +27,8 @@ export default class MainService {
   /** Window Size */
   window = { width: 0, height: 0 };
 
+  isMobile = false;
+
   /** Right Sidebar Delegate */
   rightSidebarDelegate = new BehaviorSubject<SidebarStateAndCtx | undefined>(undefined);
 
@@ -37,6 +39,8 @@ export default class MainService {
       width: window.innerWidth,
       height: window.innerHeight,
     };
+
+    this.isMobile = this.window.width < 1024;
 
     window.addEventListener('resize', () => {
       this.window = {
