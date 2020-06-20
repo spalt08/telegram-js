@@ -1,6 +1,4 @@
 import { messageCache } from 'cache';
-import { useContextMenu } from 'components/global_context_menu';
-import { eye1 } from 'components/icons';
 import documentFile from 'components/media/document/file';
 import { VirtualizedList } from 'components/ui';
 import { mount, unmount, unmountChildren } from 'core/dom';
@@ -10,9 +8,10 @@ import { MaybeObservable } from 'core/types';
 import { getMessageDocument, peerMessageToId } from 'helpers/api';
 import { Peer } from 'mtproto-js';
 import { BehaviorSubject } from 'rxjs';
-import { media, message } from 'services';
+import { media } from 'services';
 import { MessageChunkService } from 'services/message/message_chunk';
 import { Direction } from 'services/message/types';
+import contextMenu from './context_menu';
 import './documents.scss';
 import { panelLoader } from './loader';
 
@@ -21,13 +20,7 @@ const documentRowRenderer = (id: string) => {
   const document = msg && getMessageDocument(msg);
   if (msg?._ === 'message' && document) {
     const documentEl = documentFile(document, msg);
-    useContextMenu(documentEl, [{
-      icon: () => eye1(),
-      label: 'Go To Message',
-      onClick: () => message.selectPeer(msg.to_id, msg.id),
-    }]);
-
-    return documentEl;
+    return contextMenu(documentEl, msg);
   }
   return div(nothing);
 };

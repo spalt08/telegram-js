@@ -4,23 +4,29 @@ import { heading, searchInput, VirtualizedList } from 'components/ui';
 import { mount } from 'core/dom';
 import { useToBehaviorSubject, useMaybeObservable, getInterface } from 'core/hooks';
 import { div, text } from 'core/html';
-import { peerMessageToId } from 'helpers/api';
+import { arePeersSame, peerMessageToId } from 'helpers/api';
 import { pluralize } from 'helpers/other';
 import { Peer } from 'mtproto-js';
 import { map } from 'rxjs/operators';
-import { message, messageSearch } from 'services';
+import { messageSearch } from 'services';
 import { isSearchRequestEmpty } from 'services/message_search/message_search_session';
 import './message_search.scss';
 import { MaybeObservable } from 'core/types';
 
 type SidebarComponentProps = import('../sidebar').SidebarComponentProps;
 
-export default function messageSearchSidebar({ onBack }: SidebarComponentProps, context?: MaybeObservable<{ peer: Peer, query?: string }>) {
+interface SearchContext {
+  peer: Peer;
+  query?: string;
+  autoFocus?: boolean;
+}
+
+export default function messageSearchSidebar({ onBack }: SidebarComponentProps, context: MaybeObservable<SearchContext | undefined>) {
   const rootEl = div`.messagesSearch`();
 
   const [resultIdsSubject] = useToBehaviorSubject(
     rootEl,
-    messageSearch.result.pipe(map((result) => result.ids.map((id) => peerMessageToId(message.activePeer.value!, id)))),
+    messageSearch.result.pipe(map((result) => result.ids.map((id) => peerMessageToId(result.peer, id)))),
     [],
   );
   const resultQueryObservable = messageSearch.result.pipe(map((result) => result.request));
@@ -34,23 +40,27 @@ export default function messageSearchSidebar({ onBack }: SidebarComponentProps, 
     },
   });
 
-  useMaybeObservable(rootEl, context!, true, (ctx) => {
+  useMaybeObservable(rootEl, context, true, (ctx) => {
+    if (!ctx) {
+      messageSearch.setPeer(undefined);
+      return;
+    }
+
+    const oldPeer = messageSearch.getPeer();
     messageSearch.setPeer(ctx.peer);
-    if (ctx.query) {
-      getInterface(searchInputEl).value = ctx.query;
-      messageSearch.search(ctx.query);
+
+    if (ctx.query !== undefined || !arePeersSame(ctx.peer, oldPeer)) {
+      const query = ctx.query || '';
+      getInterface(searchInputEl).value = query;
+      messageSearch.search(query);
+    }
+
+    if (ctx.autoFocus) {
+      setTimeout(() => {
+        getInterface(searchInputEl).focus();
+      }, 200);
     }
   });
-
-  // If the element isn't in layout, the focus call will be ignored
-  // temp: blocks sidebar transition
-  // to do: fix later
-  // const stopWatchingVisibility = watchVisibility(searchInputEl, (isVisible) => {
-  //   if (isVisible) {
-  //     stopWatchingVisibility();
-  //     getInterface(searchInputEl).focus();
-  //   }
-  // });
 
   const resultList = new VirtualizedList({
     items: resultIdsSubject,

@@ -1,13 +1,13 @@
 /* eslint-disable no-param-reassign */
 
-import { Message } from 'mtproto-js';
-import { div, nothing, img } from 'core/html';
-import './gallery_media.scss';
 import photoRenderer from 'components/media/photo/photo';
 import videoStreamRenderer from 'components/media/video/stream';
-import { animationFrameStart, mount, unmount, listenOnce } from 'core/dom';
+import { animationFrameStart, listenOnce, mount, unmount } from 'core/dom';
 import { useInterface } from 'core/hooks';
+import { div, img, nothing } from 'core/html';
+import { Message } from 'mtproto-js';
 import { main } from 'services';
+import './gallery_media.scss';
 
 export type GalleryMediaOpener = { rect: DOMRect, thumb: string };
 

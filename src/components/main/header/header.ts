@@ -155,7 +155,7 @@ export default function header({ onBackToContacts }: Props) {
             if (container.parentElement) mount(container.parentElement, navigationSearchEl);
             setStickyOffset(0);
           } else if (peer) {
-            main.openSidebar('messageSearch', { peer });
+            main.openSidebar('messageSearch', { peer, autoFocus: true });
           }
         },
       },
@@ -168,7 +168,7 @@ export default function header({ onBackToContacts }: Props) {
   const actions = div`.header__actions`(
     roundButton({
       className: 'header__search',
-      onClick: () => peer && main.openSidebar('messageSearch', { peer }),
+      onClick: () => peer && main.openSidebar('messageSearch', { peer, autoFocus: true }),
     }, icons.search()),
     roundButton({
       onClick: (event: MouseEvent) => {
