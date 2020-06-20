@@ -39,16 +39,14 @@ async function startStream() {
   };
 }
 
-function startAnalyze(stream: MediaStream, handler: Handler) {
-  const AudioContext = window.AudioContext || window.webkitAudioContext;
+function startAnalyze(recorder, handler: Handler) {
+  const { context, source } = recorder;
 
-  const context = new AudioContext();
-  const source = context.createMediaStreamSource(stream);
   const analyser = context.createAnalyser();
   analyser.fftSize = 2048;
-  const bufferLength = analyser.frequencyBinCount;
-  const dataArray = new Uint8Array(bufferLength);
+  const dataArray = new Uint8Array(analyser.frequencyBinCount);
   source.connect(analyser);
+
   let isDestroyed = false;
 
   function tick(time: number) {
@@ -69,28 +67,24 @@ function startAnalyze(stream: MediaStream, handler: Handler) {
 }
 
 async function startRecord(handler: Handler) {
-  const chunks: Blob[] = [];
-  const recordStartTime = Date.now();
-
   const { stream, finishStream } = await startStream();
 
-  const finishAnalyze = startAnalyze(stream, (volume, time) => {
-    // console.log(`${volume} / ${Math.floor(time)}`);
-
-    handler(volume, time);
-  });
+  const chunks: Blob[] = [];
+  const recordStartTime = Date.now();
 
   const AudioRecorder = await loadAudioRecorder();
 
   const audioRecorder = new AudioRecorder(stream, {
     mimeType: 'audio/ogg',
   }, {
-    encoderWorkerFactory: _ => new EncoderWorker(),
+    encoderWorkerFactory: () => new EncoderWorker(),
     OggOpusEncoderWasmPath: 'https://cdn.jsdelivr.net/npm/opus-media-recorder@0.8.0/OggOpusEncoder.wasm',
     WebMOpusEncoderWasmPath: 'https://cdn.jsdelivr.net/npm/opus-media-recorder@0.8.0/WebMOpusEncoder.wasm',
   });
 
   audioRecorder.start();
+
+  const finishAnalyze = startAnalyze(audioRecorder, handler);
 
   let handleData = () => {};
 
@@ -169,7 +163,12 @@ export default function recordSendButton({
     if (!isRecording) {
       try {
         finishRecord = await startRecord((volume, time) => {
-          button.style.boxShadow = `0 0 0 ${(volume - 128) * 2}px rgba(0,0,0,.15)`;
+          // volume: from 128 to 255
+          // spreadRadius: from 0 to 64
+
+          const spreadRadius = (volume - 128) / 2;
+
+          button.style.boxShadow = `0 0 0 ${spreadRadius}px rgba(0,0,0,.15)`;
 
           updateTimer(time);
         });
