@@ -6,6 +6,7 @@
   opacity: 1;
   transition: opacity 0.2s;
   align-items: center;
+  cursor: pointer;
 
   &.-hidden {
     opacity: 0;
@@ -17,6 +18,7 @@
     flex-direction: column;
     justify-content: center;
     overflow: hidden;
+    pointer-events: none;
   }
 
   &__title {
@@ -35,6 +37,7 @@
   }
 
   &__playButton {
+    flex: none;
     display: flex;
     align-items: center;
 
@@ -47,7 +50,47 @@
     }
   }
 
+  &__playPrev {
+    flex: none;
+    width: 30px;
+    height: 30px;
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    &:hover {
+      background: none;
+      outline: none;
+    }
+  }
+
+  &__playNext {
+    flex: none;
+    width: 30px;
+    height: 30px;
+    transform: scale(-1, 1);
+    transform-origin: center;
+
+    &:hover {
+      background: none;
+      outline: none;
+    }
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
   &__close-button {
+    flex: none;
     margin-left: auto;
+  }
+
+  &__playPrev.-active, &__playNext.-active {
+    path {
+      fill: $accent-color !important;
+    }
   }
 }

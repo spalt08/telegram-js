@@ -1,9 +1,9 @@
-import { close } from 'components/icons';
+import { close, rewind } from 'components/icons';
 import { userCache } from 'cache';
 import { userToTitle } from 'cache/accessors';
 import { datetime, playButton, roundButton } from 'components/ui';
 import { mount, unmountChildren, listen } from 'core/dom';
-import { useObservable } from 'core/hooks';
+import { useObservable, useToBehaviorSubject } from 'core/hooks';
 import { div, span, text } from 'core/html';
 import { getAttributeAudio, getAttributeFilename } from 'helpers/files';
 import { Document, Message } from 'mtproto-js';
@@ -15,8 +15,21 @@ export default function audioPlayer(onVisibilityChange: (visible: boolean) => vo
   const titleSubj = new BehaviorSubject('');
   const performerSubj = new BehaviorSubject('');
   const playButtonHolder = div`.audioPlayer__playButton`();
+  const playPrev = roundButton({ className: 'audioPlayer__playPrev', onClick: () => audioService.playOlder() }, rewind());
+  const playNext = roundButton({ className: 'audioPlayer__playNext', onClick: () => audioService.playNewer() }, rewind());
+
+  useObservable(playPrev, audioService.hasOlder, true, (value) => {
+    playPrev.classList.toggle('-active', value);
+  });
+
+  useObservable(playNext, audioService.hasNewer, true, (value) => {
+    playNext.classList.toggle('-active', value);
+  });
+
   const container = div`.audioPlayer`(
+    playPrev,
     playButtonHolder,
+    playNext,
     div`.audioPlayer__content`(
       span`.audioPlayer__title`(text(titleSubj)),
       span`.audioPlayer__performer`(text(performerSubj)),

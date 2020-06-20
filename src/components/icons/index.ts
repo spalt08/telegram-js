@@ -248,6 +248,9 @@ export const recent = /*#__PURE__*/svgCodeToComponent(recentCode);
 import replyCode from './reply.svg?raw';
 export const reply = /*#__PURE__*/svgCodeToComponent(replyCode);
 
+import rewindCode from './rewind.svg?raw';
+export const rewind = /*#__PURE__*/svgCodeToComponent(rewindCode);
+
 import savedmessagesCode from './savedmessages.svg?raw';
 export const savedmessages = /*#__PURE__*/svgCodeToComponent(savedmessagesCode);
 
