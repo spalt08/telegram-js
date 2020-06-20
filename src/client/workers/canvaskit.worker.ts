@@ -65,7 +65,6 @@ function cacheSticker({ id, src, width }: StickerCacheTask) {
         }
 
         const time = performance.now() - start;
-        console.log('Sticker processing time', time, header.totalFrames, 'fps', time / header.totalFrames);
         ctx.postMessage({ type: 'cache_complete', id } as CanvasWorkerResponse);
 
         animation.delete();
