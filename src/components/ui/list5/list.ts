@@ -161,6 +161,10 @@ export class VirtualizedList {
       else this.onScrollUp();
     }, { passive: true, capture: true });
 
+    listen(this.container, 'updateViewport', () => {
+      this.viewport = this.container.getBoundingClientRect();
+    });
+
     // fix for virtual keyboard in iOS.
     const { visualViewport } = window as any;
     if (visualViewport) {

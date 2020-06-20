@@ -1,10 +1,11 @@
 import * as icons from 'components/icons';
 import { contextMenu, heading, tabsPanel } from 'components/ui';
-import { mount } from 'core/dom';
+import { mount, listen } from 'core/dom';
 import { getInterface } from 'core/hooks';
 import { div } from 'core/html';
 import { MaybeObservable } from 'core/types';
 import { Peer } from 'mtproto-js';
+import { main } from 'services';
 import docsPanel from '../panels/documents';
 import infoPanel from '../panels/info';
 import linksPanel from '../panels/links';
@@ -32,6 +33,8 @@ export default function info({ onBack }: SidebarComponentProps, peer: MaybeObser
     event.stopPropagation();
   };
 
+  let tabsEl: HTMLElement;
+
   container = div`.infoSidebar`(
     heading({
       title: 'Info',
@@ -41,7 +44,7 @@ export default function info({ onBack }: SidebarComponentProps, peer: MaybeObser
       ],
     }),
     infoPanel(peer),
-    tabsPanel({ className: 'infoSidebar__panels', headerAlign: 'space-between' }, [
+    tabsEl = tabsPanel({ className: 'infoSidebar__panels', headerAlign: 'space-between' }, [
       // to do: members panel,
       { key: 'media', title: 'Media', content: () => mediaPanel(peer) },
       { key: 'docs', title: 'Docs', content: () => docsPanel(peer) },
@@ -52,6 +55,19 @@ export default function info({ onBack }: SidebarComponentProps, peer: MaybeObser
   );
 
   // todo prevent scrolling shared media
+  listen(container, 'scroll', () => {
+    if (container.scrollHeight - container.scrollTop <= main.window.height) {
+      tabsEl.classList.add('-unlocked');
+
+      const list = tabsEl.querySelector('.list');
+      if (list instanceof HTMLElement) {
+        list.focus();
+        list.dispatchEvent(new Event('updateViewport'));
+      }
+    } else {
+      tabsEl.classList.remove('-unlocked');
+    }
+  });
 
   return container;
 }

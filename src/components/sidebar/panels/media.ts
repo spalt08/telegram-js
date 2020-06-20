@@ -14,6 +14,7 @@ import { MessageChunkService } from 'services/message/message_chunk';
 import { Direction } from 'services/message/types';
 import { panelLoader } from './loader';
 import './media.scss';
+import { isiOS, isAndroid } from 'helpers/browser';
 
 function renderer(id: string): HTMLElement {
   const message = messageCache.get(id);
@@ -76,6 +77,8 @@ export default function mediaPanel(peer: MaybeObservable<Peer>) {
       items,
       pivotBottom: false,
       topReached: true,
+      batchService: isiOS || isAndroid ? 15 : 25,
+      batch: 9,
       renderer,
       renderGroup,
       selectGroup: (id: string) => getMessageMonth(monthMap, id),

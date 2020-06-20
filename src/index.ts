@@ -12,3 +12,8 @@ if (loadingPlaceholder) {
 
 mount(document.body, router.element);
 mount(document.body, popup());
+
+// disable ios zooming
+document.addEventListener('gesturestart', (event: Event) => {
+  event.preventDefault();
+});
