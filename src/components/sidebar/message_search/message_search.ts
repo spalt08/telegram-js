@@ -1,7 +1,7 @@
 import * as icons from 'components/icons';
 import { foundMessage } from 'components/sidebar';
 import { heading, searchInput, VirtualizedList } from 'components/ui';
-import { mount } from 'core/dom';
+import { mount, unmount } from 'core/dom';
 import { useToBehaviorSubject, useMaybeObservable, getInterface } from 'core/hooks';
 import { div, text } from 'core/html';
 import { arePeersSame, peerMessageToId } from 'helpers/api';
@@ -19,6 +19,7 @@ interface SearchContext {
   peer: Peer;
   query?: string;
   autoFocus?: boolean;
+  disableInput?: boolean;
 }
 
 export default function messageSearchSidebar({ onBack }: SidebarComponentProps, context: MaybeObservable<SearchContext | undefined>) {
@@ -31,6 +32,9 @@ export default function messageSearchSidebar({ onBack }: SidebarComponentProps, 
   );
   const resultQueryObservable = messageSearch.result.pipe(map((result) => result.request));
 
+  let header: HTMLElement | undefined;
+  let isInputDisabled: boolean | undefined;
+
   const searchInputEl = searchInput({
     placeholder: 'Search Messages',
     className: 'messagesSearch__input',
@@ -40,6 +44,7 @@ export default function messageSearchSidebar({ onBack }: SidebarComponentProps, 
     },
   });
 
+  // Conform the context
   useMaybeObservable(rootEl, context, true, (ctx) => {
     if (!ctx) {
       messageSearch.setPeer(undefined);
@@ -60,6 +65,19 @@ export default function messageSearchSidebar({ onBack }: SidebarComponentProps, 
         getInterface(searchInputEl).focus();
       }, 200);
     }
+
+    if (!!ctx.disableInput !== isInputDisabled) {
+      isInputDisabled = ctx.disableInput;
+
+      if (header) unmount(header);
+      header = heading({
+        className: 'messagesSearch__header',
+        title: isInputDisabled ? 'Search Results' : '',
+        element: isInputDisabled ? undefined : searchInputEl,
+        buttons: [{ icon: icons.back, position: 'left', onClick: () => onBack?.() }],
+      });
+      mount(rootEl, header, rootEl.firstChild);
+    }
   });
 
   const resultList = new VirtualizedList({
@@ -75,12 +93,6 @@ export default function messageSearchSidebar({ onBack }: SidebarComponentProps, 
     },
   });
 
-  mount(rootEl, heading({
-    className: 'messagesSearch__header',
-    title: '',
-    element: searchInputEl,
-    buttons: [{ icon: icons.back, position: 'left', onClick: () => onBack?.() }],
-  }));
   mount(rootEl, div`.messagesSearch__summary`(
     text(messageSearch.result.pipe(map((result) => {
       if (isSearchRequestEmpty(result.request)) {
