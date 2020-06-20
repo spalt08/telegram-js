@@ -59,14 +59,6 @@ let touchTimer: any;
  * Hook for clickable element
  */
 export function useContextMenu(element: HTMLElement, options: ContextMenuOption[]) {
-  listen(element, 'contextmenu', (event: MouseEvent) => {
-    const x = event.pageX;
-    const y = event.pageY;
-
-    openMenu(x, y, options);
-    event.preventDefault();
-  });
-
   if (isSafari || isAndroid) {
     listen(element, 'touchstart', (event: TouchEvent) => {
       if (event.touches.length > 1) return;
@@ -77,5 +69,13 @@ export function useContextMenu(element: HTMLElement, options: ContextMenuOption[
     listen(element, 'touchmove', () => touchTimer && clearTimeout(touchTimer));
     listen(element, 'touchend', () => touchTimer && clearTimeout(touchTimer));
     listen(element, 'touchcancel', () => touchTimer && clearTimeout(touchTimer));
+  } else {
+    listen(element, 'contextmenu', (event: MouseEvent) => {
+      const x = event.pageX;
+      const y = event.pageY;
+
+      openMenu(x, y, options);
+      event.preventDefault();
+    });
   }
 }
