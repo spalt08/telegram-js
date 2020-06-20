@@ -33,13 +33,14 @@ export default function tgs({
 }: Props) {
   const animation = new TGSManager(src, { loop, offscreen, onLoad, width, height });
   const container = div({ className }, animation.element);
+  animation.shouldPlay = autoplay;
 
   useOnUnmount(container, () => {
     animation.destroy();
   });
 
   watchVisibility(container, (isVisible) => {
-    if (isVisible && autoplay) animation.play();
+    if (isVisible && animation.shouldPlay) animation.play();
     else animation.pause();
   });
 

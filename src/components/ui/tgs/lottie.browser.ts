@@ -40,6 +40,7 @@ export class TGSManager {
   animation?: AnimationItem;
   transfered?: boolean;
   destroyed?: boolean;
+  shouldPlay?: boolean;
 
   constructor(src: string, props: AnimationProps) {
     this.id = (count++).toString();
@@ -97,6 +98,7 @@ export class TGSManager {
   }
 
   play() {
+    this.shouldPlay = true;
     // pass control to worker thread
     if (typeof this.element.transferControlToOffscreen === 'function' && this.state.offscreen) {
       getWorker().postMessage({
