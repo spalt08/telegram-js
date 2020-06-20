@@ -5,7 +5,7 @@ import { watchVisibility, listen } from 'core/dom';
 import { TGSManager } from './lottie.browser';
 import './tgs.scss';
 
-interface Props {
+export interface Props {
   src: string,
   className?: string,
   autoplay?: boolean,

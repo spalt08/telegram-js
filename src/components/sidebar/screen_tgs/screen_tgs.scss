@@ -1,0 +1,7 @@
+.screenTgs {
+  transition: opacity 0.15s ease-out;
+
+  &.-hidden {
+    opacity: 0;
+  }
+}

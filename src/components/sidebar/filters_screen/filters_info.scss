@@ -1,0 +1,49 @@
+.filtersInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2px 16px 10px;
+
+  &__text {
+    color: #707579;
+    font-size: 14px;
+    margin: 31px 0 15px;
+    max-width: 280px;
+  }
+
+  &__add {
+    appearance: none;
+    border: none;
+    margin: 0;
+    padding: 0;
+    background: #4EA4F5;
+    color: #FFFFFF;
+    cursor: pointer;
+    border-radius: 20px;
+
+    &:hover, &:focus {
+      background: #4797E2;
+      outline: none;
+    }
+
+    &_content {
+      text-align: left;
+      display: flex;
+      align-items: center;
+      padding: 8px 22px;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    &_icon {
+      width: 24px;
+      height: 24px;
+      margin: 0 6px 0 -10px;
+
+      path {
+        fill: currentColor;
+      }
+    }
+  }
+}

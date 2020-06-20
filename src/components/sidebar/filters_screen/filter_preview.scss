@@ -1,0 +1,60 @@
+.filterPreview {
+  padding: 7px 6px;
+  font-size: 16px;
+
+  &__ripple {
+    // Don't add any layout properties to this selector because it isn't used when the preview isn't clickable
+    border-radius: 10px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: rgba(#707579, 0.08);
+    }
+
+    &_content {
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0; // To force the overflow cut
+  }
+
+  &__title {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__description {
+    color: #707579;
+    font-size: 14px;
+    margin-top: 3px;
+  }
+
+  &__button {
+    appearance: none;
+    border: none;
+    margin: 0 0 0 16px;
+    padding: 4px 12px;
+    min-height: 30px;
+    background: #4EA4F5;
+    color: #FFFFFF;
+    cursor: pointer;
+    border-radius: 15px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    font-size: 15px;
+    font-weight: 500;
+
+    &:hover, &:focus {
+      background: #4797E2;
+      outline: none;
+    }
+  }
+}
