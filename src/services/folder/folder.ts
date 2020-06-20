@@ -169,7 +169,18 @@ export default class FolderService {
     // todo: Handle fail responses from the API here and further
     const sendPromise = client.call('messages.updateDialogFilter', { id: filterWithId.id, filter: filterWithId })
       // Server puts the new filter to the start by default so we need to move it to the end explicitly
-      .then(() => client.call('messages.updateDialogFiltersOrder', { order: [...(this.filters.value?.keys() ?? [])] }));
+      .then(() => {
+        // Duplicates are ok (server leaves the latest) but clients can't handle such updates properly
+        const order: number[] = [];
+        // eslint-disable-next-line no-unused-expressions
+        this.filters.value?.forEach((_filter, filterId) => {
+          if (filterId !== filterWithId.id) {
+            order.push(filterId);
+          }
+        });
+        order.push(filterWithId.id);
+        client.call('messages.updateDialogFiltersOrder', { order });
+      });
 
     if (!isEager) {
       await sendPromise;
