@@ -3,7 +3,7 @@ import sidebar from 'components/sidebar/sidebar';
 import { listen, animationFrameStart } from 'core/dom';
 import { getInterface, useObservable } from 'core/hooks';
 import { div } from 'core/html';
-import { main } from 'services';
+import { main, message } from 'services';
 import './home.scss';
 import history from './main/history';
 
@@ -43,13 +43,13 @@ export default function home() {
     if (historyEl.classList.contains('-right-sidebar')) {
       const historyList = historyEl.querySelector('.history__list');
 
-      if (historyList) historyList.style.transition = 'none';
+      if (historyList instanceof HTMLElement) historyList.style.transition = 'none';
       historyEl.style.transition = 'none';
       historyEl.classList.remove('-right-sidebar');
 
       animationFrameStart().then(() => {
         historyEl.style.transition = '';
-        if (historyList) historyList.style.transition = '';
+        if (historyList instanceof HTMLElement) historyList.style.transition = '';
       });
     }
   });
