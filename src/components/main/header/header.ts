@@ -8,17 +8,18 @@ import { contextMenu, formattedMessage, peerFullStatus, ripple, roundButton, typ
 import { listen, mount, unmount, unmountChildren } from 'core/dom';
 import { getInterface, useMaybeObservable, useObservable } from 'core/hooks';
 import { div, nothing } from 'core/html';
-import { arePeersSame, peerToId } from 'helpers/api';
-import { Peer } from 'mtproto-js';
+import { arePeersSame, messageToId, peerToId } from 'helpers/api';
+import { Message, Peer } from 'mtproto-js';
 import { main, message } from 'services';
-import makeInlineSearch from './inline_search';
 import './header.scss';
+import makeInlineSearch from './inline_search';
 
 type Props = {
   onBackToContacts: () => void,
 };
 
 const isMobile = main.window.width < 700;
+const hiddenPinnedMessages = new Set<string>();
 
 let rule: CSSStyleDeclaration | undefined;
 function setStickyOffset(px: number, animate = true) {
@@ -66,22 +67,15 @@ function pinnedMessage(peer: Peer, isAudioActive: boolean) {
   let quote = msg ? messageQuote(msg, 'Pinned message') : undefined;
   let rippleEl: ReturnType<typeof ripple>;
 
-  const container = div`.header__pinned`(
-    rippleEl = ripple({
-      contentClass: 'header__pinned_ripple',
-      onClick: () => msg && message.selectPeer(peer, msg.id),
-    }, [
-      quote || nothing,
-    ]),
-  );
+  const container = div`.header__pinned`();
 
-  pinnedMessageCache.useWatchItem(container, peerToId(peer), (nextMsg) => {
-    if ((nextMsg || {}).id === (msg || {}).id) return;
+  const updatePinnedMessage = (nextMsg: Readonly<Message.message> | undefined) => {
+    if (nextMsg?.id === msg?.id) return;
     msg = nextMsg;
 
     if (quote) unmount(quote);
 
-    if (msg) {
+    if (msg && !hiddenPinnedMessages.has(messageToId(msg))) {
       getInterface(rippleEl).mountChild(quote = messageQuote(msg, 'Pinned message'));
       container.classList.add('-visible');
       updateStickyOffset(true, isAudioActive);
@@ -89,9 +83,31 @@ function pinnedMessage(peer: Peer, isAudioActive: boolean) {
       container.classList.remove('-visible');
       updateStickyOffset(false, isAudioActive);
     }
+  };
+
+  mount(container, rippleEl = ripple({
+    contentClass: 'header__pinned_ripple',
+    onClick: () => msg && message.selectPeer(peer, msg.id),
+  }, [
+    quote || nothing,
+  ]));
+
+  mount(container, roundButton({
+    className: 'header__pinned_close',
+    onClick: () => {
+      if (msg) {
+        hiddenPinnedMessages.add(messageToId(msg));
+        updatePinnedMessage(undefined);
+      }
+    },
+  }, icons.close()),
+  );
+
+  pinnedMessageCache.useWatchItem(container, peerToId(peer), (nextMsg) => {
+    updatePinnedMessage(nextMsg);
   });
 
-  if (quote) {
+  if (quote && msg && !hiddenPinnedMessages.has(messageToId(msg))) {
     updateStickyOffset(true, isAudioActive, false);
     container.classList.add('-visible');
   } else updateStickyOffset(false, isAudioActive, false);
