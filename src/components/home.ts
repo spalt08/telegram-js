@@ -43,10 +43,16 @@ export default function home() {
   useObservable(container, message.activePeer, true, (next) => {
     if (next) getInterface(rightSidebar).clear();
     if (historyEl.classList.contains('-right-sidebar')) {
+      const historyList = historyEl.querySelector('.history__list');
+
+      if (historyList) historyList.style.transition = 'none';
       historyEl.style.transition = 'none';
       historyEl.classList.remove('-right-sidebar');
 
-      animationFrameStart().then(() => historyEl.style.transition = '');
+      animationFrameStart().then(() => {
+        historyEl.style.transition = '';
+        if (historyList) historyList.style.transition = '';
+      });
     }
   });
 
