@@ -63,7 +63,7 @@ export default function messageSearchSidebar({ onBack }: SidebarComponentProps, 
     if (ctx.autoFocus) {
       setTimeout(() => {
         getInterface(searchInputEl).focus();
-      }, 200);
+      }, 300);
     }
 
     if (!!ctx.disableInput !== isInputDisabled) {
