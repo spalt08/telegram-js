@@ -7,10 +7,10 @@
   }
 
   &__sectionHeader {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 500;
     color: #707579;
-    padding: 17px 24px 16px;
+    padding: 16px 16px 8px;
 
     @include respond-to(small) {
       padding: 10PX 12PX;
@@ -30,12 +30,5 @@
     //     padding-top: 25px;
     //   }
     // }
-  }
-
-  &__topUsers {
-    margin-top: 2px;
-  }
-  &__topUsers + &__sectionHeader {
-    padding-top: 0;
   }
 }
