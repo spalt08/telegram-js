@@ -67,5 +67,5 @@ export default function home() {
 
   requestAnimationFrame(handleStickerRendering);
 
-  return withContextMenu(container);
+  return container;
 }

@@ -139,7 +139,7 @@ $header-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.4);
     height: 54px;
     box-shadow: $header-shadow;
     transition: transform .3s ease-out;
-    padding: 0 $content-padding;
+    padding: 0 15px;
     border-left: 1px solid $common-border-color;
     border-right: 1px solid $common-border-color;
 

@@ -39,6 +39,10 @@ function startFireworks(container: Element) {
   getInterface(fireworks).start();
 }
 
+function isCorrectAnswer(results: PollResults) {
+  return results.results && results.results.some((r) => r.chosen && r.correct);
+}
+
 export default function poll(peer: Peer, message: Message.message, info: HTMLElement) {
   if (message.media?._ !== 'messageMediaPoll') {
     // Message media must be of type "messageMediaPoll"
@@ -58,7 +62,6 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
   const recentVoters = new BehaviorSubject<readonly number[] | undefined>(results.recent_voters);
   const maxVoters = results.results ? Math.max(...results.results.map((r) => r.voters)) : 0;
   let answered = !!results.results && results.results.findIndex((r) => r.chosen) >= 0;
-  let firstTimeRendered = true;
   let fireworksStarted = false;
 
   const submitOptions = async () => {
@@ -163,8 +166,7 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
     recentVoters.next(updatedResults.recent_voters);
     const updateMaxVoters = Math.max(...voters.map((r) => r.voters));
     answered = voters.findIndex((r) => r.chosen) >= 0;
-    const correct = voters.some((r) => r.chosen && r.correct);
-    if (correct && !firstTimeRendered && !fireworksStarted) {
+    if (!isCorrectAnswer(results) && isCorrectAnswer(updatedResults) && !fireworksStarted) {
       startFireworks(container);
       fireworksStarted = true;
     }
@@ -186,7 +188,6 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
         totalVoters: updateTotalVoters,
       });
     });
-    firstTimeRendered = false;
   };
 
   messageCache.useItemBehaviorSubject(container, peerMessageToId(peer, message.id)).subscribe((msg) => {

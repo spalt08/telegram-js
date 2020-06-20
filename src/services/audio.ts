@@ -81,6 +81,7 @@ export default class AudioService {
 
   stop() {
     this.#pause(true);
+    this.currentAudio.next(undefined);
   }
 
   pause() {
