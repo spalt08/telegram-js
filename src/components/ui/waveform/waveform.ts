@@ -5,6 +5,7 @@ import { Document } from 'mtproto-js';
 import { Observable } from 'rxjs';
 import { MediaPlaybackState } from 'services/audio';
 import './waveform.scss';
+import { div } from 'core/html';
 
 // Ref: https://github.com/telegramdesktop/tdesktop/blob/0743e71ab6b928d2ee5bae1aed991849b1e2b291/Telegram/SourceFiles/data/data_document.cpp#L1018
 function decodeWaveform(encoded5bit: Uint8Array) {
@@ -39,15 +40,20 @@ function decodeWaveform(encoded5bit: Uint8Array) {
 }
 
 function interpolateArray(data: number[], fitCount: number) {
+  let peak = 0;
   const newData = new Array(fitCount);
   const springFactor = data.length / fitCount;
   const leftFiller = data[0];
   const rightFiller = data[data.length - 1];
   for (let i = 0; i < fitCount; i++) {
     const idx = Math.floor(i * springFactor);
-    newData[i] = ((data[idx - 1] ?? leftFiller) + (data[idx] ?? leftFiller) + (data[idx + 1] ?? rightFiller)) / 3;
+    const val = ((data[idx - 1] ?? leftFiller) + (data[idx] ?? leftFiller) + (data[idx + 1] ?? rightFiller)) / 3;
+    newData[i] = val;
+    if (peak < val) {
+      peak = val;
+    }
   }
-  return newData;
+  return { data: newData, peak };
 }
 
 type Props = {
@@ -61,91 +67,79 @@ type Props = {
 export default function waveform({ doc, barsCount, audioInfo, onSeek, className }: Props) {
   const info = getAttributeAudio(doc);
 
-  let waveformDecoded = decodeWaveform(info && info.waveform ? new Uint8Array(info.waveform) : new Uint8Array(0));
+  const waveformDecoded = decodeWaveform(info && info.waveform ? new Uint8Array(info.waveform) : new Uint8Array(0));
 
   let thumbX = -Infinity;
   let playProgress = -Infinity;
 
-  waveformDecoded = interpolateArray(waveformDecoded, barsCount);
-  const peak = Math.max(...waveformDecoded);
+  const { data, peak } = interpolateArray(waveformDecoded, barsCount);
 
-  const bars: SVGLineElement[] = [];
-  const svg = svgEl('svg', { class: 'waveform', width: barsCount * 4, height: 23, viewBox: `0 0 ${barsCount * 4} 23` });
+  const bars: Element[] = [];
+  const rootEl = div`.waveform`();
   if (className) {
-    svg.classList.add(className);
+    rootEl.classList.add(className);
   }
 
   if (onSeek) {
-    listen(svg, 'click', (e) => {
-      onSeek((e.clientX - svg.getBoundingClientRect().left) / svg.clientWidth);
+    listen(rootEl, 'click', (e) => {
+      onSeek((e.clientX - rootEl.getBoundingClientRect().left) / rootEl.clientWidth);
     });
   }
 
-  const height = 21;
   for (let i = 0; i < barsCount; i++) {
-    const value = waveformDecoded[i];
-    const barHeight = Math.max(0, Math.round((value * height) / peak));
-    const bar = svgEl('line', {
-      x1: i * 4 + 1,
-      x2: i * 4 + 1,
-      y1: 1 + height - barHeight,
-      y2: 1 + height,
-      'stroke-width': '2',
-      stroke: '#F00',
-      'stroke-linecap': 'round',
-    });
+    const value = data[i];
+    const barHeight = Math.max(0, value / peak);
+    const bar = div`.waveform__bar`();
+    bar.style.height = `${(barHeight) * 100}%`;
     bars[i] = bar;
-    mount(svg, bar);
+    mount(rootEl, bar);
   }
 
-  const currentBar = svgEl('line', {
-    'stroke-width': '2',
-    stroke: '#F00',
-    'stroke-linecap': 'round',
-    opacity: 1,
-    class: 'active',
+  const currentBar = div`.waveform__bar.-active`({
+    style: {
+      position: 'absolute',
+      bottom: 0,
+    },
   });
-  mount(svg, currentBar);
+  mount(rootEl, currentBar);
 
   const render = () => {
     for (let i = 0; i < bars.length; i++) {
       const bar = bars[i];
-      bar.classList.toggle('active', i < playProgress * bars.length - 1);
+      bar.classList.toggle('-active', i < playProgress * bars.length - 1);
     }
     const thumbIndex = Math.round(thumbX / 4);
     if (thumbIndex >= 0 && thumbIndex < bars.length) {
-      bars[thumbIndex].classList.add('active');
+      bars[thumbIndex].classList.add('-active');
     }
 
     const pp = Math.max(0, Math.min(1, playProgress));
     const index = Math.trunc(pp * bars.length);
-    const x = index * 4 + 1;
-    if (index < waveformDecoded.length) {
-      const val = waveformDecoded[index];
-      const h = Math.round((val * height) / peak);
-      currentBar.setAttribute('opacity', ((pp * bars.length) % 1).toString());
-      currentBar.setAttribute('x1', x.toString());
-      currentBar.setAttribute('x2', x.toString());
-      currentBar.setAttribute('y1', (1 + height - h).toString());
-      currentBar.setAttribute('y2', (1 + height).toString());
+    const x = index * 4;
+    if (index < data.length) {
+      const val = data[index];
+      const h = val / peak;
+      currentBar.style.opacity = ((pp * bars.length) % 1).toString();
+      currentBar.style.left = `${x}px`;
+      currentBar.style.height = `${h * 100}%`;
     }
   };
 
-  listen(svg, 'mousemove', (e) => {
-    thumbX = e.clientX - 1 - svg.getBoundingClientRect().left;
+  listen(rootEl, 'mousemove', (e) => {
+    thumbX = e.clientX - 1 - rootEl.getBoundingClientRect().left;
     render();
   });
 
-  listen(svg, 'mouseleave', () => {
+  listen(rootEl, 'mouseleave', () => {
     thumbX = -Infinity;
     render();
   });
 
-  useObservable(svg, audioInfo, true, (newInfo) => {
+  useObservable(rootEl, audioInfo, true, (newInfo) => {
     playProgress = newInfo.playProgress;
     render();
   });
 
   render();
-  return svg;
+  return rootEl;
 }

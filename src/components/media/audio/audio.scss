@@ -12,14 +12,14 @@
   &__wave {
     display: flex;
     flex-direction: column;
-    margin-top: 7PX;
+    margin-top: 11PX;
     margin-right: 10PX;
     overflow: hidden;
     flex-grow: 1;
   }
 
   &__track {
-    margin-top: 6.5PX;
+    margin: 2px 0;
   }
 
   &__title {
@@ -30,15 +30,11 @@
 
   &__timing {
     color: $accent-color-inactive;
-    font-size: 14px;
-    line-height: 2;
-  }
+    font-size: 12px;
+    line-height: 1.6;
 
-  .message.chat {
-    --waveform-color: #50a2e9;
-  }
-
-  .message.chat.out {
-    --waveform-color: #4fae4e;
+    .message-out &, .message-out-last & {
+      color: $accent-color-out;
+    }
   }
 }

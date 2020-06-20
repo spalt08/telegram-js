@@ -4,7 +4,6 @@ import { userTyping } from 'services';
 import { unmountChildren, mount } from 'core/dom';
 import { useObservable } from 'core/hooks';
 import { userCache } from 'cache';
-import './typing_indicator.scss';
 
 function actionToString(action: SendMessageAction) {
   switch (action._) {
@@ -33,10 +32,10 @@ export default function typingIndicator(peer: Peer, className: string, ...childr
     if (activeUserIds.length > 0) {
       unmountChildren(container);
       if (peer._ === 'peerUser') {
-        mount(container, span`.typingIndicator__typing`(text(actionToString(actions[activeUserIds[0]]))));
+        mount(container, span`.typingIndicator__typing`(text(`${actionToString(actions[activeUserIds[0]])}...`)));
       } else if (activeUserIds.length === 1) {
         const user = (userCache.get(activeUserIds[0]) as User.user)?.first_name ?? 'Someone';
-        mount(container, span`.typingIndicator__typing`(span(text(user)), text(` is ${actionToString(actions[activeUserIds[0]])}`)));
+        mount(container, span`.typingIndicator__typing`(span(text(user)), text(` is ${actionToString(actions[activeUserIds[0]])}...`)));
       } else if (activeUserIds.length === 2) {
         const user1 = (userCache.get(activeUserIds[0]) as User.user)?.first_name ?? '';
         const user2 = (userCache.get(activeUserIds[1]) as User.user)?.first_name ?? '';
@@ -44,10 +43,10 @@ export default function typingIndicator(peer: Peer, className: string, ...childr
           span(text(user1)),
           text(', '),
           span(text(user2)),
-          text(' are typing')));
+          text(' are typing...')));
       } else {
         mount(container, span`.typingIndicator__typing`(
-          text(`${activeUserIds.length} users are typing`)));
+          text(`${activeUserIds.length} users are typing...`)));
       }
     } else {
       unmountChildren(container);
