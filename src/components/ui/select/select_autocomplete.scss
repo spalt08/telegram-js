@@ -72,7 +72,6 @@
     animation: appear .2s;
     overflow-x: hidden;
     overflow-y: auto;
-    overflow-y: overlay;
     transform: translateZ(0); // https://stackoverflow.com/a/30533339/1118709
   }
 

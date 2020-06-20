@@ -17,8 +17,8 @@ ctx.addEventListener('message', (event: MessageEvent) => {
 
       fetchAnimation(src)
         .then((animationData) => {
-          canvas.width = 400;
-          canvas.height = 400;
+          canvas.width = props.width;
+          canvas.height = props.height;
           const context = (canvas as OffscreenCanvas).getContext('2d');
 
           if (!context) return;

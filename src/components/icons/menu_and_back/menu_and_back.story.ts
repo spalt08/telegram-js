@@ -29,16 +29,13 @@ const element = div(...icons);
 stories.add('Menu\'n\'Back', () => {
   const toggleState = knobs.boolean('Toggle state', false); // button knob isn't used because it gives an animation lag a moment after a click
   const color = knobs.color('Color', '#4EA4F5');
-  const size = knobs.number('Size (px)', 24, { min: 1, max: 500 });
   const duration = knobs.number('Transition duration (ms)', -1);
 
   iconState.next(toggleState);
   element.style.color = color; // Important to set the color on a parent to check that the color is inherited
   icons.forEach((icon) => {
-    Object.assign(icon.style, {
-      fontSize: `${size}px`,
-      transitionDuration: duration >= 0 ? `${duration}ms` : '',
-    });
+    // eslint-disable-next-line no-param-reassign
+    icon.style.transitionDuration = duration >= 0 ? `${duration}ms` : '';
   });
 
   return element;
