@@ -34,10 +34,16 @@
   from {
     background-color: rgba(0, 0, 0, 0.0);
   }
+  to {
+    transform: rgba(0, 0, 0, 0.3);
+  }
 }
 
 @keyframes sidebarWrapperContentAppear {
   from {
     transform: translate(100%, 0);
+  }
+  to {
+    transform: translate(0, 0);
   }
 }

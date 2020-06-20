@@ -127,8 +127,8 @@ export function useCacheRenderer(element: HTMLCanvasElement, sticker: Document.d
       renderer.currentFrameRaw = 0;
     } else {
       cacheQuene.filter((item) => item.id !== id);
-      cacheFrameData.delete(sid);
-      renderer.lastLoadedFrame = undefined;
+      // cacheFrameData.delete(sid);
+      // renderer.lastLoadedFrame = undefined;
     }
   });
 
