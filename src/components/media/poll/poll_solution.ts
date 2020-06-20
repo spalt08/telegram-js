@@ -1,4 +1,3 @@
-import { lamp } from 'components/icons';
 import { listen } from 'core/dom';
 import { useMaybeObservable } from 'core/hooks';
 import { div } from 'core/html';
@@ -9,7 +8,7 @@ import './poll_solution.scss';
 
 export default function pollSolution(results: MaybeObservable<PollResults>) {
   let pollResults: PollResults;
-  const container = div`.pollSolution`(lamp());
+  const container = div`.pollSolution`();
   useMaybeObservable(container, results, true, (r) => {
     container.classList.toggle('-visible', !!r.solution);
     pollResults = r;

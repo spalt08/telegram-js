@@ -50,7 +50,9 @@ export default function poll(peer: Peer, message: Message.message, info: HTMLEle
   const pollData = media.poll as Required<Poll.poll>;
   const selectedOptions = new Set<ArrayBuffer>();
   const pollOptions: ReturnType<typeof pollOption>[] = [];
-  const countdownEl = pollData.close_date > 0 && !pollData.closed ? pollCountdown(message.date, pollData.close_date) : nothing;
+  const countdownEl = (pollData.close_date > 0 || pollData.close_period > 0) && !pollData.closed
+    ? pollCountdown(message.date, pollData.close_date)
+    : nothing;
   const solutionEl = pollData.quiz ? pollSolution(resultsSubject) : nothing;
   const pollHeader = text(pollType(pollData));
   const recentVoters = new BehaviorSubject<readonly number[] | undefined>(results.recent_voters);

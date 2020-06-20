@@ -1,5 +1,4 @@
-import { check as checkIcon, close as closeIcon } from 'components/icons';
-import { mount, svgEl, unmountChildren } from 'core/dom';
+import { mount, svgEl, unmount } from 'core/dom';
 import { getInterface, useInterface } from 'core/hooks';
 import { div, label, span, text } from 'core/html';
 import { PollAnswer, PollAnswerVoters } from 'mtproto-js';
@@ -19,14 +18,13 @@ type Props = {
 };
 
 function answerIcon() {
-  const container = div`.pollOption__answer.-hidden`();
+  const container = div`.pollOption__answer`();
   return useInterface(container, {
-    update: (isCorrect?: boolean) => {
-      container.classList.toggle('-hidden', isCorrect === undefined);
-      if (isCorrect !== undefined) {
-        unmountChildren(container);
-        mount(container, isCorrect ? checkIcon() : closeIcon());
-      }
+    update: (correct?: boolean, chosen?: boolean) => {
+      container.classList.toggle('-hidden', !(correct || chosen));
+      container.classList.toggle('-chosen', chosen);
+      container.classList.toggle('-correct', correct === true);
+      container.classList.toggle('-wrong', correct === false);
     },
   });
 }
@@ -36,24 +34,35 @@ export default function pollOption(initialProps: Props) {
   let currProps = initialProps;
   let firstAnimationCompleted = initialProps.answered;
 
+  let final = currProps.answered || currProps.closed;
+  let width: number | undefined;
   let path: SVGPathElement;
-  const checkboxEl = pollCheckbox({
-    multiple: currProps.multipleChoice,
-    clickCallback: (selected) => currProps.clickCallback(selected, initialProps.option.option),
-  });
-  const checkbox = span`.pollOption__checkbox`(checkboxEl);
+  let checkbox: Element;
+  let checkboxEl: ReturnType<typeof pollCheckbox>;
+  let lineSvg: SVGElement;
   const percentage = span`.pollOption__percentage`();
   const answer = answerIcon();
-  const line = svgEl('svg', { class: 'pollOption__line' }, [
-    path = svgEl('path', { d: 'M20 8 v 3.5 a 13 13 0 0 0 13 13 H 300' }),
-  ]);
-  const container = label`.pollOption`(
-    line,
-    percentage,
-    checkbox,
-    answer,
-    span`.pollOption__text`(text(currProps.option.text)),
-  );
+  const optionText = div`.pollOption__text`(text(currProps.option.text));
+  const container = label`.pollOption`(optionText);
+  const lineDiv = div`.pollOption__line-div`();
+  if (!final) {
+    checkboxEl = pollCheckbox({
+      multiple: currProps.multipleChoice,
+      clickCallback: (selected) => currProps.clickCallback(selected, initialProps.option.option),
+    });
+    lineSvg = svgEl('svg', { class: 'pollOption__line-svg' }, [
+      path = svgEl('path', { d: 'M20 8 v 3.5 a 13 13 0 0 0 13 13 H 300' }),
+    ]);
+    checkbox = span`.pollOption__checkbox`(checkboxEl);
+    mount(container, checkbox);
+    mount(container, lineSvg);
+    mount(container, percentage);
+    mount(container, answer);
+  } else {
+    mount(container, lineDiv);
+    mount(container, percentage);
+    mount(container, answer);
+  }
 
   const update = (t: number) => {
     const prevVoters = firstAnimationCompleted ? prevProps.voters?.voters ?? 0 : 0;
@@ -66,7 +75,17 @@ export default function pollOption(initialProps: Props) {
     const x2 = currVoters > 0 ? currVoters / currProps.maxVoters : 0;
     const x = x1 + (x2 - x1) * t;
     const t1 = firstAnimationCompleted ? 1 : t;
-    path.style.strokeDasharray = `0 ${Math.round(t1 * 41)} ${Math.round(x * 248)} 1000`;
+    if (final) {
+      lineDiv.style.right = `calc(${1 - x} * (100% - 48px))`;
+    } else {
+      if (!width) {
+        width = container.getBoundingClientRect().width;
+        lineSvg.setAttribute('width', width.toString());
+        lineSvg.setAttribute('height', '19');
+      }
+      path.setAttribute('d', `M20 0 v 4 a 13 13 0 0 0 13 13 H ${width}`);
+      path.style.strokeDasharray = `0 ${Math.round(t1 * 42)} ${Math.round(x * (width - 52))} 1000`;
+    }
   };
 
   let startTime: number;
@@ -79,6 +98,12 @@ export default function pollOption(initialProps: Props) {
     if (t < 1) {
       requestAnimationFrame(rafCallback);
     } else {
+      if (currProps.answered) {
+        mount(container, lineDiv, lineSvg);
+        unmount(lineSvg);
+        final = true;
+        update(1);
+      }
       startTime = 0;
       prevProps = currProps;
       if (currProps.answered) {
@@ -95,30 +120,23 @@ export default function pollOption(initialProps: Props) {
       firstAnimationCompleted = false;
     }
     const answered = currProps.answered || currProps.closed;
-    checkbox.classList.toggle('-answered', answered);
-    percentage.classList.toggle('-answered', answered);
-    line.classList.toggle('-answered', answered);
+    if (checkbox) checkbox.classList.toggle('-answered', answered);
+    if (percentage) percentage.classList.toggle('-answered', answered);
+    if (lineDiv) lineDiv.classList.toggle('-answered', answered);
+    if (lineSvg) lineSvg.classList.toggle('-answered', answered);
     getInterface(answer).update();
-    container.classList.remove('-correct');
-    container.classList.remove('-incorrect');
     if (currProps.voters) {
       if (currProps.quiz) {
         if (currProps.voters.chosen) {
-          if (currProps.voters.correct) {
-            container.classList.add('-correct');
-            getInterface(answer).update(true);
-          } else {
-            container.classList.add('-incorrect');
-            getInterface(answer).update(false);
-          }
-        } else if (currProps.voters.correct) {
-          getInterface(answer).update(true);
+          container.classList.toggle('-correct', currProps.voters.correct === true);
+          container.classList.toggle('-wrong', currProps.voters.correct === false);
         }
+        getInterface(answer).update(currProps.voters.correct, currProps.voters.chosen);
       } else if (currProps.voters.chosen) {
-        getInterface(answer).update(true);
+        getInterface(answer).update(undefined, currProps.voters.chosen);
       }
     }
-    if (currProps.answered && prevProps !== currProps) {
+    if (!currProps.closed && prevProps !== currProps) {
       requestAnimationFrame(rafCallback);
     } else {
       update(1);

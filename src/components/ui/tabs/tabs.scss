@@ -107,6 +107,7 @@
   }
 
   &__container {
+    $transition-duration: 0.2s;
     flex: 1; // If you set it to `auto`, the content won't have 100% height in Safari
     min-height: 0;
     position: relative;
@@ -116,7 +117,7 @@
     z-index: 0;
 
     & > div {
-      transition: transform .3s ease-out;
+      transition: transform $transition-duration ease-out;
     }
 
     & > .removing-left, & > .removing-right {
@@ -132,11 +133,11 @@
     }
 
     & > .appearing-left {
-      animation: tabsPanelAppearLeft .3s ease-out;
+      animation: tabsPanelAppearLeft $transition-duration ease-out;
     }
 
     & > .appearing-right {
-      animation: tabsPanelAppearRight .3s ease-out;
+      animation: tabsPanelAppearRight $transition-duration ease-out;
     }
   }
 }
