@@ -1,9 +1,13 @@
 import { handleStickerRendering } from 'components/media/sticker/player';
 import sidebar from 'components/sidebar/sidebar';
+import { preloadResources as preloadBubbleResources } from 'components/ui/bubble/bubble';
 import { listen, animationFrameStart } from 'core/dom';
-import { getInterface, useObservable, useListenWhileMounted } from 'core/hooks';
+import { getInterface, useObservable, useListenWhileMounted, useOnMount } from 'core/hooks';
 import { div } from 'core/html';
 import { main, message } from 'services';
+import readSrc from 'assets/statuses/read@2x.png';
+import unreadSrc from 'assets/statuses/unread@2x.png';
+import { preloadImage } from 'helpers/other';
 import './home.scss';
 import history from './main/history';
 
@@ -93,6 +97,14 @@ export default function home() {
   });
 
   requestAnimationFrame(handleStickerRendering);
+
+  useOnMount(container, () => {
+    setTimeout(() => {
+      preloadBubbleResources();
+      preloadImage(readSrc);
+      preloadImage(unreadSrc);
+    }, 100);
+  });
 
   // window.history.pushState(null, '', document.location.href);
   // window.onpopstate = () => {

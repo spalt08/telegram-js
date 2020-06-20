@@ -59,3 +59,8 @@ export function formatNumber(n: number) {
 export function pluralize(n: number, single: string, multiple: string) {
   return Math.abs(n) !== 1 ? multiple : single;
 }
+
+export function preloadImage(src: string) {
+  const image = new Image();
+  image.src = src;
+}

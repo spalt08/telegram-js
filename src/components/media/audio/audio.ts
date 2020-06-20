@@ -49,7 +49,7 @@ export default function audio(message: Message.message, noTrack = false) {
       header = text(audioAttribute.performer || audioAttribute.title || '');
     }
   }
-  if (!header) {
+  if (!header && !audioAttribute.voice) {
     const filenameAttribute = getAttributeFilename(doc);
     if (filenameAttribute) {
       header = text(filenameAttribute.file_name);
