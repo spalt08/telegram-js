@@ -31,7 +31,7 @@ export default function messageInput(peer: MaybeObservable<Peer | null>) {
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
       getInterface(textarea).send();
     },
-    onAudio: ({ blob, duration, waveform }) => {
+    onAudio: ({ blob, duration }) => {
       upload(blob, (file) => {
         message.sendMediaMessage({
           _: 'inputMediaUploadedDocument',
@@ -41,7 +41,6 @@ export default function messageInput(peer: MaybeObservable<Peer | null>) {
             _: 'documentAttributeAudio',
             voice: true,
             duration,
-            waveform,
           }],
         });
       });

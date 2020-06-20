@@ -1,6 +1,7 @@
 @import '~styles/variables.scss';
 
 .poll {
+  min-width: 250px;
   user-select: none;
   font-size: 1rem;
   overflow: hidden;
@@ -35,6 +36,10 @@
     font-size: 0.9rem;
     color: $accent-color-inactive;
 
+    .message-out &, .message-out-last & {
+      color: $accent-color-out;
+    }
+
     .pollCountdown, .pollSolution {
       grid-row: 1;
       grid-column: 3;
@@ -68,18 +73,9 @@
     color: $accent-color-inactive;
     font-size: 0.9rem;
     padding: 10px 0 4px 10px;
-  }
-
-  &__vote-button {
-    margin: 8PX 0;
-    text-align: center;
-    color: $accent-color;
-    transition: color 0.3s;
-    cursor: pointer;
-  }
-
-  &__vote-button.-inactive {
-    color: $accent-color-inactive;
-    cursor: default;
+    
+    .message-out &, .message-out-last & {
+      color: $accent-color-out-inactive;
+    }
   }
 }

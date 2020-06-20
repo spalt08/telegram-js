@@ -1,7 +1,15 @@
 @import '~styles/variables.scss';
 
 .pollCountdown {
-  color: $accent-color-inactive;
+  --color: $accent-color-inactive;
+}
+
+.message-out .pollCountdown, .message-out-last .pollCountdown {
+  --color: $accent-color-out-inactive;
+}
+
+.pollCountdown {
+  color: var(--color);
   display: flex;
   align-items: center;
 
@@ -12,7 +20,7 @@
   circle {
     fill: none;
     stroke-width: 2px;
-    stroke: $accent-color-inactive;
+    stroke: var(--color);
     transform: rotate(-90deg);
     transform-origin: center;
   }

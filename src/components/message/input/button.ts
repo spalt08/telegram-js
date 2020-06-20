@@ -1,11 +1,10 @@
+import EncoderWorker from 'worker-loader!opus-media-recorder/encoderWorker.js';
 import { div, text } from 'core/html';
 import * as icons from 'components/icons';
 import { useInterface } from 'core/hooks';
 import { listen, mount, unmount } from 'core/dom';
 import loadAudioRecorder from '../../../lazy-modules/audio-recoder';
 import './button.scss';
-
-type Waveform = number[];
 
 type RecordResult = {
   blob: Blob,
@@ -21,18 +20,6 @@ type Props = {
 };
 
 type Handler = (volume: number, time: number) => void;
-
-function prepareWaveform(waveform: Waveform) {
-  const bytes = new Uint8Array(63);
-
-  const step = Math.floor(waveform.length / 63);
-
-  bytes.forEach((_value, i) => {
-    bytes[i] = waveform[i * step];
-  });
-
-  return bytes.buffer;
-}
 
 async function startStream() {
   // eslint-disable-next-line compat/compat
@@ -83,7 +70,6 @@ function startAnalyze(stream: MediaStream, handler: Handler) {
 
 async function startRecord(handler: Handler) {
   const chunks: Blob[] = [];
-  const waveform: Waveform = [];
   const recordStartTime = Date.now();
 
   const { stream, finishStream } = await startStream();
@@ -91,13 +77,19 @@ async function startRecord(handler: Handler) {
   const finishAnalyze = startAnalyze(stream, (volume, time) => {
     // console.log(`${volume} / ${Math.floor(time)}`);
 
-    waveform.push((volume - 128) * 2);
     handler(volume, time);
   });
 
   const AudioRecorder = await loadAudioRecorder();
 
-  const audioRecorder = new AudioRecorder(stream);
+  const audioRecorder = new AudioRecorder(stream, {
+    mimeType: 'audio/ogg',
+  }, {
+    encoderWorkerFactory: _ => new EncoderWorker(),
+    OggOpusEncoderWasmPath: 'https://cdn.jsdelivr.net/npm/opus-media-recorder@0.8.0/OggOpusEncoder.wasm',
+    WebMOpusEncoderWasmPath: 'https://cdn.jsdelivr.net/npm/opus-media-recorder@0.8.0/WebMOpusEncoder.wasm',
+  });
+
   audioRecorder.start();
 
   let handleData = () => {};
@@ -110,15 +102,14 @@ async function startRecord(handler: Handler) {
 
   // eslint-disable-next-line arrow-body-style
   return () => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       handleData = () => {
         resolve({
           blob: new Blob(chunks, {
             // audio/wav don't can be voice :(
-            type: 'audio/mpeg',
+            type: 'audio/ogg',
           }),
           duration: Math.round((Date.now() - recordStartTime) / 1000),
-          waveform: prepareWaveform(waveform),
         });
       };
 

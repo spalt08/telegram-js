@@ -2,21 +2,20 @@
 
 .pollSolution {
   display: inline-flex;
+  width: 18PX;
+  height: 18PX;
   transform: scale(0);
   transform-origin: center;
   transition: transform 0.3s;
+  background-size: contain;
+  background-image: url('./images/lamp@2x.png');
   cursor: pointer;
 
   &.-visible {
     transform: scale(1);
   }
+}
 
-  svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  path {
-    fill: $accent-color;
-  }
+.message-out .pollSolution, .message-out-last .pollSolution {
+  background-image: url('./images/lamp-out@2x.png');
 }

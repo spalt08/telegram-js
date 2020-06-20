@@ -79,17 +79,19 @@ export class TGSManager {
       ]).then(([Lottie, animationData]: [LottiePlayer, any]) => {
         if (this.destroyed) return;
 
+        const context = this.element.getContext('2d');
+        if (!context) return;
+
         this.animation = Lottie.loadAnimation({
-          container: this.element.parentElement!,
           renderer: 'canvas',
           loop: this.state.loop,
           autoplay: !this.state.paused,
           animationData,
           rendererSettings: {
-            context: this.element.getContext('2d') || undefined,
+            context,
             clearCanvas: true,
           },
-        });
+        } as any);
       });
     }
   }
@@ -97,15 +99,16 @@ export class TGSManager {
   play() {
     // pass control to worker thread
     if (typeof this.element.transferControlToOffscreen === 'function' && this.state.offscreen) {
-      if (!this.transfered) this.load();
-
       getWorker().postMessage({
         id: this.id,
         type: 'play',
       });
 
+      if (!this.transfered) this.load();
+
     // load animation inside main thread
     } else if (!this.animation) {
+      this.state.paused = false;
       this.load();
 
     // play animation inside main thread
