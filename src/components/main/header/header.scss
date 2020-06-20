@@ -92,7 +92,7 @@ $header-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.4);
     @include respond-to(small) {
       height: 54px;
       transition: transform .2s ease-out;
-      padding: 0px 12px;
+      padding: 0px 8px;
       width: 100%;
       max-width: 100%;
       min-width: 100%;
@@ -109,6 +109,7 @@ $header-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.4);
 
     &.-visible {
       display: flex;
+      align-items: center;
 
       @include respond-to(small) {
         transform: translateY($main-header-height);
@@ -123,6 +124,13 @@ $header-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.4);
 
       &:hover {
         background: rgba(#707579, 0.08);
+      }
+    }
+    
+    &_close {
+      flex: none;
+      @include respond-to(desktop) {
+        display: none;
       }
     }
   }
@@ -143,6 +151,10 @@ $header-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.4);
     border-left: 1px solid $common-border-color;
     border-right: 1px solid $common-border-color;
 
+    @include respond-to(small) {
+      padding: 0 8px;
+    }
+  
     &.-hidden {
       transform: translateY(0);
       pointer-events: none;
