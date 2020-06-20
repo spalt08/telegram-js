@@ -1,4 +1,4 @@
-import { messageCache } from 'cache';
+import { messageCache, dialogCache } from 'cache';
 import { messageToSenderPeer, peerToColorCode } from 'cache/accessors';
 import { profileAvatar, profileTitle } from 'components/profile';
 import { bubble, bubbleClassName, datetime, formattedMessage } from 'components/ui';
@@ -10,6 +10,7 @@ import { formatNumber } from 'helpers/other';
 import { Message, Peer } from 'mtproto-js';
 import { BehaviorSubject } from 'rxjs';
 import { click } from 'services';
+import { peerToDialogId } from 'helpers/api';
 import './message.scss';
 import { enhanceClassName, hasMediaChanged, hasMediaToMask, messageMediaImmutable, messageMediaLower, messageMediaUpper } from './message_media';
 import messageReply from './reply';
@@ -82,6 +83,22 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
     edited,
     datetime({ timestamp: msg.date, date: false }),
   );
+
+  if (msg.out) {
+    const dialogId = peerToDialogId(msg.to_id);
+    const dialog = dialogCache.get(dialogId);
+    if (dialog && dialog._ === 'dialog' && dialog.read_outbox_max_id < msg.id) {
+      info.classList.add('-unread');
+
+      const subject = dialogCache.useItemBehaviorSubject(info, dialogId);
+      const subscription = subject.subscribe((nextDialog) => {
+        if (nextDialog && nextDialog._ === 'dialog' && nextDialog.read_outbox_max_id >= msg.id) {
+          info.classList.remove('-unread');
+          subscription.unsubscribe();
+        }
+      });
+    }
+  }
 
   let replyMarkup: ReturnType<typeof replyMarkupRenderer> | undefined;
   let replyHeight = 0;
