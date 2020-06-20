@@ -10,6 +10,7 @@ const CssoWebpackPlugin = require('csso-webpack-plugin').default;
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const ServiceWorkerWebpackPlugin = require('serviceworker-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 
 const sourceDirectory = 'src';
 const destinationDirectory = 'dist';
@@ -139,6 +140,10 @@ module.exports = (env, argv) => {
       disableHostCheck: true,
     },
 
+    node: {
+      fs: 'empty', // canvas-kit invokes `require("fs")` which is should be ignored.
+    },
+
     plugins: [
       new ServiceWorkerWebpackPlugin({
         entry: path.join(__dirname, 'src/client/workers/service.ts'),
@@ -183,6 +188,11 @@ module.exports = (env, argv) => {
           analyzerPort: 3002,
         }),
       ] : []),
+      new CopyPlugin({
+        patterns: [
+          { from: 'src/vendor/canvas-kit/canvaskit.wasm' },
+        ],
+      }),
     ],
   };
 };

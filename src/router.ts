@@ -35,7 +35,7 @@ export class Router {
     const { visualViewport } = window as any;
     if (visualViewport) {
       useListenWhileMounted(this.element, visualViewport, 'resize', () => {
-        this.element.style.marginTop = `${visualViewport.pageTop}px`;
+        this.element.style.transform = `translateY(${visualViewport.pageTop}px)`;
         this.element.style.height = `${visualViewport.height}px`;
         // in some cases we must update scrollTop position,
         // even though it is already equal to visualViewport.pageTop

@@ -2,8 +2,9 @@
 import runtime from 'serviceworker-webpack-plugin/lib/runtime';
 import { SERVICE_WORKER_SCOPE } from 'const';
 import Worker from 'worker-loader!./workers/worker';
+import CanvasKitWorker from 'worker-loader!./workers/canvaskit.worker';
 import { ServiceRequestID, ServiceRequestCallback, WindowMessage, NotificationType, ServiceNotificationCallback, TaskPayloadMap,
-  RequestType, RequestPayloadMap, ServiceRequest, ServiceMessage, ServiceTask } from './types';
+  RequestType, RequestPayloadMap, ServiceRequest, ServiceMessage, ServiceTask, CanvasWorkerResponse } from './types';
 
 // Request resolvers
 const requests: Record<ServiceRequestID, ServiceRequestCallback<any>> = {};
@@ -90,3 +91,18 @@ navigator.serviceWorker.ready.then((registration) => {
 });
 
 navigator.serviceWorker.oncontrollerchange = resendPending;
+
+/**
+ * Offscreen Rendering for Stickers
+ */
+let canvaskitWorker: CanvasKitWorker;
+export function getCanvasKitWorker(onMessage: (message: CanvasWorkerResponse) => void) {
+  if (canvaskitWorker) return canvaskitWorker;
+
+  canvaskitWorker = new CanvasKitWorker();
+  canvaskitWorker.addEventListener('message', (event) => {
+    onMessage(event.data as CanvasWorkerResponse);
+  });
+
+  return canvaskitWorker;
+}

@@ -33,7 +33,7 @@ export default function stickerSet(setId: string, onClick?: (sticker: Document) 
     const stickers = stickerSetCache.indices.stickers.getStickers(setId);
 
     for (let i = 0; i < Math.min(stickers.length, set.count); i += 1) {
-      mount(placeholders[i], stickerRenderer(stickers[i] as Document.document, { size: '70px', autoplay: false, playOnHover: true, onClick }));
+      mount(placeholders[i], stickerRenderer(stickers[i] as Document.document, { size: '70px', onClick }));
     }
   });
 

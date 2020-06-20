@@ -1,5 +1,5 @@
 import { animationFrameStart, listen, listenOnce, mount, unmount, unmountChildren } from 'core/dom';
-import { useMaybeObservable } from 'core/hooks';
+import { useMaybeObservable, useListenWhileMounted } from 'core/hooks';
 import { div } from 'core/html';
 import { MaybeObservable } from 'core/types';
 import { isiOS, isSafari } from 'helpers/browser';
@@ -160,6 +160,15 @@ export class VirtualizedList {
       if (prevOffset < offset) this.onScrollDown();
       else this.onScrollUp();
     }, { passive: true, capture: true });
+
+    // fix for virtual keyboard in iOS.
+    const { visualViewport } = window as any;
+    if (visualViewport) {
+      useListenWhileMounted(this.container, visualViewport, 'resize', () => {
+        this.wrapper.style.transform = `translateY(${-visualViewport.pageTop}px)`;
+        this.viewport = this.container.getBoundingClientRect();
+      });
+    }
   }
 
   // get element by index
@@ -290,8 +299,9 @@ export class VirtualizedList {
     const focusIndex = this.shouldFocus ? this.items.indexOf(this.shouldFocus) : -1;
 
     if (appendCount > 0) {
+      const halfBatch = Math.round(this.cfg.batchService / 2);
       if (focusIndex > -1 && focusIndex !== this.items.length - 1) {
-        this.firstRendered = Math.max(0, focusIndex - this.cfg.batchService / 2);
+        this.firstRendered = Math.max(0, focusIndex - halfBatch);
         appendCount = Math.min(this.cfg.batchService, this.items.length - this.firstRendered - 1);
       } else this.firstRendered = this.cfg.pivotBottom ? Math.max(0, this.items.length - this.cfg.batchService) : 0;
       this.lastRendered = this.firstRendered - 1;

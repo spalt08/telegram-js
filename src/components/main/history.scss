@@ -20,7 +20,7 @@
     top: 0;
     width: 100%;
     height: 100%;
-    position: fixed;
+    position: absolute;
     transform: translate3d(100%, 0, 0);
 
     &.-visible {

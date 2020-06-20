@@ -8,7 +8,7 @@ import { animationFrameStart, mount, unmount } from 'core/dom';
 import { getInterface, useObservable } from 'core/hooks';
 import { button, div, text } from 'core/html';
 import { compareSamePeerMessageIds, peerMessageToId, peerToId } from 'helpers/api';
-import { isiOS } from 'helpers/browser';
+import { isiOS, isAndroid } from 'helpers/browser';
 import { getDayOffset } from 'helpers/message';
 import { Peer } from 'mtproto-js';
 import { BehaviorSubject, combineLatest } from 'rxjs';
@@ -147,8 +147,8 @@ export default function history({ onBackToContacts }: Props) {
     className: 'history__list',
     items: itemsSubject,
     pivotBottom: true,
-    threshold: 2,
-    batch: 20, // navigator.userAgent.indexOf('Safari') > -1 ? 5 : 20,
+    threshold: isAndroid ? 1 : 2,
+    batch: isAndroid ? 5 : 20, // navigator.userAgent.indexOf('Safari') > -1 ? 5 : 20,
     initialPaddingBottom: 0,
     forcePadding: isiOS ? 100000 : 0,
     renderer: (id: string) => message(id, messageSiblingsMap.get(id)!, id === lastUnreadMessage),

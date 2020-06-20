@@ -7,7 +7,7 @@ import { profileAvatar, profileTitle } from 'components/profile';
 import { contextMenu, formattedMessage, heading, peerFullStatus, ripple, roundButton, searchInput, typingIndicator } from 'components/ui';
 import { listen, mount, unmount, unmountChildren } from 'core/dom';
 import { getInterface, useMaybeObservable, useObservable } from 'core/hooks';
-import { div, nothing } from 'core/html';
+import { div, nothing, text } from 'core/html';
 import { arePeersSame, peerToId } from 'helpers/api';
 import { Peer } from 'mtproto-js';
 import { main, message } from 'services';
@@ -116,6 +116,8 @@ export default function header({ onBackToContacts }: Props) {
     placeholder: 'Search Messages',
   });
 
+  const navigationSearchEl = div`.header__inline-navigation`(text('buttons here'));
+
   const inlineSearch = heading({
     title: '',
     className: 'header__inline-search',
@@ -127,6 +129,7 @@ export default function header({ onBackToContacts }: Props) {
         onClick: () => {
           container.classList.remove('-searching');
           unmount(inlineSearch);
+          unmount(navigationSearchEl);
           updateStickyOffset(pinned ? pinned.classList.contains('-visible') : false, isAudioActive);
         },
       },
@@ -149,6 +152,7 @@ export default function header({ onBackToContacts }: Props) {
           if (isMobile) {
             container.classList.add('-searching');
             mount(container, inlineSearch);
+            if (container.parentElement) mount(container.parentElement, navigationSearchEl);
             setStickyOffset(0);
           } else if (peer) {
             main.openSidebar('messageSearch', { peer });

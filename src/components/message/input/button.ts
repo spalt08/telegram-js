@@ -108,11 +108,13 @@ async function startRecord(handler: Handler) {
     handleData();
   });
 
+  // eslint-disable-next-line arrow-body-style
   return () => {
     return new Promise((resolve, reject) => {
       handleData = () => {
         resolve({
           blob: new Blob(chunks, {
+            // audio/wav don't can be voice :(
             type: 'audio/mpeg',
           }),
           duration: Math.round((Date.now() - recordStartTime) / 1000),
@@ -176,7 +178,7 @@ export default function recordSendButton({
     if (!isRecording) {
       try {
         finishRecord = await startRecord((volume, time) => {
-          // button.style.boxShadow = `0 0 0 ${volume / 2}px rgba(0,0,0,.15)`;
+          button.style.boxShadow = `0 0 0 ${(volume - 128) * 2}px rgba(0,0,0,.15)`;
 
           updateTimer(time);
         });
@@ -201,6 +203,8 @@ export default function recordSendButton({
     onFinishRecording();
 
     const result = await finishRecord();
+
+    button.style.boxShadow = 'box-shadow: 0px 1px 2px 0px rgba(16, 35, 47, 0.15)';
 
     onAudio(result);
   });
@@ -228,6 +232,8 @@ export default function recordSendButton({
     onFinishRecording();
 
     await finishRecord();
+
+    button.style.boxShadow = 'box-shadow: 0px 1px 2px 0px rgba(16, 35, 47, 0.15)';
   });
 
   return useInterface(container, {

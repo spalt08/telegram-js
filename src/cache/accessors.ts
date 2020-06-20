@@ -262,25 +262,30 @@ export function makeDialogMatchFilterChecker(filter: Readonly<DialogFilter>) {
     }
   });
 
+  const hasExplicitPeers = includePeers.size > 0 || excludePeers.size > 0;
+
   return (dialog: Dialog): boolean => {
     if (dialog._ !== 'dialog') {
       return false;
     }
+    if (hasExplicitPeers) { // This check is optional, it's for optimization only
+      peerId = peerToId(dialog.peer);
+      if (includePeers.has(peerId)) {
+        return true;
+      }
+      if (excludePeers.has(peerId)) {
+        return false;
+      }
+    }
     if (filter.exclude_archived && isDialogInFolder(dialog, ARCHIVE_FOLDER_ID)) {
       return false;
     }
-    if (filter.exclude_muted && isDialogMuted(dialog)) {
+    if (filter.exclude_muted && !dialog.unread_mentions_count && isDialogMuted(dialog)) {
+      // Filters in the native clients consider muted dialogs with mentions as unmuted. However, the filter unread count badge stays grey.
       return false;
     }
     if (filter.exclude_read && !dialog.unread_count && !dialog.unread_mark) {
       return false;
-    }
-    peerId = peerToId(dialog.peer);
-    if (excludePeers.has(peerId)) {
-      return false;
-    }
-    if (includePeers.has(peerId)) {
-      return true;
     }
     switch (dialog.peer._) {
       case 'peerChannel':
