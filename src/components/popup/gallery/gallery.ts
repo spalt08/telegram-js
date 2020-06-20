@@ -113,7 +113,9 @@ export function gallery({ message, opener }: Props) {
           slides++;
           mount(slider, olderMedia, activeMedia);
           setScroll(main.window.width);
-        } else if (!chunk.history.value.loadingOlder && !chunk.history.value.oldestReached) {
+        }
+
+        if (!chunk.getOlderId(message.id, 5) && !chunk.history.value.loadingOlder && !chunk.history.value.oldestReached) {
           chunk.loadMore(Direction.Older);
         }
       }
@@ -138,7 +140,9 @@ export function gallery({ message, opener }: Props) {
           slides++;
           mount(slider, newerMedia);
           setScroll(main.window.width);
-        } else if (!chunk.history.value.loadingNewer && !chunk.history.value.newestReached) {
+        }
+
+        if (!chunk.getNewerId(message.id, 5) && !chunk.history.value.loadingNewer && !chunk.history.value.newestReached) {
           chunk.loadMore(Direction.Newer);
         }
       }
