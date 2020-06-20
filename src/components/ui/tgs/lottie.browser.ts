@@ -64,6 +64,8 @@ export class TGSManager {
         props: {
           loop: this.state.loop,
           paused: this.state.paused,
+          width: this.element.width,
+          height: this.element.height,
         },
       }, [context]);
 
