@@ -6,13 +6,14 @@ import photoRenderer from 'components/media/photo/photo';
 import { profileTitle } from 'components/profile';
 import { bubble, contextMenu, quote } from 'components/ui';
 import { animationFrameStart, listen, mount, unmountChildren } from 'core/dom';
-import { getInterface, useInterface, useListenWhileMounted, useMaybeObservable, useObservable } from 'core/hooks';
+import { getInterface, useInterface, useListenWhileMounted, useMaybeObservable, useObservable, useOnMount } from 'core/hooks';
 import { div, input } from 'core/html';
 import { MaybeObservable } from 'core/types';
 import { peerToId } from 'helpers/api';
 import { documentToInputMedia } from 'helpers/message';
 import { Document, Peer } from 'mtproto-js';
 import { click, media, message } from 'services';
+import { initWorker } from 'client/context';
 import messageShort from '../short';
 import recordSendButton from './button';
 import './input.scss';
@@ -246,6 +247,10 @@ export default function messageInput(peer: MaybeObservable<Peer | null>) {
       textarea.value = '';
       container.style.display = 'none';
     }
+  });
+
+  useOnMount(container, () => {
+    initWorker();
   });
 
   return useInterface(container, {

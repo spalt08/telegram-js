@@ -36,7 +36,8 @@ export function listenMessage<K extends NotificationType>(type: K, cb: ServiceNo
 }
 
 let worker: Worker;
-function initWorker() {
+export function initWorker() {
+  if (worker) return;
   worker = new Worker();
   worker.addEventListener('message', (event) => {
     const message = event.data as ServiceTask;
