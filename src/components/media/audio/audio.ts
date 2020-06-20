@@ -39,7 +39,7 @@ export default function audio(message: Message.message, noTrack = false) {
   const audioInfo = audioService.audioInfo(message);
   const track = noTrack ? nothing : createTrack(audioAttribute, doc, audioInfo, onSeek);
   let header: Node | undefined;
-  if (audioAttribute.voice) {
+  if (noTrack && audioAttribute.voice) {
     const user = userCache.get(message.from_id!);
     header = text(userToTitle(user));
   } else if (audioAttribute.performer || audioAttribute.title) {

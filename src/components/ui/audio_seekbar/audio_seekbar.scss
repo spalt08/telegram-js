@@ -1,10 +1,6 @@
 @import '~styles/variables.scss';
 
 .audioSeekbar {
-  --accent-color: #1da1f1;
-  --seek-bar-not-buffered: rgba(112, 117, 121, 0.15);
-  --seek-bar-buffered: rgba(112, 117, 121, 0.35);
-
   position: relative;
   width: 100%;
   min-width: 192px;
@@ -14,30 +10,40 @@
 
   &__played {
     position: absolute;
-    background-color: var(--accent-color);
+    background-color: $accent-color;
     border-radius: 1px;
     height: 2px;
     top: 1px;
     left: 0;
+
+    .message-out &, .message-out-last & {
+      background-color: $accent-color-out;
+    }
   }
 
   &__not-buffered {
     position: absolute;
-    background-color: var(--seek-bar-not-buffered);
+    background-color: $seek-bar-not-buffered;
     border-radius: 1px;
     height: 2px;
     top: 1px;
     left: 0;
     right: 0;
+    .message-out &, .message-out-last & {
+      background-color: $seek-bar-not-buffered-out;
+    }
   }
 
   &__buffered-range {
     position: absolute;
-    background-color: var(--seek-bar-buffered);
+    background-color: $seek-bar-buffered;
     border-radius: 1px;
     height: 2px;
     top: 1px;
     left: 0;
     right: 0;
+    .message-out &, .message-out-last & {
+      background-color: $seek-bar-buffered-out;
+    }
   }
 }

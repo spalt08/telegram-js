@@ -98,9 +98,11 @@ export default function pollOption(initialProps: Props) {
     if (t < 1) {
       requestAnimationFrame(rafCallback);
     } else {
-      if (currProps.answered) {
-        mount(container, lineDiv, lineSvg);
-        unmount(lineSvg);
+      if (!prevProps.answered && currProps.answered) {
+        if (lineSvg) {
+          mount(container, lineDiv, lineSvg);
+          unmount(lineSvg);
+        }
         final = true;
         update(1);
       }
