@@ -21,8 +21,8 @@ function countToBadge({ count, hasUnmuted }: Readonly<UnreadCount>) {
 const allTab = {
   key: 'all',
   title: 'All',
-  badge: folderService.allIndex.unreadCount.pipe(map(countToBadge)),
-  content: () => dialogsList(folderService.allIndex, 'dialogsTabs__tab'),
+  badge: folderService.rootIndex.unreadCount.pipe(map(countToBadge)),
+  content: () => dialogsList(folderService.rootIndex, 'dialogsTabs__tab'),
 };
 
 function makeFilterDialogsList(id: number) {

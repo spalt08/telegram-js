@@ -1,13 +1,15 @@
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { distinctUntilChanged, map } from 'rxjs/operators';
 import { InputPeer } from 'mtproto-js';
 import { div, text } from 'core/html';
 import { heading, VirtualizedList } from 'components/ui';
 import * as icons from 'components/icons';
 import { useObservable } from 'core/hooks';
-import { inputPeerToPeer, peerToId } from 'helpers/api';
+import { inputPeerToPeer, peerIdToPeer, peerToId } from 'helpers/api';
+import { folder as folderService } from 'services';
+import { peerToInputPeer } from 'cache/accessors';
 import { PeersType, typesInfos, typesToExclude, typesToInclude } from './constants';
-import peersListItem from './peers_list_item';
+import peersListItem, { peerPeersListItem } from './peers_list_item';
 import peersInput, { PeersInputItem } from './peers_input';
 import './peers_screen.scss';
 
@@ -46,6 +48,16 @@ function renderListItem(
     );
   }
 
+  if (item.startsWith('peer_')) {
+    const peerId = item.slice(5);
+    const peer = peerIdToPeer(peerId);
+    return peerPeersListItem(
+      peer,
+      selectedPeers.pipe(map((peers) => peers.has(peerId))),
+      () => onPeerToggle(peerToInputPeer(peer)),
+    );
+  }
+
   if (process.env.NODE_ENV) {
     // eslint-disable-next-line no-console
     console.error(`Unknown peers list item "${item}", ignoring it. Please check the code for typos.`);
@@ -57,6 +69,9 @@ export default function peersScreen({ onBack }: SidebarComponentProps, ctxSubjec
   const selectedPeers = new BehaviorSubject(new Map<string, InputPeer>());
   const selectedTypes = new BehaviorSubject(new Set<PeersType>());
   const searchInput = new BehaviorSubject('');
+
+  const searchSession = folderService.makePeerSearchSession();
+  searchInput.subscribe((value) => searchSession.search(value));
 
   function submit() {
     // eslint-disable-next-line no-unused-expressions
@@ -115,11 +130,12 @@ export default function peersScreen({ onBack }: SidebarComponentProps, ctxSubjec
   const listDriver = new VirtualizedList({
     items: listItems,
     threshold: 2,
-    batch: 20,
+    batch: 15,
     pivotBottom: false,
     topReached: true,
     className: 'filterPeersScreen__list',
     renderer: (id) => renderListItem(id, selectedPeers, selectedTypes, togglePeer, toggleType),
+    onReachBottom: searchSession.loadMore,
   });
 
   const content = (
@@ -178,12 +194,32 @@ export default function peersScreen({ onBack }: SidebarComponentProps, ctxSubjec
     listDriver.clear();
     selectedPeers.next(peers);
     selectedTypes.next(types);
-    listItems.next([
-      'typesHeader',
-      ...(screenInput.typesFor === 'excluded' ? typesToExclude : typesToInclude),
-      'chatsHeader',
-    ]);
+    searchInput.next('');
   });
+
+  // Watches for the list content
+  useObservable(
+    content,
+    combineLatest([
+      ctxSubject.pipe(map((ctx) => ctx.typesFor), distinctUntilChanged()),
+      searchSession.peers,
+    ]),
+    true,
+    ([typesFor, { fromQuery, peers }]) => {
+      const items: string[] = [];
+
+      if (!fromQuery) {
+        items.push(
+          'typesHeader',
+          ...(typesFor === 'excluded' ? typesToExclude : typesToInclude),
+          'chatsHeader',
+        );
+      }
+
+      items.push(...peers.map((id) => `peer_${id}`));
+      listItems.next(items);
+    },
+  );
 
   return content;
 }

@@ -9,6 +9,7 @@ import DialogsService from '../dialog/dialog';
 import makeFolderIndex from './folderIndex';
 import makeFilterIndex from './filterIndex';
 import { FilterRecord } from './commonTypes';
+import makeFilterPeerSearchSession from './filterPeerSearchSession';
 
 // A key is a filter id
 export type Filters = ReadonlyMap<number, FilterRecord>;
@@ -26,7 +27,7 @@ export default class FolderService {
 
   readonly isLoadingSuggestedFilters = new BehaviorSubject(false);
 
-  readonly allIndex = makeFolderIndex(ROOT_FOLDER_ID);
+  readonly rootIndex = makeFolderIndex(ROOT_FOLDER_ID);
 
   readonly archiveIndex = makeFolderIndex(ARCHIVE_FOLDER_ID);
 
@@ -41,9 +42,13 @@ export default class FolderService {
 
   readonly suggestedFilters = new BehaviorSubject<SuggestedFilters | undefined>(undefined);
 
+  #dialogsService: DialogsService;
+
   #areRealFiltersLoaded = false;
 
-  constructor(authService: AuthService, private dialogService: DialogsService) {
+  constructor(authService: AuthService, dialogsService: DialogsService) {
+    this.#dialogsService = dialogsService;
+
     authService.state
       .pipe(first((state) => state === AuthStage.Authorized))
       .subscribe(() => setTimeout(() => this.loadFilters(), startLoadDelay));
@@ -202,6 +207,10 @@ export default class FolderService {
     }
   }
 
+  makePeerSearchSession() {
+    return makeFilterPeerSearchSession(this, this.#dialogsService);
+  }
+
   private setNewFiltersLocally(filters: readonly Readonly<DialogFilter>[]) {
     const oldFilters = this.filters.value;
     const newFilters = new Map<number, FilterRecord>();
@@ -209,7 +218,7 @@ export default class FolderService {
     filters.forEach((filter) => {
       const { id } = filter;
       const oldRecord = oldFilters?.get(id);
-      const index = oldRecord && filter === oldRecord.filter ? oldRecord.index : makeFilterIndex(filter, this.dialogService);
+      const index = oldRecord && filter === oldRecord.filter ? oldRecord.index : makeFilterIndex(filter, this.#dialogsService);
       newFilters.set(id, { filter, index });
     });
 
