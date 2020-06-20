@@ -12,6 +12,7 @@ import { BehaviorSubject } from 'rxjs';
 import { media as service } from 'services';
 import { MessageChunkService } from 'services/message/message_chunk';
 import { Direction } from 'services/message/types';
+import { isiOS, isAndroid } from 'helpers/browser';
 import { panelLoader } from './loader';
 import './media.scss';
 
@@ -76,6 +77,8 @@ export default function mediaPanel(peer: MaybeObservable<Peer>) {
       items,
       pivotBottom: false,
       topReached: true,
+      batchService: isiOS || isAndroid ? 15 : 25,
+      batch: 9,
       renderer,
       renderGroup,
       selectGroup: (id: string) => getMessageMonth(monthMap, id),

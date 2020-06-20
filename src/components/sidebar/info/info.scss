@@ -14,10 +14,10 @@
   }
 
   &__panels {
-    flex: 1 50%;
+    flex: none;
   }
 
-  & .tabs-panel {
+  & > .tabs-panel {
     height: calc(100% - 60px);
   }
 
@@ -26,5 +26,14 @@
     top: 0;
     background-color: #FFFFFF;
     z-index: 1;
+  }
+
+
+  &__panels .list {
+    overflow-y: hidden;
+  }
+
+  &__panels.-unlocked .list {
+    overflow-y: scroll;
   }
 }

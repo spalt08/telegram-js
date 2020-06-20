@@ -1,11 +1,11 @@
 import loadLottie from 'lazy-modules/lottie';
 import { div } from 'core/html';
-import { useInterface, useOnUnmount, useOnMount } from 'core/hooks';
+import { useInterface, useOnUnmount } from 'core/hooks';
 import { watchVisibility, listen } from 'core/dom';
 import { TGSManager } from './lottie.browser';
 import './tgs.scss';
 
-interface Props {
+export interface Props {
   src: string,
   className?: string,
   autoplay?: boolean,

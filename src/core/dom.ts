@@ -54,7 +54,7 @@ export function triggerUnmountRecursive(element: Node) {
 /**
  * Mounts Node to parent Node
  */
-export function mount(parent: Node, child: Node, before?: Node) {
+export function mount(parent: Node, child: Node, before?: Node | null) {
   // Fragment gets empty after being mounted so the trigger code below doesn't work. The lines below are a workaround.
   if (child instanceof DocumentFragment) {
     while (child.firstChild) {

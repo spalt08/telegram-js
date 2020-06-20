@@ -64,6 +64,23 @@ export default class MediaService {
         }
       },
     });
+
+    client.updates.on('updateStickerSets', () => {
+      this.loadSavedStickers();
+    });
+
+    client.updates.on('updateStickerSetsOrder', () => {
+      this.loadSavedStickers();
+    });
+
+    client.updates.on('updateRecentStickers', () => {
+      this.loadSavedStickers();
+    });
+
+    client.updates.on('updateNewStickerSet', ({ stickerset }) => {
+      stickerSetCache.put(stickerset.set);
+      stickerSetCache.indices.stickers.putStickers(stickerset.set.id, stickerset.documents as Document.document[]);
+    });
   }
 
   /**

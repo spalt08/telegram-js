@@ -6,7 +6,7 @@ import { areIteratorsEqual } from 'helpers/data';
 export interface Props<TItem, TNode extends Node> {
   items: MaybeObservable<readonly TItem[]>;
   /** Set it when items may have different values (over time) but must be treated as same items */
-  getItemKey?(items: TItem): unknown;
+  getItemKey?(item: TItem): unknown;
   render(item: TItem): TNode;
   update?(node: TNode, item: TItem): void;
   tag?: string;
@@ -66,7 +66,7 @@ export default function simpleList<TItem, TNode extends Node>({
     // Add the new items and reorder the list
     let lastInsertedNode: TNode | undefined;
     newItemNodes.forEach((node) => {
-      mount(container, node, (lastInsertedNode ? lastInsertedNode.nextSibling : container.firstChild) || undefined);
+      mount(container, node, lastInsertedNode ? lastInsertedNode.nextSibling : container.firstChild);
       lastInsertedNode = node;
     });
 

@@ -27,10 +27,10 @@
   }
 
   &__item {
-    flex: 1 25%;
-    max-width: calc(33.3% - 4PX);
-    padding-top: 33%;
-    margin: 2PX;
+    flex: 1 33.3%;
+    max-width: 33.3%;
+    padding: 2PX;
+    padding-top: 33.3%;
     overflow: hidden;
     border-radius: 2PX;
     cursor: pointer;
@@ -39,10 +39,13 @@
 
   &__photo {
     position: absolute;
-    left: 0;
-    top: 0;
-    width: 100% !important;
-    height: 100% !important;
+    left: 2px;
+    top: 2px;
+    right: 2px;
+    bottom: 2px;
+    width: auto !important;
+    height: auto !important;
+    overflow: hidden;
 
     & > .video-preview__playbtn {
       width: 30px;

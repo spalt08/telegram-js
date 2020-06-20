@@ -1,4 +1,4 @@
-import { file, hasCached } from 'client/media';
+import { file } from 'client/media';
 import { mount, unmount, listen } from 'core/dom';
 import { div, img, nothing } from 'core/html';
 import { usePhotoSize } from 'helpers/files';
@@ -38,16 +38,17 @@ export default function photoRenderer(photo: Photo.photo | Document.document, op
   if (thumb) {
     if (typeof thumb === 'string') {
       thumbSrc = thumb;
-      thumbnail = img({ className: 'photo__thumbnail', src: thumb, alt: 'Message photo' });
+      thumbnail = img({ className: 'photo__thumbnail', src: thumb, alt: '' });
       mount(container, thumbnail);
     } else {
-      hasCached(src, (exists) => {
-        if (exists) return;
-        if (!thumbSrc) thumbSrc = getThumbnail((photo._ === 'photo' ? photo.sizes : photo.thumbs) ?? []);
-
-        thumbnail = img({ className: 'photo__thumbnail', src: thumbSrc, alt: 'Message photo' });
+      // hasCached(src, (exists) => {
+      //   if (exists) return;
+      if (!thumbSrc) thumbSrc = getThumbnail((photo._ === 'photo' ? photo.sizes : photo.thumbs) ?? []);
+      if (thumbSrc) {
+        thumbnail = img({ className: 'photo__thumbnail', src: thumbSrc, alt: '' });
         mount(container, thumbnail);
-      });
+      }
+      // });
     }
   }
 
