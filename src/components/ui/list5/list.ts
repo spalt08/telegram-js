@@ -648,6 +648,8 @@ export class VirtualizedList {
       this.lastRendered = nextLastRendered;
 
       this.unlock();
+      this.positions = {};
+      this.trace();
     });
   }
 
