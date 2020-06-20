@@ -11,9 +11,25 @@
     font-weight: 500;
     color: #707579;
     padding: 16px 16px 8px;
+    position: relative;
 
-    @include respond-to(small) {
-      padding: 10PX 12PX;
+    &_button {
+      position: absolute;
+      top: 5px;
+      right: 4px;
+      width: 22px;
+      height: 22px;
+      padding: 8px;
+      border-radius: 100%;
+      cursor: pointer;
+
+      path {
+        fill: currentColor;
+      }
+
+      &:hover {
+        background: rgba(#707579, 0.08);
+      }
     }
 
     // &:not(:first-child) {
