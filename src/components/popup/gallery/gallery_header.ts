@@ -15,6 +15,7 @@ import { getPhotoLocation, getSize } from 'helpers/photo';
 import { file } from 'client/media';
 import { getDocumentLocation, getAttributeFilename } from 'helpers/files';
 import { downloadLink, downloadForm } from 'helpers/other';
+import { main, message as messageService } from 'services';
 
 type GalleryHeaderCallbacks = { onClose: (message: Message.message) => void };
 
@@ -54,7 +55,7 @@ function download(message: Message.message) {
     downloadForm(filename, src);
   }
 }
-export function galleryHeader(message: Message.message, { onClose } :GalleryHeaderCallbacks) {
+export function galleryHeader(message: Message.message, { onClose }: GalleryHeaderCallbacks) {
   const peer = messageToSenderPeer(message);
 
   let avatar: HTMLElement;
@@ -69,7 +70,14 @@ export function galleryHeader(message: Message.message, { onClose } :GalleryHead
     className: 'galleryHeader__more-menu',
     options: [
       { icon: icons.download, label: 'Download', onClick: () => { download(message); } },
-      { icon: icons.message, label: 'Show Message', onClick: () => {} },
+      {
+        icon: icons.message,
+        label: 'Show Message',
+        onClick: () => {
+          main.closePopup();
+          messageService.selectPeer(message.to_id, message.id);
+        },
+      },
     ],
   });
 
