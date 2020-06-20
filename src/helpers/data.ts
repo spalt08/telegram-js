@@ -122,6 +122,13 @@ export function getFirstLetters(title: string) {
   return '';
 }
 
+export function getFirstWord(sentence: string) {
+  let firstNonSpacePosition = 0;
+  for (; firstNonSpacePosition < sentence.length && sentence[firstNonSpacePosition] === ' '; ++firstNonSpacePosition);
+  const firstSpacePosition = sentence.indexOf(' ', firstNonSpacePosition);
+  return sentence.slice(firstNonSpacePosition, firstSpacePosition === -1 ? undefined : firstSpacePosition);
+}
+
 export function areArraysEqual<T1, T2>(
   arr1: readonly T1[],
   arr2: readonly T2[],

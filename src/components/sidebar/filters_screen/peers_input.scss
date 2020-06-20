@@ -1,0 +1,91 @@
+.filterPeersInput {
+  $item-height: 32px;
+
+  padding: 8px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  &__item,
+  &__input {
+    margin: 4px;
+    height: 32px;
+  }
+
+  &__item {
+    min-width: 0;
+    border-radius: $item-height / 2;
+    background: #f1f3f4;
+    display: flex;
+    align-items: center;
+
+    &_icon {
+      $size: $item-height;
+      width: $size;
+      height: $size;
+      flex: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #4EA4F5;
+      border-radius: 100%;
+      cursor: pointer;
+
+      > .avatar {
+        width: $size;
+        height: $size;
+        min-width: $size;
+        min-height: $size;
+        font-size: $size / 2.2;
+      }
+
+      > svg {
+        width: 18px;
+        height: 18px;
+
+        path {
+          fill: #fff;
+        }
+      }
+    }
+
+    &_title {
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 0 16px 0 8px;
+    }
+
+    &.-selected {
+      background: #fae2e3;
+    }
+    &.-selected > &_icon {
+      background: #df3f40;
+
+      > svg {
+        width: 24px;
+        height: 24px;
+      }
+    }
+  }
+
+  &__input {
+    font: inherit;
+    color: inherit;
+    box-sizing: border-box;
+    padding: 4px 8px;
+    border: none;
+    background: none;
+    flex: 1 1 100px;
+    min-width: 70px;
+    outline: none;
+    caret-color: #4EA4F5;
+
+    &::placeholder {
+      color: #a2acb4;
+    }
+  }
+}

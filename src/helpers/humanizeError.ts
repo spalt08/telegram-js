@@ -1,11 +1,16 @@
 import { map } from 'rxjs/operators';
 
+const knownApiErrorMessages = {
+  PASSWORD_HASH_INVALID: 'Password Invalid',
+  AUTH_RESTART: 'Please Reload the Page',
+  FILTER_INCLUDE_EMPTY: 'No Included Chat is added',
+  FILTER_TITLE_EMPTY: 'The Folder Name is empty',
+};
+
 export function humanizeError(message: string): string {
   // Known API errors
-  switch (message) {
-    case 'PASSWORD_HASH_INVALID': return 'Password Invalid';
-    case 'AUTH_RESTART': return 'Please Reload the Page';
-    default:
+  if (message in knownApiErrorMessages) {
+    return knownApiErrorMessages[message as keyof typeof knownApiErrorMessages];
   }
 
   // Other API errors
