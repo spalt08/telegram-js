@@ -14,6 +14,7 @@ import { documentToInputMedia } from 'helpers/message';
 import { Document, Peer } from 'mtproto-js';
 import { click, media, message } from 'services';
 import { initWorker } from 'client/context';
+import { isSafari } from 'helpers/browser';
 import messageShort from '../short';
 import recordSendButton from './button';
 import './input.scss';
@@ -250,7 +251,7 @@ export default function messageInput(peer: MaybeObservable<Peer | null>) {
   });
 
   useOnMount(container, () => {
-    initWorker();
+    if (isSafari) initWorker();
   });
 
   return useInterface(container, {

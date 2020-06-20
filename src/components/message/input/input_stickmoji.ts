@@ -114,45 +114,45 @@ export default function stickMojiPanel({ onSelectEmoji, onSelectSticker, onClose
     });
   };
 
-  listen(panelContainer, 'touchstart', (event: TouchEvent) => {
-    if (isLocked) return;
+  // listen(panelContainer, 'touchstart', (event: TouchEvent) => {
+  //   if (isLocked) return;
 
-    if (event.touches.length === 1) {
-      const touch = event.touches[0];
-      dragX = touch.clientX;
-      dragY = touch.clientY;
-    }
-  });
+  //   if (event.touches.length === 1) {
+  //     const touch = event.touches[0];
+  //     dragX = touch.clientX;
+  //     dragY = touch.clientY;
+  //   }
+  // });
 
-  listen(panelContainer, 'touchmove', (event: TouchEvent) => {
-    const touch = event.touches[0];
-    if (!touch || !dragX || !dragY) return;
+  // listen(panelContainer, 'touchmove', (event: TouchEvent) => {
+  //   const touch = event.touches[0];
+  //   if (!touch || !dragX || !dragY) return;
 
-    let indexCandidate;
-    const dx = touch.clientX - dragX;
-    const dy = touch.clientY - dragY;
+  //   let indexCandidate;
+  //   const dx = touch.clientX - dragX;
+  //   const dy = touch.clientY - dragY;
 
-    if (Math.abs(dx) < Math.abs(dy) * 2) {
-      dragX = undefined;
-      return;
-    }
+  //   if (Math.abs(dx) < Math.abs(dy) * 2) {
+  //     dragX = undefined;
+  //     return;
+  //   }
 
-    if (dx > 0 && activePanelIndex > 0) indexCandidate = activePanelIndex - 1;
-    if (dx < 0 && activePanelIndex < panels.length - 1) indexCandidate = activePanelIndex + 1;
+  //   if (dx > 0 && activePanelIndex > 0) indexCandidate = activePanelIndex - 1;
+  //   if (dx < 0 && activePanelIndex < panels.length - 1) indexCandidate = activePanelIndex + 1;
 
-    if (nextPanelIndex && indexCandidate !== undefined && nextPanelIndex !== indexCandidate) cancelTransition();
+  //   if (nextPanelIndex && indexCandidate !== undefined && nextPanelIndex !== indexCandidate) cancelTransition();
 
-    if (indexCandidate !== undefined) {
-      nextPanelIndex = indexCandidate;
-      startTransition();
+  //   if (indexCandidate !== undefined) {
+  //     nextPanelIndex = indexCandidate;
+  //     startTransition();
 
-      panels[activePanelIndex].style.transform = `translateX(${dx}px)`;
-      panels[nextPanelIndex].style.transform = `translateX(${dx}px)`;
-    } else if (nextPanelIndex) cancelTransition();
-  });
+  //     panels[activePanelIndex].style.transform = `translateX(${dx}px)`;
+  //     panels[nextPanelIndex].style.transform = `translateX(${dx}px)`;
+  //   } else if (nextPanelIndex) cancelTransition();
+  // });
 
-  listen(panelContainer, 'touchend', finishTransition);
-  listen(panelContainer, 'touchcancel', finishTransition);
+  // listen(panelContainer, 'touchend', finishTransition);
+  // listen(panelContainer, 'touchcancel', finishTransition);
 
   const clickHandler = (index: number) => {
     if (isLocked || index === activePanelIndex) return;
