@@ -1,5 +1,5 @@
 import { textarea } from 'core/html';
-import { listen } from 'core/dom';
+import { listen, setValue } from 'core/dom';
 import { KeyboardKeys } from 'const/dom';
 import { useInterface } from 'core/hooks';
 import './input_textarea.scss';
@@ -20,9 +20,9 @@ export default function messageTextarea({ onSend, onChange, maxHeight = 400 }: P
 
   const sendMessage = () => {
     onSend(element.value.trim());
-    element.value = '';
     element.style.transition = '';
     element.style.height = '';
+    setValue(element, '');
   };
 
   listen(element, 'keypress', (event: KeyboardEvent) => {

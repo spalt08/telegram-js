@@ -1,11 +1,9 @@
-
-import { withContextMenu } from 'components/global_context_menu';
+import { handleStickerRendering } from 'components/media/sticker/player';
 import sidebar from 'components/sidebar/sidebar';
 import { listen } from 'core/dom';
 import { getInterface, useObservable } from 'core/hooks';
 import { div } from 'core/html';
 import { main } from 'services';
-import { handleStickerRendering } from 'components/media/sticker/player';
 import './home.scss';
 import history from './main/history';
 
@@ -66,6 +64,13 @@ export default function home() {
   });
 
   requestAnimationFrame(handleStickerRendering);
+
+  window.history.pushState(null, '', document.location.href);
+  window.onpopstate = () => {
+    if (main.isChatOpened.value) main.isChatOpened.next(false);
+    leftSidebarFade.style.display = '';
+    window.history.go(1);
+  };
 
   return container;
 }

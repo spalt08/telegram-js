@@ -175,7 +175,7 @@ export function setStyle(element: HTMLElement | SVGElement, style: Partial<Maybe
 /**
  * Updates value at HTMLElement and disatch input event;x
  */
-export function setValue(element: HTMLInputElement, value: MaybeObservable<string>) {
+export function setValue(element: HTMLInputElement | HTMLTextAreaElement, value: MaybeObservable<string>) {
   useMaybeObservable(element, value, true, (v) => {
     element.value = v;
     element.dispatchEvent(new Event('input'));
