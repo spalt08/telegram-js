@@ -1,9 +1,10 @@
 import { BehaviorSubject } from 'rxjs';
 import { first } from 'rxjs/operators';
 import client from 'client/client';
-import { DialogFilter, DialogFilterSuggested } from 'mtproto-js';
-import { persistentCache } from 'cache';
+import { DialogFilter, DialogFilterSuggested, InputPeer } from 'mtproto-js';
+import { dialogCache, persistentCache } from 'cache';
 import { ARCHIVE_FOLDER_ID, ROOT_FOLDER_ID } from 'const/api';
+import { inputPeerToPeer, peerToDialogId } from 'helpers/api';
 import AuthService, { AuthStage } from '../auth';
 import DialogsService from '../dialog/dialog';
 import makeFolderIndex from './folderIndex';
@@ -215,6 +216,26 @@ export default class FolderService {
     if (filter) {
       await this.createFilter(filter, isEager);
       this.removeSuggestedFilterLocally(filterId);
+    }
+  }
+
+  async putPeerToFolder(inputPeer: InputPeer, folderId: number, isEager?: boolean) {
+    const sendPromise = client.call('folders.editPeerFolders', {
+      folder_peers: [{
+        _: 'inputFolderPeer',
+        peer: inputPeer,
+        folder_id: folderId,
+      }],
+    });
+
+    if (!isEager) {
+      await sendPromise;
+    }
+
+    const peer = inputPeerToPeer(inputPeer);
+    if (peer) {
+      const dialogId = peerToDialogId(peer);
+      dialogCache.change(dialogId, { folder_id: folderId });
     }
   }
 

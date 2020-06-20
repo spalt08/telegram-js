@@ -3,7 +3,7 @@ import { useContextMenu } from 'components/global_context_menu';
 import { archive, pinnedchat } from 'components/icons';
 import { avatarWithStatus, profileTitle } from 'components/profile';
 import { datetime, ripple } from 'components/ui';
-import { ARCHIVE_FOLDER_ID } from 'const/api';
+import { ARCHIVE_FOLDER_ID, ROOT_FOLDER_ID } from 'const/api';
 import { listen, mount, unmount, unmountChildren } from 'core/dom';
 import { useObservable } from 'core/hooks';
 import { div } from 'core/html';
@@ -11,9 +11,10 @@ import { dialogIdToPeer, isDialogInFolder, isDialogMuted, peerMessageToId, peerT
 import { Dialog } from 'mtproto-js';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { message } from 'services';
-import './dialog.scss';
+import { message, folder as folderService } from 'services';
 import dialogMessage from './dialog_message';
+import './dialog.scss';
+import { peerToInputPeer } from '../../../cache/accessors';
 
 export default function dialogPreview(id: string, pinned: Observable<boolean> = new BehaviorSubject(false)) {
   const peer = dialogIdToPeer(id);
@@ -142,15 +143,18 @@ export default function dialogPreview(id: string, pinned: Observable<boolean> = 
     if (e.button === 0) message.selectPeer(peer, 'auto');
   });
 
-  const dialog = dialogCache.get(id) as Dialog.dialog;
+  {
+    const dialog = dialogCache.get(id) as Dialog.dialog;
+    const isArchived = isDialogInFolder(dialog, ARCHIVE_FOLDER_ID);
 
-  useContextMenu(container, [
-    {
-      icon: () => archive(),
-      label: isDialogInFolder(dialog, ARCHIVE_FOLDER_ID) ? 'Unarchive chat' : 'Archive chat',
-      onClick: () => {},
-    },
-  ]);
+    useContextMenu(container, [
+      {
+        icon: () => archive(),
+        label: isArchived ? 'Unarchive chat' : 'Archive chat',
+        onClick: () => folderService.putPeerToFolder(peerToInputPeer(dialog.peer), isArchived ? ROOT_FOLDER_ID : ARCHIVE_FOLDER_ID, true),
+      },
+    ]);
+  }
 
   return container;
 }
