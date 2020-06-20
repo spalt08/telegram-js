@@ -314,5 +314,42 @@ $header-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.4);
     box-shadow: $header-shadow;
     width: 100%;
     z-index: 4;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    color: #707579;
+
+    &_scroll {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+
+      &_button {
+        flex: none;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        padding: 8px;
+        margin: 0 -8px 0 10px;
+        border-radius: 100%;
+
+        &:active {
+          background: rgba(#707579, 0.08);
+        }
+
+        path {
+          fill: currentColor;
+        }
+
+        &.-up {
+          transform: rotate(180deg);
+        }
+
+        &.-disabled {
+          color: #b8babc;
+          pointer-events: none;
+        }
+      }
+    }
   }
 }

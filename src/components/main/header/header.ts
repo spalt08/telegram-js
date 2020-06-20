@@ -4,14 +4,15 @@ import audioPlayer from 'components/audio_player/audio_player';
 import * as icons from 'components/icons';
 import messageQuote from 'components/message/quote';
 import { profileAvatar, profileTitle } from 'components/profile';
-import { contextMenu, formattedMessage, heading, peerFullStatus, ripple, roundButton, searchInput, typingIndicator } from 'components/ui';
+import { contextMenu, formattedMessage, peerFullStatus, ripple, roundButton, typingIndicator } from 'components/ui';
 import { listen, mount, unmount, unmountChildren } from 'core/dom';
 import { getInterface, useMaybeObservable, useObservable } from 'core/hooks';
-import { div, nothing, text } from 'core/html';
-import { arePeersSame, peerToId, messageToId } from 'helpers/api';
+import { div, nothing } from 'core/html';
+import { arePeersSame, messageToId, peerToId } from 'helpers/api';
 import { Message, Peer } from 'mtproto-js';
 import { main, message } from 'services';
 import './header.scss';
+import makeInlineSearch from './inline_search';
 
 type Props = {
   onBackToContacts: () => void,
@@ -128,28 +129,11 @@ export default function header({ onBackToContacts }: Props) {
     }, icons.back()),
   );
 
-  const inlineSearchEl = searchInput({
-    placeholder: 'Search Messages',
-  });
-
-  const navigationSearchEl = div`.header__inline-navigation`(text('buttons here'));
-
-  const inlineSearch = heading({
-    title: '',
-    className: 'header__inline-search',
-    element: inlineSearchEl,
-    buttons: [
-      {
-        icon: icons.back,
-        position: 'left',
-        onClick: () => {
-          container.classList.remove('-searching');
-          unmount(inlineSearch);
-          unmount(navigationSearchEl);
-          updateStickyOffset(pinned ? pinned.classList.contains('-visible') : false, isAudioActive);
-        },
-      },
-    ],
+  const [inlineSearch, inlineSearchNavigation] = makeInlineSearch(() => {
+    container.classList.remove('-searching');
+    unmount(inlineSearch);
+    unmount(inlineSearchNavigation);
+    updateStickyOffset(pinned ? pinned.classList.contains('-visible') : false, isAudioActive);
   });
 
   const player = audioPlayer((state) => {
@@ -168,7 +152,7 @@ export default function header({ onBackToContacts }: Props) {
           if (isMobile) {
             container.classList.add('-searching');
             mount(container, inlineSearch);
-            if (container.parentElement) mount(container.parentElement, navigationSearchEl);
+            if (container.parentElement) mount(container.parentElement, inlineSearchNavigation);
             setStickyOffset(0);
           } else if (peer) {
             main.openSidebar('messageSearch', { peer, autoFocus: true });
