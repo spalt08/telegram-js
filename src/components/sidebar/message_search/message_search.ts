@@ -72,7 +72,7 @@ export default function messageSearchSidebar({ onBack }: SidebarComponentProps, 
       if (header) unmount(header);
       header = heading({
         className: 'messagesSearch__header',
-        title: isInputDisabled ? 'Search Results' : '',
+        title: isInputDisabled ? 'Found Messages' : '',
         element: isInputDisabled ? undefined : searchInputEl,
         buttons: [{ icon: icons.back, position: 'left', onClick: () => onBack?.() }],
       });
