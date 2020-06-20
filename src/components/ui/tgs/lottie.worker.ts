@@ -26,7 +26,7 @@ ctx.addEventListener('message', (event: MessageEvent) => {
           const animation = Lottie.loadAnimation({
             renderer: 'canvas',
             loop: props.loop,
-            autoplay: playingState.get(id),
+            autoplay: false,
             animationData,
             rendererSettings: {
               context: canvas.getContext('2d'),
@@ -35,6 +35,8 @@ ctx.addEventListener('message', (event: MessageEvent) => {
           });
 
           animations.set(id, animation);
+
+          if (playingState.get(id)) animation.play();
         });
 
       break;
