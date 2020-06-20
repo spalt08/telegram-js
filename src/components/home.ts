@@ -1,7 +1,7 @@
 import { handleStickerRendering } from 'components/media/sticker/player';
 import sidebar from 'components/sidebar/sidebar';
 import { listen, animationFrameStart } from 'core/dom';
-import { getInterface, useObservable } from 'core/hooks';
+import { getInterface, useObservable, useListenWhileMounted } from 'core/hooks';
 import { div } from 'core/html';
 import { main, message } from 'services';
 import './home.scss';
@@ -37,6 +37,19 @@ export default function home() {
     leftSidebarFade,
     rightSidebarFade,
   );
+
+  // fix for virtual keyboard in iOS.
+  const { visualViewport } = window as any;
+  if (visualViewport) {
+    useListenWhileMounted(container, visualViewport, 'resize', () => {
+      container.style.transform = `translateY(${visualViewport.pageTop}px)`;
+      container.style.height = `${visualViewport.height}px`;
+      // in some cases we must update scrollTop position,
+      // even though it is already equal to visualViewport.pageTop
+      // This is probably some bug in Safari.
+      document.documentElement.scrollTop = visualViewport.pageTop;
+    });
+  }
 
   useObservable(container, message.activePeer, true, (next) => {
     if (next) getInterface(rightSidebar).clear();
