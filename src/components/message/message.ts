@@ -173,13 +173,21 @@ export default function message(id: string, siblings: BehaviorSubject<[MessageSi
     }
 
     // display or remove title
-    if (isChat && isFirst && !msg.out && !masked) {
+    if (isChat && isFirstNow && !msg.out && !masked) {
       if ((!title || !title.parentElement) && bubbleContent) {
         mount(bubbleContent, title = messageTitle(senderPeer), reply || mediaUpper || textEl || mediaLower);
       }
     } else if (title) {
       unmount(title);
       title = undefined;
+    }
+
+    // display or remove avatar
+    if (isChat && isLastNow && !msg.out) {
+      if (!avatar || !avatar.parentElement) mount(wrapper, avatar = createAvatar(msg, senderPeer), content);
+    } else if (avatar) {
+      unmount(avatar);
+      avatar = undefined;
     }
 
     // update className
