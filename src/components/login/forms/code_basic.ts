@@ -37,6 +37,7 @@ export default function codeBasic({ onFocus, onBlur, onChange }: Props) {
   let inputEl: HTMLInputElement;
 
   const inputCode = textInput({
+    inputmode: 'numeric',
     label: 'Code',
     error: err.pipe(humanizeErrorOperator()),
     disabled: isProcessing,

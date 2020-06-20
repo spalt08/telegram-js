@@ -24,12 +24,8 @@ export default function photoRenderer(photo: Photo.photo | Document.document, op
   const location = size ? getPhotoLocation(photo, size.type) : undefined;
 
   const src = location ? file(location, {}) : '';
-  const image = img`.photo__content`();
+  const image = img`.photo__content`({ src });
   const container = div`.photo${options.className}`(src ? image : nothing);
-
-  watchVisibility(container, (isVisible) => {
-    if (!image.src && isVisible) image.src = src;
-  });
 
   // apply classes
   if (options.fit) container.classList.add(options.fit);

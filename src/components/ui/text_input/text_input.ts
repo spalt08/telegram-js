@@ -20,6 +20,7 @@ export type Props = {
   onChange?(value: string): void;
   onFocus?(value?: string): void;
   onBlur?(value?: string): void;
+  inputmode?: string,
 };
 
 /**
@@ -42,6 +43,7 @@ export default function textInput({
   onChange,
   onFocus,
   onBlur,
+  inputmode,
 }: Props = {}) {
   const labelText = new BehaviorSubject(label);
   const inputEl = input`${inputClassName}`({
@@ -50,6 +52,7 @@ export default function textInput({
     autocomplete,
     disabled,
     maxLength,
+    inputmode,
   });
   const labelEl = div`.input__label`(text(labelText));
   const element = div`.input ${className}`(inputEl, labelEl);
