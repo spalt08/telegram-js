@@ -1,5 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { storiesOf } from '@storybook/html';
+import { BehaviorSubject } from 'rxjs';
 import { withKnobs, boolean } from '@storybook/addon-knobs';
 import { withMountTrigger, withChatLayout } from 'storybook/decorators';
 import { messageCache, userCache } from 'cache';
@@ -19,5 +20,5 @@ stories.add('Sticker', () => {
   messageCache.put(MessageSticker);
   userCache.put(users);
 
-  return message(peerMessageToId(MessageRegular.to_id, MessageSticker.id), MessageSticker.to_id);
+  return message(peerMessageToId(MessageRegular.to_id, MessageSticker.id), new BehaviorSubject([undefined, undefined]));
 });

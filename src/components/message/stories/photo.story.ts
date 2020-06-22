@@ -1,4 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
+import { BehaviorSubject } from 'rxjs';
 import { storiesOf } from '@storybook/html';
 import { withKnobs, boolean, text } from '@storybook/addon-knobs';
 import { withMountTrigger, withChatLayout } from 'storybook/decorators';
@@ -20,5 +21,5 @@ stories.add('Photo', () => {
   messageCache.put(MessageRegular);
   userCache.put(users[1]);
 
-  return message(peerMessageToId(MessageRegular.to_id, MessageRegular.id), MessageRegular.to_id);
+  return message(peerMessageToId(MessageRegular.to_id, MessageRegular.id), new BehaviorSubject([undefined, undefined]));
 });

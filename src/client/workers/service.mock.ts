@@ -1,12 +1,12 @@
 /* eslint-disable no-restricted-globals */
 import { WindowMessage } from 'client/types';
 import { parseRange } from 'helpers/stream';
-import { respond, notify } from './extensions/context';
-import { fetchRequest, respondDownload } from './extensions/files';
+import { respond, notify, notifySingle } from './extensions/context';
+import { fetchRequest, respondDownload, blobLoop } from './extensions/files';
 import { callMock } from './mocks/call';
 import getFilePart, { fileMap } from './mocks/files';
 import { fetchStreamRequest } from './extensions/stream';
-import { fetchLocation, fetchTGS, fetchCachedSize, fetchSrippedSize } from './extensions/utils';
+import { fetchLocation, fetchTGS } from './extensions/utils';
 
 require('./mocks/sticker');
 
@@ -70,6 +70,24 @@ ctx.onmessage = (event) => {
       break;
     }
 
+    case 'get_status': {
+      if (event.source) notifySingle(event.source, 'network_updated', 'connected');
+      break;
+    }
+
+    case 'network_event': {
+      self.dispatchEvent(new Event(msg.payload));
+      break;
+    }
+
+    case 'download': {
+      const { id, payload: { url, location, options } } = msg;
+      blobLoop(url, location, options, getFilePart, (blob) => {
+        if (event.source) respond(event.source, id, 'download_prepared', { url: URL.createObjectURL(blob) });
+      }, fileProgress);
+      break;
+    }
+
     default:
   }
 };
@@ -99,18 +117,6 @@ ctx.addEventListener('fetch', (event: FetchEvent): void => {
       event.respondWith(new Promise((resolve) => {
         fetchStreamRequest(url, offset, end, resolve, getFilePart);
       }));
-      break;
-    }
-
-    case 'cached': {
-      const [, bytes] = /\/cached\/(.*?).svg/.exec(url) || [];
-      event.respondWith(fetchCachedSize(bytes));
-      break;
-    }
-
-    case 'stripped': {
-      const [, bytes] = /\/stripped\/(.*?).svg/.exec(url) || [];
-      event.respondWith(fetchSrippedSize(bytes));
       break;
     }
 

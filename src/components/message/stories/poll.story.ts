@@ -1,4 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
+import { BehaviorSubject } from 'rxjs';
+import { MessageMedia } from 'mtproto-js';
 import { storiesOf } from '@storybook/html';
 import { withKnobs, boolean, text } from '@storybook/addon-knobs';
 import { withMountTrigger, withChatLayout } from 'storybook/decorators';
@@ -7,7 +9,6 @@ import { peerMessageToId } from 'helpers/api';
 import { MessagePoll } from 'mocks/storybook';
 import { users } from 'mocks/user';
 import message from '../message';
-import { MessageMedia } from '../../../../packages/mtproto-js/src/tl/layer113/types';
 
 const stories = storiesOf('Layout | Message', module)
   .addDecorator(withMountTrigger)
@@ -33,5 +34,5 @@ stories.add('Poll', () => {
   userCache.put(users[0]);
   userCache.put(users[1]);
 
-  return message(peerMessageToId(MessagePoll.to_id, MessagePoll.id), MessagePoll.to_id);
+  return message(peerMessageToId(MessagePoll.to_id, MessagePoll.id), new BehaviorSubject([undefined, undefined]));
 });
