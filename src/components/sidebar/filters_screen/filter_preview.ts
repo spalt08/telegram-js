@@ -5,6 +5,7 @@ import { folder as folderService } from 'services';
 import { ripple } from 'components/ui';
 import { MaybeObservable } from 'core/types';
 import { pluralize } from 'helpers/other';
+import { capitalizeFirstLetter } from 'helpers/data';
 import { userCache } from 'cache';
 import './filter_preview.scss';
 
@@ -158,8 +159,7 @@ function makeFilterDescription(dialogFilter: DialogFilter) {
   const excludeTypesCounts = countPeerTypes(dialogFilter.exclude_peers);
   items.push(...printPeerTypesCounts(excludeTypesCounts).map((item) => `exclude ${item}`));
 
-  const itemsString = items.join(', ');
-  return itemsString ? itemsString[0].toUpperCase() + itemsString.slice(1) : '';
+  return capitalizeFirstLetter(items.join(', '));
 }
 
 export function addedFilterPreview(id: number, onNavigate: SidebarComponentProps['onNavigate']) {

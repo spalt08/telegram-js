@@ -129,6 +129,10 @@ export function getFirstWord(sentence: string) {
   return sentence.slice(firstNonSpacePosition, firstSpacePosition === -1 ? undefined : firstSpacePosition);
 }
 
+export function capitalizeFirstLetter(text: string): string {
+  return text ? text[0].toUpperCase() + text.slice(1) : '';
+}
+
 export function areArraysEqual<T1, T2>(
   arr1: readonly T1[],
   arr2: readonly T2[],

@@ -5,6 +5,7 @@ import { chats } from './chat';
 import { mockDialogForPeers } from './dialog';
 import { mockHistorySlice, mockHistorySearch } from './history';
 import { mockTopUsers } from './topPeers';
+import { mockFilters } from './filter';
 
 type Callback<T extends keyof MethodDeclMap> = (err: any, result: MethodDeclMap[T]['res']) => void;
 
@@ -141,6 +142,9 @@ export function callMock<T extends keyof MethodDeclMap>(method: T, params: Metho
       timeout<T>(300, cb, mockTopUsers(topUsers.map((user) => ({ ...user, id: Math.random() * 1e8 | 0 }))));
       break;
     }
+
+    case 'messages.getDialogFilters':
+      return timeout<T>(250, cb, mockFilters(1, 2));
 
     default:
       console.log('unmocked call', method, params);
