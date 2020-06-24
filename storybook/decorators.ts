@@ -2,15 +2,15 @@
 
 import { StoryContext, StoryFn } from '@storybook/addons';
 import { number, select } from '@storybook/addon-knobs';
-import { triggerMountRecursive, unmount, mount, triggerUnmountRecursive } from 'core/dom';
+import { mount, triggerMountRecursive, triggerUnmountRecursive, unmount } from 'core/dom';
 import { div } from 'core/html';
 import chamomile from 'assets/chamomile-blurred.jpg';
 import popup from 'components/popup/popup';
 import { BehaviorSubject } from 'rxjs';
 import { materialSpinner } from 'components/icons';
 import { peers } from 'mocks/peer';
-import { peerToId, peerIdToPeer } from 'helpers/api';
-import { message } from 'services';
+import { peerIdToPeer, peerToId } from 'helpers/api';
+import { auth, AuthStage, message } from 'services';
 import 'components/home.scss';
 import 'styles/global.scss';
 
@@ -97,5 +97,10 @@ export function withKnobPeer(creator: () => Node) {
 
   message.activePeer.next(peerIdToPeer(peer));
 
+  return creator();
+}
+
+export function withAuthorized(creator: () => Node) {
+  auth.state.next(AuthStage.Authorized);
   return creator();
 }
