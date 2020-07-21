@@ -48,8 +48,9 @@ export class TGSManager {
     this.state = props;
     this.element = createElement();
 
-    this.element.width = props.width * window.devicePixelRatio;
-    this.element.height = props.height * window.devicePixelRatio;
+    const pixelDensity = Math.min(2, window.devicePixelRatio);
+    this.element.width = props.width * pixelDensity;
+    this.element.height = props.height * pixelDensity;
   }
 
   load() {
