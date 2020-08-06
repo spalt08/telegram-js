@@ -1,0 +1,44 @@
+.sticker-set-thumb {
+  display: inline-block;
+  width: 46px;
+  height: 45px;
+  vertical-align: top;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color .15s ease-out;
+  overflow: hidden;
+  margin-right: 5px;
+  padding: 6px;
+  box-sizing: border-box;
+
+  &:last-child {
+    margin-right: 0;
+  }
+
+  &:hover {
+    background-color: rgba(#707579, 0.08);
+  }
+
+  &__icon {
+    width: 24px;
+    height: 24px;
+    position: relative;
+    top: 6px;
+    left: 6px;
+  }
+
+  &__icon > .ic_fill {
+    fill: #8e979d;
+    transition: fill .3s ease;
+  }
+
+  &:hover &__icon > .ic_fill, & &__icon.active > .ic_fill {
+    fill: #4EA4F5;
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}

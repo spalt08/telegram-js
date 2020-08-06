@@ -1,0 +1,97 @@
+.contextMenu {
+  min-width: 220px;
+  max-width: 320px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.25);
+  z-index: 10000;
+  transform-origin: top left;
+  overflow: hidden;
+  animation: contextMenuAppear .25s ease-out;
+  transition: opacity .25s ease-out;
+  opacity: 1;
+  transform: scale(1);
+
+  &.global {
+    position: absolute;
+  }
+
+  &.-closing {
+    opacity: 0;
+  }
+
+  &__item {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    cursor: pointer;
+    background-color: #ffffff;
+    transition: .2s ease-out;
+    position: relative;
+    padding: 0 16px;
+
+    &:hover {
+      background-color: #f2f3f4;
+    }
+
+    &.-accent {
+      color: #4EA4F5;
+    }
+
+    &.-danger {
+      color: #df3f40;
+    }
+  }
+
+  &__icon {
+    flex: none;
+    margin-right: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+
+    & path {
+      fill: currentColor;
+    }
+  }
+
+  &__label {
+    font-weight: 400;
+    -webkit-font-smoothing: subpixel-antialiased;
+  }
+
+  &__badge {
+    $size: 24px;
+    flex: none;
+    margin-left: auto;
+    box-sizing: border-box;
+    min-width: $size;
+    height: $size;
+    line-height: 25px;
+    padding: 0 5px;
+    text-align: center;
+    background: #C4C9CC;
+    color: #fff;
+    border-radius: $size / 2;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.2s ease-out;
+
+    &.-highlight {
+      background: #4EA4F5;
+    }
+  }
+}
+
+@keyframes contextMenuAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}

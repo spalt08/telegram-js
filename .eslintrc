@@ -1,27 +1,49 @@
 {
   "env": {
-      "browser": true,
-      "es6": true
+    "browser": true,
+    "es6": true
   },
   "extends": [
-      "airbnb/base",
-      "plugin:flowtype/recommended"
+    "airbnb-typescript",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:compat/recommended"
   ],
   "globals": {
-      "Atomics": "readonly",
-      "SharedArrayBuffer": "readonly"
+    "Atomics": "readonly",
+    "SharedArrayBuffer": "readonly"
   },
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
-      "ecmaVersion": 2018,
-      "sourceType": "module"
+    "ecmaVersion": 2018,
+    "sourceType": "module"
   },
   "plugins": [
-      "flowtype"
+    "@typescript-eslint"
   ],
   "rules": {
-      "max-len": [2, 150, 4],
-      "no-continue": 0,
-      "no-bitwise": 0,
-      "no-underscore-dangle": "off"
+    "max-len": [2, 150, 4],
+    "no-continue": "off",
+    "no-bitwise": "off",
+    "no-underscore-dangle": "off",
+    "no-plusplus": "off",
+    "object-curly-newline": "off",
+    "new-cap": "off",
+    "class-methods-use-this": "off",
+    "function-paren-newline": "off",
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_", "ignoreRestSiblings": true }],
+    "no-confusing-arrow": "off",
+    "@typescript-eslint/camelcase": "off",
+    "import/prefer-default-export": "off",
+    "lines-between-class-members": "off",
+    "no-return-assign": "off",
+    "no-multi-assign": "off"
+  },
+  "settings": {
+    "import/resolver": {
+      "webpack": {}
+    },
+    "polyfills": [
+      "Object.values"
+    ]
   }
 }

@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "noErrorTruncation": true,
+    "strict": true,
+    "strictFunctionTypes": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "importHelpers": true,
+    "target": "ES2017",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "baseUrl": "./src",
+    "lib": ["webworker", "dom"],
+    "paths": {
+      "mtproto-js": ["../packages/mtproto-js/src"],
+      "storybook/*": ["../storybook/*"],
+      "mocks/*": ["./client/workers/mocks/*"]
+    }
+  },
+  "include": [
+    "src/**/*",
+  ],
+}

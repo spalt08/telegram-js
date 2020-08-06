@@ -1,0 +1,147 @@
+@import '~styles/variables.scss';
+
+.dialog {
+  width: 100%;
+  padding: 2px 3px 2px 8px;
+
+  @include respond-to(small) {
+    padding: 0;
+  }
+
+  &__clickable {
+    padding: 9PX;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 100%;
+
+    &:hover,
+    &.-selected {
+      background-color: rgba(#707579, 0.08);
+    }
+
+    &_content {
+      display: flex;
+      align-items: center;
+    }
+
+    @include respond-to(small) {
+      border-radius: 0;
+      padding: 10px 12px;
+    }
+  }
+
+  &__picture {
+    flex: none;
+  }
+
+  &__content {
+    margin: 0 0 -2px 9px;
+    flex: 1;
+    min-width: 0; // To force the text overflow cut
+  }
+
+  &__header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  &__title {
+    color: #000000;
+    font-weight: 500;
+    font-size: 16px;
+    white-space: nowrap;
+    overflow-x: hidden;
+    overflow-y: visible;
+    text-overflow: ellipsis;
+  }
+
+  &__date {
+    font-size: 12px;
+    font-weight: 300;
+    padding-left: 20px;
+    color: #5F6369;
+    margin-top: 3px;
+
+    &.out {
+      background-image: url(~assets/message-status-read@2x.png);
+      background-position: left center;
+      background-size: 16PX auto;
+      background-repeat: no-repeat;
+    }
+
+    &.out.unread {
+      background-image: url(~assets/message-status-unread@2x.png);
+      padding-left: 16px;
+    }
+  }
+
+  &__preview {
+    margin-top: 3px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  &__message {
+    color: #707579;
+    font-weight: 300;
+    font-size: 16px;
+    position: relative;
+    flex: 1 50%;
+    word-break: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &_title {
+      font-weight: 400;
+      color: #000000;
+    }
+  }
+
+  &__badge {
+    background-color: #4CCD5E;
+    color: #FFFFFF;
+    padding: 0 5px;
+    height: 24px;
+    min-width: 24px;
+    line-height: 24px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 12px;
+    text-align: center;
+    margin-left: 10px;
+    transform: scale(1);
+    transition: transform .3s ease-out;
+
+    &.hidden {
+      transform: scale(0);
+    }
+
+    &.muted {
+      background-color: #C4C9CC;
+    }
+  }
+
+  &__pin {
+    background-color: #C4C9CC;
+    height: 24px;
+    width: 24px;
+    margin-left: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+
+    .icon {
+      width: 100%;
+      height: 100%;
+
+      path {
+        fill: #FFFFFF;
+      }
+    }
+  }
+}

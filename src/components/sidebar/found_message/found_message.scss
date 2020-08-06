@@ -1,0 +1,91 @@
+@import '~styles/variables.scss';
+
+.foundMessage {
+  $total-padding-horizontal: 17px;
+  $total-padding-vertical: 11px;
+  $click-padding-horizontal: 8px;
+  $click-padding-vertical: 6px;
+
+  padding: ($total-padding-vertical - $click-padding-vertical) ($total-padding-horizontal - $click-padding-horizontal);
+  font-size: 16px;
+  color: #707579;
+
+  @include respond-to(small) {
+    padding: 0;
+  }
+
+  &__empty {
+    padding: $total-padding-vertical $total-padding-horizontal;
+  }
+
+  &__ripple {
+    padding: $click-padding-vertical $click-padding-horizontal;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color .2s ease;
+
+    @include respond-to(small) {
+      padding: 10px 12px;
+      border-radius: 0;
+    }
+
+    &:hover {
+      background-color: rgba(#707579, 0.08);
+    }
+
+    &_content {
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  .avatar {
+    width: 54px;
+    height: 54px;
+    flex: none;
+    margin-right: 9px;
+  }
+
+  &__main {
+    flex: auto;
+    min-width: 0; // Forces this element to not overflow the parent
+  }
+
+  &__header {
+    display: flex;
+    align-items: flex-end;
+  }
+
+  &__name {
+    flex: auto;
+    margin-right: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #000;
+    font-weight: 500;
+  }
+
+  &__time {
+    flex: none;
+    max-width: 30%;
+    font-size: 12px;
+  }
+
+  &__message {
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &::after {
+      content: "\00a0";
+    }
+
+    mark {
+      color: #4EA4F5;
+      background: none;
+      font: inherit;
+    }
+  }
+}

@@ -1,0 +1,39 @@
+
+
+.sticker-set {
+  text-align: left;
+
+  &:last-child { margin-bottom: 0; }
+
+  &__title {
+    color: #7b8083;
+    text-transform: uppercase;
+    font-weight: 500;
+    font-size: 0.85rem;
+    padding: 8px 6PX 10px;
+    background: linear-gradient(to bottom, rgba(255,255,255,1) 0%,rgba(255,255,255,0.9) 60%,rgba(255,255,255,0) 100%);;
+    z-index: 2;
+    // position: sticky;
+    // top: 0;
+  }
+
+  &__items {
+    display: grid;
+    justify-content: space-between;
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  &__item {
+    display: inline-block;
+    width: 70px;
+    height: 70px;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: background-color .15s ease-out;
+    padding: 1px;
+
+    &:hover {
+      background-color: rgba(#707579, 0.08);
+    }
+  }
+}

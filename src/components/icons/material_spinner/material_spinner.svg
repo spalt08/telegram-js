@@ -1,0 +1,20 @@
+<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!--
+    The CSS is moved to the global CSS
+    <style></style>
+    -->
+  </defs>
+  <circle
+    class="xb8ytEhx"
+    r="20"
+    cx="22"
+    cy="22"
+    stroke="#000"
+    stroke-width="4"
+    stroke-dasharray="1, 200"
+    stroke-dashoffset="0"
+    stroke-linecap="round"
+    fill="none"
+  />
+</svg>

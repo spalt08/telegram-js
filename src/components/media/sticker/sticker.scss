@@ -1,0 +1,66 @@
+.sticker {
+  width: 200px;
+  height: 200px;
+  position: relative;
+  user-select: none;
+  object-fit: contain;
+  cursor: pointer;
+  background-size: 100% auto;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  &__thumb {
+    position: absolute;
+    object-fit: contain;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+
+    img {
+      filter: blur(5px);
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    &.removed {
+      animation: stickerRemove .3s ease;
+    }
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+
+    &.animated {
+      animation: stickerAppear .4s ease;
+    }
+  }
+
+  &__tgs {
+    width: 100%;
+    height: 100%;
+    &.animated {
+      animation: stickerAppear .4s ease;
+    }
+  }
+
+  &__canvas {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+@keyframes stickerRemove {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes stickerAppear {
+  from {
+    opacity: 0;
+  }
+}

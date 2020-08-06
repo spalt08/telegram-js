@@ -1,0 +1,41 @@
+@import '~styles/variables.scss';
+
+.emoji-category {
+  padding: 0 10px 16px;
+  text-align: left;
+
+  @include respond-to(small) {
+    padding: 8PX;
+  }
+
+  &__title {
+    color: #7b8083;
+    text-transform: uppercase;
+    font-weight: 500;
+    font-size: 14PX;
+    padding: 8px 6PX 10px;
+    position: sticky;
+    background: linear-gradient(to bottom, rgba(255,255,255,1) 0%,rgba(255,255,255,0.9) 60%,rgba(255,255,255,0) 100%);;
+    top: 0;
+
+    @include respond-to(small) {
+      padding: 8px 0;
+    }
+  }
+
+  &__items {
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  &__item {
+    font-size: 30px;
+    width: 12.5%;
+    cursor: pointer;
+    text-align: center;
+    line-height: 1;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+}

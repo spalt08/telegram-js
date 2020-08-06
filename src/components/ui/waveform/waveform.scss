@@ -1,0 +1,26 @@
+@import '~styles/variables.scss';
+
+.waveform {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-end;
+  height: 16px;
+  &__bar {
+    width: 2px;
+    margin: 0 1px;
+    min-height: 2px;
+    border-radius: 2px;
+    background-color: $voice-message-bar-transparent;
+    .message-out & {
+      background-color: $voice-message-bar-out-transparent;
+    }
+  }
+
+  &__bar.-active {
+    background-color: $voice-message-bar;
+    .message-out & {
+      background-color: $voice-message-bar-out;
+    }
+  }
+}

@@ -1,0 +1,26 @@
+.materialSpinner circle {
+  stroke: currentColor;
+  animation: materialSpinner__dash 1.5s ease-in-out infinite, materialSpinner__rotate 2s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes materialSpinner__rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes materialSpinner__dash {
+  0% {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 89, 200;
+    stroke-dashoffset: -35PX;
+  }
+  100% {
+    stroke-dasharray: 89, 200;
+    stroke-dashoffset: -124PX;
+  }
+}

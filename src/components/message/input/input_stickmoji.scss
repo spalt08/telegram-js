@@ -1,0 +1,122 @@
+@import '~styles/variables.scss';
+
+$sticker-panel-height-mobile: 282px;
+
+.stickmoji-panel {
+  position: absolute;
+  left: 2px;
+  height: 400px;
+  bottom: 80px;
+  width: 400px;
+  max-width: 100%;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  transform-origin: bottom left;
+  opacity: 1;
+  transform: scale(1);
+  transition: .3s ease-out;
+  animation: stickmojiShow .3s ease-out;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  @include respond-to(small) {
+    position: abs($number: 0);
+    left: 0;
+    top: 100%;
+    width: 100%;
+    height: $sticker-panel-height-mobile;
+    box-shadow: none;
+    border-radius: 0;
+    animation: none;
+  }
+
+  &.-closing {
+    opacity: 0;
+    transform: scale(0.1);
+
+    @include respond-to(small) {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  &__panel {
+    position: relative;
+    user-select: none;
+  }
+
+  &__tabs {
+    display: flex;
+    height: 46px;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0px 0px 3px 0px #a5a5a5;
+    position: relative;
+  }
+
+  &__tab {
+    height: 100%;
+    width: 58px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  &__icon {
+    width: 24px;
+    height: 24px;
+
+    & > .ic_fill {
+      fill: #8e979d;
+    }
+
+    &.-active > .ic_fill, &:hover > .ic_fill {
+      fill: #4EA4F5;
+    }
+  }
+
+  &__panel {
+    flex: 1 50%;
+    overflow: hidden;
+  }
+
+  &__oncoming {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+  }
+
+  &__search {
+    position: absolute;
+    height: 46px;
+    width: 46px;
+    left: 0;
+    top: 0;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+  }
+}
+
+@include respond-to(small) {
+  .history__content, .msginput {
+    transition: transform .2s ease-out;
+  }
+
+  .-messagePanelShowed, .-messagePanelShowed + .msginput {
+    transform: translateY(-$sticker-panel-height-mobile);
+  }
+}
+
+@keyframes stickmojiShow {
+  from {
+    opacity: 0;
+    transform: scale(0.1);
+  }
+}

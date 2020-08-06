@@ -1,0 +1,98 @@
+.select {
+  position: relative;
+
+  & &__input {
+    padding-right: 35px;
+  }
+
+  &__arrow {
+    position: absolute;
+    top: 19px;
+    right: 16px;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    z-index: 2;
+
+    &:before, &:after {
+      top: 6px;
+      right: 0;
+      position: absolute;
+      content: '';
+      display: inline-block;
+      width: 11px;
+      height: 2px;
+      background-color: #DEE0E3;
+      transition: 0.3s ease;
+      z-index: 1;
+      border-radius: 1px;
+    }
+
+    &:before {
+      transform: rotate(45deg);
+      right: 7px;
+    }
+
+    &:after {
+      transform: rotate(-45deg);
+    }
+  }
+
+  &.filled &__arrow:before {
+    transform: rotate(-45deg);
+    right: 0px;
+    width: 14px;
+  }
+
+  &.filled &__arrow:after {
+    transform: rotate(45deg);
+    right: 0px;
+    width: 14px;
+  }
+
+  &.focused &__arrow:before {
+    background-color: #4EA4F5;
+    transform: rotate(-45deg);
+  }
+
+  &.focused &__arrow:after {
+    background-color: #4EA4F5;
+    transform: rotate(45deg);
+  }
+
+  &__options {
+    position: absolute;
+    top: calc(100% + 8px);
+    width: 100%;
+    background: #FFF;
+    border-radius: 10px;
+    box-shadow: 0px 3px 7px rgba(0, 0, 0, 0.15);
+    z-index: 3;
+    max-height: 240px;
+    animation: appear .2s;
+    overflow-x: hidden;
+    overflow-y: auto;
+    transform: translateZ(0); // https://stackoverflow.com/a/30533339/1118709
+  }
+
+  &__option {
+    height: 48px;
+    cursor: pointer;
+    background: #FFFFFF;
+    border-bottom: 1px solid #F4F4F5;
+    transition: background .10s ease-out;
+    user-select: none;
+    padding: 0px 14px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    &:last-child {
+      border-bottom: 0;
+    }
+
+    &.active {
+      background: #F4F4F5;
+    }
+  }
+}

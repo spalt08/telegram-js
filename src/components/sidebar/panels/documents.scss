@@ -1,0 +1,13 @@
+.documentsPanel {
+  width: 100%;
+  height: 100%;
+
+  & .document-file {
+    padding: 12px 20px;
+    max-width: none;
+
+    & .document-file__info {
+      text-align: start;
+    }
+  }
+}

@@ -1,0 +1,21 @@
+.message-service {
+  padding: 6PX 0px 6PX;
+  text-align: center;
+
+  &__label {
+    display: inline-block;
+    margin: 0 auto;
+    width: auto;
+    color: #FFFFFF;
+    background: rgba(0, 0, 0, 0.20);
+    border-radius: 13px;
+    line-height: 20px;
+    padding: 3px 10px;
+    min-height: 1.73333rem;
+    max-width: 90%;
+  }
+
+  strong {
+    font-weight: 500;
+  }
+}

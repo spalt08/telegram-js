@@ -1,0 +1,51 @@
+@import '~styles/variables.scss';
+
+.webpage-preview {
+  display: flex;
+  font-size: 14px;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  line-height: round(16/14 * 1000) / 1000;
+
+  &::before {
+    content: '';
+    flex: none;
+    width: 2px;
+    border-radius: 1px;
+    background: $accent-color;
+    margin-right: 8px;
+  }
+
+  &__photo {
+    border-radius: 4px;
+    overflow: hidden;
+    max-width: 100%;
+    margin-bottom: 6px;
+
+    &.small {
+      float: right;
+      width: 60px;
+      margin-left: 6px;
+      margin-top: 0;
+    }
+  }
+
+  &__content {
+    flex: auto;
+    min-width: 0;
+  }
+
+  &__header {
+    color: $accent-color;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 3px;
+  }
+
+  &__title {
+    font-weight: 500;
+    margin-bottom: 3px;
+  }
+}

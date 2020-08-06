@@ -1,0 +1,102 @@
+.searchInput {
+  $height: 40px;
+  $text-color: #000;
+  $icon-color: #abb2b7;
+  $active-border-color: #4EA4F5;
+  $active-background: #fff;
+  $transition-duration: 150ms;
+  $transition-final-part: 0.2;
+  $transition-timing: ease-in-out;
+
+  position: relative;
+  height: $height;
+  background-color: #F4F4F5;
+  color: #8D969C;
+  border-radius: ($height / 2);
+
+  // Optimization: overflow hidden and z-index together lock the element to an independent render unit
+  overflow: hidden;
+  z-index: 0;
+
+  input,
+  &__activeBG {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    border-radius: ($height / 2);
+  }
+
+  input {
+    appearance: none;
+    color: $text-color;
+    background: none;
+    border: none;
+    caret-color: $active-border-color;
+    z-index: 3;
+    border-radius: ($height / 2);
+    font-size: 16px;
+    padding: 10px 16px 10px 42px;
+    outline: none;
+
+    &::placeholder {
+      color: #8D969C;
+    }
+  }
+
+  &.-loading input {
+    padding-right: 42px;
+  }
+
+  &__activeBG {
+    background: #fff;
+    border: solid 2px;
+    border-color: $active-border-color $active-background;
+    border-radius: ($height / 2);
+    z-index: 1;
+    opacity: 0;
+    transform: scaleX(0);
+    transition: all $transition-duration $transition-timing;
+  }
+
+  & input:focus ~ &__activeBG {
+    opacity: 1;
+    border-color: $active-border-color;
+    transform: scaleX(1);
+  }
+
+  &__icon {
+    $size: 24px;
+    position: absolute;
+    top: calc(50% - #{$size / 2} + 1px);
+    left: 12px;
+    z-index: 2;
+    width: $size;
+    height: $size;
+
+    path {
+      fill: $icon-color;
+      transition: fill ($transition-duration * $transition-final-part) $transition-timing;
+    }
+  }
+
+  & input:focus ~ &__icon {
+    path {
+      fill: $active-border-color;
+      transition: fill ($transition-duration * $transition-final-part) $transition-timing ($transition-duration * (1 - $transition-final-part));
+    }
+  }
+
+  &__loading {
+    $size: 18px;
+    position: absolute;
+    top: calc(50% - #{$size / 2});
+    right: (($height - $size) / 2);
+    z-index: 2;
+    width: $size;
+    height: $size;
+    color: $icon-color;
+  }
+}

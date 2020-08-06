@@ -1,0 +1,69 @@
+.menuAndBackIcon {
+  $size: 24px;
+
+  display: inline-block;
+  line-height: 1;
+  width: $size;
+  height: $size;
+  position: relative;
+  transition: none 160ms ease-in-out;
+
+  * {
+    transition-duration: inherit;
+    transition-timing-function: inherit;
+  }
+
+  > span {
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    transition-property: transform, transform; // The first value is ignored in Safari in this element. If the repeat is removed, the animation will break.
+
+    > em {
+      position: absolute;
+      top: 0;
+      left: (3/24 * $size);
+      right: (3/24 * $size);
+      height: (2/24 * $size);
+      border-radius: (1/24 * $size);
+      background: currentColor;
+      transform-origin: (17/24 * $size) (1/24 * $size);
+      transition-property: transform;
+
+      &:nth-child(1) {
+        transform: translateY(6/24 * $size);
+      }
+
+      &:nth-child(2) {
+        transform: translateY(11/24 * $size);
+      }
+
+      &:nth-child(3) {
+        transform: translateY(16/24 * $size);
+      }
+    }
+  }
+
+  &.-back {
+    > span {
+      transform: rotate(180deg);
+
+      > em {
+        &:nth-child(1) {
+          transform: translateY(11/24 * $size) rotate(45deg) scaleX(0.707 /* ≈ 1 / √2 */);
+        }
+
+        &:nth-child(2) {
+          transform: translateY(11/24 * $size) rotate(0.1deg); // A tiny rotate is a hack for a perfect pixel render on every size
+        }
+
+        &:nth-child(3) {
+          transform: translateY(11/24 * $size) rotate(-45deg) scaleX(0.707 /* ≈ 1 / √2 */);
+        }
+      }
+    }
+  }
+}

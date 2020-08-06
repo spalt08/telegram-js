@@ -1,0 +1,98 @@
+
+$user-bg-colors: (
+  "1" #e36f74,
+  "2" #fca76f,
+  "3" #a693e9,
+  "4" #78ca5c,
+  "5" #6ac9cc,
+  "6" #50a2e9,
+  "7" #f078ae,
+);
+
+$break-small: 720px;
+$break-medium: 1024px;
+$break-message-wrap: 1480px;
+$break-widescreen: 1680px;
+$common-border-color: #DADCE0;
+$main-header-height: 56px;
+
+@mixin respond-to($media) {
+  @if $media == small {
+    @media only screen and (max-width: $break-small) { @content; }
+  }
+
+  @if $media == medium {
+    @media only screen and (max-width: $break-medium) and (min-width: $break-small + 1) { @content; }
+  }
+
+  @if $media == small-medium {
+    @media only screen and (max-width: $break-medium) { @content; }
+  }
+
+  @if $media == message-wrap {
+    @media only screen and (min-width: $break-medium + 1) and (max-width: $break-message-wrap) { @content; }
+  }
+
+  @if $media == desktop {
+    @media only screen and (min-width: $break-medium + 1) { @content; }
+  }
+
+  @if $media == widescreen {
+    @media only screen and (min-width: $break-widescreen) { @content; }
+  }
+}
+
+@mixin safari-only() {
+  // https://stackoverflow.com/a/25975282/1118709
+  @media not all and (min-resolution:.001dpcm) {
+    @supports (-webkit-appearance:none) {
+      @content;
+    }
+  }
+}
+
+@mixin scrollbar-width($width) {
+  &::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+
+    @include respond-to(small) {
+      width: 1PX;
+      height: 1px;
+    }
+  }
+}
+
+@mixin hide-scrollbar() {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+}
+
+$content-padding: 20px;
+$content-padding: 20px;
+$content-message-padding: 11px;
+$bubble-max-width: 75%;
+$bubble-background: #FFFFFF;
+$voice-message-bar: #1da1f1;
+$voice-message-bar-transparent: #70757959;
+$voice-message-bar-out: #4fae4e;
+$voice-message-bar-out-transparent: #4fae4ea0;
+$seek-bar-not-buffered: #70757926;
+$seek-bar-buffered: #70757959;
+$seek-bar-not-buffered-out: #50ae4e2d;
+$seek-bar-buffered-out: #50ae4e5d;
+$accent-color: #1da1f1;
+$accent-color-inactive: #707579;
+$accent-color-out: #4fae4e;
+$accent-color-out-inactive: #4fae4ea0;
+$animation-sidebar: 0.3s ease-out;
+
+// @include respond-to(small) {
+//   $content-padding: 12px;
+//   $content-message-padding: 3px;
+//   $bubble-max-width: 80%;
+// }

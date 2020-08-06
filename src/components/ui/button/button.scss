@@ -1,0 +1,51 @@
+.button {
+  position: relative;
+  appearance: none;
+  border: none;
+  font-size: 16px;
+  margin: 0;
+  min-height: 54px;
+  width: 100%;
+  background: #4EA4F5;
+  color: #FFFFFF;
+  text-align: center;
+  border-radius: 10px;
+  text-transform: uppercase;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: .2s ease;
+  outline: none;
+  cursor: pointer;
+  padding: 5px 10px;
+
+  &:hover, &:focus {
+    background: #4797E2;
+    outline: none;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    background: #4797E2;
+  }
+
+  &__spinner {
+    $size: 27px;
+    display: none;
+    position: absolute;
+    width: $size;
+    height: $size;
+    top: calc(50% - #{$size / 2});
+    right: 13px;
+  }
+
+  &.loading {
+    padding-left: 45px;
+    padding-right: 45px;
+  }
+
+  &.loading &__spinner {
+    display: block;
+  }
+}

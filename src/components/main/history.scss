@@ -1,0 +1,189 @@
+@import '~styles/variables.scss';
+
+.history {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: rgb(183, 191, 152);
+  background-image: url(~assets/chamomile-blurred.jpg);
+  background-size: cover;
+  background-position: center center;
+  flex: 1 50%;
+  overflow: hidden;
+
+  @include respond-to(small) {
+    background-position-y: top;
+    flex: none;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    transform: translate3d(100%, 0, 0);
+
+    &.-visible {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @include respond-to(small-medium) {
+    transition: transform $animation-sidebar;
+    will-change: transform;
+
+    &.-visible.-popping {
+      transform: translate3d(-25%, 0, 0);
+    }
+  }
+
+  @include respond-to(desktop) {
+    position: absolute;
+    left: #{'min(400PX, max(320PX, 25vw))'};
+    right: 0;
+    top: 0;
+    bottom: 0;
+    will-change: right;
+    transition: right $animation-sidebar;
+
+    &.-right-sidebar {
+      right: #{'min(400PX, max(320PX, 25vw))'};
+    }
+
+    &.-right-sidebar &__list {
+      transform: translateX(#{'calc(-1 * min(200PX, max(160PX, 12.5vw)))'});
+    }
+  }
+
+  @include respond-to(message-wrap) {
+    &.-right-sidebar .message__align {
+      max-width: #{'min(740PX, 100vw - min(400PX, max(320PX, 25vw)) - min(400PX, max(320PX, 25vw)))'};
+    }
+  }
+
+  @include respond-to(medium) {
+    position: absolute;
+    left: #{'min(400PX, max(320PX, 25vw))'};
+    right: 0;
+    top: 0;
+    bottom: 0;
+    transition: transform $animation-sidebar;
+
+    &.-right-sidebar {
+      transform: translateX(-100px);
+    }
+  }  
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    //  padding-bottom: 8PX;
+    @include respond-to(desktop) {
+      width: #{'calc(min(1680PX, 100vw) - min(400PX, max(320PX, 25vw)))'};
+      position: absolute;
+      transition: transform $animation-sidebar;
+    }
+  }
+
+  &__content {
+    mask-image: linear-gradient(to top, transparent, #000 6px);
+    flex: 1;
+    min-height: 0;
+    position: relative;
+  }
+
+  &__list .list__wrapper {
+    flex: none;
+    margin-top: auto;
+  }
+
+  &__spinner {
+    position: absolute;
+    z-index: 10;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+    border-radius: 50%;
+
+    svg {
+      transform: scale(0.97);
+      circle {
+        stroke-width: 1.5;
+      }
+    }
+  }
+
+  &__down {
+    $size: 54px;
+    position: absolute;
+    bottom: 15px;
+    right: 20px;
+    z-index: 9;
+    width: $size;
+    height: $size;
+    padding: 0;
+    margin: 0;
+    background: #fff;
+    border: none;
+    border-radius: 100%;
+    cursor: pointer;
+    outline: none;
+    transition: all 550ms cubic-bezier(.44,1.59,.53,1);
+
+    @include respond-to(small) {
+      width: 46px;
+      height: 46px;
+      right: 10px;
+    }
+
+    > svg {
+      $icon-size: 32px;
+      width: $icon-size;
+      height: $icon-size;
+      position: absolute;
+      top: (($size - $icon-size) / 2 + 2px);
+      left: (($size - $icon-size) / 2);
+
+      @include respond-to(small) {
+        top: 11px;
+        left: 9px;
+        width: 28px;
+        height: 28px;
+      }
+
+      path {
+        fill: #4EA4F5;
+      }
+    }
+
+    &.-hidden {
+      transition: all 250ms cubic-bezier(0.55, 0.055, 0.675, 0.19); // https://easings.net/en#easeInCubic
+      opacity: 0;
+      transform: translateY(60px);
+      pointer-events: none;
+    }
+  }
+
+  &__welcome {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &-text {
+      display: inline-block;
+      margin: 0 auto;
+      width: auto;
+      max-width: 70%;
+      color: #FFFFFF;
+      background: rgba(0, 0, 0, 0.20);
+      height: 26px;
+      border-radius: 13px;
+      line-height: 20px;
+      padding: 3px 10px;
+    }
+  }
+}

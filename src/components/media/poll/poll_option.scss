@@ -1,0 +1,161 @@
+@import '~styles/variables.scss';
+
+$percentage-width: 40PX;
+$text-left-padding: 8PX;
+
+.pollOption {
+  path {
+    stroke: $accent-color;
+  }
+
+  .pollOption__line-div {
+    background-color: $accent-color;
+  }
+}
+
+.message-out .pollOption,
+.message-out-last .pollOption {
+  path {
+    stroke: $accent-color-out;
+  }
+
+  .pollOption__line-div {
+    background-color: $accent-color-out;
+  }
+}
+
+.pollOption.-correct {
+  path {
+    stroke: #44A448;
+  }
+
+  .pollOption__line-div {
+    background-color: #44A448;
+  }
+}
+
+.pollOption.-wrong {
+  path {
+    stroke: #DF3F40;
+  }
+
+  .pollOption__line-div {
+    background-color: #DF3F40;
+  }
+}
+
+.pollOption {
+  position: relative;
+  margin-top: 10px;
+  display: block;
+
+  &__text {
+    padding: 0 0 12PX ($percentage-width + $text-left-padding);
+  }
+
+  &__percentage {
+    position: absolute;
+    left: $percentage-width;
+    transform: translateX(-100%);
+    top: 0;
+    margin: 0 0 12px 0;
+    font-weight: bold;
+    text-align: center;
+    transition: opacity 0.3s;
+    opacity: 0;
+    justify-self: end;
+    pointer-events: none;
+  }
+
+  &__checkbox {
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin-bottom: 10px;
+    transition: opacity 0.3s;
+  }
+
+  &__answer {
+    position: absolute;
+    left: 30px;
+    bottom: -4px;
+    width: 12px;
+    height: 12px;
+    align-self: end;
+    justify-self: end;
+    opacity: 1;
+    transition: opacity 0.3s 0.2s;
+    background-size: contain;
+    background-image: url('./images/check@2x.png');
+
+    &.-hidden {
+      opacity: 0;
+    }
+
+    .message-out &.-correct,
+    .message-out-last &.-correct,
+    .message-out &.-chosen:not(.-wrong),
+    .message-out-last &.-chosen:not(.-wrong),
+    &.-correct.-chosen {
+      background-image: url('./images/correct@2x.png');
+    }
+
+    &.-wrong {
+      background-image: url('./images/wrong@2x.png');
+    }
+  }
+
+  &__line-div {
+    position: absolute;
+    left: $percentage-width + $text-left-padding;
+    right: 0;
+    bottom: 0;
+    height: 4PX;
+    grid-row: 2;
+    grid-column: 2;
+    min-width: 4PX;
+    border-radius: 2PX;
+    pointer-events: none;
+  }
+
+  &__line-svg {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    opacity: 0;
+    transition: opacity 0.1s;
+    pointer-events: none;
+
+    path {
+      stroke-width: 4px;
+      stroke-linecap: round;
+      fill: none;
+      stroke-dasharray: 0 25 263 1000;
+      stroke-dashoffset: 1;
+    }
+  }
+
+  &__checkbox.-answered {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &__percentage.-answered {
+    opacity: 1;
+  }
+
+  &__line-svg.-answered {
+    opacity: 1;
+  }
+
+  .checkbox__input:checked+.checkbox__box {
+    border-color: $accent-color;
+    background: $accent-color;
+
+    .message-out &, .message-out-last & {
+      border-color: $accent-color-out;
+      background: $accent-color-out;
+    }
+  }
+}

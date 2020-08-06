@@ -1,0 +1,49 @@
+@import '~styles/variables.scss';
+
+.avatar {
+  min-width: 30px;
+  min-height: 30px;
+  border-radius: 50%;
+  overflow: hidden;
+  user-select: none;
+  flex: none;
+  font-size: 20px;
+
+  &.-standard {
+    color: #FFFFFF;
+    font-weight: 500;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-transform: uppercase;
+
+    @each $i, $color in $user-bg-colors {
+      &.-color-#{$i} {
+        background-color: $color;
+      }
+    }
+  }
+
+  &.-predefined {
+    background: #65AADD;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    svg path {
+      fill: white;
+    }
+  }
+
+  &.-picture {
+    // animation: avatarAppeared .3s ease;
+    background: rgba(#7f7f7f, 0.15);
+    object-fit: cover;
+  }
+}
+
+@keyframes avatarAppeared {
+  from {
+    opacity: 0;
+  }
+}

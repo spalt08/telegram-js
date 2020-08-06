@@ -1,0 +1,26 @@
+@import '~styles/variables.scss';
+
+.pollFooter {
+  display: grid;
+  padding: 8PX 0;
+  text-align: center;
+  color: $accent-color;
+  transition: color 0.3s;
+  cursor: pointer;
+
+  >* {
+    grid-row: 1;
+    grid-column: 1;
+  }
+  .message-out &, .message-out-last & {
+    color: $accent-color-out;
+  }
+}
+
+.pollFooter.-inactive {
+  color: $accent-color-inactive;
+  cursor: default;
+  .message-out &, .message-out-last & {
+    color: $accent-color-out-inactive;
+  }
+}

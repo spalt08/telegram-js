@@ -1,0 +1,15 @@
+# Docker Compose file Reference (https://docs.docker.com/compose/compose-file/)
+version: "3.7"
+
+services:
+  client:
+    restart: unless-stopped
+    image: node:10
+    volumes:
+      - type: bind
+        source: .
+        target: /home/telegram-js
+    working_dir: /home/telegram-js
+    ports:
+      - "3000:3000"
+    command: bash -c "yarn && npm start"

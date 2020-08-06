@@ -1,0 +1,108 @@
+$animation-duration: 0.4s;
+
+.photo {
+  position: relative;
+  background: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &__loader {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    right: auto;
+    bottom: auto;
+    background: rgba(0, 0, 0, 0.2);
+    color: #fff;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+
+    svg {
+      width: 30px;
+      height: 30px;
+    }
+  }
+
+  &__unblur {
+    animation: unblur $animation-duration ease;
+  }
+
+  &__background {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    height: 100% !important;
+   // margin: -4%;
+    object-fit: cover;
+   // filter: blur(3PX);
+    z-index: 0;
+    opacity: 0.4;
+    overflow: hidden;
+  }
+
+  &__thumbnail {
+    position: absolute;
+   //filter: blur(4PX);
+    object-fit: contain;
+    z-index: 1;
+    // transform: scale(1.1);
+    // clip-path: polygon(4% 4%, 96% 4%, 96% 96%, 4% 96%);
+
+    &.no-blur {
+      transform: none;
+      filter: none;
+      clip-path: none;
+    }
+
+    &.removed {
+      animation: thumbRemoved $animation-duration ease;
+    }
+  }
+
+  &__content { z-index: 1; position: relative; }
+  &.contain.landscape img { width: 100%; }
+  &.contain.portrait img { height: 100%; }
+  &.cover.landscape img { height: 100%; }
+  &.cover.portrait img { width: 100%; }
+}
+
+@keyframes previewAppear {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes thumbRemoved {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes unblur {
+  from {
+    filter: blur(6px);
+  }
+  to {
+    filter: none;
+  }
+}
+
+.photo2 {
+  background: transparent;
+  overflow: hidden;
+  object-fit: cover;
+  background-position: center center;
+  background-size: cover;
+
+  &.-contain {
+    object-fit: contain;
+  }
+}

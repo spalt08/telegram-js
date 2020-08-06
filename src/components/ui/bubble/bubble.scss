@@ -1,0 +1,168 @@
+@import '~styles/variables.scss';
+
+@mixin bubbleDefault {
+  position: relative;
+  max-width: $bubble-max-width;
+
+  @include respond-to(small) {
+    max-width: 80vw;
+  }
+}
+
+@mixin bubbleBorderImage {
+  & > .bubble__background {
+    position: absolute;
+    z-index: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-style: solid;
+    border-left-width: 25PX;
+    border-top-width: 16PX;
+    border-right-width: 18PX;
+    border-bottom-width: 19PX;
+    border-color: transparent;
+    border-image: url(./images/bubble_in-central.png) 32 36 38 50 fill;
+    padding-left: 7PX;
+    @content;
+  }
+}
+
+@mixin bubbleContent {
+  & > .bubble__content {
+    z-index: 1;
+    position: relative;
+    min-height: 36PX;
+    min-width: 44PX;
+    padding: 0PX 2PX 3PX 9PX;
+    @content;
+  }
+}
+
+@mixin bubbleOutBorderImage {
+  @include bubbleDefault();
+  @include bubbleContent() {
+    padding: 0PX 9PX 3PX 2PX;
+  }
+  @include bubbleBorderImage() {
+    border-left-width: 18PX;
+    border-right-width: 25PX;
+    @content;
+  }
+}
+
+@mixin bubbleInBorderImage {
+  @include bubbleDefault();
+  @include bubbleContent();
+  @include bubbleBorderImage() {
+    @content;
+  }
+}
+
+@mixin bubbleMask {
+  & > .bubble__content {
+    max-width: 320px;
+    box-sizing: content-box;
+
+    @include respond-to(small) {
+      max-width: 75vw;
+    }
+
+    @content;
+  }
+}
+
+.bubble, .bubble-media {
+  @include bubbleInBorderImage();
+}
+
+.bubble-first, .bubble-media-first {
+  @include bubbleInBorderImage() {
+    border-image: url(./images/bubble_in-first.png) 32 36 38 50 fill;
+  }
+}
+
+.bubble-last, .bubble-media-last {
+  @include bubbleInBorderImage() {
+    border-image: url(./images/bubble_in-last.png) 32 36 38 50 fill;
+  }
+}
+
+.bubble-first-last, .bubble-media-first-last {
+  @include bubbleInBorderImage() {
+    border-image: url(./images/bubble_in-first-last.png) 32 36 38 50 fill;
+  }
+}
+
+.bubble-out, .bubble-media-out {
+  @include bubbleOutBorderImage() {
+    border-image: url(./images/bubble_out-central.png) 32 50 38 36 fill;
+  }
+}
+
+.bubble-out-first, .bubble-media-out-first {
+  @include bubbleOutBorderImage() {
+    border-image: url(./images/bubble_out-first.png) 32 50 38 36 fill;
+  }
+}
+
+.bubble-out-last, .bubble-media-out-last {
+  @include bubbleOutBorderImage() {
+    border-image: url(./images/bubble_out-last.png) 32 50 38 36 fill;
+  }
+}
+
+.bubble-out-first-last, .bubble-media-out-first-last {
+  @include bubbleOutBorderImage() {
+    border-image: url(./images/bubble_out-first-last.png) 32 50 38 36 fill;
+  }
+}
+
+.bubble-media {
+  @include bubbleMask() {
+    mask-border: url(./images/mask_in-central.png) 32 36 38 50 / 16PX 18PX 19PX 25PX stretch;
+  }
+}
+
+.bubble-media-first {
+  @include bubbleMask() {
+    mask-border: url(./images/mask_in-first.png) 32 36 38 50 / 16PX 18PX 19PX 25PX stretch;
+  }
+}
+
+.bubble-media-last {
+  @include bubbleMask() {
+    mask-border: url(./images/mask_in-last.png) 32 36 38 50 / 16PX 18PX 19PX 25PX stretch;
+  }
+}
+
+.bubble-media-first-last {
+  @include bubbleMask() {
+    mask-border: url(./images/mask_in-first-last.png) 32 36 38 50 / 16PX 18PX 19PX 25PX stretch;
+  }
+}
+
+.bubble-media-out {
+  @include bubbleMask() {
+    mask-border: url(./images/mask_out-central.png) 32 50 38 36 / 16PX 25PX 19PX 18PX stretch;
+  }
+}
+
+.bubble-media-out-first {
+  @include bubbleMask() {
+    mask-border: url(./images/mask_out-first.png) 32 50 38 36 / 16PX 25PX 19PX 18PX stretch;
+  }
+}
+
+.bubble-media-out-last {
+  @include bubbleMask() {
+    mask-border: url(./images/mask_out-last.png) 32 50 38 36 / 16PX 25PX 19PX 18PX stretch;
+  }
+}
+
+.bubble-media-out-first-last {
+  @include bubbleMask() {
+    mask-border: url(./images/mask_out-first-last.png) 32 50 38 36 / 16PX 25PX 19PX 18PX stretch;
+  }
+}

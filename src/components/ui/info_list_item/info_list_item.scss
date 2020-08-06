@@ -1,0 +1,47 @@
+.infoListItem {
+  position: relative;
+  display: flex;
+  padding: 15px 25px;
+  padding-left: 74px;
+  cursor: default;
+
+  &.hidden {
+    display: none;
+  }
+
+  &__content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__icon {
+    position: absolute;
+    top: 15px;
+    left: 25px;
+
+    path {
+      fill: #707579;
+    }
+  }
+
+  &__label {
+    color: #707579;
+    font-size: 13px;
+
+    path {
+      fill: #707579;
+    }
+  }
+
+  &__value {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    margin-right: 15px;
+  }
+
+  & a {
+    color: #50a2e9;
+    text-decoration: none;
+  }
+}

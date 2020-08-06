@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 44 44">
+<g id="$id$_button">
+  <circle cx="22" cy="22" r="19" fill="transparent" opacity="0.001" stroke="#000" stroke-width="2" stroke-dasharray="2 1000" stroke-linecap="round" transform="rotate(100 22 22)">
+    <set attributeName="opacity" to="1" fill="freeze" begin="$id$_vline.end"/>
+    <animateTransform attributeName="transform" type="rotate" from="100 22 22" to="460 22 22" dur="3s" begin="$id$_vline.end" repeatCount="indefinite"/>
+    <animate id="$id$_animation" attributeName="stroke-dasharray" dur="0.2s" fill="freeze"/>
+  </circle>
+  <path d="M22,13v22c0 4,-2 6.6,-7 4.7" stroke="#000" fill="none" stroke-width="2" stroke-dasharray="0 0 16 100" stroke-dashoffset="1" stroke-linejoin="round" stroke-linecap="round">
+    <animate id="$id$_arrowToDash" attributeName="stroke-dasharray" to="0 19 3 100" dur="0.2s" fill="freeze" begin="$id$_button.click"/>
+    <animate id="$id$_vline" attributeName="stroke-dasharray" to="0 29 3 100" dur="0.2s" fill="freeze" begin="$id$_arrowToDash.end"/>
+    <set attributeName="visibility" to="collapse" fill="freeze" begin="$id$_vline.end"/>
+  </path>
+  <path d="M22,29l-7,-7z" stroke="#000" stroke-width="2" stroke-linejoin="round">
+    <animate attributeName="d" to="M22,34l0,0z" dur="0.2s" fill="freeze" begin="$id$_button.click"/>
+  </path>
+  <path d="M22,29l7,-7z" stroke="#000" stroke-width="2" stroke-linejoin="round">
+    <animate attributeName="d" to="M22,34l0,0z" dur="0.2s" fill="freeze" begin="$id$_button.click"/>
+  </path>
+  <path d="M12,33h20z" stroke="#000" stroke-width="2" stroke-linejoin="round">
+    <animate attributeName="d" to="M12,35h20z" dur="0.2s" fill="freeze" begin="$id$_button.click"/>
+    <animate attributeName="opacity" from="1" to="0" dur="0.2s" fill="freeze" begin="$id$_button.click"/>
+  </path>
+</g>
+</svg>

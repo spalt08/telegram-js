@@ -1,0 +1,13 @@
+.peerInfo {
+  margin-bottom: 30px;
+
+  &__row {
+    display: flex;
+    
+    .icon {
+      path {
+        fill: #707579;
+      }
+    }
+  }
+}

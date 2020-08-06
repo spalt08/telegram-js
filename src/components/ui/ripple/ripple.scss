@@ -1,0 +1,29 @@
+.ripple {
+  position: relative;
+
+  // Optimization: overflow hidden and z-index together lock the element to an independent render unit
+  overflow: hidden;
+  z-index: 0;
+
+  &__content {
+    position: relative;
+    z-index: 2;
+  }
+
+  &__effect {
+    background-color: rgba(#707579, 0.08);
+    width: 30px;
+    height: 30px;
+    position: absolute;
+    transform: translateX(-50%) translateY(-50%);
+    border-radius: 50%;
+    animation: ripple-effect .9s ease-out forwards;
+    z-index: 1;
+  }
+}
+
+@keyframes ripple-effect {
+	0%   { transform: translate(-50%, -50%); }
+	80%  { transform: translate(-50%, -50%) scale(25);  }
+	100% { transform: translate(-50%, -50%) scale(25); opacity: 0; }
+}

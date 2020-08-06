@@ -1,0 +1,366 @@
+@import '~styles/variables.scss';
+
+$header-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.4);
+
+.header {
+  // &__wrapper {
+  //   background: #FFFFFF;
+  //   height: $main-header-height;
+  //   display: flex;
+  //   justify-content: space-between;
+  //   align-items: center;
+  //   flex-direction: row;
+  //   position: relative;
+  //   box-shadow: 0px 0px 3px 0px #828282;
+  //   z-index: 2;
+  //   border-left: 1px solid $common-border-color;
+  //   border-right: 1px solid $common-border-color;
+  //   display: flex;
+  //   justify-content: space-between;
+  //   flex-wrap: wrap;
+  //   position: relative;
+
+  //   @include respond-to(small) {
+  //     box-shadow: none;
+  //     border: none;
+  //   }
+  // }
+
+  &__profile {
+    padding: 5px $content-padding;
+    height: $main-header-height;
+    flex: 1.5;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    overflow: hidden;
+    align-items: center;
+    background-color: #FFFFFF;
+    width: 100%;
+    max-width: 100%;
+    min-width: 100%;
+    box-shadow: $header-shadow;
+    position: relative;
+    z-index: 3;
+    border-left: 1px solid $common-border-color;
+    border-right: 1px solid $common-border-color;
+
+    & .avatar {
+      width: 40px;
+      height: 40px;
+      font-size: 16px;
+    }
+
+    @include respond-to(small) {
+      padding-left: 56px;
+      border-right-width: 0px;
+      border-left-width: 0px;
+    }
+  }
+
+  &__info {
+    padding-left: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  &__title {
+    font-weight: 500;
+    font-size: 15px;
+    width: 100%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  &__pinned {
+    $ripple-padding: 7px 7px;
+
+    position: absolute;
+    right: 110px;
+    top: 0;
+    padding: 5px 0;
+    min-width: 0; // To let it shrink when there is little space
+    max-width: (250px + nth($ripple-padding, 2));
+    display: none;
+    z-index: 4;
+
+    @include respond-to(small) {
+      height: 54px;
+      transition: transform .2s ease-out;
+      padding: 0px 8px;
+      width: 100%;
+      max-width: 100%;
+      min-width: 100%;
+      box-shadow: $header-shadow;
+      background-color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      z-index: 2;
+      position: absolute;
+      left: 0;
+      top: 0;
+      transform: translateY(0);
+    }
+
+    &.-visible {
+      display: flex;
+      align-items: center;
+
+      @include respond-to(small) {
+        transform: translateY($main-header-height);
+      }
+    }
+
+    &_ripple {
+      padding: $ripple-padding;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background-color .2s ease;
+
+      &:hover {
+        background: rgba(#707579, 0.08);
+      }
+    }
+    
+    &_close {
+      flex: none;
+      margin-left: auto;
+      @include respond-to(desktop) {
+        display: none;
+      }
+    }
+  }
+
+  &>.audioPlayer {
+    border-left: 1px solid $common-border-color;
+    width: 100%;
+    position: absolute;
+    transform: translateY($main-header-height);
+    left: 0;
+    top: 0;
+    background-color: #FFFFFF;
+    z-index: 1;
+    height: 54px;
+    box-shadow: $header-shadow;
+    transition: transform .3s ease-out;
+    padding: 0 15px;
+    border-left: 1px solid $common-border-color;
+    border-right: 1px solid $common-border-color;
+
+    @include respond-to(small) {
+      padding: 0 8px;
+    }
+  
+    &.-hidden {
+      transform: translateY(0);
+      pointer-events: none;
+    }
+  }
+
+  @include respond-to(small) {
+    &__pinned.-visible+.audioPlayer {
+      transform: translateY($main-header-height + 54px);
+    }
+  }
+
+  &__actions {
+    flex: none;
+    display: flex;
+    position: absolute;
+    right: 14px;
+    top: 9px;
+    z-index: 4;
+
+    >* {
+      margin-right: 2px;
+    }
+
+    @include respond-to(small) {
+      right: 6px;
+    }
+  }
+
+  &__solution {
+    position: absolute;
+    left: 50%;
+    transform: translateX(calc(-50% - 20px));
+    width: 70%;
+    top: 64px;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.3s;
+    display: flex;
+    align-items: center;
+    border-radius: 12px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 8px 20px;
+    margin: 20px;
+    display: flex;
+    pointer-events: none;
+
+    a {
+      color: white;
+      text-decoration: underline;
+    }
+
+    svg {
+      flex: none;
+      margin-right: 20px;
+
+      path {
+        fill: white;
+      }
+    }
+
+    &.-visible {
+      opacity: 1;
+    }
+
+    // @include respond-to(small) {
+    //   width: calc(100vw - 60px);
+    // }
+  }
+
+  &__pinned.-hidden+.audioPlayer.-visible+&__solution {
+    top: $main-header-height * 2;
+  }
+
+  @include respond-to(small) {
+    &__pinned.-visible+.audioPlayer.-hidden+&__solution {
+      top: $main-header-height * 2;
+    }
+
+    &__pinned.-hidden+.audioPlayer.-visible+&__solution {
+      top: $main-header-height * 2;
+    }
+
+    &__pinned.-visible+.audioPlayer.-visible+&__solution {
+      top: $main-header-height * 3;
+    }
+  }
+
+  &__typing-indicator {
+    font-size: 14px;
+    color: #1DA1F1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    width: 200px;
+
+    &__content {
+      color: #707579;
+    }
+  }
+
+  &__context-menu {
+    transform-origin: right top;
+    position: absolute;
+    right: 14px;
+    top: 62px;
+  }
+
+  &__back {
+    flex: none;
+    display: none;
+    position: absolute;
+    left: 8px;
+    top: 9px;
+    z-index: 4;
+  }
+
+  @include respond-to(small) {
+    &__back {
+      display: flex;
+    }
+
+    &__search {
+      display: none;
+    }
+
+    &__profile {
+      max-width: calc(100% - 96px);
+    }
+
+    border-left: none;
+    border-right: none;
+  }
+
+  &__inline-search {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 5;
+    background-color: #fff;
+  }
+
+  &.-searching>&__pinned,
+  &.-searching>.audioPlayer {
+    transform: translateY(0);
+  }
+
+  &__inline-navigation {
+    position: absolute;
+    bottom: 0;
+    height: 54px;
+    left: 0;
+    background-color: #FFFFFF;
+    box-shadow: $header-shadow;
+    width: 100%;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    color: #707579;
+
+    &_status {
+      &:active {
+        color: #909192;
+      }
+
+      &.-disabled {
+        color: #909192;
+        pointer-events: none;
+      }
+    }
+
+    &_scroll {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+
+      &_button {
+        flex: none;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        padding: 8px;
+        margin: 0 -8px 0 10px;
+        border-radius: 100%;
+
+        &:active {
+          background: rgba(#707579, 0.08);
+        }
+
+        path {
+          fill: currentColor;
+        }
+
+        &.-up {
+          transform: rotate(180deg);
+        }
+
+        &.-disabled {
+          color: #b8babc;
+          pointer-events: none;
+        }
+      }
+    }
+  }
+}

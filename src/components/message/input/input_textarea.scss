@@ -1,0 +1,31 @@
+@import '~styles/variables.scss';
+
+.message-text {
+  width: 100%;
+  appearance: none;
+  border: none;
+  font-family: 'Roboto';
+  font-size: 15PX;
+  background: #FFFFFF;
+  box-sizing: border-box;
+  padding: 0;
+  outline: none;
+  flex: 1 50%;
+  height: 20PX;
+  line-height: 20PX;
+  resize: none;
+  overflow: hidden;
+  margin: 16px 0;
+
+  @include respond-to(small) {
+    margin: 13px 0;
+  }
+
+  &:active {
+    outline: none;
+  }
+
+  &::placeholder {
+    color: #a4aeb5;
+  }
+}

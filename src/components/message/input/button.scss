@@ -1,0 +1,147 @@
+@import '~styles/variables.scss';
+
+.msgRecordSend {
+  position: relative;
+  display: flex;
+  flex: none;
+  width: 60PX;
+  transition: width .2s ease-out;
+  will-change: width;
+  justify-content: flex-end;
+  z-index: 1;
+
+  @include respond-to(small) {
+    width: 52px;
+  }
+
+  &.-recording {
+    width: 120PX;
+
+    @include respond-to(small) {
+      width: 104px;
+    }
+  }
+
+  &__button {
+    flex-shrink: 0;
+    overflow: hidden;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border: 0;
+    outline: none;
+    background-color: #ffffff;
+    border-radius: 50%;
+    width: 54PX;
+    height: 54PX;
+    box-shadow: 0px 1px 2px 0px rgba(16, 35, 47, 0.15);
+    margin-left: 6PX;
+    cursor: pointer;
+    transition: box-shadow .2s;
+
+    @include respond-to(small) {
+      width: 46px;
+      height: 46px;
+    }
+
+    &:hover {
+      background-color: #4EA4F5;
+      & svg path { fill: #FFFFFF; }
+    }
+
+    &:active {
+      transform: scale(0.9);
+    }
+
+    &.-cancel {
+      opacity: 1;
+      transform: scale(1);
+      animation: cancelButtonAppear .2s ease-in-out forwards;
+    }
+  }
+
+  &__button path {
+    transition: .1s ease-out;
+  }
+
+  &__button > svg {
+    position: absolute;
+    transition: .3s ease-out;
+  }
+
+  &__button.-record &__ic-send, &__button &__ic-record {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  &__button.-record &__ic-record, &__button &__ic-send {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  &__ic-record path { fill: #98a0a5; }
+  &__ic-send path { fill: #4EA4F5; }
+  &__ic-cancel path { fill: #df3f40; }
+
+  &__progress {
+    position: absolute;
+    left: -18px;
+    top: 0;
+    transform: translate(-100%, 0);
+    display: flex;
+    align-items: center;
+    height: 100%;
+    background-color: transparent;
+    opacity: 1;
+    animation: recordProgressAppear .1s ease-in-out forwards;
+
+    &::after {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border-radius: 100%;
+      background-color: #df3f40;
+      margin-left: 16px;
+    }
+  }
+
+  &__tooltip {
+    position: absolute;
+    right: 0;
+    top: -40px;
+    width: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #FFFFFF;
+    border-radius: 10px;
+    white-space: nowrap;
+    padding: 4px 7px;
+    font-size: 14px;
+    opacity: 1;
+    animation: recordProgressAppear .3s ease-in-out forwards;
+
+    &::after {
+      position: absolute;
+      bottom: -8px;
+      right: 19px;
+      border-top: 8px solid rgba(0, 0, 0, 0.5);
+      border-right: 8px solid transparent;
+      border-left: 8px solid transparent;
+      content: '';
+      width: 0;
+      height: 0;
+    }
+  }
+}
+
+@keyframes cancelButtonAppear {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+}
+
+@keyframes recordProgressAppear {
+  from {
+    opacity: 0;
+  }
+}

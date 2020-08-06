@@ -1,0 +1,101 @@
+.filterPeersItem {
+  padding: 2px 4px;
+
+  &__ripple {
+    border-radius: 10px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: rgba(#707579, 0.08);
+    }
+  }
+
+  &__content {
+    padding: 6px 8px;
+    display: flex;
+    align-items: center;
+  }
+
+  &__icon {
+    $size: 46px;
+    flex: none;
+    width: $size;
+    margin-right: 14px;
+    display: flex;
+    align-items: center;
+
+    > .avatar {
+      width: $size;
+      height: $size;
+      min-width: $size;
+      min-height: $size;
+      font-size: $size / 2.4;
+    }
+
+    > svg {
+      width: 24px;
+      height: 24px;
+      margin: 5px 0 5px 4px;
+
+      path {
+        fill: #707579;
+      }
+    }
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0; // To force the overflow cut
+  }
+
+  &__title {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__description {
+    color: #707579;
+    font-size: 14px;
+    margin-top: 3px;
+  }
+
+  &__check {
+    $transition: all 0.25s ease-out;
+    margin: 0 2px 0 14px;
+    flex: none;
+    width: 20px;
+    height: 20px;
+    position: relative;
+    border: solid 2px #dadbdc;
+    border-radius: 100%;
+    background: #fff;
+    transition: $transition;
+
+    > svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: $transition;
+
+      path {
+        fill: #fff;
+      }
+    }
+
+    &.-checked {
+      border-color: #4EA4F5;
+      background: #4EA4F5;
+
+      > svg {
+        opacity: 1;
+        transform: scale(1.1);
+      }
+    }
+  }
+}

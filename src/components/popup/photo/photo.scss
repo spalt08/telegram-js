@@ -1,0 +1,110 @@
+.photofull_photo {
+  transform-origin: 0px 0px;
+  max-height: 80vh;
+
+  &.transition {
+    transition: transform .2s linear;
+  }
+}
+
+.photofull_header {
+  user-select: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 1.5rem;
+  animation: appearPhotoFullHeader .2s;
+  transition: transform .2s;
+
+  &.closing {
+    transform: translateY(-100%);
+  }
+}
+
+.photofull_image {
+  user-select: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+
+  & .photo.landscape, & .photo.landscape img {
+    height: 100% !important;
+    width: auto !important;
+    min-width: 100%;
+  }
+
+  & .photo.portrait, & .photo.portrait img {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100%;
+  }
+}
+
+@keyframes appearPhotoFullHeader {
+  from {
+    transform: translateY(-100%);
+  }
+}
+
+.photofull_footer {
+  user-select: none;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 1.5rem;
+  animation: appearPhotoFullFooter .2s;
+  transition: transform .2s;
+
+  &.closing {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes appearPhotoFullFooter {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+.photofull_message {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.photofull_author {
+  color: #ffffff;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+
+  & .avatar {
+    width: 3.2rem;
+    height: 3.2rem;
+  }
+
+  &-details {
+    padding-left: 1rem;
+  }
+
+  &-date {
+    font-size: 0.9rem;
+  }
+}
+
+.photofull_close {
+  cursor: pointer;
+  path {
+    fill: #ffffff;
+  }
+}

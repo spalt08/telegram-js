@@ -1,0 +1,155 @@
+@import '~styles/variables.scss';
+
+.tabs-panel {
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  display: flex;
+
+  &__header {
+    flex: none;
+    min-height: 44px;
+    display: flex;
+    border-bottom: 1px solid #dedfe2;
+    position: relative;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0 $content-padding;mask-image: linear-gradient(to left, transparent, #000 12px);
+  
+    @include hide-scrollbar();
+
+    @include respond-to(small) {
+      padding: 0 12px;
+    }
+
+    &.-center {
+      justify-content: center;
+    }
+
+    &.-space-between {
+      justify-content: space-between;
+    }
+  }
+
+  &__tab {
+    position: relative;
+    $transition-duration: 0.2s;
+
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    color: #7b8083;
+    padding: 0 26px;
+    margin: 0 0 -1px;
+    border-radius: 4px 4px 0 0;
+    cursor: pointer;
+    transition: all $transition-duration;
+
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 1px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: #4EA4F5;
+      border-radius: 2px 2px 0 0;
+      opacity: 0;
+      transition: opacity $transition-duration ease-out;
+    }
+
+    &.-active::after {
+      opacity: 1;
+    }
+
+    &_content {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    &_badge {
+      $size: 20px;
+      box-sizing: border-box;
+      min-width: $size;
+      height: $size;
+      border-radius: $size / 2;
+      line-height: 21px;
+      padding: 0 3px;
+      background: #C4C9CC;
+      color: #fff;
+      margin: -5px 0 -5px 5px;
+      transition: background $transition-duration ease-out;
+
+      &.-highlight {
+        background: #4EA4F5;
+      }
+    }
+
+    &:hover {
+      background: rgba(#707579, 0.08);
+    }
+
+    &.-active {
+      color: #4EA4F5;
+    }
+  }
+
+  &__header.-stretch > &__tab {
+    flex: 1 0 auto;
+    padding-left: 8px;
+    padding-right: 8px;
+    margin-right: 8px;
+  }
+
+  &__container {
+    $transition-duration: 0.2s;
+    flex: 1; // If you set it to `auto`, the content won't have 100% height in Safari
+    min-height: 0;
+    position: relative;
+
+    // Optimization: overflow hidden and z-index together lock the element to an independent render unit
+    overflow: hidden;
+    z-index: 0;
+
+    & > div {
+      transition: transform $transition-duration ease-out;
+    }
+
+    & > .removing-left, & > .removing-right {
+      position: absolute;
+    }
+
+    & > .removing-left {
+      transform: translateX(-100%);
+    }
+
+    & > .removing-right {
+      transform: translateX(100%);
+    }
+
+    & > .appearing-left {
+      animation: tabsPanelAppearLeft $transition-duration ease-out;
+    }
+
+    & > .appearing-right {
+      animation: tabsPanelAppearRight $transition-duration ease-out;
+    }
+  }
+}
+
+@keyframes tabsPanelAppearLeft {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes tabsPanelAppearRight {
+  from {
+    transform: translateX(-100%);
+  }
+}

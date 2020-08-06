@@ -1,0 +1,96 @@
+@import '~styles/variables.scss';
+
+.audioPlayer {
+  display: flex;
+  height: 52px;
+  opacity: 1;
+  transition: opacity 0.2s;
+  align-items: center;
+  cursor: pointer;
+
+  &.-hidden {
+    opacity: 0;
+  }
+
+  &__content {
+    margin-left: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  &__title {
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__performer {
+    font-size: 14px;
+    color: #707579;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__playButton {
+    flex: none;
+    display: flex;
+    align-items: center;
+
+    >.playButton {
+      background-color: initial !important;
+
+      path {
+        fill: $accent-color !important;
+      }
+    }
+  }
+
+  &__playPrev {
+    flex: none;
+    width: 30px;
+    height: 30px;
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    &:hover {
+      background: none;
+      outline: none;
+    }
+  }
+
+  &__playNext {
+    flex: none;
+    width: 30px;
+    height: 30px;
+    transform: scale(-1, 1);
+    transform-origin: center;
+
+    &:hover {
+      background: none;
+      outline: none;
+    }
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  &__close-button {
+    flex: none;
+    margin-left: auto;
+  }
+
+  &__playPrev.-active, &__playNext.-active {
+    path {
+      fill: $accent-color !important;
+    }
+  }
+}

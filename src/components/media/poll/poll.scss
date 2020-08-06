@@ -1,0 +1,81 @@
+@import '~styles/variables.scss';
+
+.poll {
+  min-width: 250px;
+  user-select: none;
+  font-size: 1rem;
+  overflow: hidden;
+
+  &__body {
+    padding: 7PX 10PX 0 10PX;
+  }
+
+  &__footer {
+    display: grid;
+
+    >* {
+      grid-row: 1;
+      grid-column: 1;
+    }
+  }
+
+  &__message-info {
+    justify-self: end;
+    align-self: end;
+    margin: 0 10PX 1PX 0 !important;
+  }
+
+  &__question {
+    font-weight: 500;
+  }
+
+  &__info {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    font-size: 0.9rem;
+    color: $accent-color-inactive;
+
+    .message-out &, .message-out-last & {
+      color: $accent-color-out;
+    }
+
+    .pollCountdown, .pollSolution {
+      grid-row: 1;
+      grid-column: 3;
+    }
+  }
+
+  &__recent-voters {
+    padding-left: 8px;
+    display: flex;
+    flex-direction: row-reverse;
+    justify-self: start;
+  }
+
+  & &__avatar-wrapper {
+    position: relative;
+    width: 13px;
+    height: 18px;
+
+    .avatar {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      min-width: 18px;
+      min-height: 18px;
+      border: 1px solid $bubble-background;
+      font-size: 0.6rem;
+    }
+  }
+
+  &__voters {
+    color: $accent-color-inactive;
+    font-size: 0.9rem;
+    padding: 10px 0 4px 10px;
+    
+    .message-out &, .message-out-last & {
+      color: $accent-color-out-inactive;
+    }
+  }
+}

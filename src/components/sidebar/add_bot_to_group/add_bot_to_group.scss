@@ -1,0 +1,11 @@
+.addBotToGroup {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  &__content {
+    height: 100%;
+    position: relative;
+    mask-image: linear-gradient(to bottom, transparent, #000 8px);
+  }
+}

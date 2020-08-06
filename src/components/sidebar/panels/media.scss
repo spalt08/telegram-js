@@ -1,0 +1,62 @@
+.mediaPanel {
+  height: 100%;
+  width: 100%;
+  background: #fff;
+
+  &__day {
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    padding: 6PX;
+  }
+
+  &__daylabel {
+    padding: 0 2PX;
+    height: 30px;
+    line-height: 30px;
+    width: 100%;
+    color: #7b8083;
+    text-transform: uppercase;
+    font-weight: 500;
+    font-size: 14PX;
+    position: -webkit-sticky;
+    position: sticky;
+    background: #fff;
+    top: 0;
+    z-index: 3;
+  }
+
+  &__item {
+    flex: 1 33.3%;
+    max-width: 33.3%;
+    padding: 2PX;
+    padding-top: 33.3%;
+    overflow: hidden;
+    border-radius: 2PX;
+    cursor: pointer;
+    position: relative;
+  }
+
+  &__photo {
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    right: 2px;
+    bottom: 2px;
+    width: auto !important;
+    height: auto !important;
+    overflow: hidden;
+
+    & > .video-preview__playbtn {
+      width: 30px;
+      height: 30px;
+      background-size: 10px auto;
+    }
+
+    & > .photo {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover;
+    }
+  }
+}

@@ -1,0 +1,40 @@
+@import '~styles/variables.scss';
+
+.document-audio {
+  display: flex;
+  overflow: hidden;
+  transform: translateZ(0);
+
+  &__play-button {
+    margin: 9PX 8PX 9PX 10PX;
+  }
+
+  &__wave {
+    display: flex;
+    flex-direction: column;
+    margin-top: 11PX;
+    margin-right: 10PX;
+    overflow: hidden;
+    flex-grow: 1;
+  }
+
+  &__track {
+    margin: 2px 0;
+  }
+
+  &__title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }  
+
+  &__timing {
+    color: $accent-color-inactive;
+    font-size: 12px;
+    line-height: 1.6;
+
+    .message-out &, .message-out-last & {
+      color: $accent-color-out;
+    }
+  }
+}

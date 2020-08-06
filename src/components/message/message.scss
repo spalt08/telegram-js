@@ -1,0 +1,454 @@
+@import '~styles/variables.scss';
+
+$messageSidePadding: 10PX;
+$messageBubblePadding: 7PX $messageSidePadding;
+
+@mixin messageDefault {
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0);
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+
+  &.-focused {
+    background-color: rgba(0, 132, 255, 0.3);
+  }
+}
+
+.message {
+  @include messageDefault();
+}
+
+.message-last {
+  @include messageDefault();
+
+  & > .message__align {
+    padding-bottom: 4px;
+  }
+}
+
+.message-chat {
+  @include messageDefault();  
+
+  & >.message__align {
+    padding-left: $content-message-padding + 28px;
+
+    @include respond-to(small) {
+      padding-left: 32px;
+    }
+  }
+}
+
+.message-chat-last {
+  @include messageDefault();
+
+  & > .message__align {
+    padding-left: $content-message-padding;
+    padding-bottom: 4px;
+
+    @include respond-to(small) {
+      padding-left: 4px;
+    }
+  }
+}
+
+.message-out {
+  @include messageDefault();
+
+  & > .message__align { justify-content: flex-end; }
+}
+
+.message-out-last {
+  & > .message__align {
+    padding-bottom: 4px;
+  }
+}
+
+.message__align {
+  width: 100%;
+  max-width: 740px;
+  padding: 0 $content-message-padding;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-end;
+  transition: max-width $animation-sidebar;
+
+  & > .avatar {
+    width: 33PX;
+    height: 33PX;
+    margin-right: -5PX;
+    margin-bottom: 3PX;
+    font-size: 13PX;
+    cursor: pointer;
+  }
+
+  @include respond-to(small) {
+    padding: 0 4px;
+  }
+}
+
+.message__text {
+  padding: $messageBubblePadding;
+  font-size: 15px;
+  line-height: 20px;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+
+  &::after {
+    clear: both;
+    content: '';
+    display: block;
+    height: 0;
+  }
+
+  & > a {
+    color: #50A2E9;
+    text-decoration: none;
+  }
+
+  &-out > a {
+    color: #4FAE4E;
+  }
+
+  & > code {
+    color: #4E7391;
+  }
+
+  & > pre {
+    display: inline;
+    white-space: pre-wrap;
+    margin: 0;
+  }
+
+  & > pre {
+    color: #4e7391;
+  }
+}
+
+.message__fallback {
+  font-size: 14px;
+  font-style: italic;
+  color: #707579;
+  line-height: 180%;
+}
+
+.message__title {
+  font-size: 14px;
+  font-weight: 500;
+  color: $accent-color;
+  line-height: 1.2;
+  padding: 7px $messageSidePadding 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  @each $i, $color in $user-bg-colors {
+    &.color-#{$i} {
+      color: $color;
+    }
+  }
+}
+
+@mixin messageInfo {
+  position: absolute;
+  right: 6px;
+  bottom: 2px;
+  height: 20PX;
+  white-space: pre;
+  font-size: 12px;
+  line-height: 20PX;
+  user-select: none;
+  display: inline-flex;
+}   
+
+.message__info {
+  @include messageInfo();
+  color: #A0AAB3;
+}
+
+.message__info-out {
+  @include messageInfo();
+  color: #4FAE4E;
+  padding-right: 18px;
+  background-image: url(~assets/statuses/read@2x.png);
+  background-repeat: no-repeat;
+  background-size: 15PX auto;
+  background-position: right center;
+  right: 16px;
+
+  &.-unread {
+    background-image: url(~assets/statuses/unread@2x.png);
+  }
+}
+
+.message__views {
+  margin-right: 8px;
+  padding-right: 18px;
+  background-image: url(~assets/statuses/eye@2x.png);
+  background-repeat: no-repeat;
+  background-size: 15PX auto;
+  background-position: right center;
+}
+
+.message__author {
+  flex-shrink: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.message__reply {
+  padding: $messageSidePadding / 2;
+  border-radius: 6px;
+  min-width: 0;
+  min-height: 42px;
+  box-sizing: content-box;
+
+  &_ripple {
+    padding: $messageSidePadding / 2;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color .2s ease;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.03);
+    }
+  }
+}
+
+.bubble-media-last,
+.bubble-media-first-last {
+  & > .bubble__content > .message__photo:last-child,
+  & > .bubble__content > .message__photo-out:last-child {
+    margin-left: -9px;
+  }
+}
+
+.bubble-media-out-last,
+.bubble-media-out-first-last {
+  & > .bubble__content > .message__photo:last-child,
+  & > .bubble__content > .message__photo-out:last-child {
+    margin-right: -9px;
+  }
+}
+
+.message__attachment, .message__attachment-out {
+  padding: $messageBubblePadding;
+  max-width: 100%;
+}
+
+.message__attachment-out .document-file__size {
+  color: #4FAE4E;
+}
+
+.message__webpage, .message__webpage-out {
+  padding: $messageBubblePadding;
+  padding-top: 0;
+}
+
+.message__webpage-out {
+  &.webpage-preview::before {
+    background: #4FAE4E;
+  }
+
+  & .webpage-preview__header {
+    color: #4FAE4E;
+  }
+}
+
+.message__sticker, .message__sticker-out {
+  margin: 0 9PX;
+  box-sizing: content-box;
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  position: relative;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+
+  & > .message__reply {
+    max-width: 400px;
+    margin-bottom: 10px;
+    background: #FFFFFF;
+    border-radius: 10px;
+  }
+};
+
+.message__sticker-out {
+  flex-direction: row;
+
+  & > .message__reply {
+    background: #EEFFDE;
+  }
+}
+
+.message__video-round, .message__video-round-out {
+  margin: 0 9PX;
+  margin-bottom: 3px;
+  position: relative;
+}
+
+.message__emoji, .message__emoji-out {
+  box-sizing: content-box;
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  position: relative;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  margin: 0 9px;
+  padding-bottom: 20px;
+
+  & > .bubble__content > .message__reply {
+    max-width: 400px;
+    margin-bottom: 10px;
+    background: #FFFFFF;
+    border-radius: 10px;
+    padding-top: 5px;
+  }
+
+  & > .bubble__content > .message__title {
+    display: none;
+  }
+
+}
+
+.message__emoji-text3 { font-size: 50px; line-height: 60px; }
+.message__emoji-text2 { font-size: 60px; line-height: 70px; }
+.message__emoji-text1 { font-size: 80px; line-height: 90px; }
+
+.message__emoji-out {
+  & > .bubble__content > .message__reply {
+    background: #EEFFDE;
+  }
+}
+
+.message__unread-mark {
+  width: 100%;
+  background-color: #f4f4f4;
+  text-align: center;
+  line-height: 24px;
+  color: #9a9a9a;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.message__reply-markup {
+  position: absolute;
+  left: 9px;
+  right: 2px;
+}
+
+.message__reply-markup-out {
+  position: absolute;
+  left: 2px;
+  right: 9px;
+}
+
+.message__photo {
+  max-width: 320px;
+  max-height: 320px;
+  min-width: 100px;
+  min-height: 80px;
+
+  @include respond-to(small) {
+    max-width: 75vw;
+    max-height: 75vw;
+    min-width: 100px;
+    min-height: 80px;
+  }
+}
+
+/**
+  Complex Styles
+*/
+
+.message__photo + .message__text, .message__photo-out + .message__text {
+  width: 320px;
+
+  @include respond-to(small) {
+    width: 75vw;
+  }
+}
+
+.message__video-round,
+.message__video-round-out,
+.message__emoji-text3,
+.message__emoji-text2,
+.message__emoji-text1,
+.message__sticker,
+.message__sticker-out,
+.bubble-media,
+.bubble-media-first,
+.bubble-media-last,
+.bubble-media-first-last,
+.bubble-media-out,
+.bubble-media-out-first,
+.bubble-media-out-last,
+.bubble-media-out-first-last {
+  & > .message__info, & > .message__info-out {
+    position: absolute;
+    right: 5px;
+    bottom: 6px;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    transform: none;
+    padding: 0 5px;
+    color: #FFFFFF;
+    z-index: 2;
+  }
+
+  & > .message__info-out {
+    background-image: url(~assets/statuses/read-white@2x.png);
+    padding-right: 20px;
+  }
+
+  & > .message__info-out.-unread {
+    background-image: url(~assets/statuses/unread-white@2x.png);
+  }
+}
+
+.bubble-media-out,
+.bubble-media-out-first,
+.bubble-media-out-last,
+.bubble-media-out-first-last {
+  & > .message__info-out {
+    right: 12px;
+  }
+}
+
+.message__text > .message__info,
+.message__text > .message__info-out {
+  align-items: flex-end;
+  float: right;
+  transform: translate(4px, 5px);
+  position: relative;
+  bottom: 0;
+  right: 0;
+  margin-left: 6px;
+}
+
+.message__title + .message__text,
+.message__reply + .message__text,
+.message__attachment + .message__text {
+  padding-top: 0;
+}
+
+.message__title + .message__reply {
+  padding-top: 0;
+}
+
+.message-out .quote {
+  &::before {
+    background: #4FAE4E;
+  }
+
+  &__title {
+    color: #4FAE4E;
+  }
+}
+
+.message__reply + .message__attachment,
+.message__title + .message__attachment {
+  padding-top: 0;
+}
